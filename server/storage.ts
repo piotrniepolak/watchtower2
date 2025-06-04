@@ -46,6 +46,9 @@ export class MemStorage implements IStorage {
         status: "Active",
         duration: "2 years, 3 months",
         startDate: new Date("2022-02-24"),
+        latitude: 50.4501,
+        longitude: 30.5234,
+        parties: ["UA", "RU"],
       },
       {
         region: "Middle East",
@@ -55,6 +58,9 @@ export class MemStorage implements IStorage {
         status: "Active",
         duration: "4 months",
         startDate: new Date("2023-10-07"),
+        latitude: 31.3547,
+        longitude: 34.3088,
+        parties: ["IL", "PS"],
       },
       {
         region: "South China Sea",
@@ -64,6 +70,9 @@ export class MemStorage implements IStorage {
         status: "Ongoing",
         duration: "5 years",
         startDate: new Date("2019-01-01"),
+        latitude: 16.0, 
+        longitude: 114.0,
+        parties: ["CN", "PH", "VN", "MY"],
       },
       {
         region: "West Africa",
@@ -73,6 +82,9 @@ export class MemStorage implements IStorage {
         status: "Ongoing",
         duration: "1 year, 8 months",
         startDate: new Date("2022-05-01"),
+        latitude: 17.570,
+        longitude: -3.9962,
+        parties: ["ML", "FR"],
       },
     ];
 
@@ -92,9 +104,18 @@ export class MemStorage implements IStorage {
   async createConflict(insertConflict: InsertConflict): Promise<Conflict> {
     const id = this.currentConflictId++;
     const conflict: Conflict = {
-      ...insertConflict,
       id,
+      region: insertConflict.region,
+      name: insertConflict.name,
+      description: insertConflict.description || null,
+      severity: insertConflict.severity,
+      status: insertConflict.status,
+      duration: insertConflict.duration,
+      startDate: insertConflict.startDate,
       lastUpdated: new Date(),
+      latitude: insertConflict.latitude || null,
+      longitude: insertConflict.longitude || null,
+      parties: insertConflict.parties || null,
     };
     this.conflicts.set(id, conflict);
     return conflict;
@@ -123,8 +144,14 @@ export class MemStorage implements IStorage {
 
   async createStock(insertStock: InsertStock): Promise<Stock> {
     const stock: Stock = {
-      ...insertStock,
       id: this.stocks.size + 1,
+      symbol: insertStock.symbol,
+      name: insertStock.name,
+      price: insertStock.price,
+      change: insertStock.change,
+      changePercent: insertStock.changePercent,
+      volume: insertStock.volume,
+      marketCap: insertStock.marketCap || null,
       lastUpdated: new Date(),
     };
     this.stocks.set(insertStock.symbol, stock);
@@ -151,8 +178,12 @@ export class MemStorage implements IStorage {
   async createCorrelationEvent(insertEvent: InsertCorrelationEvent): Promise<CorrelationEvent> {
     const id = this.currentCorrelationId++;
     const event: CorrelationEvent = {
-      ...insertEvent,
       id,
+      conflictId: insertEvent.conflictId || null,
+      eventDate: insertEvent.eventDate,
+      eventDescription: insertEvent.eventDescription,
+      stockMovement: insertEvent.stockMovement,
+      severity: insertEvent.severity,
     };
     this.correlationEvents.set(id, event);
     return event;

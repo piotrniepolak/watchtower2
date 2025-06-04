@@ -12,6 +12,9 @@ export const conflicts = pgTable("conflicts", {
   duration: text("duration").notNull(),
   startDate: timestamp("start_date").notNull(),
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+  latitude: real("latitude"),
+  longitude: real("longitude"),
+  parties: text("parties").array(), // Array of country codes for flags
 });
 
 export const stocks = pgTable("stocks", {
