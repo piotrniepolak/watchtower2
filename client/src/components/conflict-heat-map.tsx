@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, Activity, MapPin, Clock } from "lucide-react";
 import FlagIcon from "@/components/flag-icon";
+import worldMapImage from "@assets/image_1749057767120.png";
 import type { Conflict } from "@shared/schema";
 
 interface RegionData {
@@ -127,37 +128,16 @@ export default function ConflictHeatMap() {
           {/* World Map Heat Map */}
           <div className="lg:col-span-2">
             <div className="relative w-full h-96 bg-slate-100 rounded-lg overflow-hidden">
-              {/* Static World Map with Heat Zones */}
-              <svg viewBox="0 0 1000 600" className="w-full h-full">
-                {/* Background */}
-                <rect width="1000" height="600" fill="#f1f5f9" />
-                
-                {/* World Map Continents - More detailed static map */}
-                {/* North America */}
-                <path d="M 50 150 L 180 120 L 280 140 L 320 180 L 280 250 L 200 280 L 120 260 L 80 200 Z" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                
-                {/* South America */}
-                <path d="M 220 350 L 280 320 L 320 380 L 300 480 L 250 520 L 200 480 L 180 420 Z" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                
-                {/* Europe */}
-                <path d="M 450 120 L 550 110 L 580 150 L 520 180 L 480 160 L 440 140 Z" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                
-                {/* Africa */}
-                <path d="M 480 200 L 580 190 L 620 250 L 600 380 L 520 420 L 480 380 L 460 280 L 470 220 Z" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                
-                {/* Asia */}
-                <path d="M 580 120 L 780 100 L 900 140 L 920 200 L 880 250 L 780 280 L 680 260 L 600 180 Z" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                
-                {/* Australia */}
-                <path d="M 780 420 L 880 410 L 920 440 L 900 480 L 820 490 L 760 470 Z" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-
-                {/* Regional heat zones with better positioning */}
+              {/* World Map Image */}
+              <img 
+                src={worldMapImage} 
+                alt="World Map" 
+                className="w-full h-full object-cover"
+                style={{ filter: 'brightness(0.9) contrast(1.1)' }}
+              />
+              
+              {/* Heat Zone Overlays */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600">
                 {regionalData.map((region, index) => (
                   <g key={region.name}>
                     <rect
@@ -166,15 +146,15 @@ export default function ConflictHeatMap() {
                       width={region.coordinates.width}
                       height={region.coordinates.height}
                       fill={getIntensityColor(region.intensity)}
-                      opacity="0.7"
-                      rx="12"
-                      className="cursor-pointer transition-all duration-300 hover:opacity-0.9"
+                      opacity="0.6"
+                      rx="8"
+                      className="cursor-pointer transition-all duration-300 hover:opacity-0.8"
                       onClick={() => setSelectedRegion(selectedRegion === region.name ? null : region.name)}
                     />
                     <circle
                       cx={region.coordinates.x + region.coordinates.width / 2}
                       cy={region.coordinates.y + region.coordinates.height / 2}
-                      r="12"
+                      r="10"
                       fill={getIntensityColor(region.intensity)}
                       className="animate-pulse cursor-pointer"
                       onClick={() => setSelectedRegion(selectedRegion === region.name ? null : region.name)}
@@ -183,9 +163,10 @@ export default function ConflictHeatMap() {
                     </circle>
                     <text
                       x={region.coordinates.x + region.coordinates.width / 2}
-                      y={region.coordinates.y - 8}
+                      y={region.coordinates.y - 6}
                       textAnchor="middle"
-                      className="text-sm font-bold fill-slate-800 pointer-events-none"
+                      className="text-sm font-bold fill-white pointer-events-none"
+                      style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
                     >
                       {region.activeConflicts}
                     </text>
