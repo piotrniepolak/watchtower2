@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,82 +17,110 @@ export default function Navigation() {
   const [location] = useLocation();
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
   
   const { user, isAuthenticated, logout } = useAuth();
 
-  const { data: conflicts = [] } = useQuery({
+  const { data: conflicts } = useQuery({
     queryKey: ["/api/conflicts"],
   });
 
-  const { data: stocks = [] } = useQuery({
+  const { data: stocks } = useQuery({
     queryKey: ["/api/stocks"],
   });
 
   const isActive = (path: string) => location === path;
 
-  // Search functionality
-  const searchResults = searchQuery.length > 0 ? [
-    ...(conflicts as Conflict[])
-      .filter((conflict: Conflict) => 
-        conflict.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        conflict.region.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .map((conflict: Conflict) => ({
-        title: conflict.name,
-        subtitle: conflict.region,
-        type: "Conflict",
-        href: "/conflicts"
-      })),
-    ...(stocks as Stock[])
-      .filter((stock: Stock) => 
-        stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        stock.symbol.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .map((stock: Stock) => ({
-        title: stock.name,
-        subtitle: stock.symbol,
-        type: "Stock",
-        href: "/markets"
-      }))
-  ].slice(0, 8) : [];
-
-  // Close search when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSearch(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Filter search results
+  const searchResults = searchQuery.length > 0 ? [
+    ...(conflicts as Conflict[] || [])
+      .filter(conflict => 
+        conflict.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        conflict.region.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 3)
+      .map(conflict => ({
+        type: 'conflict' as const,
+        title: conflict.name,
+        subtitle: conflict.region,
+        href: '/conflicts'
+      })),
+    ...(stocks as Stock[] || [])
+      .filter(stock => 
+        stock.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        stock.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 3)
+      .map(stock => ({
+        type: 'stock' as const,
+        title: `${stock.symbol} - ${stock.name}`,
+        subtitle: `$${stock.price?.toFixed(2) || 'N/A'}`,
+        href: '/markets'
+      }))
+  ] : [];
+
+  // Generate notifications
+  const notifications = [
+    {
+      id: 1,
+      title: "New High-Severity Conflict Alert",
+      message: "Ukraine-Russia conflict intensity increased",
+      time: "2 hours ago",
+      type: "alert" as const,
+      unread: true
+    },
+    {
+      id: 2,
+      title: "Market Update",
+      message: "Defense stocks up 3.2% following regional tensions",
+      time: "4 hours ago",
+      type: "market" as const,
+      unread: true
+    },
+    {
+      id: 3,
+      title: "Analysis Complete",
+      message: "Q4 correlation analysis report ready",
+      time: "1 day ago",
+      type: "info" as const,
+      unread: false
+    }
+  ];
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
   return (
-    <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
+    <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and main navigation */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg mr-3">
-                <Search className="h-6 w-6" />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-slate-900">GeoPol Intel</h1>
-                <p className="text-xs text-slate-600">Defense & Conflict Analytics</p>
-              </div>
-            </Link>
-
-            {/* Navigation links */}
-            <div className="hidden md:block ml-10">
-              <div className="flex items-baseline space-x-8">
+          <div className="flex items-center space-x-8">
+            <div className="flex-shrink-0">
+              <Link href="/">
+                <h1 className="text-xl font-bold text-slate-900 cursor-pointer">ConflictWatch</h1>
+              </Link>
+            </div>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-baseline space-x-6">
                 <Link href="/" className={`px-3 py-2 text-sm font-medium ${
-                  isActive("/") 
+                  isActive("/") || isActive("/dashboard") 
                     ? "text-primary border-b-2 border-primary" 
                     : "text-slate-600 hover:text-slate-900"
                 }`}>
@@ -119,6 +147,7 @@ export default function Navigation() {
                 }`}>
                   AI Analysis
                 </Link>
+
                 <Link href="/reports" className={`px-3 py-2 text-sm font-medium ${
                   isActive("/reports") 
                     ? "text-primary border-b-2 border-primary" 
@@ -138,8 +167,6 @@ export default function Navigation() {
               </div>
             </div>
           </div>
-
-          {/* Right side controls */}
           <div className="flex items-center space-x-4">
             {/* Search */}
             <div className="relative" ref={searchRef}>
@@ -154,16 +181,22 @@ export default function Navigation() {
                 <div className="absolute right-0 mt-2 w-80 z-50">
                   <Card className="shadow-lg border">
                     <CardContent className="p-4">
-                      <div className="relative mb-3">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Search className="h-4 w-4 text-slate-400" />
                         <Input
-                          type="search"
-                          placeholder="Search conflicts, stocks..."
-                          className="pl-10"
+                          placeholder="Search conflicts, stocks, regions..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
+                          className="border-0 p-0 focus-visible:ring-0"
                           autoFocus
                         />
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setShowSearch(false)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
                       {searchResults.length > 0 ? (
                         <div className="space-y-2">
@@ -207,24 +240,91 @@ export default function Navigation() {
 
             {/* Profile/Auth */}
             {isAuthenticated ? (
+                <div className="absolute right-0 mt-2 w-80 z-50">
+                  <Card className="shadow-lg border">
+                    <CardContent className="p-0">
+                      <div className="p-4 border-b">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold">Notifications</h3>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setShowNotifications(false)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifications.map((notification) => (
+                          <div 
+                            key={notification.id}
+                            className={`p-4 border-b hover:bg-slate-50 cursor-pointer ${
+                              notification.unread ? 'bg-blue-50' : ''
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2">
+                                  <div className="font-medium text-sm">{notification.title}</div>
+                                  {notification.unread && (
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  )}
+                                </div>
+                                <div className="text-sm text-slate-600 mt-1">
+                                  {notification.message}
+                                </div>
+                                <div className="text-xs text-slate-400 mt-2">
+                                  {notification.time}
+                                </div>
+                              </div>
+                              <Badge 
+                                variant={notification.type === 'alert' ? 'destructive' : 'outline'}
+                                className="text-xs"
+                              >
+                                {notification.type}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-4 border-t">
+                        <Button variant="link" className="w-full text-sm">
+                          View all notifications
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+
+            {/* Account */}
+            {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">{user?.firstName || user?.email}</span>
+                  <Button variant="ghost" size="sm" className="relative">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                    </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  <div className="p-2">
+                    <div className="font-medium text-sm">{user?.firstName} {user?.lastName}</div>
+                    <div className="text-xs text-slate-600">{user?.email}</div>
+                  </div>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/watchlist" className="flex items-center">
-                      <Star className="h-4 w-4 mr-2" />
-                      Watchlist
+                    <Link href="/watchlist" className="flex items-center cursor-pointer">
+                      <Star className="mr-2 h-4 w-4" />
+                      My Watchlists
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="flex items-center">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign out
+                  <DropdownMenuItem onClick={logout} className="flex items-center cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
