@@ -325,9 +325,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? stocks.reduce((sum, stock) => sum + stock.price, 0) / stocks.length
         : 0;
       
-      // Calculate total market cap (simplified calculation using price * volume as proxy)
+      // Calculate total market cap from actual market cap values
       const totalMarketCap = stocks.reduce((sum, stock) => {
-        return sum + (stock.price * stock.volume / 1000000); // Convert to millions
+        if (!stock.marketCap) return sum;
+        
+        // Parse market cap string (e.g., "$120.5B", "€20.8B", "£41.2B")
+        const cleanValue = stock.marketCap.replace(/[^\d.]/g, '');
+        const numericValue = parseFloat(cleanValue);
+        
+        if (stock.marketCap.includes('B')) {
+          return sum + numericValue;
+        } else if (stock.marketCap.includes('M')) {
+          return sum + (numericValue / 1000);
+        }
+        return sum;
       }, 0);
       
       // Simplified correlation score
@@ -337,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeConflicts,
         totalConflicts,
         defenseIndex: defenseIndex.toFixed(2),
-        marketCap: `$${(totalMarketCap / 1000).toFixed(1)}B`,
+        marketCap: `$${totalMarketCap.toFixed(1)}B`,
         correlationScore,
       });
     } catch (error) {
