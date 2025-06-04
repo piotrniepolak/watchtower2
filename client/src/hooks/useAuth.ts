@@ -43,18 +43,12 @@ export function useAuthProvider(): AuthContextType {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
+      const response = await apiRequest('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch user');
-      }
-      
-      const data = await response.json();
-      setUser(data.user);
+      setUser(response.user);
     } catch (error) {
       console.error('Failed to fetch user:', error);
       logout();
@@ -65,7 +59,7 @@ export function useAuthProvider(): AuthContextType {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const data = await apiRequest('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,12 +67,6 @@ export function useAuthProvider(): AuthContextType {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
-
-      const data = await response.json();
       setUser(data.user);
       setToken(data.token);
       localStorage.setItem('token', data.token);
@@ -89,7 +77,7 @@ export function useAuthProvider(): AuthContextType {
 
   const register = async (email: string, password: string, firstName?: string, lastName?: string) => {
     try {
-      const response = await fetch('/api/auth/register', {
+      const data = await apiRequest('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,12 +85,6 @@ export function useAuthProvider(): AuthContextType {
         body: JSON.stringify({ email, password, firstName, lastName }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
-      }
-
-      const data = await response.json();
       setUser(data.user);
       setToken(data.token);
       localStorage.setItem('token', data.token);

@@ -171,8 +171,14 @@ export class MemStorage implements IStorage {
   private conflicts: Map<number, Conflict>;
   private stocks: Map<string, Stock>;
   private correlationEvents: Map<number, CorrelationEvent>;
+  private users: Map<number, User>;
+  private stockWatchlists: Map<number, StockWatchlist>;
+  private conflictWatchlists: Map<number, ConflictWatchlist>;
   private currentConflictId: number;
   private currentCorrelationId: number;
+  private currentUserId: number;
+  private currentStockWatchlistId: number;
+  private currentConflictWatchlistId: number;
 
   constructor() {
     this.conflicts = new Map();

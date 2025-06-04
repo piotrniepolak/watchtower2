@@ -9,6 +9,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "@/components/auth-modal";
+import ExportMenu from "@/components/export-menu";
 import type { Conflict, Stock } from "@shared/schema";
 
 export default function Navigation() {
