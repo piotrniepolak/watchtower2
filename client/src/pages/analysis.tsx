@@ -111,6 +111,10 @@ export default function Analysis() {
     }
   };
 
+  // Check if API is available and has data
+  const hasApiData = predictions && marketAnalysis && Array.isArray(predictions) && predictions.length > 0;
+  const isApiUnavailable = !predictionsLoading && !marketLoading && !hasApiData;
+
   if (predictionsLoading || marketLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
@@ -150,6 +154,24 @@ export default function Analysis() {
           </TabsList>
 
           <TabsContent value="predictions" className="space-y-6">
+            {/* API Status Banner */}
+            {isApiUnavailable && (
+              <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-orange-800">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    AI Analysis Service Configuration Required
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-orange-700 text-sm">
+                    The AI-powered conflict prediction feature requires a valid OpenAI API key with available credits. 
+                    Once configured, this system will generate real-time predictions, market analysis, and conflict storylines.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Market Overview Card */}
             {marketAnalysis && (
               <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -180,6 +202,68 @@ export default function Analysis() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Feature Overview when API unavailable */}
+            {isApiUnavailable && (
+              <Card className="overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+                  <CardTitle className="text-lg">AI Conflict Prediction Capabilities</CardTitle>
+                  <p className="text-slate-600 text-sm mt-2">
+                    Once configured with a valid OpenAI API key, this system will analyze each conflict and generate:
+                  </p>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <Lightbulb className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Intelligent Predictions</h4>
+                          <p className="text-slate-600 text-sm">AI-generated scenarios for escalation, de-escalation, or resolution with probability assessments</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <DollarSign className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Economic Impact Analysis</h4>
+                          <p className="text-slate-600 text-sm">Detailed analysis of how conflicts affect defense markets and specific stocks</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Globe className="w-5 h-5 text-purple-600 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Geopolitical Implications</h4>
+                          <p className="text-slate-600 text-sm">Analysis of broader regional and international consequences</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <TrendingUp className="w-5 h-5 text-orange-600 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Defense Stock Impact</h4>
+                          <p className="text-slate-600 text-sm">Predicted impact direction and magnitude on specific defense contractor stocks</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <AlertTriangle className="w-5 h-5 text-red-600 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Risk Assessment</h4>
+                          <p className="text-slate-600 text-sm">Identification of key risk factors and potential mitigation strategies</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Clock className="w-5 h-5 text-slate-600 mt-1 mr-3 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-1">Timeline Predictions</h4>
+                          <p className="text-slate-600 text-sm">Estimated timeframes for potential developments and outcomes</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -329,65 +413,239 @@ export default function Analysis() {
           </TabsContent>
 
           <TabsContent value="market" className="space-y-6">
-            {marketAnalysis && (
-              <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <BarChart3 className="w-5 h-5 mr-2" />
-                      Comprehensive Market Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
+            {isApiUnavailable && (
+              <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-orange-800">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    Market Analysis Service Configuration Required
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-orange-700 text-sm">
+                    AI-powered market analysis requires OpenAI API configuration. This feature will provide comprehensive defense sector insights and investment implications.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2" />
+                  AI Market Analysis Capabilities
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <TrendingUp className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-slate-900 mb-3">Risk Assessment</h4>
-                        <p className="text-slate-700 text-sm leading-relaxed mb-4">
-                          {(marketAnalysis as MarketAnalysis).riskAssessment}
-                        </p>
-                        
-                        <h4 className="font-semibold text-slate-900 mb-3">Investment Implications</h4>
-                        <ul className="space-y-2">
-                          {(marketAnalysis as MarketAnalysis).investmentImplications.map((implication, index) => (
-                            <li key={index} className="flex items-start text-sm text-slate-700">
-                              <DollarSign className="w-4 h-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                              {implication}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-slate-900 mb-3">Sector Outlook</h4>
-                        <div className="bg-slate-50 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="font-medium">Overall Sentiment:</span>
-                            <div className="flex items-center">
-                              {getSentimentIcon((marketAnalysis as MarketAnalysis).overallSentiment)}
-                              <span className="ml-2 capitalize font-semibold">
-                                {(marketAnalysis as MarketAnalysis).overallSentiment}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-slate-700 text-sm">
-                            {(marketAnalysis as MarketAnalysis).sectorOutlook}
-                          </p>
-                        </div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Sector Sentiment Analysis</h4>
+                        <p className="text-slate-600 text-sm">AI assessment of overall defense market sentiment (bullish, bearish, or neutral) based on current geopolitical conditions</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </>
+                    <div className="flex items-start">
+                      <DollarSign className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Investment Implications</h4>
+                        <p className="text-slate-600 text-sm">Detailed recommendations for defense portfolio positioning based on conflict analysis</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <AlertTriangle className="w-5 h-5 text-red-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Risk Assessment</h4>
+                        <p className="text-slate-600 text-sm">Comprehensive analysis of market risks and volatility factors affecting defense stocks</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <Zap className="w-5 h-5 text-purple-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Key Market Drivers</h4>
+                        <p className="text-slate-600 text-sm">Identification of primary factors influencing defense market movements and stock performance</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Clock className="w-5 h-5 text-slate-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Time Horizon Analysis</h4>
+                        <p className="text-slate-600 text-sm">Short-term and long-term market outlook based on predicted conflict developments</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Target className="w-5 h-5 text-orange-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Sector Outlook</h4>
+                        <p className="text-slate-600 text-sm">Comprehensive assessment of defense industry prospects and growth potential</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {marketAnalysis && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="w-5 h-5 mr-2" />
+                    Comprehensive Market Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold text-slate-900 mb-3">Risk Assessment</h4>
+                      <p className="text-slate-700 text-sm leading-relaxed mb-4">
+                        {(marketAnalysis as MarketAnalysis).riskAssessment}
+                      </p>
+                      
+                      <h4 className="font-semibold text-slate-900 mb-3">Investment Implications</h4>
+                      <ul className="space-y-2">
+                        {(marketAnalysis as MarketAnalysis).investmentImplications.map((implication, index) => (
+                          <li key={index} className="flex items-start text-sm text-slate-700">
+                            <DollarSign className="w-4 h-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                            {implication}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-900 mb-3">Sector Outlook</h4>
+                      <div className="bg-slate-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-medium">Overall Sentiment:</span>
+                          <div className="flex items-center">
+                            {getSentimentIcon((marketAnalysis as MarketAnalysis).overallSentiment)}
+                            <span className="ml-2 capitalize font-semibold">
+                              {(marketAnalysis as MarketAnalysis).overallSentiment}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-slate-700 text-sm">
+                          {(marketAnalysis as MarketAnalysis).sectorOutlook}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
           <TabsContent value="storylines" className="space-y-6">
-            <div className="text-center py-8">
-              <Users className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Interactive Storylines</h3>
-              <p className="text-slate-600 max-w-md mx-auto">
-                Select a specific conflict from the predictions to explore detailed storyline scenarios and expert insights.
-              </p>
-            </div>
+            {isApiUnavailable && (
+              <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-orange-800">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    Storyline Generation Service Configuration Required
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-orange-700 text-sm">
+                    AI-powered conflict storylines require OpenAI API configuration. This feature generates detailed narrative scenarios for each conflict.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  AI Storyline Generation Capabilities
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <Lightbulb className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Current Situation Analysis</h4>
+                        <p className="text-slate-600 text-sm">AI-generated assessment of the present state of each conflict with key developments</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Target className="w-5 h-5 text-purple-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Multiple Scenario Outcomes</h4>
+                        <p className="text-slate-600 text-sm">Detailed exploration of possible conflict resolutions with probability assessments</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Clock className="w-5 h-5 text-orange-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Timeline Projections</h4>
+                        <p className="text-slate-600 text-sm">Estimated timeframes for each scenario with key milestone events</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <Globe className="w-5 h-5 text-green-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Geopolitical Implications</h4>
+                        <p className="text-slate-600 text-sm">Analysis of broader regional and international consequences for each scenario</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <AlertTriangle className="w-5 h-5 text-red-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Key Watch Points</h4>
+                        <p className="text-slate-600 text-sm">Critical indicators and events that could signal scenario transitions</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Brain className="w-5 h-5 text-slate-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-1">Expert AI Insights</h4>
+                        <p className="text-slate-600 text-sm">AI-synthesized analysis combining multiple perspectives and historical patterns</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200">
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-900">Interactive Storyline Features</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-900 mb-2">Conflict-Specific Analysis</h4>
+                    <p className="text-blue-800 text-sm mb-3">
+                      Once configured, select any conflict from the dashboard to generate detailed storylines with:
+                    </p>
+                    <ul className="text-blue-700 text-sm space-y-1">
+                      <li className="flex items-center">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
+                        Real-time situation assessment based on latest developments
+                      </li>
+                      <li className="flex items-center">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
+                        Multiple probability-weighted outcome scenarios
+                      </li>
+                      <li className="flex items-center">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
+                        Interactive timeline with key decision points
+                      </li>
+                      <li className="flex items-center">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></div>
+                        Economic and market impact projections
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
