@@ -401,6 +401,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notification routes
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      // Sample notifications with current May-June 2025 data
+      const notifications = [
+        {
+          id: 1,
+          type: "conflict_update",
+          title: "Ukraine-Russia Conflict Update",
+          message: "Significant developments in drone warfare tactics reported in eastern regions",
+          data: { conflictId: 1, updateType: "new_development" },
+          read: false,
+          priority: "high",
+          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          expiresAt: null
+        },
+        {
+          id: 2,
+          type: "market_alert",
+          title: "Defense Stock Alert",
+          message: "Lockheed Martin (LMT) up 3.2% following contract announcement",
+          data: { stockSymbol: "LMT", alertType: "price_change", currentValue: 452.30, change: 14.05 },
+          read: false,
+          priority: "normal",
+          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+          expiresAt: null
+        },
+        {
+          id: 3,
+          type: "ai_analysis",
+          title: "AI Prediction Complete",
+          message: "New conflict analysis generated for Sudan Civil War with 73% confidence",
+          data: { analysisType: "prediction", conflictId: 3, confidence: 0.73 },
+          read: true,
+          priority: "normal",
+          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+          expiresAt: null
+        },
+        {
+          id: 4,
+          type: "conflict_update",
+          title: "Taiwan Strait Tensions",
+          message: "Increased military exercises reported in the region, monitoring escalation indicators",
+          data: { conflictId: 6, updateType: "escalation" },
+          read: false,
+          priority: "urgent",
+          createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+          expiresAt: null
+        },
+        {
+          id: 5,
+          type: "market_alert",
+          title: "Defense Index Movement",
+          message: "Defense sector showing strong correlation with recent geopolitical developments",
+          data: { alertType: "correlation_event", currentValue: 389.45 },
+          read: true,
+          priority: "normal",
+          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+          expiresAt: null
+        },
+        {
+          id: 6,
+          type: "conflict_update",
+          title: "Myanmar Civil War",
+          message: "Resistance forces reported significant territorial gains in northern regions",
+          data: { conflictId: 4, updateType: "status_change" },
+          read: false,
+          priority: "high",
+          createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+          expiresAt: null
+        }
+      ];
+      
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.post("/api/notifications/:id/read", async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      // In a real implementation, this would update the database
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+  });
+
+  app.post("/api/notifications/mark-all-read", async (req, res) => {
+    try {
+      // In a real implementation, this would update all notifications for the user
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ error: "Failed to mark all notifications as read" });
+    }
+  });
+
+  app.delete("/api/notifications/:id", async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      // In a real implementation, this would delete the notification from the database
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ error: "Failed to delete notification" });
+    }
+  });
+
   // Protected routes example  
   app.get("/api/watchlist/stocks", authenticateToken, async (req: any, res) => {
     try {
