@@ -2,6 +2,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Make environment variables available to Vite frontend
+process.env.VITE_GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+process.env.VITE_ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import GoogleMap from "@/components/google-map";
-import type { Conflict } from "@shared/schema";
+import type { Conflict, Stock } from "@shared/schema";
 
 export default function ChartsSection() {
   const [timeframe, setTimeframe] = useState("1M");
