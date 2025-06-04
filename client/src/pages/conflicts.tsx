@@ -175,9 +175,9 @@ export default function Conflicts() {
         "2018: Ebola outbreak complicated by ongoing conflict",
         "2021: Islamic State affiliate attacks increase",
         "2022: M23 resurges with significant territorial gains",
-        "2023: Regional mediation efforts and peacekeeping operations continue"
+        "2023-2025: Regional mediation efforts and peacekeeping operations continue (June 2025)"
       ],
-      casualties: "Over 6 million deaths since 1996, ongoing violence claims thousands annually",
+      casualties: "Over 6 million deaths since 1996, ongoing violence claims thousands annually (June 2025)",
       impact: "Massive displacement of 5.6 million people, sexual violence epidemic, child soldier recruitment, humanitarian crisis.",
       economicImpact: "Illegal mining of cobalt, gold, and other minerals funding armed groups, economic devastation in eastern regions",
       internationalResponse: "UN peacekeeping mission MONUSCO, regional military interventions, humanitarian aid operations, sanctions on armed groups"
@@ -232,6 +232,38 @@ export default function Conflicts() {
       impact: "Regional military buildup, disruption to fishing activities, international shipping route tensions.",
       economicImpact: "Potential disruption to $3.4 trillion in annual trade, fishing industry impacts, energy exploration disputes",
       internationalResponse: "ASEAN diplomatic efforts, US freedom of navigation operations, international legal proceedings"
+    },
+    "Afghanistan Taliban Control": {
+      summary: "Taliban regained control of Afghanistan in August 2021 following US withdrawal, establishing Islamic Emirate and facing international isolation amid humanitarian crisis.",
+      background: "After 20 years of war, Taliban returned to power as US and NATO forces withdrew. The group faces challenges governing, economic collapse, and resistance movements.",
+      keyEvents: [
+        "August 2021: Taliban captures Kabul, US completes withdrawal",
+        "September 2021: Taliban announces interim government",
+        "2022: Women banned from education and most employment",
+        "2023: International aid restrictions continue",
+        "2024: Economic crisis deepens, banking system struggles",
+        "2025: Ongoing humanitarian crisis and international isolation (June 2025)"
+      ],
+      casualties: "Thousands killed during takeover, ongoing casualties from resistance and ISIS-K attacks",
+      impact: "Humanitarian crisis affecting 28 million people, refugee flows to neighboring countries, women's rights eliminated.",
+      economicImpact: "Economic collapse, currency devaluation, international aid frozen, opium trade increases",
+      internationalResponse: "No formal recognition, humanitarian aid conditional, Taliban diplomatic isolation"
+    },
+    "Nagorno-Karabakh Conflict": {
+      summary: "Armenia-Azerbaijan conflict over Nagorno-Karabakh region culminated in Azerbaijan's 2023 military operation, leading to Armenian exodus and territorial resolution.",
+      background: "Decades-long dispute over Armenian-majority enclave within Azerbaijan borders, involving ethnic tensions, territorial claims, and regional power dynamics.",
+      keyEvents: [
+        "1988-1994: First Nagorno-Karabakh War",
+        "September 2020: 44-day war, Azerbaijan gains territory",
+        "2021-2022: Occasional border clashes and tensions",
+        "September 2023: Azerbaijan launches operation in Karabakh",
+        "December 2023: Nagorno-Karabakh Republic dissolved",
+        "2024-2025: Post-conflict normalization efforts ongoing (June 2025)"
+      ],
+      casualties: "Over 7,000 deaths in 2020 war, hundreds in 2023 operation",
+      impact: "Displacement of 100,000 Armenians from Karabakh, altered regional balance, refugee integration challenges.",
+      economicImpact: "Infrastructure damage, energy corridor implications, reconstruction costs, displaced population burden",
+      internationalResponse: "Russian peacekeeping mission ended, EU monitoring mission, international mediation attempts"
     }
   };
 

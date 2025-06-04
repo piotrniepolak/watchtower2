@@ -449,13 +449,13 @@ export class MemStorage implements IStorage {
       },
       {
         id: 8,
-        symbol: "TXN",
-        name: "Texas Instruments Incorporated",
-        price: 189.75,
-        change: 4.25,
-        changePercent: 2.29,
-        volume: 2800000,
-        marketCap: "$172.3B",
+        symbol: "LDOS",
+        name: "Leidos Holdings Inc",
+        price: 142.85,
+        change: 3.60,
+        changePercent: 2.59,
+        volume: 850000,
+        marketCap: "$19.7B",
         lastUpdated: new Date()
       },
       {
@@ -478,6 +478,61 @@ export class MemStorage implements IStorage {
         changePercent: 2.46,
         volume: 1200000,
         marketCap: "$36.8B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 11,
+        symbol: "KTOS",
+        name: "Kratos Defense & Security Solutions Inc",
+        price: 18.75,
+        change: 0.85,
+        changePercent: 4.75,
+        volume: 2100000,
+        marketCap: "$2.4B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 12,
+        symbol: "AVAV",
+        name: "AeroVironment Inc",
+        price: 187.90,
+        change: 12.30,
+        changePercent: 7.01,
+        volume: 890000,
+        marketCap: "$5.2B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 13,
+        symbol: "CW",
+        name: "Curtiss-Wright Corporation",
+        price: 293.40,
+        change: 8.95,
+        changePercent: 3.15,
+        volume: 670000,
+        marketCap: "$11.8B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 14,
+        symbol: "MRCY",
+        name: "Mercury Systems Inc",
+        price: 34.25,
+        change: 1.45,
+        changePercent: 4.42,
+        volume: 1450000,
+        marketCap: "$2.1B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 15,
+        symbol: "TXT",
+        name: "Textron Inc",
+        price: 89.60,
+        change: 2.80,
+        changePercent: 3.23,
+        volume: 1850000,
+        marketCap: "$18.9B",
         lastUpdated: new Date()
       }
     ];
