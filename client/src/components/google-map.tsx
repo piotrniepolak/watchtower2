@@ -20,12 +20,21 @@ export default function GoogleMap({ conflicts, className }: GoogleMapProps) {
       
       {/* Conflict Markers */}
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1280 720">
-        {conflicts.map((conflict) => {
+        {conflicts.filter(conflict => conflict.status === "Active").map((conflict) => {
           if (!conflict.latitude || !conflict.longitude) return null;
           
-          // Convert lat/lng to map coordinates (adjusted for the 1280x720 world map image)
-          const x = ((conflict.longitude + 180) / 360) * 1280;
-          const y = ((90 - conflict.latitude) / 180) * 720;
+          // Convert lat/lng to map coordinates with proper map projection
+          // Accounting for the actual landmass positioning in the world map image
+          const mapWidth = 1280;
+          const mapHeight = 720;
+          
+          // Adjust for map projection - the actual world map doesn't use full width/height
+          const mapPadding = { left: 40, right: 40, top: 60, bottom: 80 };
+          const usableWidth = mapWidth - mapPadding.left - mapPadding.right;
+          const usableHeight = mapHeight - mapPadding.top - mapPadding.bottom;
+          
+          const x = mapPadding.left + ((conflict.longitude + 180) / 360) * usableWidth;
+          const y = mapPadding.top + ((90 - conflict.latitude) / 180) * usableHeight;
           
           return (
             <g key={conflict.id}>

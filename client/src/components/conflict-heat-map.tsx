@@ -31,7 +31,8 @@ export default function ConflictHeatMap() {
 
     const regionMap = new Map<string, Conflict[]>();
     
-    conflictArray.forEach((conflict: Conflict) => {
+    // Only include active conflicts in the heat map
+    conflictArray.filter(conflict => conflict.status === "Active").forEach((conflict: Conflict) => {
       const region = conflict.region;
       if (!regionMap.has(region)) {
         regionMap.set(region, []);
@@ -63,20 +64,21 @@ export default function ConflictHeatMap() {
   };
 
   const getRegionCoordinates = (regionName: string) => {
-    // Coordinates adjusted for the new 1280x720 world map image
+    // Coordinates adjusted for accurate positioning on the 1280x720 world map
+    const mapPadding = { left: 40, right: 40, top: 60, bottom: 80 };
     const coords = {
-      "Eastern Europe": { x: 530, y: 150, width: 80, height: 60 },
-      "Middle East": { x: 580, y: 240, width: 80, height: 70 },
-      "West Africa": { x: 480, y: 300, width: 60, height: 80 },
-      "East Africa": { x: 580, y: 330, width: 50, height: 90 },
-      "Central Africa": { x: 520, y: 340, width: 60, height: 60 },
-      "Horn of Africa": { x: 620, y: 350, width: 40, height: 60 },
-      "South Asia": { x: 700, y: 260, width: 70, height: 60 },
-      "East Asia": { x: 760, y: 180, width: 80, height: 80 },
-      "Southeast Asia": { x: 780, y: 300, width: 70, height: 50 },
-      "Central Asia": { x: 650, y: 200, width: 80, height: 40 },
-      "South America": { x: 280, y: 400, width: 60, height: 90 },
-      "South China Sea": { x: 760, y: 320, width: 60, height: 40 }
+      "Eastern Europe": { x: 520, y: 140, width: 90, height: 70 },
+      "Middle East": { x: 560, y: 230, width: 90, height: 80 },
+      "West Africa": { x: 440, y: 290, width: 70, height: 90 },
+      "East Africa": { x: 560, y: 320, width: 60, height: 100 },
+      "Central Africa": { x: 500, y: 330, width: 70, height: 70 },
+      "Horn of Africa": { x: 600, y: 340, width: 50, height: 70 },
+      "South Asia": { x: 680, y: 250, width: 80, height: 70 },
+      "East Asia": { x: 750, y: 170, width: 90, height: 90 },
+      "Southeast Asia": { x: 770, y: 290, width: 80, height: 60 },
+      "Central Asia": { x: 630, y: 190, width: 90, height: 50 },
+      "South America": { x: 270, y: 390, width: 70, height: 100 },
+      "South China Sea": { x: 750, y: 310, width: 70, height: 50 }
     };
     return coords[regionName as keyof typeof coords] || { x: 400, y: 300, width: 60, height: 60 };
   };
