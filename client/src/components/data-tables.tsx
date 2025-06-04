@@ -57,17 +57,12 @@ export default function DataTables() {
         <CardHeader className="border-b border-slate-200">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">Current Conflicts</h3>
-            <div className="flex items-center space-x-2">
-              <Input
-                placeholder="Search conflicts..."
-                value={conflictSearch}
-                onChange={(e) => setConflictSearch(e.target.value)}
-                className="w-40"
-              />
-              <Button variant="link" className="text-sm text-primary hover:text-primary/80 font-medium p-0">
-                Export
-              </Button>
-            </div>
+            <Input
+              placeholder="Search conflicts..."
+              value={conflictSearch}
+              onChange={(e) => setConflictSearch(e.target.value)}
+              className="w-40"
+            />
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -158,17 +153,12 @@ export default function DataTables() {
         <CardHeader className="border-b border-slate-200">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">Defense Contractors</h3>
-            <div className="flex items-center space-x-2">
-              <Input
-                placeholder="Search stocks..."
-                value={stockSearch}
-                onChange={(e) => setStockSearch(e.target.value)}
-                className="w-40"
-              />
-              <Button variant="link" className="text-sm text-primary hover:text-primary/80 font-medium p-0">
-                Watchlist
-              </Button>
-            </div>
+            <Input
+              placeholder="Search stocks..."
+              value={stockSearch}
+              onChange={(e) => setStockSearch(e.target.value)}
+              className="w-40"
+            />
           </div>
         </CardHeader>
         <CardContent className="p-0">
