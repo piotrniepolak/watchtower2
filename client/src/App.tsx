@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import Conflicts from "@/pages/conflicts";
+import Markets from "@/pages/markets";
+import Analysis from "@/pages/analysis";
+import Reports from "@/pages/reports";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,9 +16,9 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/conflicts" component={Conflicts} />
-      <Route path="/markets" component={Dashboard} />
-      <Route path="/analysis" component={Dashboard} />
-      <Route path="/reports" component={Dashboard} />
+      <Route path="/markets" component={Markets} />
+      <Route path="/analysis" component={Analysis} />
+      <Route path="/reports" component={Reports} />
       <Route component={NotFound} />
     </Switch>
   );
