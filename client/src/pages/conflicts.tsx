@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/hooks/useSimpleAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import ExportMenu from "@/components/export-menu";
-import ConflictSeverityMap from "@/components/conflict-severity-map";
+
 import type { Conflict } from "@shared/schema";
 
 export default function Conflicts() {
@@ -249,9 +249,7 @@ export default function Conflicts() {
             Detailed analysis of ongoing global conflicts and their geopolitical impact
           </p>
           
-          {/* Conflict Severity Map */}
-          <ConflictSeverityMap className="mb-8" />
-          
+
           {/* Conflicts Overview Table */}
           <Card className="mb-8">
             <CardHeader>

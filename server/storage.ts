@@ -303,6 +303,20 @@ export class MemStorage implements IStorage {
         latitude: 15.0,
         longitude: 30.0,
         parties: ["SD"]
+      },
+      {
+        id: 9,
+        region: "North America",
+        name: "Mexico Drug War",
+        description: "Ongoing conflict between Mexican government, cartels, and US involvement",
+        severity: "High",
+        status: "Active",
+        duration: "17+ years",
+        startDate: new Date("2006-12-11"),
+        lastUpdated: new Date(),
+        latitude: 23.6,
+        longitude: -102.5,
+        parties: ["MX", "US"]
       }
     ];
 
@@ -367,6 +381,61 @@ export class MemStorage implements IStorage {
         changePercent: -1.79,
         volume: 3200000,
         marketCap: "$122.7B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 6,
+        symbol: "RHM.DE",
+        name: "Rheinmetall AG",
+        price: 485.20,
+        change: 15.80,
+        changePercent: 3.37,
+        volume: 750000,
+        marketCap: "€20.8B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 7,
+        symbol: "BA.L",
+        name: "BAE Systems plc",
+        price: 1285.50,
+        change: 23.40,
+        changePercent: 1.86,
+        volume: 1400000,
+        marketCap: "£41.2B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 8,
+        symbol: "TXN",
+        name: "Texas Instruments Incorporated",
+        price: 189.75,
+        change: 4.25,
+        changePercent: 2.29,
+        volume: 2800000,
+        marketCap: "$172.3B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 9,
+        symbol: "LHX",
+        name: "L3Harris Technologies Inc",
+        price: 215.60,
+        change: 7.90,
+        changePercent: 3.80,
+        volume: 980000,
+        marketCap: "$40.1B",
+        lastUpdated: new Date()
+      },
+      {
+        id: 10,
+        symbol: "HWM",
+        name: "Howmet Aerospace Inc",
+        price: 89.45,
+        change: 2.15,
+        changePercent: 2.46,
+        volume: 1200000,
+        marketCap: "$36.8B",
         lastUpdated: new Date()
       }
     ];
