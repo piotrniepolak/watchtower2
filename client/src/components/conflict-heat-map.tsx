@@ -63,18 +63,18 @@ export default function ConflictHeatMap() {
 
   const getRegionCoordinates = (regionName: string) => {
     const coords = {
-      "Eastern Europe": { x: 520, y: 180, width: 120, height: 80 },
-      "Middle East": { x: 580, y: 250, width: 100, height: 90 },
-      "West Africa": { x: 440, y: 320, width: 80, height: 100 },
-      "East Africa": { x: 580, y: 340, width: 70, height: 120 },
-      "Central Africa": { x: 520, y: 370, width: 80, height: 80 },
-      "Horn of Africa": { x: 600, y: 360, width: 60, height: 80 },
-      "South Asia": { x: 680, y: 280, width: 90, height: 80 },
-      "East Asia": { x: 750, y: 200, width: 100, height: 100 },
-      "Southeast Asia": { x: 760, y: 320, width: 90, height: 70 },
-      "Central Asia": { x: 650, y: 220, width: 100, height: 60 },
-      "South America": { x: 280, y: 450, width: 80, height: 120 },
-      "South China Sea": { x: 740, y: 340, width: 80, height: 60 }
+      "Eastern Europe": { x: 480, y: 140, width: 100, height: 70 },
+      "Middle East": { x: 550, y: 220, width: 90, height: 80 },
+      "West Africa": { x: 460, y: 280, width: 70, height: 90 },
+      "East Africa": { x: 540, y: 320, width: 60, height: 100 },
+      "Central Africa": { x: 500, y: 330, width: 70, height: 70 },
+      "Horn of Africa": { x: 580, y: 340, width: 50, height: 70 },
+      "South Asia": { x: 650, y: 240, width: 80, height: 70 },
+      "East Asia": { x: 720, y: 160, width: 90, height: 90 },
+      "Southeast Asia": { x: 730, y: 280, width: 80, height: 60 },
+      "Central Asia": { x: 620, y: 180, width: 90, height: 50 },
+      "South America": { x: 250, y: 380, width: 70, height: 100 },
+      "South China Sea": { x: 710, y: 300, width: 70, height: 50 }
     };
     return coords[regionName as keyof typeof coords] || { x: 400, y: 300, width: 60, height: 60 };
   };
@@ -127,22 +127,37 @@ export default function ConflictHeatMap() {
           {/* World Map Heat Map */}
           <div className="lg:col-span-2">
             <div className="relative w-full h-96 bg-slate-100 rounded-lg overflow-hidden">
-              {/* World Map SVG */}
+              {/* Static World Map with Heat Zones */}
               <svg viewBox="0 0 1000 600" className="w-full h-full">
                 {/* Background */}
-                <rect width="1000" height="600" fill="#f8fafc" />
+                <rect width="1000" height="600" fill="#f1f5f9" />
                 
-                {/* Simplified world continents */}
-                <path d="M 120 200 Q 300 150 500 200 Q 650 220 800 200 Q 900 190 950 210" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="2" opacity="0.3" />
-                <path d="M 200 280 Q 400 250 600 280 Q 750 300 850 280" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="2" opacity="0.3" />
-                <path d="M 150 400 Q 250 380 350 400 Q 400 420 450 400" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="2" opacity="0.3" />
-                <path d="M 700 450 Q 780 430 850 450 Q 900 470 950 450" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="2" opacity="0.3" />
+                {/* World Map Continents - More detailed static map */}
+                {/* North America */}
+                <path d="M 50 150 L 180 120 L 280 140 L 320 180 L 280 250 L 200 280 L 120 260 L 80 200 Z" 
+                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
+                
+                {/* South America */}
+                <path d="M 220 350 L 280 320 L 320 380 L 300 480 L 250 520 L 200 480 L 180 420 Z" 
+                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
+                
+                {/* Europe */}
+                <path d="M 450 120 L 550 110 L 580 150 L 520 180 L 480 160 L 440 140 Z" 
+                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
+                
+                {/* Africa */}
+                <path d="M 480 200 L 580 190 L 620 250 L 600 380 L 520 420 L 480 380 L 460 280 L 470 220 Z" 
+                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
+                
+                {/* Asia */}
+                <path d="M 580 120 L 780 100 L 900 140 L 920 200 L 880 250 L 780 280 L 680 260 L 600 180 Z" 
+                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
+                
+                {/* Australia */}
+                <path d="M 780 420 L 880 410 L 920 440 L 900 480 L 820 490 L 760 470 Z" 
+                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
 
-                {/* Regional heat zones */}
+                {/* Regional heat zones with better positioning */}
                 {regionalData.map((region, index) => (
                   <g key={region.name}>
                     <rect
@@ -151,15 +166,15 @@ export default function ConflictHeatMap() {
                       width={region.coordinates.width}
                       height={region.coordinates.height}
                       fill={getIntensityColor(region.intensity)}
-                      opacity="0.6"
-                      rx="8"
-                      className="cursor-pointer transition-all duration-300 hover:opacity-0.8"
+                      opacity="0.7"
+                      rx="12"
+                      className="cursor-pointer transition-all duration-300 hover:opacity-0.9"
                       onClick={() => setSelectedRegion(selectedRegion === region.name ? null : region.name)}
                     />
                     <circle
                       cx={region.coordinates.x + region.coordinates.width / 2}
                       cy={region.coordinates.y + region.coordinates.height / 2}
-                      r="8"
+                      r="12"
                       fill={getIntensityColor(region.intensity)}
                       className="animate-pulse cursor-pointer"
                       onClick={() => setSelectedRegion(selectedRegion === region.name ? null : region.name)}
@@ -168,9 +183,9 @@ export default function ConflictHeatMap() {
                     </circle>
                     <text
                       x={region.coordinates.x + region.coordinates.width / 2}
-                      y={region.coordinates.y - 10}
+                      y={region.coordinates.y - 8}
                       textAnchor="middle"
-                      className="text-xs font-medium fill-slate-700"
+                      className="text-sm font-bold fill-slate-800 pointer-events-none"
                     >
                       {region.activeConflicts}
                     </text>
