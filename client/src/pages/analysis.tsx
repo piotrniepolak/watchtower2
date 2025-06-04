@@ -83,7 +83,7 @@ export default function Analysis() {
   });
 
   const { data: storyline, isLoading: storylineLoading } = useQuery({
-    queryKey: ["/api/ai/storyline", selectedConflictId],
+    queryKey: [`/api/ai/storyline/${selectedConflictId}`],
     enabled: !!selectedConflictId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

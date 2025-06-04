@@ -405,9 +405,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/watchlist/stocks", authenticateToken, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const watchlist = await storage.getUserStockWatchlist(userId);
+      res.json(watchlist);
     } catch (error) {
-      console.error("Error generating conflict storyline:", error);
-      res.status(500).json({ error: "Failed to generate storyline" });
+      console.error("Error fetching stock watchlist:", error);
+      res.status(500).json({ error: "Failed to fetch watchlist" });
     }
   });
 
