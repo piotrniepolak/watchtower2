@@ -1,11 +1,14 @@
-import { Search, Bell, X } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Link, useLocation } from "wouter";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import AuthModal from "@/components/auth-modal";
 import type { Conflict, Stock } from "@shared/schema";
 
 export default function Navigation() {
@@ -13,8 +16,11 @@ export default function Navigation() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
+  
+  const { user, isAuthenticated, logout } = useAuth();
 
   const { data: conflicts } = useQuery({
     queryKey: ["/api/conflicts"],
@@ -294,9 +300,55 @@ export default function Navigation() {
                 </div>
               )}
             </div>
+
+            {/* Account */}
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="relative">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="p-2">
+                    <div className="font-medium text-sm">{user?.firstName} {user?.lastName}</div>
+                    <div className="text-xs text-slate-600">{user?.email}</div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/watchlist" className="flex items-center cursor-pointer">
+                      <Star className="mr-2 h-4 w-4" />
+                      My Watchlists
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="flex items-center cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Account
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </nav>
   );
 }
