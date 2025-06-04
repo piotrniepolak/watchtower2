@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
+import GoogleMap from "@/components/google-map";
+import type { Conflict } from "@shared/schema";
 
 export default function ChartsSection() {
   const [timeframe, setTimeframe] = useState("1M");
@@ -45,31 +47,11 @@ export default function ChartsSection() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="relative h-64 bg-slate-100 rounded-lg overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg viewBox="0 0 800 400" className="w-full h-full">
-                {/* Simple world map outline */}
-                <rect width="800" height="400" fill="#f1f5f9" />
-                
-                {/* Continents as simple shapes */}
-                <path d="M 100 150 Q 200 120 300 150 Q 350 170 400 160 Q 450 150 500 170 Q 550 180 600 160 Q 650 150 700 170" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                <path d="M 150 200 Q 250 180 350 200 Q 400 220 450 200 Q 500 190 550 210" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                <path d="M 500 250 Q 550 230 600 250 Q 650 270 700 250" 
-                      fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1" />
-                
-                {/* Conflict markers */}
-                {!conflictsLoading && conflicts && (
-                  <>
-                    <circle cx="300" cy="160" r="4" fill="#ef4444" className="animate-pulse" />
-                    <circle cx="450" cy="180" r="4" fill="#ef4444" className="animate-pulse" />
-                    <circle cx="600" cy="190" r="4" fill="#ef4444" className="animate-pulse" />
-                    <circle cx="200" cy="250" r="4" fill="#ef4444" className="animate-pulse" />
-                  </>
-                )}
-              </svg>
-            </div>
+          <div className="h-64">
+            <GoogleMap 
+              conflicts={conflicts as Conflict[] || []} 
+              className="w-full h-full"
+            />
           </div>
           <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
             <span>Last updated: 2 hours ago</span>
