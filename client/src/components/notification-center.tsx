@@ -42,9 +42,7 @@ export default function NotificationCenter() {
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      await apiRequest(`/api/notifications/${notificationId}/read`, {
-        method: "POST",
-      });
+      await apiRequest(`/api/notifications/${notificationId}/read`, "POST");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
@@ -53,9 +51,7 @@ export default function NotificationCenter() {
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/notifications/mark-all-read", {
-        method: "POST",
-      });
+      await apiRequest("/api/notifications/mark-all-read", "POST");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
@@ -64,9 +60,7 @@ export default function NotificationCenter() {
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      await apiRequest(`/api/notifications/${notificationId}`, {
-        method: "DELETE",
-      });
+      await apiRequest(`/api/notifications/${notificationId}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });

@@ -83,7 +83,7 @@ export default function Navigation() {
                 <Search className="h-6 w-6" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-slate-900">GeoPol Intel</h1>
+                <h1 className="text-xl font-bold text-slate-900">ConflictWatch</h1>
                 <p className="text-xs text-slate-600">Defense & Conflict Analytics</p>
               </div>
             </Link>
