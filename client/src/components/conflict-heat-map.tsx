@@ -18,8 +18,6 @@ interface RegionData {
 
 export default function ConflictHeatMap() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<"24h" | "7d" | "30d">("7d");
-  const [isRealTime, setIsRealTime] = useState(true);
 
   const { data: conflicts } = useQuery({
     queryKey: ["/api/conflicts"],
@@ -103,17 +101,7 @@ export default function ConflictHeatMap() {
 
   const regionalData = getRegionalData();
 
-  // Simulate real-time updates
-  useEffect(() => {
-    if (!isRealTime) return;
 
-    const interval = setInterval(() => {
-      // Trigger re-render to simulate data updates
-      // In real implementation, this would refresh data
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [isRealTime]);
 
   return (
     <Card className="w-full">
@@ -122,31 +110,15 @@ export default function ConflictHeatMap() {
           <div>
             <CardTitle className="flex items-center">
               <Activity className="w-5 h-5 mr-2" />
-              Real-time Global Conflict Heat Map
+              Global Conflict Heat Map (24h)
             </CardTitle>
             <p className="text-sm text-slate-600 mt-1">
               Live monitoring of conflict intensity across global regions
             </p>
           </div>
-          <div className="flex items-center space-x-3">
-            <div className="flex space-x-1">
-              {(["24h", "7d", "30d"] as const).map((range) => (
-                <Button
-                  key={range}
-                  variant={timeRange === range ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setTimeRange(range)}
-                >
-                  {range}
-                </Button>
-              ))}
-            </div>
-            <div className="flex items-center">
-              <div className={`w-2 h-2 rounded-full mr-2 ${isRealTime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-              <span className="text-xs text-slate-600">
-                {isRealTime ? 'Live' : 'Paused'}
-              </span>
-            </div>
+          <div className="flex items-center">
+            <div className="w-2 h-2 rounded-full mr-2 bg-green-500 animate-pulse"></div>
+            <span className="text-xs text-slate-600">Live</span>
           </div>
         </div>
       </CardHeader>
