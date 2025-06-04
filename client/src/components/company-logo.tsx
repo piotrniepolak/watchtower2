@@ -1,4 +1,4 @@
-import { Building2, Plane, Shield } from "lucide-react";
+import { Building2, Plane, Shield, Ship, Satellite, Cog, Search, Radar, Zap } from "lucide-react";
 
 interface CompanyLogoProps {
   symbol: string;
@@ -43,6 +43,48 @@ export default function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoPr
         return (
           <div className={`${sizeClasses[size]} bg-gray-700 rounded flex items-center justify-center`}>
             <span className="text-white font-bold text-xs">GD</span>
+          </div>
+        );
+      case "HII":
+        return (
+          <div className={`${sizeClasses[size]} bg-blue-700 rounded flex items-center justify-center`}>
+            <Ship className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "LHX":
+        return (
+          <div className={`${sizeClasses[size]} bg-green-600 rounded flex items-center justify-center`}>
+            <Satellite className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "TDG":
+        return (
+          <div className={`${sizeClasses[size]} bg-orange-600 rounded flex items-center justify-center`}>
+            <Cog className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "LDOS":
+        return (
+          <div className={`${sizeClasses[size]} bg-purple-600 rounded flex items-center justify-center`}>
+            <Search className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "CACI":
+        return (
+          <div className={`${sizeClasses[size]} bg-indigo-600 rounded flex items-center justify-center`}>
+            <Shield className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "SAIC":
+        return (
+          <div className={`${sizeClasses[size]} bg-teal-600 rounded flex items-center justify-center`}>
+            <Radar className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "KTOS":
+        return (
+          <div className={`${sizeClasses[size]} bg-yellow-600 rounded flex items-center justify-center`}>
+            <Zap className="w-4 h-4 text-white" />
           </div>
         );
       default:

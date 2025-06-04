@@ -77,6 +77,83 @@ export default function Markets() {
       specialties: ["Commercial Airplanes", "Defense Space & Security", "Global Services"],
       majorContracts: ["KC-46 Tanker", "P-8 Poseidon", "F/A-18 Super Hornet", "SLS Rocket"],
       website: "https://www.boeing.com"
+    },
+    "HII": {
+      fullName: "Huntington Ingalls Industries",
+      description: "America's largest military shipbuilding company and a provider of professional services to partners in government and industry.",
+      headquarters: "Newport News, Virginia, USA",
+      employees: "44,000",
+      founded: "2011",
+      ceo: "Chris Kastner",
+      specialties: ["Ingalls Shipbuilding", "Newport News Shipbuilding", "HII Technologies", "Mission Technologies"],
+      majorContracts: ["Gerald R. Ford-class Aircraft Carrier", "Virginia-class Submarine", "Arleigh Burke-class Destroyer"],
+      website: "https://www.huntingtoningalls.com"
+    },
+    "LHX": {
+      fullName: "L3Harris Technologies",
+      description: "Technology company serving customers in over 130 countries, providing mission-critical solutions for defense, civil government and commercial markets.",
+      headquarters: "Melbourne, Florida, USA",
+      employees: "47,000",
+      founded: "2019 (merger)",
+      ceo: "Christopher Kubasik",
+      specialties: ["Space & Airborne Systems", "Integrated Mission Systems", "Communication Systems", "Aerojet Rocketdyne"],
+      majorContracts: ["Falcon SATCOM", "WESCAM MX-Series", "Night Vision Systems", "RS-25 Rocket Engine"],
+      website: "https://www.l3harris.com"
+    },
+    "TDG": {
+      fullName: "TransDigm Group",
+      description: "Leading global designer, producer and supplier of highly engineered aircraft components for use on nearly all commercial and military aircraft in service today.",
+      headquarters: "Cleveland, Ohio, USA",
+      employees: "26,000",
+      founded: "1993",
+      ceo: "Kevin Stein",
+      specialties: ["Power & Control", "Airframe", "Non-aviation", "Aftermarket Services"],
+      majorContracts: ["Aircraft Ignition Systems", "Cargo Loading Systems", "Aircraft Lighting", "Flight Safety Components"],
+      website: "https://www.transdigm.com"
+    },
+    "LDOS": {
+      fullName: "Leidos Holdings",
+      description: "Science and technology solutions leader working to solve the world's toughest challenges in the defense, intelligence, civil, and health markets.",
+      headquarters: "Reston, Virginia, USA",
+      employees: "47,000",
+      founded: "2013",
+      ceo: "Thomas Bell",
+      specialties: ["Defense Solutions", "Civil", "Health", "Intelligence"],
+      majorContracts: ["DISA Encore III", "DHS OASIS", "NASA CIO-SP3", "DOD SEWP V"],
+      website: "https://www.leidos.com"
+    },
+    "CACI": {
+      fullName: "CACI International",
+      description: "Information solutions and services company dedicated to helping its customers differentiate themselves and gain a competitive advantage.",
+      headquarters: "Reston, Virginia, USA",
+      employees: "23,000",
+      founded: "1962",
+      ceo: "John Mengucci",
+      specialties: ["Enterprise IT", "Mission & Domain Expertise", "Cyber Security", "Intelligence Services"],
+      majorContracts: ["Army DCGS-A", "Navy SeaPort-e", "DISA Encore III", "GSA Alliant 2"],
+      website: "https://www.caci.com"
+    },
+    "SAIC": {
+      fullName: "Science Applications International",
+      description: "Technology integrator providing full life cycle services and solutions in the technical, engineering and enterprise information technology markets.",
+      headquarters: "Reston, Virginia, USA",
+      employees: "25,500",
+      founded: "2013",
+      ceo: "Nazzic Keene",
+      specialties: ["Digital Modernization", "Mission Solutions", "Defense Systems", "Space & Intelligence"],
+      majorContracts: ["Navy SeaPort-NxG", "DISA Encore III", "GSA OASIS", "Army CIO-SP3"],
+      website: "https://www.saic.com"
+    },
+    "KTOS": {
+      fullName: "Kratos Defense & Security Solutions",
+      description: "Technology company focused on directed energy systems, unmanned systems, satellite communications, cyber security, microwave electronics and defense.",
+      headquarters: "San Diego, California, USA",
+      employees: "4,400",
+      founded: "1994",
+      ceo: "Eric DeMarco",
+      specialties: ["Unmanned Systems", "Satellite Communications", "Cyber Security/Warfare", "Microwave Electronics"],
+      majorContracts: ["Valkyrie Drone Program", "Target Drone Systems", "Tactical Satellite Communications", "C5ISR Systems"],
+      website: "https://www.kratosdefense.com"
     }
   };
 
@@ -135,14 +212,14 @@ export default function Markets() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">Total Market Cap</p>
-                    <p className="text-2xl font-bold text-slate-900">$602.8B</p>
+                    <p className="text-2xl font-bold text-slate-900">$766.1B</p>
                   </div>
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                     <DollarSign className="h-6 w-6 text-green-600" />
                   </div>
                 </div>
                 <div className="mt-4 flex items-center text-sm">
-                  <span className="text-green-600 font-medium">+1.8%</span>
+                  <span className="text-green-600 font-medium">+2.1%</span>
                   <span className="text-slate-600 ml-1">this week</span>
                 </div>
               </CardContent>
