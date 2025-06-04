@@ -3,12 +3,18 @@ import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Users, ExternalLink } from "lucide-react";
+import { MapPin, Calendar, Users, ExternalLink, Star, StarOff } from "lucide-react";
 import FlagIcon from "@/components/flag-icon";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useAuth } from "@/hooks/useSimpleAuth";
+import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
+import ExportMenu from "@/components/export-menu";
 import type { Conflict } from "@shared/schema";
 
 export default function Conflicts() {
+  const { isAuthenticated } = useAuth();
+  const watchlist = useLocalWatchlist();
+  
   const { data: conflicts, isLoading } = useQuery({
     queryKey: ["/api/conflicts"],
   });
@@ -245,13 +251,18 @@ export default function Conflicts() {
           {/* Conflicts Overview Table */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <MapPin className="w-5 h-5 mr-2" />
-                List of Ongoing Armed Conflicts
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-2">
-                This is a list of ongoing armed conflicts that are taking place around the world.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2" />
+                    List of Ongoing Armed Conflicts
+                  </CardTitle>
+                  <p className="text-sm text-slate-600 mt-2">
+                    This is a list of ongoing armed conflicts that are taking place around the world.
+                  </p>
+                </div>
+                <ExportMenu className="ml-4" />
+              </div>
             </CardHeader>
             <CardContent>
               <Table>

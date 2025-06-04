@@ -3,12 +3,17 @@ import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useAuth } from "@/hooks/useSimpleAuth";
+import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import type { Stock } from "@shared/schema";
 
 export default function Markets() {
+  const { isAuthenticated } = useAuth();
+  const watchlist = useLocalWatchlist();
+  
   const { data: stocks, isLoading } = useQuery({
     queryKey: ["/api/stocks"],
   });
@@ -357,13 +362,39 @@ export default function Markets() {
                           </div>
                         </div>
 
-                        <div className="pt-4 border-t">
+                        <div className="pt-4 border-t flex justify-between items-center">
                           <Button variant="outline" size="sm" asChild>
                             <a href={profile?.website} target="_blank" rel="noopener noreferrer">
                               Visit Company Website
                               <ExternalLink className="w-4 h-4 ml-2" />
                             </a>
                           </Button>
+                          
+                          {isAuthenticated && (
+                            <Button
+                              variant={watchlist.isStockWatched(stock.symbol) ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                if (watchlist.isStockWatched(stock.symbol)) {
+                                  watchlist.removeFromStockWatchlist(stock.symbol);
+                                } else {
+                                  watchlist.addToStockWatchlist(stock.symbol);
+                                }
+                              }}
+                            >
+                              {watchlist.isStockWatched(stock.symbol) ? (
+                                <>
+                                  <StarOff className="w-4 h-4 mr-2" />
+                                  Remove from Watchlist
+                                </>
+                              ) : (
+                                <>
+                                  <Star className="w-4 h-4 mr-2" />
+                                  Add to Watchlist
+                                </>
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
