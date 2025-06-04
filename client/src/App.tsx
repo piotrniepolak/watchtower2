@@ -9,6 +9,7 @@ import Conflicts from "@/pages/conflicts";
 import Markets from "@/pages/markets";
 import Analysis from "@/pages/analysis";
 import Reports from "@/pages/reports";
+import Watchlist from "@/pages/watchlist";
 import NotFound from "@/pages/not-found";
 
 function Router() {

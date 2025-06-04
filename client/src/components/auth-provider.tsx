@@ -1,4 +1,3 @@
-import { createContext } from "react";
 import { AuthContext, useAuthProvider } from "@/hooks/useAuth";
 
 interface AuthProviderProps {
