@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Brain, 
   TrendingUp, 
@@ -63,6 +65,8 @@ interface ConflictStoryline {
 }
 
 export default function Analysis() {
+  const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
+
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/ai/predictions"],
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -70,6 +74,17 @@ export default function Analysis() {
 
   const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
     queryKey: ["/api/ai/market-analysis"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: conflicts } = useQuery({
+    queryKey: ["/api/conflicts"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: storyline, isLoading: storylineLoading } = useQuery({
+    queryKey: ["/api/ai/storyline", selectedConflictId],
+    enabled: !!selectedConflictId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -538,20 +553,172 @@ export default function Analysis() {
           </TabsContent>
 
           <TabsContent value="storylines" className="space-y-6">
-            {isApiUnavailable && (
-              <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-orange-800">
-                    <AlertTriangle className="w-5 h-5 mr-2" />
-                    Storyline Generation Service Configuration Required
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-orange-700 text-sm">
-                    AI-powered conflict storylines require OpenAI API configuration. This feature generates detailed narrative scenarios for each conflict.
-                  </p>
-                </CardContent>
-              </Card>
+            {/* Conflict Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="w-5 h-5 mr-2" />
+                  Select Conflict for Storyline Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-4">
+                  <Select 
+                    value={selectedConflictId?.toString() || ""} 
+                    onValueChange={(value) => setSelectedConflictId(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full max-w-md">
+                      <SelectValue placeholder="Choose a conflict to analyze..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(conflicts as any[] || []).map((conflict: any) => (
+                        <SelectItem key={conflict.id} value={conflict.id.toString()}>
+                          {conflict.name} - {conflict.region}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedConflictId && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedConflictId(null)}
+                    >
+                      Clear Selection
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Storyline Display */}
+            {selectedConflictId && (
+              <>
+                {storylineLoading ? (
+                  <Card>
+                    <CardContent className="flex items-center justify-center py-12">
+                      <div className="text-center">
+                        <Brain className="w-8 h-8 text-blue-600 animate-pulse mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                          Generating Conflict Storyline
+                        </h3>
+                        <p className="text-slate-600">
+                          AI is analyzing the conflict and creating detailed scenarios...
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : storyline ? (
+                  <div className="space-y-6">
+                    {/* Current Situation */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Lightbulb className="w-5 h-5 mr-2" />
+                          Current Situation Assessment
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-slate-700 leading-relaxed">
+                          {(storyline as ConflictStoryline).currentSituation}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    {/* Possible Outcomes */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <Target className="w-5 h-5 mr-2" />
+                          Possible Outcome Scenarios
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {(storyline as ConflictStoryline).possibleOutcomes.map((outcome, index) => (
+                            <div key={index} className="border border-slate-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-semibold text-slate-900">{outcome.scenario}</h4>
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant="outline">
+                                    {outcome.probability}% probability
+                                  </Badge>
+                                  <Badge variant="secondary">
+                                    {outcome.timeline}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <p className="text-slate-700 text-sm mb-3 leading-relaxed">
+                                {outcome.description}
+                              </p>
+                              <div>
+                                <h5 className="font-medium text-slate-900 mb-2">Key Implications:</h5>
+                                <ul className="space-y-1">
+                                  {outcome.implications.map((implication, idx) => (
+                                    <li key={idx} className="flex items-start text-sm text-slate-600">
+                                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
+                                      {implication}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Key Watch Points & Expert Insights */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center">
+                            <AlertTriangle className="w-5 h-5 mr-2" />
+                            Key Watch Points
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {(storyline as ConflictStoryline).keyWatchPoints.map((point, index) => (
+                              <li key={index} className="flex items-start text-sm text-slate-700">
+                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center">
+                            <Brain className="w-5 h-5 mr-2" />
+                            Expert AI Insights
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-slate-700 text-sm leading-relaxed">
+                            {(storyline as ConflictStoryline).expertInsights}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="flex items-center justify-center py-12">
+                      <div className="text-center">
+                        <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                          Unable to Generate Storyline
+                        </h3>
+                        <p className="text-slate-600">
+                          Please check the API configuration and try again.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
 
             <Card>

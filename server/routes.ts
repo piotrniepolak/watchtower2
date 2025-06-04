@@ -401,6 +401,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Protected routes example  
+  app.get("/api/watchlist/stocks", authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+    } catch (error) {
+      console.error("Error generating conflict storyline:", error);
+      res.status(500).json({ error: "Failed to generate storyline" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
