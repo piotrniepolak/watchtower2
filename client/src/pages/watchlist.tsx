@@ -1,31 +1,18 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, StarOff, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useSimpleAuth";
+import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import Navigation from "@/components/navigation";
 import CompanyLogo from "@/components/company-logo";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import type { Stock, Conflict, StockWatchlist, ConflictWatchlist } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import type { Stock, Conflict } from "@shared/schema";
 
 export default function Watchlist() {
   const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const { data: stockWatchlist = [] } = useQuery({
-    queryKey: ["/api/watchlist/stocks", user?.id],
-    enabled: !!user?.id,
-  });
-
-  const { data: conflictWatchlist = [] } = useQuery({
-    queryKey: ["/api/watchlist/conflicts", user?.id],
-    enabled: !!user?.id,
-  });
+  const watchlist = useLocalWatchlist();
 
   const { data: allStocks = [] } = useQuery({
     queryKey: ["/api/stocks"],
@@ -35,85 +22,10 @@ export default function Watchlist() {
     queryKey: ["/api/conflicts"],
   });
 
-  const addStockMutation = useMutation({
-    mutationFn: async (stockSymbol: string) => {
-      return apiRequest(`/api/watchlist/stocks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stockSymbol }),
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/watchlist/stocks"] });
-      toast({ title: "Stock added to watchlist" });
-    },
-    onError: (error) => {
-      toast({ title: "Failed to add stock", variant: "destructive" });
-    },
-  });
-
-  const removeStockMutation = useMutation({
-    mutationFn: async (stockSymbol: string) => {
-      return apiRequest(`/api/watchlist/stocks/${stockSymbol}`, {
-        method: "DELETE",
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/watchlist/stocks"] });
-      toast({ title: "Stock removed from watchlist" });
-    },
-    onError: (error) => {
-      toast({ title: "Failed to remove stock", variant: "destructive" });
-    },
-  });
-
-  const addConflictMutation = useMutation({
-    mutationFn: async (conflictId: number) => {
-      return apiRequest(`/api/watchlist/conflicts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conflictId }),
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/watchlist/conflicts"] });
-      toast({ title: "Conflict added to watchlist" });
-    },
-    onError: (error) => {
-      toast({ title: "Failed to add conflict", variant: "destructive" });
-    },
-  });
-
-  const removeConflictMutation = useMutation({
-    mutationFn: async (conflictId: number) => {
-      return apiRequest(`/api/watchlist/conflicts/${conflictId}`, {
-        method: "DELETE",
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/watchlist/conflicts"] });
-      toast({ title: "Conflict removed from watchlist" });
-    },
-    onError: (error) => {
-      toast({ title: "Failed to remove conflict", variant: "destructive" });
-    },
-  });
-
-  const isStockWatched = (symbol: string) => {
-    return stockWatchlist.some((item: StockWatchlist) => item.stockSymbol === symbol);
-  };
-
-  const isConflictWatched = (id: number) => {
-    return conflictWatchlist.some((item: ConflictWatchlist) => item.conflictId === id);
-  };
-
-  const getWatchedStocks = () => {
-    return allStocks.filter((stock: Stock) => isStockWatched(stock.symbol));
-  };
-
-  const getWatchedConflicts = () => {
-    return allConflicts.filter((conflict: Conflict) => isConflictWatched(conflict.id));
-  };
+  const watchedStocks = watchlist.getWatchedStocks(allStocks as Stock[]);
+  const watchedConflicts = watchlist.getWatchedConflicts(allConflicts as Conflict[]);
+  const unwatchedStocks = (allStocks as Stock[]).filter(stock => !watchlist.isStockWatched(stock.symbol));
+  const unwatchedConflicts = (allConflicts as Conflict[]).filter(conflict => !watchlist.isConflictWatched(conflict.id));
 
   if (!isAuthenticated) {
     return (
