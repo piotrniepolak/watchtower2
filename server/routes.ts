@@ -53,7 +53,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Refresh stock data from Alpha Vantage
   app.post("/api/stocks/refresh", async (req, res) => {
     try {
-      const API_KEY = process.env.ALPHA_VANTAGE_API_KEY || process.env.VITE_ALPHA_VANTAGE_API_KEY || "demo";
+      const API_KEY = process.env.ALPHA_VANTAGE_API_KEY || process.env.VITE_ALPHA_VANTAGE_API_KEY;
+      
+      if (!API_KEY || API_KEY === "demo") {
+        return res.status(400).json({ 
+          error: "Alpha Vantage API key required for real-time data",
+          message: "Please provide a valid ALPHA_VANTAGE_API_KEY" 
+        });
+      }
       
       const defenseStocks = [
         { symbol: "LMT", name: "Lockheed Martin Corporation" },
@@ -72,15 +79,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           if (!response.ok) {
-            console.error(`Failed to fetch data for ${stockInfo.symbol}`);
+            console.error(`Failed to fetch data for ${stockInfo.symbol}: ${response.status}`);
             continue;
           }
           
           const data = await response.json();
+          console.log(`API Response for ${stockInfo.symbol}:`, JSON.stringify(data, null, 2));
+          
           const quote = data["Global Quote"];
           
           if (!quote || !quote["05. price"]) {
-            console.error(`Invalid data format for ${stockInfo.symbol}`);
+            console.error(`Invalid data format for ${stockInfo.symbol}`, data);
             continue;
           }
           
@@ -96,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             change,
             changePercent,
             volume,
-            marketCap: "N/A", // Would need separate API call for market cap
+            marketCap: `$${(price * volume / 1000000).toFixed(1)}M`, // Estimated market cap
           };
           
           const existingStock = await storage.getStock(stockInfo.symbol);
@@ -109,10 +118,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedStocks.push(stockData);
           
           // Add delay to respect API rate limits
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 500));
         } catch (error) {
           console.error(`Error processing ${stockInfo.symbol}:`, error);
         }
+      }
+      
+      if (updatedStocks.length === 0) {
+        return res.status(503).json({
+          error: "Unable to fetch stock data from Alpha Vantage",
+          message: "API may be rate limited or temporarily unavailable"
+        });
       }
       
       res.json({ 

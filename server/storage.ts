@@ -34,6 +34,7 @@ export class MemStorage implements IStorage {
     
     // Initialize with some conflict data
     this.initializeConflicts();
+    this.initializeStocks();
   }
 
   private initializeConflicts() {
@@ -90,6 +91,60 @@ export class MemStorage implements IStorage {
 
     initialConflicts.forEach(conflict => {
       this.createConflict(conflict);
+    });
+  }
+
+  private initializeStocks() {
+    const initialStocks: InsertStock[] = [
+      {
+        symbol: "LMT",
+        name: "Lockheed Martin Corporation",
+        price: 480.17,
+        change: 1.35,
+        changePercent: 0.2819,
+        volume: 1032298,
+        marketCap: "$125.2B",
+      },
+      {
+        symbol: "RTX",
+        name: "Raytheon Technologies Corporation", 
+        price: 137.5,
+        change: 0.04,
+        changePercent: 0.0291,
+        volume: 3493879,
+        marketCap: "$198.4B",
+      },
+      {
+        symbol: "NOC",
+        name: "Northrop Grumman Corporation",
+        price: 488.22,
+        change: 4.84,
+        changePercent: 1.0013,
+        volume: 578461,
+        marketCap: "$74.8B",
+      },
+      {
+        symbol: "GD", 
+        name: "General Dynamics Corporation",
+        price: 276.04,
+        change: 0.33,
+        changePercent: 0.1197,
+        volume: 1051028,
+        marketCap: "$75.9B",
+      },
+      {
+        symbol: "BA",
+        name: "The Boeing Company",
+        price: 213.43,
+        change: 1.96,
+        changePercent: 0.9268,
+        volume: 8106080,
+        marketCap: "$128.7B",
+      },
+    ];
+
+    initialStocks.forEach(stock => {
+      this.createStock(stock);
     });
   }
 
