@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, TrendingUp, Activity, MapPin, Clock } from "lucide-react";
 import FlagIcon from "@/components/flag-icon";
-import worldMapImage from "@assets/image_1749057767120.png";
+import worldMapImage from "@assets/world-map-306338_1280.png";
 import type { Conflict } from "@shared/schema";
 
 interface RegionData {
@@ -63,19 +63,20 @@ export default function ConflictHeatMap() {
   };
 
   const getRegionCoordinates = (regionName: string) => {
+    // Coordinates adjusted for the new 1280x720 world map image
     const coords = {
-      "Eastern Europe": { x: 480, y: 140, width: 100, height: 70 },
-      "Middle East": { x: 550, y: 220, width: 90, height: 80 },
-      "West Africa": { x: 460, y: 280, width: 70, height: 90 },
-      "East Africa": { x: 540, y: 320, width: 60, height: 100 },
-      "Central Africa": { x: 500, y: 330, width: 70, height: 70 },
-      "Horn of Africa": { x: 580, y: 340, width: 50, height: 70 },
-      "South Asia": { x: 650, y: 240, width: 80, height: 70 },
-      "East Asia": { x: 720, y: 160, width: 90, height: 90 },
-      "Southeast Asia": { x: 730, y: 280, width: 80, height: 60 },
-      "Central Asia": { x: 620, y: 180, width: 90, height: 50 },
-      "South America": { x: 250, y: 380, width: 70, height: 100 },
-      "South China Sea": { x: 710, y: 300, width: 70, height: 50 }
+      "Eastern Europe": { x: 530, y: 150, width: 80, height: 60 },
+      "Middle East": { x: 580, y: 240, width: 80, height: 70 },
+      "West Africa": { x: 480, y: 300, width: 60, height: 80 },
+      "East Africa": { x: 580, y: 330, width: 50, height: 90 },
+      "Central Africa": { x: 520, y: 340, width: 60, height: 60 },
+      "Horn of Africa": { x: 620, y: 350, width: 40, height: 60 },
+      "South Asia": { x: 700, y: 260, width: 70, height: 60 },
+      "East Asia": { x: 760, y: 180, width: 80, height: 80 },
+      "Southeast Asia": { x: 780, y: 300, width: 70, height: 50 },
+      "Central Asia": { x: 650, y: 200, width: 80, height: 40 },
+      "South America": { x: 280, y: 400, width: 60, height: 90 },
+      "South China Sea": { x: 760, y: 320, width: 60, height: 40 }
     };
     return coords[regionName as keyof typeof coords] || { x: 400, y: 300, width: 60, height: 60 };
   };
@@ -137,7 +138,7 @@ export default function ConflictHeatMap() {
               />
               
               {/* Heat Zone Overlays */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600">
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1280 720">
                 {regionalData.map((region, index) => (
                   <g key={region.name}>
                     <rect

@@ -1,5 +1,5 @@
 import { AlertTriangle } from "lucide-react";
-import worldMapImage from "@assets/image_1749057767120.png";
+import worldMapImage from "@assets/world-map-306338_1280.png";
 import type { Conflict } from "@shared/schema";
 
 interface GoogleMapProps {
@@ -19,13 +19,13 @@ export default function GoogleMap({ conflicts, className }: GoogleMapProps) {
       />
       
       {/* Conflict Markers */}
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600">
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1280 720">
         {conflicts.map((conflict) => {
           if (!conflict.latitude || !conflict.longitude) return null;
           
-          // Convert lat/lng to map coordinates (adjusted for the actual world map image)
-          const x = ((conflict.longitude + 180) / 360) * 1000;
-          const y = ((90 - conflict.latitude) / 180) * 600;
+          // Convert lat/lng to map coordinates (adjusted for the 1280x720 world map image)
+          const x = ((conflict.longitude + 180) / 360) * 1280;
+          const y = ((90 - conflict.latitude) / 180) * 720;
           
           return (
             <g key={conflict.id}>
