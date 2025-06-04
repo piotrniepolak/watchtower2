@@ -1,4 +1,11 @@
-import { conflicts, stocks, correlationEvents, type Conflict, type Stock, type CorrelationEvent, type InsertConflict, type InsertStock, type InsertCorrelationEvent } from "@shared/schema";
+import { 
+  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists,
+  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist,
+  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist 
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
+import bcrypt from "bcrypt";
 
 export interface IStorage {
   // Conflicts
@@ -16,14 +23,36 @@ export interface IStorage {
   // Correlation Events
   getCorrelationEvents(): Promise<CorrelationEvent[]>;
   createCorrelationEvent(event: InsertCorrelationEvent): Promise<CorrelationEvent>;
+  
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  
+  // Stock Watchlists
+  getUserStockWatchlist(userId: number): Promise<StockWatchlist[]>;
+  addStockToWatchlist(watchlist: InsertStockWatchlist): Promise<StockWatchlist>;
+  removeStockFromWatchlist(userId: number, stockSymbol: string): Promise<void>;
+  
+  // Conflict Watchlists
+  getUserConflictWatchlist(userId: number): Promise<ConflictWatchlist[]>;
+  addConflictToWatchlist(watchlist: InsertConflictWatchlist): Promise<ConflictWatchlist>;
+  removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private conflicts: Map<number, Conflict>;
   private stocks: Map<string, Stock>;
   private correlationEvents: Map<number, CorrelationEvent>;
+  private users: Map<number, User>;
+  private stockWatchlists: Map<number, StockWatchlist>;
+  private conflictWatchlists: Map<number, ConflictWatchlist>;
   private currentConflictId: number;
   private currentCorrelationId: number;
+  private currentUserId: number;
+  private currentStockWatchlistId: number;
+  private currentConflictWatchlistId: number;
 
   constructor() {
     this.conflicts = new Map();

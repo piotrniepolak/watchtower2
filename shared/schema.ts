@@ -1,5 +1,6 @@
-import { pgTable, text, serial, integer, real, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
 export const conflicts = pgTable("conflicts", {
@@ -38,6 +39,32 @@ export const correlationEvents = pgTable("correlation_events", {
   severity: integer("severity").notNull(), // 1-10 scale
 });
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const stockWatchlists = pgTable("stock_watchlists", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  stockSymbol: text("stock_symbol").references(() => stocks.symbol).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes"),
+});
+
+export const conflictWatchlists = pgTable("conflict_watchlists", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  conflictId: integer("conflict_id").references(() => conflicts.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  notes: text("notes"),
+});
+
 export const insertConflictSchema = createInsertSchema(conflicts).omit({
   id: true,
   lastUpdated: true,
@@ -52,6 +79,38 @@ export const insertCorrelationEventSchema = createInsertSchema(correlationEvents
   id: true,
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertStockWatchlistSchema = createInsertSchema(stockWatchlists).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertConflictWatchlistSchema = createInsertSchema(conflictWatchlists).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  stockWatchlists: many(stockWatchlists),
+  conflictWatchlists: many(conflictWatchlists),
+}));
+
+export const stockWatchlistsRelations = relations(stockWatchlists, ({ one }) => ({
+  user: one(users, { fields: [stockWatchlists.userId], references: [users.id] }),
+  stock: one(stocks, { fields: [stockWatchlists.stockSymbol], references: [stocks.symbol] }),
+}));
+
+export const conflictWatchlistsRelations = relations(conflictWatchlists, ({ one }) => ({
+  user: one(users, { fields: [conflictWatchlists.userId], references: [users.id] }),
+  conflict: one(conflicts, { fields: [conflictWatchlists.conflictId], references: [conflicts.id] }),
+}));
+
 export type InsertConflict = z.infer<typeof insertConflictSchema>;
 export type Conflict = typeof conflicts.$inferSelect;
 
@@ -60,3 +119,12 @@ export type Stock = typeof stocks.$inferSelect;
 
 export type InsertCorrelationEvent = z.infer<typeof insertCorrelationEventSchema>;
 export type CorrelationEvent = typeof correlationEvents.$inferSelect;
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+export type InsertStockWatchlist = z.infer<typeof insertStockWatchlistSchema>;
+export type StockWatchlist = typeof stockWatchlists.$inferSelect;
+
+export type InsertConflictWatchlist = z.infer<typeof insertConflictWatchlistSchema>;
+export type ConflictWatchlist = typeof conflictWatchlists.$inferSelect;
