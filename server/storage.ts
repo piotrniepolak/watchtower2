@@ -336,7 +336,7 @@ export class MemStorage implements IStorage {
         id: 11,
         region: "Latin America",
         name: "Venezuela Border Crisis",
-        description: "Border tensions and migration crisis affecting regional stability",
+        description: "Border tensions and migration crisis affecting regional stability. Over 150 casualties from border incidents.",
         severity: "Low",
         status: "Active",
         duration: "6+ months",
@@ -345,6 +345,20 @@ export class MemStorage implements IStorage {
         latitude: 8.0,
         longitude: -66.0,
         parties: ["VE", "CO", "BR"]
+      },
+      {
+        id: 12,
+        region: "North America",
+        name: "Mexico Drug War",
+        description: "Ongoing conflict between Mexican government and drug cartels. Over 400,000 casualties since 2006.",
+        severity: "High",
+        status: "Active",
+        duration: "18+ years",
+        startDate: new Date("2006-12-11"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 23.6,
+        longitude: -102.5,
+        parties: ["MX"]
       }
     ];
 
