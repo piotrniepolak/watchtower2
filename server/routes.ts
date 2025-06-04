@@ -497,7 +497,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/notifications/mark-all-read", async (req, res) => {
     try {
-      // In a real implementation, this would update all notifications for the user
+      notificationStore.forEach(notification => {
+        notification.read = true;
+      });
       res.json({ success: true });
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
@@ -508,7 +510,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/notifications/:id", async (req, res) => {
     try {
       const notificationId = parseInt(req.params.id);
-      // In a real implementation, this would delete the notification from the database
+      const index = notificationStore.findIndex(n => n.id === notificationId);
+      if (index > -1) {
+        notificationStore.splice(index, 1);
+      }
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting notification:", error);
