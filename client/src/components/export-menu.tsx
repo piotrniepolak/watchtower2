@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Download, FileText, Table, BarChart } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Download, FileText, Database } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { Stock, Conflict, CorrelationEvent } from "@shared/schema";
@@ -12,7 +11,6 @@ interface ExportMenuProps {
 
 export default function ExportMenu({ className }: ExportMenuProps) {
   const { toast } = useToast();
-  const [isExporting, setIsExporting] = useState(false);
 
   const { data: stocks = [] } = useQuery({
     queryKey: ["/api/stocks"],
@@ -26,213 +24,129 @@ export default function ExportMenu({ className }: ExportMenuProps) {
     queryKey: ["/api/correlation"],
   });
 
-  const exportToCSV = (data: any[], filename: string) => {
-    if (!data.length) {
-      toast({ title: "No data to export", variant: "destructive" });
-      return;
-    }
+  const { data: metrics } = useQuery({
+    queryKey: ["/api/metrics"],
+  });
 
-    const headers = Object.keys(data[0]);
+  const convertToCSV = (data: any[], headers: string[]) => {
     const csvContent = [
-      headers.join(','),
+      headers.join(","),
       ...data.map(row => 
         headers.map(header => {
           const value = row[header];
-          if (typeof value === 'string' && value.includes(',')) {
-            return `"${value}"`;
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+            return `"${value.replace(/"/g, '""')}"`;
           }
-          return value;
-        }).join(',')
+          return value || '';
+        }).join(",")
       )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const exportToJSON = (data: any[], filename: string) => {
-    if (!data.length) {
-      toast({ title: "No data to export", variant: "destructive" });
-      return;
-    }
-
-    const jsonContent = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.json`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const generateReport = () => {
-    setIsExporting(true);
+    ].join("\n");
     
-    const reportData = {
-      generated: new Date().toISOString(),
+    return csvContent;
+  };
+
+  const downloadFile = (content: string, filename: string, type: string) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const exportData = (format: 'csv' | 'json') => {
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    const exportData = {
+      exportDate: new Date().toISOString(),
       summary: {
-        totalStocks: stocks.length,
-        totalConflicts: conflicts.length,
-        activeConflicts: conflicts.filter((c: Conflict) => c.status === 'Active').length,
-        totalCorrelationEvents: correlationEvents.length
+        totalStocks: (stocks as Stock[]).length,
+        totalConflicts: (conflicts as Conflict[]).length,
+        activeConflicts: (conflicts as Conflict[]).filter((c: Conflict) => c.status === 'Active').length,
+        totalCorrelationEvents: (correlationEvents as CorrelationEvent[]).length,
       },
-      stocks: stocks.map((stock: Stock) => ({
+      stocks: (stocks as Stock[]).map((stock: Stock) => ({
         symbol: stock.symbol,
         name: stock.name,
         price: stock.price,
         change: stock.change,
         changePercent: stock.changePercent,
         volume: stock.volume,
-        marketCap: stock.marketCap
+        marketCap: stock.marketCap,
+        lastUpdated: stock.lastUpdated,
       })),
-      conflicts: conflicts.map((conflict: Conflict) => ({
+      conflicts: (conflicts as Conflict[]).map((conflict: Conflict) => ({
         id: conflict.id,
         name: conflict.name,
         region: conflict.region,
-        status: conflict.status,
         severity: conflict.severity,
+        status: conflict.status,
+        duration: conflict.duration,
         startDate: conflict.startDate,
-        description: conflict.description
+        description: conflict.description,
+        latitude: conflict.latitude,
+        longitude: conflict.longitude,
+        parties: conflict.parties,
       })),
-      correlationEvents: correlationEvents.map((event: CorrelationEvent) => ({
+      correlationEvents: (correlationEvents as CorrelationEvent[]).map((event: CorrelationEvent) => ({
         id: event.id,
+        conflictId: event.conflictId,
         eventDate: event.eventDate,
         eventDescription: event.eventDescription,
         severity: event.severity,
         stockMovement: event.stockMovement,
-        conflictId: event.conflictId
-      }))
+      })),
+      metrics: metrics || {}
     };
 
-    const reportContent = `
-# Defense Market Analysis Report
-Generated: ${new Date().toLocaleDateString()}
+    if (format === 'json') {
+      const jsonContent = JSON.stringify(exportData, null, 2);
+      downloadFile(jsonContent, `defense-market-analysis-${timestamp}.json`, 'application/json');
+      toast({ title: "JSON export completed", description: "Data exported successfully" });
+    } else {
+      // Export stocks as CSV
+      const stockHeaders = ['symbol', 'name', 'price', 'change', 'changePercent', 'volume', 'marketCap', 'lastUpdated'];
+      const stocksCSV = convertToCSV(exportData.stocks as any[], stockHeaders);
+      downloadFile(stocksCSV, `defense-stocks-${timestamp}.csv`, 'text/csv');
 
-## Summary
-- Total Stocks Tracked: ${reportData.summary.totalStocks}
-- Total Conflicts: ${reportData.summary.totalConflicts}
-- Active Conflicts: ${reportData.summary.activeConflicts}
-- Correlation Events: ${reportData.summary.totalCorrelationEvents}
+      // Export conflicts as CSV
+      const conflictHeaders = ['id', 'name', 'region', 'severity', 'status', 'duration', 'startDate', 'description'];
+      const conflictsCSV = convertToCSV(exportData.conflicts as any[], conflictHeaders);
+      downloadFile(conflictsCSV, `global-conflicts-${timestamp}.csv`, 'text/csv');
 
-## Stock Performance
-${reportData.stocks.map(stock => 
-  `- ${stock.name} (${stock.symbol}): $${stock.price} (${stock.change >= 0 ? '+' : ''}${stock.change})`
-).join('\n')}
+      // Export correlation events as CSV
+      const correlationHeaders = ['id', 'conflictId', 'eventDate', 'eventDescription', 'severity', 'stockMovement'];
+      const correlationCSV = convertToCSV(exportData.correlationEvents as any[], correlationHeaders);
+      downloadFile(correlationCSV, `correlation-events-${timestamp}.csv`, 'text/csv');
 
-## Active Conflicts
-${reportData.conflicts.filter(c => c.status === 'Active').map(conflict => 
-  `- ${conflict.name} (${conflict.region}): ${conflict.severity} severity`
-).join('\n')}
-
-## Key Correlations
-${reportData.correlationEvents.slice(0, 5).map(event => 
-  `- ${event.eventDescription}: ${event.stockMovement}% market impact`
-).join('\n')}
-    `;
-
-    const blob = new Blob([reportContent], { type: 'text/markdown;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `defense-analysis-report-${new Date().toISOString().split('T')[0]}.md`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setIsExporting(false);
-    toast({ title: "Report exported successfully" });
-  };
-
-  const handleExport = (type: string) => {
-    setIsExporting(true);
-    
-    try {
-      switch (type) {
-        case 'stocks-csv':
-          exportToCSV(stocks, 'defense-stocks');
-          break;
-        case 'conflicts-csv':
-          exportToCSV(conflicts, 'global-conflicts');
-          break;
-        case 'correlation-csv':
-          exportToCSV(correlationEvents, 'correlation-events');
-          break;
-        case 'stocks-json':
-          exportToJSON(stocks, 'defense-stocks');
-          break;
-        case 'conflicts-json':
-          exportToJSON(conflicts, 'global-conflicts');
-          break;
-        case 'correlation-json':
-          exportToJSON(correlationEvents, 'correlation-events');
-          break;
-        case 'full-report':
-          generateReport();
-          return;
-        default:
-          break;
-      }
-      toast({ title: "Data exported successfully" });
-    } catch (error) {
-      toast({ title: "Export failed", variant: "destructive" });
-    } finally {
-      setIsExporting(false);
+      toast({ title: "CSV export completed", description: "3 CSV files downloaded successfully" });
     }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          disabled={isExporting}
-          className={className}
-        >
+        <Button variant="outline" size="sm" className={className}>
           <Download className="h-4 w-4 mr-2" />
           Export Data
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem onClick={() => handleExport('full-report')}>
-          <FileText className="mr-2 h-4 w-4" />
-          Complete Report (.md)
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={() => exportData('csv')}>
+          <FileText className="h-4 w-4 mr-2" />
+          Export as CSV
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('stocks-csv')}>
-          <Table className="mr-2 h-4 w-4" />
-          Stock Data (.csv)
+        <DropdownMenuItem onClick={() => exportData('json')}>
+          <Database className="h-4 w-4 mr-2" />
+          Export as JSON
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('conflicts-csv')}>
-          <Table className="mr-2 h-4 w-4" />
-          Conflict Data (.csv)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('correlation-csv')}>
-          <Table className="mr-2 h-4 w-4" />
-          Correlation Data (.csv)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('stocks-json')}>
-          <BarChart className="mr-2 h-4 w-4" />
-          Stock Data (.json)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('conflicts-json')}>
-          <BarChart className="mr-2 h-4 w-4" />
-          Conflict Data (.json)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('correlation-json')}>
-          <BarChart className="mr-2 h-4 w-4" />
-          Correlation Data (.json)
-        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1.5 text-xs text-slate-500">
+          Exports all dashboard data including stocks, conflicts, and correlation events
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
