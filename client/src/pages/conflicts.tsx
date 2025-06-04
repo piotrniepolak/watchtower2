@@ -51,25 +51,9 @@ export default function Conflicts() {
       economicImpact: "Disruption to Israeli economy, Gaza infrastructure destruction, regional shipping routes affected",
       internationalResponse: "UN Security Council resolutions, International Court of Justice proceedings, increased humanitarian aid"
     },
-    "South China Sea Dispute": {
-      summary: "The South China Sea territorial disputes involve competing claims by China, Philippines, Vietnam, Malaysia, Brunei, and Taiwan over islands, reefs, and maritime rights in this strategically vital waterway.",
-      background: "The South China Sea contains crucial shipping lanes carrying $3.4 trillion in annual trade, significant oil and gas reserves, and rich fishing grounds. China claims most of the sea based on historical rights.",
-      keyEvents: [
-        "2009: China submits nine-dash line claim to UN",
-        "2016: International tribunal rules against China's claims in favor of Philippines",
-        "2018-2019: Increased military presence and artificial island construction",
-        "2020: China establishes administrative districts over disputed areas",
-        "2021: Philippine protests over 200+ Chinese vessels at Whitsun Reef",
-        "2023: Renewed tensions over Second Thomas Shoal incidents"
-      ],
-      casualties: "Limited military confrontations, several incidents with injuries",
-      impact: "Trade route disruptions, fishing industry conflicts, military buildups in the region, diplomatic tensions among ASEAN nations.",
-      economicImpact: "Potential disruption to $3.4 trillion annual trade, fishing rights disputes, energy exploration tensions",
-      militaryPresence: "Chinese artificial islands with military installations, increased US freedom of navigation operations, regional military buildups"
-    },
-    "Mali Crisis": {
-      summary: "The Mali crisis involves political instability, military coups, and security challenges including insurgency groups and international military interventions since the 2012 Tuareg rebellion.",
-      background: "Mali has faced challenges from ethnic tensions, weak governance, drought, and the spread of jihadist groups from Libya and Algeria following regional instability.",
+    "Mali Security Crisis": {
+      summary: "The Mali security crisis involves political instability, military coups, and security challenges including insurgency groups and international military interventions since the 2012 Tuareg rebellion.",
+      background: "Mali has faced challenges from ethnic tensions, weak governance, drought, and the spread of jihadist groups from Libya and Algeria following regional instability. The country has experienced multiple coups and foreign interventions.",
       keyEvents: [
         "2012: Tuareg rebellion in northern Mali and military coup",
         "2013: French Operation Serval intervention",
@@ -77,44 +61,109 @@ export default function Conflicts() {
         "2020: Military coup removes President Ibrahim Boubacar Keïta",
         "2021: Second military coup led by Colonel Assimi Goïta",
         "2022: France announces withdrawal of forces",
-        "2023: MINUSMA mission ends, Wagner Group presence"
+        "2023: MINUSMA mission ends, Wagner Group presence increases"
       ],
       casualties: "Thousands of military and civilian deaths, hundreds of peacekeepers killed",
       impact: "Displacement of over 400,000 people, humanitarian crisis, regional security concerns spreading to neighboring countries.",
-      economicImpact: "Economic decline, loss of foreign investment, reduced agricultural production",
-      internationalResponse: "UN peacekeeping, French military intervention, EU training missions, African Union involvement"
+      economicImpact: "Economic decline, loss of foreign investment, reduced agricultural production, impact on regional trade",
+      internationalResponse: "UN peacekeeping operations, French military intervention, EU training missions, African Union involvement"
+    },
+    "Ethiopia Tigray Conflict": {
+      summary: "The Tigray War was an armed conflict from November 2020 to November 2022 between the Ethiopian federal government and Eritrea against the Tigray People's Liberation Front (TPLF).",
+      background: "The conflict arose from political tensions between the TPLF, which had dominated Ethiopian politics for decades, and Prime Minister Abiy Ahmed's reforms. Ethnic federalism disputes and regional autonomy issues contributed to the escalation.",
+      keyEvents: [
+        "November 4, 2020: Ethiopian forces attack TPLF in Tigray region",
+        "November 2020: Eritrean forces join Ethiopian military",
+        "June 2021: TPLF retakes regional capital Mekelle",
+        "November 2021: TPLF advances toward Addis Ababa",
+        "January 2022: Ethiopian government regains territory",
+        "November 2, 2022: Cessation of hostilities agreement signed in Pretoria"
+      ],
+      casualties: "Estimated 385,000-600,000 deaths, hundreds of thousands displaced",
+      impact: "Severe humanitarian crisis, ethnic tensions, regional instability, international concern over war crimes allegations.",
+      economicImpact: "Agricultural disruption, infrastructure damage, impact on Ethiopia's economic growth, international aid suspension",
+      internationalResponse: "African Union mediation, UN humanitarian operations, international sanctions discussions, peace negotiations"
+    },
+    "Kashmir Border Tensions": {
+      summary: "The Kashmir conflict involves territorial disputes between India and Pakistan over the Kashmir region, with ongoing military presence and periodic escalations since 1947.",
+      background: "Following partition of British India in 1947, both countries claimed Kashmir. Three wars have been fought over the region, with China also controlling some territory (Aksai Chin). The dispute involves religious, strategic, and water resource considerations.",
+      keyEvents: [
+        "1947-48: First Kashmir War following partition",
+        "1965: Second Kashmir War between India and Pakistan",
+        "1999: Kargil War escalation",
+        "2016: Uri attack and surgical strikes",
+        "2019: Pulwama attack and Balakot airstrikes",
+        "2019: Article 370 revocation by India",
+        "2020: Galwan Valley clash with China"
+      ],
+      casualties: "Estimated 70,000+ deaths since 1989, thousands of security forces killed",
+      impact: "Ongoing military presence of 500,000+ troops, human rights concerns, regional nuclear tensions.",
+      economicImpact: "Tourism industry severely affected, development hindered by conflict, massive military expenditure burden",
+      internationalResponse: "UN resolutions, international mediation attempts, global concerns over nuclear escalation risks"
+    },
+    "Taiwan Strait Tensions": {
+      summary: "Rising tensions across Taiwan Strait involve China's claims over Taiwan and increasing military activities around the island, with Taiwan maintaining de facto independence.",
+      background: "Taiwan has been self-governed since 1949 when Chinese Nationalists retreated there after the civil war. China considers Taiwan a breakaway province while Taiwan operates as a democratic state with its own government.",
+      keyEvents: [
+        "1996: Third Taiwan Strait Crisis with Chinese missile tests",
+        "2016: Election of independence-leaning President Tsai Ing-wen",
+        "2020: Increased Chinese military flights in Taiwan's air defense zone",
+        "2022: Nancy Pelosi visit triggers major Chinese military exercises",
+        "2023: Record number of Chinese military incursions",
+        "2024: Taiwan elections amid continued Chinese pressure"
+      ],
+      casualties: "No direct military casualties in recent tensions, but preparation for potential conflict ongoing",
+      impact: "Regional military buildup, global semiconductor supply chain concerns, diplomatic isolation of Taiwan.",
+      economicImpact: "Taiwan produces 63% of world's semiconductors, potential disruption to global technology supply chains",
+      internationalResponse: "US military support and weapons sales, Japanese and Australian security cooperation, EU concerns over stability"
+    },
+    "DRC Eastern Conflicts": {
+      summary: "Multiple armed groups operate in eastern Democratic Republic of Congo, fighting over resources and territory in ongoing conflicts affecting millions of civilians.",
+      background: "Conflicts stem from 1990s Rwandan genocide aftermath, ethnic tensions, competition for mineral resources including cobalt and gold, and weak state control over vast territories.",
+      keyEvents: [
+        "1996-2003: First and Second Congo Wars",
+        "2012: M23 rebellion and capture of Goma",
+        "2018: Ebola outbreak complicated by ongoing conflict",
+        "2021: Islamic State affiliate attacks increase",
+        "2022: M23 resurges with significant territorial gains",
+        "2023: Regional mediation efforts and peacekeeping operations continue"
+      ],
+      casualties: "Over 6 million deaths since 1996, ongoing violence claims thousands annually",
+      impact: "Massive displacement of 5.6 million people, sexual violence epidemic, child soldier recruitment, humanitarian crisis.",
+      economicImpact: "Illegal mining of cobalt, gold, and other minerals funding armed groups, economic devastation in eastern regions",
+      internationalResponse: "UN peacekeeping mission MONUSCO, regional military interventions, humanitarian aid operations, sanctions on armed groups"
+    },
+    "Sudan Internal Conflict": {
+      summary: "Sudan's internal conflict erupted in April 2023 between the Sudanese Armed Forces (SAF) and Rapid Support Forces (RSF), ending hopes for democratic transition.",
+      background: "Following 2019 overthrow of Omar al-Bashir, military and civilian leaders shared power in a transitional arrangement. Tensions between military factions led to October 2021 coup and eventual armed conflict.",
+      keyEvents: [
+        "April 15, 2023: Fighting erupts in Khartoum between SAF and RSF",
+        "April 2023: Conflict spreads to Darfur region with ethnic violence",
+        "May 2023: Multiple ceasefire agreements repeatedly broken",
+        "June 2023: RSF gains control of parts of Khartoum",
+        "August 2023: Humanitarian crisis escalates rapidly",
+        "2024: Ongoing conflict with no clear resolution in sight"
+      ],
+      casualties: "Over 12,000 deaths and millions displaced since April 2023",
+      impact: "Collapse of healthcare and education systems, humanitarian catastrophe, regional refugee crisis affecting Chad and Egypt.",
+      economicImpact: "Economic collapse, inflation exceeding 200%, banking system breakdown, oil production severely affected",
+      internationalResponse: "African Union mediation efforts, UN humanitarian operations, international sanctions discussions, regional diplomatic initiatives"
     },
     "Mexico Drug War": {
-      summary: "The Mexican Drug War is an ongoing armed conflict between the Mexican government, drug cartels, and the United States since 2006, characterized by extreme violence and trafficking disputes.",
-      background: "Mexico became a major transit route for drugs to the US market. President Felipe Calderón declared war on cartels in 2006, leading to militarization of anti-drug efforts and cartel fragmentation.",
+      summary: "The Mexican Drug War is an ongoing armed conflict between the Mexican government, drug cartels, and involving United States cooperation since 2006, characterized by extreme violence and trafficking disputes.",
+      background: "Mexico became a major transit route for drugs to the US market following Colombian cartel disruption. President Felipe Calderón declared war on cartels in 2006, leading to militarization of anti-drug efforts and cartel fragmentation.",
       keyEvents: [
         "December 2006: President Calderón deploys military against cartels",
         "2010-2012: Peak violence period with over 25,000 deaths annually",
-        "2016: Capture and escape of El Chapo Guzmán",
+        "2016: Capture and dramatic escape of El Chapo Guzmán",
         "2019: Culiacán battle between military and Sinaloa Cartel",
         "2020: Arrest of General Salvador Cienfuegos on drug charges",
         "2023: Arrest of Ovidio Guzmán triggers violent cartel response"
       ],
       casualties: "Over 350,000 deaths and 100,000 disappeared persons since 2006",
       impact: "Massive human rights crisis, corruption of institutions, displacement of communities, cross-border violence affecting the United States.",
-      economicImpact: "Estimated $40+ billion annual drug trade, damage to tourism and investment, costs of militarization",
-      internationalResponse: "US-Mexico cooperation through Mérida Initiative, DEA operations, extradition agreements, border security measures"
-    },
-    "Yemen Civil War": {
-      summary: "The Yemen Civil War began in 2014 between the internationally recognized government and Houthi rebels, escalating in 2015 with Saudi-led coalition intervention.",
-      background: "Political transition following Arab Spring protests led to power struggles. Houthi rebels, backed by Iran, seized control of the capital Sanaa, prompting Saudi-led intervention to restore the government.",
-      keyEvents: [
-        "2014: Houthis capture Sanaa and government institutions",
-        "2015: Saudi-led coalition begins Operation Decisive Storm",
-        "2016: UN-mediated peace talks collapse",
-        "2018: Battle for Hodeidah port city",
-        "2019: Drone attacks on Saudi oil facilities",
-        "2022: UN-brokered truce agreement"
-      ],
-      casualties: "Over 377,000 deaths, including 150,000 from violence",
-      impact: "World's worst humanitarian crisis with 24 million needing aid, cholera outbreaks, famine conditions.",
-      economicImpact: "Economic collapse, currency devaluation, infrastructure destruction, oil production disruption",
-      internationalResponse: "Saudi-UAE coalition, Iranian support for Houthis, US intelligence and weapons support, UN humanitarian operations"
+      economicImpact: "Estimated $40+ billion annual drug trade, severe damage to tourism and investment, massive costs of militarization",
+      internationalResponse: "US-Mexico cooperation through Mérida Initiative, DEA operations, extradition agreements, enhanced border security measures"
     }
   };
 
@@ -327,12 +376,12 @@ export default function Conflicts() {
                         </div>
                       )}
 
-                      {(details.internationalResponse || details.militarySupport || details.militaryPresence) && (
+                      {((details as any).internationalResponse || (details as any).militarySupport || (details as any).militaryPresence) && (
                         <div>
                           <h4 className="font-semibold text-slate-900 mb-3">International Response</h4>
                           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                             <p className="text-green-700 text-sm">
-                              {details.internationalResponse || details.militarySupport || details.militaryPresence}
+                              {(details as any).internationalResponse || (details as any).militarySupport || (details as any).militaryPresence}
                             </p>
                           </div>
                         </div>
