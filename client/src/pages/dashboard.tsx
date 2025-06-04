@@ -2,7 +2,7 @@ import Navigation from "@/components/navigation";
 import MetricsCards from "@/components/metrics-cards";
 import ChartsSection from "@/components/charts-section";
 import DataTables from "@/components/data-tables";
-import CorrelationAnalysis from "@/components/correlation-analysis";
+import ConflictHeatMap from "@/components/conflict-heat-map";
 
 export default function Dashboard() {
   return (
@@ -18,7 +18,7 @@ export default function Dashboard() {
         
         <ChartsSection />
         <DataTables />
-        <CorrelationAnalysis />
+        <ConflictHeatMap />
       </main>
       
       <footer className="bg-white border-t border-slate-200 mt-12">
