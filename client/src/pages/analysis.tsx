@@ -1,13 +1,18 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Activity, Calendar, Target } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import type { Stock, Conflict } from "@shared/schema";
 
 export default function Analysis() {
+  const [selectedTimeframe, setSelectedTimeframe] = useState<"1M" | "3M" | "6M" | "1Y" | "2Y">("1Y");
+  const [selectedEventType, setSelectedEventType] = useState<"all" | "escalations" | "resolutions">("all");
+
   const { data: stocks } = useQuery({
     queryKey: ["/api/stocks"],
   });
@@ -27,7 +32,9 @@ export default function Analysis() {
         { symbol: "RTX", priceChange: 8.2, percentChange: 3.1 },
         { symbol: "NOC", priceChange: 15.7, percentChange: 3.4 },
         { symbol: "GD", priceChange: 9.8, percentChange: 2.9 },
-        { symbol: "BA", priceChange: 6.3, percentChange: 1.8 }
+        { symbol: "BA", priceChange: 6.3, percentChange: 1.8 },
+        { symbol: "HII", priceChange: 7.2, percentChange: 2.5 },
+        { symbol: "LHX", priceChange: 5.8, percentChange: 2.7 }
       ]
     },
     {
@@ -39,13 +46,52 @@ export default function Analysis() {
         { symbol: "RTX", priceChange: 5.4, percentChange: 2.1 },
         { symbol: "NOC", priceChange: 11.2, percentChange: 2.5 },
         { symbol: "GD", priceChange: 7.1, percentChange: 2.2 },
-        { symbol: "BA", priceChange: 4.8, percentChange: 1.4 }
+        { symbol: "BA", priceChange: 4.8, percentChange: 1.4 },
+        { symbol: "LHX", priceChange: 4.7, percentChange: 2.2 },
+        { symbol: "LDOS", priceChange: 3.2, percentChange: 2.2 }
+      ]
+    },
+    {
+      date: "2024-04-13",
+      event: "Iran strikes Israel with drones",
+      conflict: "Middle East Tensions",
+      stockMovements: [
+        { symbol: "LMT", priceChange: 9.4, percentChange: 2.0 },
+        { symbol: "RTX", priceChange: 6.1, percentChange: 2.3 },
+        { symbol: "NOC", priceChange: 10.8, percentChange: 2.3 },
+        { symbol: "GD", priceChange: 6.8, percentChange: 2.5 },
+        { symbol: "LHX", priceChange: 5.2, percentChange: 2.4 },
+        { symbol: "CACI", priceChange: 8.9, percentChange: 2.0 }
+      ]
+    },
+    {
+      date: "2021-02-01",
+      event: "Myanmar military coup",
+      conflict: "Myanmar Civil War",
+      stockMovements: [
+        { symbol: "LMT", priceChange: 4.3, percentChange: 0.9 },
+        { symbol: "RTX", priceChange: 2.8, percentChange: 1.1 },
+        { symbol: "NOC", priceChange: 5.7, percentChange: 1.2 },
+        { symbol: "LDOS", priceChange: 2.1, percentChange: 1.4 },
+        { symbol: "SAIC", priceChange: 1.8, percentChange: 1.4 }
+      ]
+    },
+    {
+      date: "2024-01-11",
+      event: "Red Sea shipping attacks escalate",
+      conflict: "Yemen Civil War",
+      stockMovements: [
+        { symbol: "LMT", priceChange: 7.2, percentChange: 1.5 },
+        { symbol: "RTX", priceChange: 4.6, percentChange: 1.7 },
+        { symbol: "NOC", priceChange: 8.1, percentChange: 1.7 },
+        { symbol: "HII", priceChange: 5.9, percentChange: 2.0 },
+        { symbol: "GD", priceChange: 4.4, percentChange: 1.6 }
       ]
     },
     {
       date: "2023-03-15",
-      event: "South China Sea tensions escalate",
-      conflict: "Maritime Dispute",
+      event: "China military exercises near Taiwan",
+      conflict: "Taiwan Strait Tensions",
       stockMovements: [
         { symbol: "LMT", priceChange: 6.7, percentChange: 1.4 },
         { symbol: "RTX", priceChange: 4.2, percentChange: 1.6 },
@@ -56,21 +102,57 @@ export default function Analysis() {
     }
   ];
 
-  // Historical correlation data over time
-  const correlationTrend = [
-    { month: "Jan 2022", correlation: 0.65, conflicts: 8, avgGain: 2.1 },
-    { month: "Feb 2022", correlation: 0.78, conflicts: 12, avgGain: 4.3 },
-    { month: "Mar 2022", correlation: 0.82, conflicts: 15, avgGain: 3.8 },
-    { month: "Apr 2022", correlation: 0.71, conflicts: 11, avgGain: 2.9 },
-    { month: "May 2022", correlation: 0.69, conflicts: 9, avgGain: 2.4 },
-    { month: "Jun 2022", correlation: 0.74, conflicts: 13, avgGain: 3.2 },
-    { month: "Jul 2022", correlation: 0.67, conflicts: 10, avgGain: 2.7 },
-    { month: "Aug 2022", correlation: 0.75, conflicts: 14, avgGain: 3.5 },
-    { month: "Sep 2022", correlation: 0.79, conflicts: 16, avgGain: 4.1 },
-    { month: "Oct 2022", correlation: 0.73, conflicts: 12, avgGain: 3.0 },
-    { month: "Nov 2022", correlation: 0.71, conflicts: 11, avgGain: 2.8 },
-    { month: "Dec 2022", correlation: 0.68, conflicts: 9, avgGain: 2.5 }
-  ];
+  // Generate correlation data based on selected timeframe
+  const generateCorrelationTrend = (timeframe: string) => {
+    const baseData = {
+      "1M": [
+        { period: "Week 1", correlation: 0.72, conflicts: 3, avgGain: 2.8 },
+        { period: "Week 2", correlation: 0.68, conflicts: 2, avgGain: 1.9 },
+        { period: "Week 3", correlation: 0.75, conflicts: 4, avgGain: 3.2 },
+        { period: "Week 4", correlation: 0.71, conflicts: 3, avgGain: 2.6 }
+      ],
+      "3M": [
+        { period: "Apr 2024", correlation: 0.69, conflicts: 12, avgGain: 2.4 },
+        { period: "May 2024", correlation: 0.74, conflicts: 15, avgGain: 3.2 },
+        { period: "Jun 2024", correlation: 0.71, conflicts: 11, avgGain: 2.8 }
+      ],
+      "6M": [
+        { period: "Jan 2024", correlation: 0.68, conflicts: 9, avgGain: 2.5 },
+        { period: "Feb 2024", correlation: 0.72, conflicts: 13, avgGain: 3.1 },
+        { period: "Mar 2024", correlation: 0.69, conflicts: 11, avgGain: 2.7 },
+        { period: "Apr 2024", correlation: 0.75, conflicts: 14, avgGain: 3.4 },
+        { period: "May 2024", correlation: 0.73, conflicts: 12, avgGain: 3.0 },
+        { period: "Jun 2024", correlation: 0.71, conflicts: 10, avgGain: 2.8 }
+      ],
+      "1Y": [
+        { period: "Jun 2023", correlation: 0.65, conflicts: 8, avgGain: 2.1 },
+        { period: "Jul 2023", correlation: 0.71, conflicts: 11, avgGain: 2.9 },
+        { period: "Aug 2023", correlation: 0.68, conflicts: 9, avgGain: 2.4 },
+        { period: "Sep 2023", correlation: 0.74, conflicts: 13, avgGain: 3.2 },
+        { period: "Oct 2023", correlation: 0.79, conflicts: 16, avgGain: 4.1 },
+        { period: "Nov 2023", correlation: 0.82, conflicts: 18, avgGain: 4.5 },
+        { period: "Dec 2023", correlation: 0.76, conflicts: 14, avgGain: 3.6 },
+        { period: "Jan 2024", correlation: 0.73, conflicts: 12, avgGain: 3.0 },
+        { period: "Feb 2024", correlation: 0.71, conflicts: 11, avgGain: 2.8 },
+        { period: "Mar 2024", correlation: 0.75, conflicts: 14, avgGain: 3.4 },
+        { period: "Apr 2024", correlation: 0.72, conflicts: 13, avgGain: 3.1 },
+        { period: "May 2024", correlation: 0.74, conflicts: 15, avgGain: 3.3 }
+      ],
+      "2Y": [
+        { period: "Q2 2022", correlation: 0.78, conflicts: 45, avgGain: 4.3 },
+        { period: "Q3 2022", correlation: 0.82, conflicts: 52, avgGain: 5.1 },
+        { period: "Q4 2022", correlation: 0.75, conflicts: 38, avgGain: 3.8 },
+        { period: "Q1 2023", correlation: 0.71, conflicts: 34, avgGain: 3.2 },
+        { period: "Q2 2023", correlation: 0.69, conflicts: 31, avgGain: 2.9 },
+        { period: "Q3 2023", correlation: 0.73, conflicts: 39, avgGain: 3.5 },
+        { period: "Q4 2023", correlation: 0.79, conflicts: 48, avgGain: 4.2 },
+        { period: "Q1 2024", correlation: 0.74, conflicts: 42, avgGain: 3.7 }
+      ]
+    };
+    return baseData[timeframe as keyof typeof baseData] || baseData["1Y"];
+  };
+
+  const correlationTrend = generateCorrelationTrend(selectedTimeframe);
 
   // Stock performance metrics during conflict periods
   const performanceMetrics = [
@@ -202,17 +284,33 @@ export default function Analysis() {
           {/* Correlation Trend Chart */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Correlation Strength Over Time</CardTitle>
-              <p className="text-sm text-slate-600">
-                How closely defense stocks track with conflict escalations month by month
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Correlation Strength Over Time</CardTitle>
+                  <p className="text-sm text-slate-600">
+                    How closely defense stocks track with conflict escalations over different periods
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  {(["1M", "3M", "6M", "1Y", "2Y"] as const).map((timeframe) => (
+                    <Button
+                      key={timeframe}
+                      variant={selectedTimeframe === timeframe ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedTimeframe(timeframe)}
+                    >
+                      {timeframe}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={correlationTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
+                    <XAxis dataKey="period" stroke="#64748b" fontSize={12} />
                     <YAxis stroke="#64748b" fontSize={12} domain={[0.5, 1]} />
                     <Tooltip 
                       contentStyle={{ 
