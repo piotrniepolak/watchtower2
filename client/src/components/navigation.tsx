@@ -146,13 +146,7 @@ export default function Navigation() {
                 }`}>
                   AI Analysis
                 </Link>
-                <Link href="/analysis" className={`px-3 py-2 text-sm font-medium ${
-                  isActive("/analysis") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
-                }`}>
-                  Analysis
-                </Link>
+
                 <Link href="/reports" className={`px-3 py-2 text-sm font-medium ${
                   isActive("/reports") 
                     ? "text-primary border-b-2 border-primary" 
