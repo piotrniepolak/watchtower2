@@ -41,18 +41,138 @@ export interface IStorage {
   removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void>;
 }
 
+export class DatabaseStorage implements IStorage {
+  // Conflicts
+  async getConflicts(): Promise<Conflict[]> {
+    return await db.select().from(conflicts);
+  }
+
+  async getConflict(id: number): Promise<Conflict | undefined> {
+    const [conflict] = await db.select().from(conflicts).where(eq(conflicts.id, id));
+    return conflict;
+  }
+
+  async createConflict(insertConflict: InsertConflict): Promise<Conflict> {
+    const [conflict] = await db.insert(conflicts).values(insertConflict).returning();
+    return conflict;
+  }
+
+  async updateConflict(id: number, updateData: Partial<InsertConflict>): Promise<Conflict | undefined> {
+    const [conflict] = await db.update(conflicts).set(updateData).where(eq(conflicts.id, id)).returning();
+    return conflict;
+  }
+
+  // Stocks
+  async getStocks(): Promise<Stock[]> {
+    return await db.select().from(stocks);
+  }
+
+  async getStock(symbol: string): Promise<Stock | undefined> {
+    const [stock] = await db.select().from(stocks).where(eq(stocks.symbol, symbol));
+    return stock;
+  }
+
+  async createStock(insertStock: InsertStock): Promise<Stock> {
+    const [stock] = await db.insert(stocks).values(insertStock).returning();
+    return stock;
+  }
+
+  async updateStock(symbol: string, updateData: Partial<InsertStock>): Promise<Stock | undefined> {
+    const [stock] = await db.update(stocks).set(updateData).where(eq(stocks.symbol, symbol)).returning();
+    return stock;
+  }
+
+  // Correlation Events
+  async getCorrelationEvents(): Promise<CorrelationEvent[]> {
+    return await db.select().from(correlationEvents);
+  }
+
+  async createCorrelationEvent(insertEvent: InsertCorrelationEvent): Promise<CorrelationEvent> {
+    const [event] = await db.insert(correlationEvents).values(insertEvent).returning();
+    return event;
+  }
+
+  // Users
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    // Hash password before storing
+    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
+    const userWithHashedPassword = { ...insertUser, password: hashedPassword };
+    
+    const [user] = await db.insert(users).values(userWithHashedPassword).returning();
+    return user;
+  }
+
+  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
+    // Hash password if it's being updated
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+    
+    const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  // Stock Watchlists
+  async getUserStockWatchlist(userId: number): Promise<StockWatchlist[]> {
+    return await db.select().from(stockWatchlists).where(eq(stockWatchlists.userId, userId));
+  }
+
+  async addStockToWatchlist(watchlist: InsertStockWatchlist): Promise<StockWatchlist> {
+    const [newWatchlist] = await db.insert(stockWatchlists).values(watchlist).returning();
+    return newWatchlist;
+  }
+
+  async removeStockFromWatchlist(userId: number, stockSymbol: string): Promise<void> {
+    await db.delete(stockWatchlists).where(
+      and(
+        eq(stockWatchlists.userId, userId),
+        eq(stockWatchlists.stockSymbol, stockSymbol)
+      )
+    );
+  }
+
+  // Conflict Watchlists
+  async getUserConflictWatchlist(userId: number): Promise<ConflictWatchlist[]> {
+    return await db.select().from(conflictWatchlists).where(eq(conflictWatchlists.userId, userId));
+  }
+
+  async addConflictToWatchlist(watchlist: InsertConflictWatchlist): Promise<ConflictWatchlist> {
+    const [newWatchlist] = await db.insert(conflictWatchlists).values(watchlist).returning();
+    return newWatchlist;
+  }
+
+  async removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void> {
+    await db.delete(conflictWatchlists).where(
+      and(
+        eq(conflictWatchlists.userId, userId),
+        eq(conflictWatchlists.conflictId, conflictId)
+      )
+    );
+  }
+
+  // Utility method for password verification
+  async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+}
+
+// For backward compatibility, create sample data in memory for the current session
 export class MemStorage implements IStorage {
   private conflicts: Map<number, Conflict>;
   private stocks: Map<string, Stock>;
   private correlationEvents: Map<number, CorrelationEvent>;
-  private users: Map<number, User>;
-  private stockWatchlists: Map<number, StockWatchlist>;
-  private conflictWatchlists: Map<number, ConflictWatchlist>;
   private currentConflictId: number;
   private currentCorrelationId: number;
-  private currentUserId: number;
-  private currentStockWatchlistId: number;
-  private currentConflictWatchlistId: number;
 
   constructor() {
     this.conflicts = new Map();
@@ -60,327 +180,193 @@ export class MemStorage implements IStorage {
     this.correlationEvents = new Map();
     this.currentConflictId = 1;
     this.currentCorrelationId = 1;
-    
-    // Initialize with some conflict data
     this.initializeConflicts();
     this.initializeStocks();
   }
 
   private initializeConflicts() {
-    const initialConflicts: InsertConflict[] = [
+    const sampleConflicts: Conflict[] = [
       {
+        id: 1,
         region: "Eastern Europe",
-        name: "Ukraine-Russia",
-        description: "Ongoing conflict between Ukraine and Russia",
+        name: "Ukraine-Russia Conflict",
+        description: "Ongoing military conflict between Ukraine and Russia",
         severity: "High",
         status: "Active",
-        duration: "2 years, 9 months",
+        duration: "2+ years",
         startDate: new Date("2022-02-24"),
-        latitude: 50.4501,
-        longitude: 30.5234,
-        parties: ["UA", "RU"],
+        lastUpdated: new Date(),
+        latitude: 49.0,
+        longitude: 32.0,
+        parties: ["UA", "RU"]
       },
       {
+        id: 2,
         region: "Middle East",
-        name: "Israel-Gaza",
-        description: "Conflict in Gaza Strip",
+        name: "Israel-Gaza Conflict",
+        description: "Ongoing conflict in Gaza Strip",
         severity: "High",
         status: "Active",
-        duration: "8 months",
+        duration: "3+ months",
         startDate: new Date("2023-10-07"),
-        latitude: 31.3547,
-        longitude: 34.3088,
-        parties: ["IL", "PS"],
+        lastUpdated: new Date(),
+        latitude: 31.5,
+        longitude: 34.5,
+        parties: ["IL", "PS"]
       },
       {
-        region: "South China Sea",
-        name: "South China Sea Dispute",
-        description: "Territorial disputes in South China Sea",
-        severity: "Medium",
-        status: "Ongoing",
-        duration: "Decades",
-        startDate: new Date("2009-01-01"),
-        latitude: 16.0, 
-        longitude: 114.0,
-        parties: ["CN", "PH", "VN", "MY"],
-      },
-      {
+        id: 3,
         region: "West Africa",
-        name: "Mali Crisis",
-        description: "Political and security crisis in Mali",
+        name: "Mali Security Crisis",
+        description: "Security crisis in northern Mali",
         severity: "Medium",
         status: "Ongoing",
-        duration: "12+ years",
-        startDate: new Date("2012-01-01"),
-        latitude: 17.570,
-        longitude: -3.9962,
-        parties: ["ML", "FR"],
+        duration: "1+ year",
+        startDate: new Date("2023-01-01"),
+        lastUpdated: new Date(),
+        latitude: 17.0,
+        longitude: -4.0,
+        parties: ["ML", "FR"]
       },
       {
+        id: 4,
         region: "East Africa",
-        name: "Ethiopia-Tigray",
-        description: "Armed conflict in northern Ethiopia",
-        severity: "High",
+        name: "Ethiopia Tigray Conflict",
+        description: "Internal conflict in Tigray region",
+        severity: "Medium",
         status: "Ceasefire",
         duration: "2+ years",
         startDate: new Date("2020-11-04"),
-        latitude: 14.2700,
-        longitude: 38.2700,
-        parties: ["ET", "TG"],
+        lastUpdated: new Date(),
+        latitude: 14.0,
+        longitude: 39.0,
+        parties: ["ET"]
       },
       {
-        region: "West Africa", 
-        name: "Burkina Faso Insurgency",
-        description: "Islamist insurgency in Burkina Faso",
-        severity: "High",
-        status: "Active",
-        duration: "8+ years",
-        startDate: new Date("2015-01-01"),
-        latitude: 12.2383,
-        longitude: -1.5616,
-        parties: ["BF", "IS"],
-      },
-      {
-        region: "Central Africa",
-        name: "Democratic Republic Congo",
-        description: "Armed conflicts in eastern DRC",
-        severity: "High",
-        status: "Active",
-        duration: "25+ years",
-        startDate: new Date("1998-08-02"),
-        latitude: -4.0383,
-        longitude: 21.7587,
-        parties: ["CD", "RW", "UG"],
-      },
-      {
+        id: 5,
         region: "South Asia",
-        name: "Kashmir Conflict",
-        description: "Territorial dispute over Kashmir region",
+        name: "Kashmir Border Tensions",
+        description: "Border tensions between India and Pakistan",
         severity: "Medium",
         status: "Ongoing",
-        duration: "76+ years",
-        startDate: new Date("1947-10-22"),
-        latitude: 34.0837,
-        longitude: 74.7973,
-        parties: ["IN", "PK"],
+        duration: "Decades",
+        startDate: new Date("1947-01-01"),
+        lastUpdated: new Date(),
+        latitude: 34.0,
+        longitude: 76.0,
+        parties: ["IN", "PK"]
       },
       {
-        region: "Middle East",
-        name: "Syria Civil War",
-        description: "Ongoing multi-sided civil war in Syria",
-        severity: "Medium",
-        status: "Low-intensity",
-        duration: "13+ years",
-        startDate: new Date("2011-03-15"),
-        latitude: 34.8021,
-        longitude: 38.9968,
-        parties: ["SY", "TR", "US"],
-      },
-      {
-        region: "Middle East",
-        name: "Yemen Civil War",
-        description: "Ongoing civil war in Yemen",
-        severity: "High",
-        status: "Active",
-        duration: "9+ years",
-        startDate: new Date("2014-09-21"),
-        latitude: 15.5527,
-        longitude: 48.5164,
-        parties: ["YE", "SA"],
-      },
-      {
+        id: 6,
         region: "East Asia",
         name: "Taiwan Strait Tensions",
-        description: "Cross-strait tensions between China and Taiwan",
+        description: "Rising tensions across Taiwan Strait",
         severity: "Medium",
         status: "Ongoing",
-        duration: "75+ years",
-        startDate: new Date("1949-12-07"),
-        latitude: 23.8103,
-        longitude: 120.9675,
-        parties: ["CN", "TW"],
+        duration: "Ongoing",
+        startDate: new Date("2020-01-01"),
+        lastUpdated: new Date(),
+        latitude: 24.0,
+        longitude: 121.0,
+        parties: ["TW", "CN"]
       },
       {
-        region: "Central Asia",
-        name: "Afghanistan Taliban",
-        description: "Taliban control and insurgent activities",
-        severity: "Medium",
-        status: "Post-conflict",
-        duration: "20+ years",
-        startDate: new Date("2001-10-07"),
-        latitude: 33.9391,
-        longitude: 67.7100,
-        parties: ["AF", "TB"],
-      },
-      {
-        region: "West Africa",
-        name: "Nigeria Boko Haram",
-        description: "Boko Haram insurgency in northeast Nigeria",
+        id: 7,
+        region: "Central Africa",
+        name: "DRC Eastern Conflicts",
+        description: "Multiple armed groups active in eastern DRC",
         severity: "High",
         status: "Active",
-        duration: "14+ years",
-        startDate: new Date("2009-07-26"),
-        latitude: 9.0820,
-        longitude: 8.6753,
-        parties: ["NG", "BH"],
+        duration: "2+ years",
+        startDate: new Date("2022-01-01"),
+        lastUpdated: new Date(),
+        latitude: -2.0,
+        longitude: 29.0,
+        parties: ["CD"]
       },
       {
+        id: 8,
         region: "Horn of Africa",
-        name: "Somalia Al-Shabaab",
-        description: "Al-Shabaab insurgency in Somalia",
+        name: "Sudan Internal Conflict",
+        description: "Internal armed conflict in Sudan",
         severity: "High",
         status: "Active",
-        duration: "17+ years",
-        startDate: new Date("2006-06-05"),
-        latitude: 5.1521,
-        longitude: 46.1996,
-        parties: ["SO", "AS"],
-      },
-      {
-        region: "Southeast Asia",
-        name: "Myanmar Civil War",
-        description: "Civil war following military coup",
-        severity: "High",
-        status: "Active",
-        duration: "3+ years",
-        startDate: new Date("2021-02-01"),
-        latitude: 19.7633,
-        longitude: 96.0785,
-        parties: ["MM", "NUG"],
-      },
-      {
-        region: "South America",
-        name: "Colombia-Venezuela Border",
-        description: "Border tensions and migration crisis",
-        severity: "Low",
-        status: "Ongoing",
-        duration: "5+ years",
-        startDate: new Date("2019-01-01"),
-        latitude: 7.8939,
-        longitude: -72.5078,
-        parties: ["CO", "VE"],
+        duration: "1+ year",
+        startDate: new Date("2023-04-15"),
+        lastUpdated: new Date(),
+        latitude: 15.0,
+        longitude: 30.0,
+        parties: ["SD"]
       }
     ];
 
-    initialConflicts.forEach(conflict => {
-      this.createConflict(conflict);
+    sampleConflicts.forEach(conflict => {
+      this.conflicts.set(conflict.id, conflict);
+      this.currentConflictId = Math.max(this.currentConflictId, conflict.id + 1);
     });
   }
 
   private initializeStocks() {
-    const initialStocks: InsertStock[] = [
+    const sampleStocks: Stock[] = [
       {
+        id: 1,
         symbol: "LMT",
         name: "Lockheed Martin Corporation",
-        price: 480.17,
-        change: 1.35,
-        changePercent: 0.2819,
-        volume: 1032298,
-        marketCap: "$125.2B",
+        price: 423.50,
+        change: 8.20,
+        changePercent: 1.98,
+        volume: 1250000,
+        marketCap: "$120.5B",
+        lastUpdated: new Date()
       },
       {
+        id: 2,
         symbol: "RTX",
-        name: "Raytheon Technologies Corporation", 
-        price: 137.5,
-        change: 0.04,
-        changePercent: 0.0291,
-        volume: 3493879,
-        marketCap: "$198.4B",
+        name: "RTX Corporation",
+        price: 98.75,
+        change: -1.25,
+        changePercent: -1.25,
+        volume: 2100000,
+        marketCap: "$142.8B",
+        lastUpdated: new Date()
       },
       {
+        id: 3,
         symbol: "NOC",
         name: "Northrop Grumman Corporation",
-        price: 488.22,
-        change: 4.84,
-        changePercent: 1.0013,
-        volume: 578461,
-        marketCap: "$74.8B",
+        price: 467.90,
+        change: 12.45,
+        changePercent: 2.73,
+        volume: 890000,
+        marketCap: "$72.1B",
+        lastUpdated: new Date()
       },
       {
-        symbol: "GD", 
+        id: 4,
+        symbol: "GD",
         name: "General Dynamics Corporation",
-        price: 276.04,
-        change: 0.33,
-        changePercent: 0.1197,
-        volume: 1051028,
-        marketCap: "$75.9B",
+        price: 289.30,
+        change: 5.80,
+        changePercent: 2.05,
+        volume: 1650000,
+        marketCap: "$79.4B",
+        lastUpdated: new Date()
       },
       {
+        id: 5,
         symbol: "BA",
         name: "The Boeing Company",
-        price: 213.43,
-        change: 1.96,
-        changePercent: 0.9268,
-        volume: 8106080,
-        marketCap: "$128.7B",
-      },
-      {
-        symbol: "HII",
-        name: "Huntington Ingalls Industries",
-        price: 298.75,
-        change: 2.18,
-        changePercent: 0.7355,
-        volume: 245680,
-        marketCap: "$12.1B",
-      },
-      {
-        symbol: "LHX",
-        name: "L3Harris Technologies",
-        price: 219.84,
-        change: 1.42,
-        changePercent: 0.6508,
-        volume: 892347,
-        marketCap: "$40.3B",
-      },
-      {
-        symbol: "TDG",
-        name: "TransDigm Group",
-        price: 1186.92,
-        change: 8.67,
-        changePercent: 0.7361,
-        volume: 178923,
-        marketCap: "$69.2B",
-      },
-      {
-        symbol: "LDOS",
-        name: "Leidos Holdings",
-        price: 148.33,
-        change: 0.98,
-        changePercent: 0.6650,
-        volume: 567234,
-        marketCap: "$20.1B",
-      },
-      {
-        symbol: "CACI",
-        name: "CACI International",
-        price: 445.67,
-        change: 3.21,
-        changePercent: 0.7258,
-        volume: 134567,
-        marketCap: "$10.8B",
-      },
-      {
-        symbol: "SAIC",
-        name: "Science Applications International",
-        price: 134.22,
-        change: 1.05,
-        changePercent: 0.7881,
-        volume: 298765,
-        marketCap: "$7.5B",
-      },
-      {
-        symbol: "KTOS",
-        name: "Kratos Defense & Security Solutions",
-        price: 17.89,
-        change: 0.23,
-        changePercent: 1.3025,
-        volume: 1234567,
-        marketCap: "$2.2B",
+        price: 205.25,
+        change: -3.75,
+        changePercent: -1.79,
+        volume: 3200000,
+        marketCap: "$122.7B",
+        lastUpdated: new Date()
       }
     ];
 
-    initialStocks.forEach(stock => {
-      this.createStock(stock);
+    sampleStocks.forEach(stock => {
+      this.stocks.set(stock.symbol, stock);
     });
   }
 
@@ -393,22 +379,12 @@ export class MemStorage implements IStorage {
   }
 
   async createConflict(insertConflict: InsertConflict): Promise<Conflict> {
-    const id = this.currentConflictId++;
     const conflict: Conflict = {
-      id,
-      region: insertConflict.region,
-      name: insertConflict.name,
-      description: insertConflict.description || null,
-      severity: insertConflict.severity,
-      status: insertConflict.status,
-      duration: insertConflict.duration,
-      startDate: insertConflict.startDate,
-      lastUpdated: new Date(),
-      latitude: insertConflict.latitude || null,
-      longitude: insertConflict.longitude || null,
-      parties: insertConflict.parties || null,
+      id: this.currentConflictId++,
+      ...insertConflict,
+      lastUpdated: new Date()
     };
-    this.conflicts.set(id, conflict);
+    this.conflicts.set(conflict.id, conflict);
     return conflict;
   }
 
@@ -419,7 +395,7 @@ export class MemStorage implements IStorage {
     const updated: Conflict = {
       ...existing,
       ...updateData,
-      lastUpdated: new Date(),
+      lastUpdated: new Date()
     };
     this.conflicts.set(id, updated);
     return updated;
@@ -436,16 +412,10 @@ export class MemStorage implements IStorage {
   async createStock(insertStock: InsertStock): Promise<Stock> {
     const stock: Stock = {
       id: this.stocks.size + 1,
-      symbol: insertStock.symbol,
-      name: insertStock.name,
-      price: insertStock.price,
-      change: insertStock.change,
-      changePercent: insertStock.changePercent,
-      volume: insertStock.volume,
-      marketCap: insertStock.marketCap || null,
-      lastUpdated: new Date(),
+      ...insertStock,
+      lastUpdated: new Date()
     };
-    this.stocks.set(insertStock.symbol, stock);
+    this.stocks.set(stock.symbol, stock);
     return stock;
   }
 
@@ -456,7 +426,7 @@ export class MemStorage implements IStorage {
     const updated: Stock = {
       ...existing,
       ...updateData,
-      lastUpdated: new Date(),
+      lastUpdated: new Date()
     };
     this.stocks.set(symbol, updated);
     return updated;
@@ -467,17 +437,53 @@ export class MemStorage implements IStorage {
   }
 
   async createCorrelationEvent(insertEvent: InsertCorrelationEvent): Promise<CorrelationEvent> {
-    const id = this.currentCorrelationId++;
     const event: CorrelationEvent = {
-      id,
-      conflictId: insertEvent.conflictId || null,
-      eventDate: insertEvent.eventDate,
-      eventDescription: insertEvent.eventDescription,
-      stockMovement: insertEvent.stockMovement,
-      severity: insertEvent.severity,
+      id: this.currentCorrelationId++,
+      ...insertEvent
     };
-    this.correlationEvents.set(id, event);
+    this.correlationEvents.set(event.id, event);
     return event;
+  }
+
+  // User methods - placeholder for compatibility (will switch to database later)
+  async getUser(id: number): Promise<User | undefined> {
+    return undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return undefined;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    throw new Error("User creation not implemented in MemStorage");
+  }
+
+  async updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined> {
+    return undefined;
+  }
+
+  async getUserStockWatchlist(userId: number): Promise<StockWatchlist[]> {
+    return [];
+  }
+
+  async addStockToWatchlist(watchlist: InsertStockWatchlist): Promise<StockWatchlist> {
+    throw new Error("Watchlist not implemented in MemStorage");
+  }
+
+  async removeStockFromWatchlist(userId: number, stockSymbol: string): Promise<void> {
+    // No-op
+  }
+
+  async getUserConflictWatchlist(userId: number): Promise<ConflictWatchlist[]> {
+    return [];
+  }
+
+  async addConflictToWatchlist(watchlist: InsertConflictWatchlist): Promise<ConflictWatchlist> {
+    throw new Error("Watchlist not implemented in MemStorage");
+  }
+
+  async removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void> {
+    // No-op
   }
 }
 

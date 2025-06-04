@@ -1,9 +1,168 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertStockSchema } from "@shared/schema";
+import { storage, DatabaseStorage } from "./storage";
+import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
+const dbStorage = new DatabaseStorage();
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Auth middleware
+const authenticateToken = async (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Access token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const user = await dbStorage.getUser(decoded.userId);
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: 'Invalid token' });
+  }
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth routes
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await dbStorage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists' });
+      }
+
+      const user = await dbStorage.createUser(userData);
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+      
+      res.json({ 
+        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+        token 
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(400).json({ message: 'Invalid registration data' });
+    }
+  });
+
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const user = await dbStorage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      const isValid = await dbStorage.verifyPassword(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
+      
+      res.json({ 
+        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+        token 
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
+    res.json({ 
+      user: { 
+        id: req.user.id, 
+        email: req.user.email, 
+        firstName: req.user.firstName, 
+        lastName: req.user.lastName 
+      }
+    });
+  });
+
+  // Watchlist routes
+  app.get('/api/watchlist/stocks', authenticateToken, async (req: any, res) => {
+    try {
+      const watchlist = await dbStorage.getUserStockWatchlist(req.user.id);
+      res.json(watchlist);
+    } catch (error) {
+      console.error('Error fetching stock watchlist:', error);
+      res.status(500).json({ message: 'Failed to fetch watchlist' });
+    }
+  });
+
+  app.post('/api/watchlist/stocks', authenticateToken, async (req: any, res) => {
+    try {
+      const watchlistData = insertStockWatchlistSchema.parse({
+        ...req.body,
+        userId: req.user.id
+      });
+      
+      const watchlist = await dbStorage.addStockToWatchlist(watchlistData);
+      res.json(watchlist);
+    } catch (error) {
+      console.error('Error adding to stock watchlist:', error);
+      res.status(400).json({ message: 'Failed to add to watchlist' });
+    }
+  });
+
+  app.delete('/api/watchlist/stocks/:symbol', authenticateToken, async (req: any, res) => {
+    try {
+      await dbStorage.removeStockFromWatchlist(req.user.id, req.params.symbol);
+      res.json({ message: 'Removed from watchlist' });
+    } catch (error) {
+      console.error('Error removing from stock watchlist:', error);
+      res.status(500).json({ message: 'Failed to remove from watchlist' });
+    }
+  });
+
+  app.get('/api/watchlist/conflicts', authenticateToken, async (req: any, res) => {
+    try {
+      const watchlist = await dbStorage.getUserConflictWatchlist(req.user.id);
+      res.json(watchlist);
+    } catch (error) {
+      console.error('Error fetching conflict watchlist:', error);
+      res.status(500).json({ message: 'Failed to fetch watchlist' });
+    }
+  });
+
+  app.post('/api/watchlist/conflicts', authenticateToken, async (req: any, res) => {
+    try {
+      const watchlistData = insertConflictWatchlistSchema.parse({
+        ...req.body,
+        userId: req.user.id
+      });
+      
+      const watchlist = await dbStorage.addConflictToWatchlist(watchlistData);
+      res.json(watchlist);
+    } catch (error) {
+      console.error('Error adding to conflict watchlist:', error);
+      res.status(400).json({ message: 'Failed to add to watchlist' });
+    }
+  });
+
+  app.delete('/api/watchlist/conflicts/:id', authenticateToken, async (req: any, res) => {
+    try {
+      await dbStorage.removeConflictFromWatchlist(req.user.id, parseInt(req.params.id));
+      res.json({ message: 'Removed from watchlist' });
+    } catch (error) {
+      console.error('Error removing from conflict watchlist:', error);
+      res.status(500).json({ message: 'Failed to remove from watchlist' });
+    }
+  });
+
   // Conflicts routes
   app.get("/api/conflicts", async (req, res) => {
     try {
