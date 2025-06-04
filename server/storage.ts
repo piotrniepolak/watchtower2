@@ -196,7 +196,7 @@ export class MemStorage implements IStorage {
         id: 1,
         region: "Eastern Europe",
         name: "Ukraine-Russia Conflict",
-        description: "Ongoing military conflict with recent developments in drone warfare and territorial dynamics. Over 100,000+ military casualties combined (June 2025).",
+        description: "Ongoing military conflict with recent developments in drone warfare and territorial dynamics. Over 1 million+ military casualties combined (June 2025).",
         severity: "High",
         status: "Active",
         duration: "3+ years",

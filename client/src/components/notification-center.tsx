@@ -33,42 +33,28 @@ interface Notification {
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
-  const queryClient = useQueryClient();
+  const [readNotifications, setReadNotifications] = useState<Set<number>>(new Set());
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ["/api/notifications"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const markAsReadMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      await apiRequest(`/api/notifications/${notificationId}/read`, "POST");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-    },
-  });
+  const handleNotificationClick = (notificationId: number) => {
+    setReadNotifications(prev => new Set(prev).add(notificationId));
+  };
 
-  const markAllAsReadMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("/api/notifications/mark-all-read", "POST");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-    },
-  });
+  const handleMarkAllRead = () => {
+    const allIds = (notifications as Notification[]).map((n: Notification) => n.id);
+    setReadNotifications(new Set(allIds));
+  };
 
-  const deleteNotificationMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      await apiRequest(`/api/notifications/${notificationId}`, "DELETE");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-    },
-  });
+  const isNotificationRead = (notification: Notification) => {
+    return notification.read || readNotifications.has(notification.id);
+  };
 
-  const unreadCount = notifications.filter((n: Notification) => !n.read).length;
-  const filteredNotifications = notifications.filter((n: Notification) => 
+  const unreadCount = (notifications as Notification[]).filter((n: Notification) => !isNotificationRead(n)).length;
+  const filteredNotifications = (notifications as Notification[]).filter((n: Notification) => 
     filter === "all" || n.type === filter
   );
 
@@ -149,8 +135,7 @@ export default function NotificationCenter() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => markAllAsReadMutation.mutate()}
-                      disabled={markAllAsReadMutation.isPending}
+                      onClick={handleMarkAllRead}
                     >
                       <Check className="w-4 h-4" />
                     </Button>
@@ -210,11 +195,7 @@ export default function NotificationCenter() {
                           className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
                             !notification.read ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
                           }`}
-                          onClick={() => {
-                            if (!notification.read) {
-                              markAsReadMutation.mutate(notification.id);
-                            }
-                          }}
+                          onClick={() => handleNotificationClick(notification.id)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start space-x-3 flex-1">
@@ -248,17 +229,9 @@ export default function NotificationCenter() {
                                 </div>
                               </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="ml-2 opacity-0 group-hover:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteNotificationMutation.mutate(notification.id);
-                              }}
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
+                            {!isNotificationRead(notification) && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full ml-2"></div>
+                            )}
                           </div>
                         </div>
                         {index < filteredNotifications.length - 1 && <Separator />}

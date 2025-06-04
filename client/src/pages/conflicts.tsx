@@ -30,7 +30,7 @@ export default function Conflicts() {
         "November 2022: Liberation of Kherson city",
         "2023: Ongoing fighting in eastern and southern Ukraine"
       ],
-      casualties: "Over 100,000+ military casualties combined, tens of thousands of civilian deaths (June 2025)",
+      casualties: "Over 1 million+ military casualties combined, tens of thousands of civilian deaths (June 2025)",
       impact: "Over 10 million displaced, significant infrastructure damage, global food and energy supply disruptions, strengthened NATO unity.",
       economicImpact: "Global grain and energy price spikes, sanctions on Russia worth hundreds of billions, massive reconstruction costs estimated at $750+ billion",
       militarySupport: "Western military aid exceeding $200 billion, including advanced weapons systems and air defense"
