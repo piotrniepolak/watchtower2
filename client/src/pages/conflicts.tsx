@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, Users, ExternalLink } from "lucide-react";
 import FlagIcon from "@/components/flag-icon";
-import GoogleMap from "@/components/google-map";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Conflict } from "@shared/schema";
 
 export default function Conflicts() {
@@ -231,21 +231,63 @@ export default function Conflicts() {
             Detailed analysis of ongoing global conflicts and their geopolitical impact
           </p>
           
-          {/* Map Overview */}
+          {/* Conflicts Overview Table */}
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <MapPin className="w-5 h-5 mr-2" />
-                Conflict Locations
+                List of Ongoing Armed Conflicts
               </CardTitle>
+              <p className="text-sm text-slate-600 mt-2">
+                This is a list of ongoing armed conflicts that are taking place around the world.
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <GoogleMap 
-                  conflicts={conflicts as Conflict[] || []} 
-                  className="w-full h-full"
-                />
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Conflict</TableHead>
+                    <TableHead>Region</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Parties</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(conflicts as Conflict[] || []).map((conflict) => (
+                    <TableRow key={conflict.id}>
+                      <TableCell className="font-medium">
+                        {conflict.name}
+                      </TableCell>
+                      <TableCell>{conflict.region}</TableCell>
+                      <TableCell>{conflict.duration}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(conflict.status)}>
+                          {conflict.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getSeverityColor(conflict.severity)}>
+                          {conflict.severity}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-1">
+                          {conflict.parties?.slice(0, 4).map((party, index) => (
+                            <FlagIcon key={index} countryCode={party} size="sm" />
+                          ))}
+                          {conflict.parties && conflict.parties.length > 4 && (
+                            <span className="text-xs text-slate-500 ml-1">
+                              +{conflict.parties.length - 4}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
 
