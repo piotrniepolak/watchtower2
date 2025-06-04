@@ -149,10 +149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? stocks.reduce((sum, stock) => sum + stock.price, 0) / stocks.length
         : 0;
       
-      // Calculate total market cap (simplified)
+      // Calculate total market cap (simplified calculation using price * volume as proxy)
       const totalMarketCap = stocks.reduce((sum, stock) => {
-        // Simplified calculation - in real app would use actual market cap
-        return sum + (stock.price * stock.volume);
+        return sum + (stock.price * stock.volume / 1000000); // Convert to millions
       }, 0);
       
       // Simplified correlation score
@@ -162,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeConflicts,
         totalConflicts,
         defenseIndex: defenseIndex.toFixed(2),
-        marketCap: `$${(totalMarketCap / 1000000000).toFixed(1)}B`,
+        marketCap: `$${(totalMarketCap / 1000).toFixed(1)}B`,
         correlationScore,
       });
     } catch (error) {
