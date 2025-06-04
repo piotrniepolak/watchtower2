@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage, DatabaseStorage } from "./storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
+import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -341,6 +342,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch metrics" });
+    }
+  });
+
+  // AI-powered conflict prediction routes
+  app.get("/api/ai/predictions", async (req, res) => {
+    try {
+      const conflicts = await storage.getConflicts();
+      const stocks = await storage.getStocks();
+      
+      const predictions = await generateConflictPredictions(conflicts, stocks);
+      res.json(predictions);
+    } catch (error) {
+      console.error("Error generating conflict predictions:", error);
+      res.status(500).json({ error: "Failed to generate predictions" });
+    }
+  });
+
+  app.get("/api/ai/market-analysis", async (req, res) => {
+    try {
+      const conflicts = await storage.getConflicts();
+      const stocks = await storage.getStocks();
+      const predictions = await generateConflictPredictions(conflicts, stocks);
+      
+      const marketAnalysis = await generateMarketAnalysis(conflicts, stocks, predictions);
+      res.json(marketAnalysis);
+    } catch (error) {
+      console.error("Error generating market analysis:", error);
+      res.status(500).json({ error: "Failed to generate market analysis" });
+    }
+  });
+
+  app.get("/api/ai/storyline/:conflictId", async (req, res) => {
+    try {
+      const conflictId = parseInt(req.params.conflictId);
+      const conflict = await storage.getConflict(conflictId);
+      
+      if (!conflict) {
+        return res.status(404).json({ error: "Conflict not found" });
+      }
+      
+      const storyline = await generateConflictStoryline(conflict);
+      res.json(storyline);
+    } catch (error) {
+      console.error("Error generating conflict storyline:", error);
+      res.status(500).json({ error: "Failed to generate storyline" });
     }
   });
 

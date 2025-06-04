@@ -1,447 +1,395 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Activity, Calendar, Target } from "lucide-react";
-import CompanyLogo from "@/components/company-logo";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import type { Stock, Conflict } from "@shared/schema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Brain, 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  Target, 
+  Globe, 
+  BarChart3, 
+  Lightbulb,
+  Clock,
+  Users,
+  DollarSign,
+  Shield,
+  Zap
+} from "lucide-react";
+import Navigation from "@/components/navigation";
+
+interface ConflictPrediction {
+  conflictId: number;
+  conflictName: string;
+  scenario: "escalation" | "de-escalation" | "stalemate" | "resolution";
+  probability: number;
+  timeframe: string;
+  narrative: string;
+  keyFactors: string[];
+  economicImpact: string;
+  defenseStockImpact: {
+    affected: string[];
+    direction: "positive" | "negative" | "neutral";
+    magnitude: "low" | "medium" | "high";
+  };
+  geopoliticalImplications: string[];
+  riskFactors: string[];
+  mitigationStrategies: string[];
+}
+
+interface MarketAnalysis {
+  overallSentiment: "bullish" | "bearish" | "neutral";
+  sectorOutlook: string;
+  keyDrivers: string[];
+  riskAssessment: string;
+  investmentImplications: string[];
+  timeHorizon: string;
+}
+
+interface ConflictStoryline {
+  currentSituation: string;
+  possibleOutcomes: Array<{
+    scenario: string;
+    probability: number;
+    description: string;
+    timeline: string;
+    implications: string[];
+  }>;
+  keyWatchPoints: string[];
+  expertInsights: string;
+}
 
 export default function Analysis() {
-  const [selectedTimeframe, setSelectedTimeframe] = useState<"1M" | "3M" | "6M" | "1Y" | "2Y">("1Y");
-  const [selectedEventType, setSelectedEventType] = useState<"all" | "escalations" | "resolutions">("all");
-
-  const { data: stocks } = useQuery({
-    queryKey: ["/api/stocks"],
-  });
-  
-  const { data: conflicts } = useQuery({
-    queryKey: ["/api/conflicts"],
+  const { data: predictions, isLoading: predictionsLoading } = useQuery({
+    queryKey: ["/api/ai/predictions"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Correlation analysis data showing how stocks moved during conflict events
-  const correlationEvents = [
-    {
-      date: "2022-02-24",
-      event: "Russia invades Ukraine",
-      conflict: "Ukraine-Russia",
-      stockMovements: [
-        { symbol: "LMT", priceChange: 12.5, percentChange: 2.8 },
-        { symbol: "RTX", priceChange: 8.2, percentChange: 3.1 },
-        { symbol: "NOC", priceChange: 15.7, percentChange: 3.4 },
-        { symbol: "GD", priceChange: 9.8, percentChange: 2.9 },
-        { symbol: "BA", priceChange: 6.3, percentChange: 1.8 },
-        { symbol: "HII", priceChange: 7.2, percentChange: 2.5 },
-        { symbol: "LHX", priceChange: 5.8, percentChange: 2.7 }
-      ]
-    },
-    {
-      date: "2023-10-07",
-      event: "Hamas attacks Israel",
-      conflict: "Israel-Gaza",
-      stockMovements: [
-        { symbol: "LMT", priceChange: 8.9, percentChange: 1.9 },
-        { symbol: "RTX", priceChange: 5.4, percentChange: 2.1 },
-        { symbol: "NOC", priceChange: 11.2, percentChange: 2.5 },
-        { symbol: "GD", priceChange: 7.1, percentChange: 2.2 },
-        { symbol: "BA", priceChange: 4.8, percentChange: 1.4 },
-        { symbol: "LHX", priceChange: 4.7, percentChange: 2.2 },
-        { symbol: "LDOS", priceChange: 3.2, percentChange: 2.2 }
-      ]
-    },
-    {
-      date: "2024-04-13",
-      event: "Iran strikes Israel with drones",
-      conflict: "Middle East Tensions",
-      stockMovements: [
-        { symbol: "LMT", priceChange: 9.4, percentChange: 2.0 },
-        { symbol: "RTX", priceChange: 6.1, percentChange: 2.3 },
-        { symbol: "NOC", priceChange: 10.8, percentChange: 2.3 },
-        { symbol: "GD", priceChange: 6.8, percentChange: 2.5 },
-        { symbol: "LHX", priceChange: 5.2, percentChange: 2.4 },
-        { symbol: "CACI", priceChange: 8.9, percentChange: 2.0 }
-      ]
-    },
-    {
-      date: "2021-02-01",
-      event: "Myanmar military coup",
-      conflict: "Myanmar Civil War",
-      stockMovements: [
-        { symbol: "LMT", priceChange: 4.3, percentChange: 0.9 },
-        { symbol: "RTX", priceChange: 2.8, percentChange: 1.1 },
-        { symbol: "NOC", priceChange: 5.7, percentChange: 1.2 },
-        { symbol: "LDOS", priceChange: 2.1, percentChange: 1.4 },
-        { symbol: "SAIC", priceChange: 1.8, percentChange: 1.4 }
-      ]
-    },
-    {
-      date: "2024-01-11",
-      event: "Red Sea shipping attacks escalate",
-      conflict: "Yemen Civil War",
-      stockMovements: [
-        { symbol: "LMT", priceChange: 7.2, percentChange: 1.5 },
-        { symbol: "RTX", priceChange: 4.6, percentChange: 1.7 },
-        { symbol: "NOC", priceChange: 8.1, percentChange: 1.7 },
-        { symbol: "HII", priceChange: 5.9, percentChange: 2.0 },
-        { symbol: "GD", priceChange: 4.4, percentChange: 1.6 }
-      ]
-    },
-    {
-      date: "2023-03-15",
-      event: "China military exercises near Taiwan",
-      conflict: "Taiwan Strait Tensions",
-      stockMovements: [
-        { symbol: "LMT", priceChange: 6.7, percentChange: 1.4 },
-        { symbol: "RTX", priceChange: 4.2, percentChange: 1.6 },
-        { symbol: "NOC", priceChange: 8.3, percentChange: 1.8 },
-        { symbol: "GD", priceChange: 5.5, percentChange: 1.7 },
-        { symbol: "BA", priceChange: 3.1, percentChange: 0.9 }
-      ]
+  const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
+    queryKey: ["/api/ai/market-analysis"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const getScenarioColor = (scenario: string) => {
+    switch (scenario) {
+      case "escalation": return "destructive";
+      case "de-escalation": return "secondary";
+      case "stalemate": return "default";
+      case "resolution": return "default";
+      default: return "outline";
     }
-  ];
-
-  // Generate correlation data based on selected timeframe
-  const generateCorrelationTrend = (timeframe: string) => {
-    const baseData = {
-      "1M": [
-        { period: "Week 1", correlation: 0.72, conflicts: 3, avgGain: 2.8 },
-        { period: "Week 2", correlation: 0.68, conflicts: 2, avgGain: 1.9 },
-        { period: "Week 3", correlation: 0.75, conflicts: 4, avgGain: 3.2 },
-        { period: "Week 4", correlation: 0.71, conflicts: 3, avgGain: 2.6 }
-      ],
-      "3M": [
-        { period: "Apr 2024", correlation: 0.69, conflicts: 12, avgGain: 2.4 },
-        { period: "May 2024", correlation: 0.74, conflicts: 15, avgGain: 3.2 },
-        { period: "Jun 2024", correlation: 0.71, conflicts: 11, avgGain: 2.8 }
-      ],
-      "6M": [
-        { period: "Jan 2024", correlation: 0.68, conflicts: 9, avgGain: 2.5 },
-        { period: "Feb 2024", correlation: 0.72, conflicts: 13, avgGain: 3.1 },
-        { period: "Mar 2024", correlation: 0.69, conflicts: 11, avgGain: 2.7 },
-        { period: "Apr 2024", correlation: 0.75, conflicts: 14, avgGain: 3.4 },
-        { period: "May 2024", correlation: 0.73, conflicts: 12, avgGain: 3.0 },
-        { period: "Jun 2024", correlation: 0.71, conflicts: 10, avgGain: 2.8 }
-      ],
-      "1Y": [
-        { period: "Jun 2023", correlation: 0.65, conflicts: 8, avgGain: 2.1 },
-        { period: "Jul 2023", correlation: 0.71, conflicts: 11, avgGain: 2.9 },
-        { period: "Aug 2023", correlation: 0.68, conflicts: 9, avgGain: 2.4 },
-        { period: "Sep 2023", correlation: 0.74, conflicts: 13, avgGain: 3.2 },
-        { period: "Oct 2023", correlation: 0.79, conflicts: 16, avgGain: 4.1 },
-        { period: "Nov 2023", correlation: 0.82, conflicts: 18, avgGain: 4.5 },
-        { period: "Dec 2023", correlation: 0.76, conflicts: 14, avgGain: 3.6 },
-        { period: "Jan 2024", correlation: 0.73, conflicts: 12, avgGain: 3.0 },
-        { period: "Feb 2024", correlation: 0.71, conflicts: 11, avgGain: 2.8 },
-        { period: "Mar 2024", correlation: 0.75, conflicts: 14, avgGain: 3.4 },
-        { period: "Apr 2024", correlation: 0.72, conflicts: 13, avgGain: 3.1 },
-        { period: "May 2024", correlation: 0.74, conflicts: 15, avgGain: 3.3 }
-      ],
-      "2Y": [
-        { period: "Q2 2022", correlation: 0.78, conflicts: 45, avgGain: 4.3 },
-        { period: "Q3 2022", correlation: 0.82, conflicts: 52, avgGain: 5.1 },
-        { period: "Q4 2022", correlation: 0.75, conflicts: 38, avgGain: 3.8 },
-        { period: "Q1 2023", correlation: 0.71, conflicts: 34, avgGain: 3.2 },
-        { period: "Q2 2023", correlation: 0.69, conflicts: 31, avgGain: 2.9 },
-        { period: "Q3 2023", correlation: 0.73, conflicts: 39, avgGain: 3.5 },
-        { period: "Q4 2023", correlation: 0.79, conflicts: 48, avgGain: 4.2 },
-        { period: "Q1 2024", correlation: 0.74, conflicts: 42, avgGain: 3.7 }
-      ]
-    };
-    return baseData[timeframe as keyof typeof baseData] || baseData["1Y"];
   };
 
-  const correlationTrend = generateCorrelationTrend(selectedTimeframe);
-
-  // Stock performance metrics during conflict periods
-  const performanceMetrics = [
-    { 
-      symbol: "LMT",
-      name: "Lockheed Martin",
-      conflictGain: 15.2,
-      peaceGain: 8.7,
-      volatility: 12.4,
-      correlation: 0.84
-    },
-    {
-      symbol: "NOC", 
-      name: "Northrop Grumman",
-      conflictGain: 13.8,
-      peaceGain: 7.9,
-      volatility: 11.7,
-      correlation: 0.81
-    },
-    {
-      symbol: "RTX",
-      name: "RTX Corporation", 
-      conflictGain: 12.1,
-      peaceGain: 8.2,
-      volatility: 10.9,
-      correlation: 0.78
-    },
-    {
-      symbol: "GD",
-      name: "General Dynamics",
-      conflictGain: 11.5,
-      peaceGain: 7.4,
-      volatility: 10.2,
-      correlation: 0.76
-    },
-    {
-      symbol: "BA",
-      name: "Boeing",
-      conflictGain: 8.9,
-      peaceGain: 6.8,
-      volatility: 15.3,
-      correlation: 0.62
+  const getScenarioIcon = (scenario: string) => {
+    switch (scenario) {
+      case "escalation": return <TrendingUp className="w-4 h-4" />;
+      case "de-escalation": return <TrendingDown className="w-4 h-4" />;
+      case "stalemate": return <Target className="w-4 h-4" />;
+      case "resolution": return <Shield className="w-4 h-4" />;
+      default: return <AlertTriangle className="w-4 h-4" />;
     }
-  ];
+  };
+
+  const getSentimentIcon = (sentiment: string) => {
+    switch (sentiment) {
+      case "bullish": return <TrendingUp className="w-5 h-5 text-green-600" />;
+      case "bearish": return <TrendingDown className="w-5 h-5 text-red-600" />;
+      case "neutral": return <Target className="w-5 h-5 text-slate-600" />;
+      default: return <BarChart3 className="w-5 h-5 text-slate-600" />;
+    }
+  };
+
+  const getMagnitudeColor = (magnitude: string) => {
+    switch (magnitude) {
+      case "high": return "text-red-600";
+      case "medium": return "text-orange-600";
+      case "low": return "text-green-600";
+      default: return "text-slate-600";
+    }
+  };
+
+  if (predictionsLoading || marketLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navigation />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Brain className="w-12 h-12 text-blue-600 animate-pulse mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-slate-900 mb-2">AI Analysis in Progress</h2>
+              <p className="text-slate-600">Generating conflict predictions and market insights...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Navigation />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Conflict-Market Correlation Analysis
-          </h2>
-          <p className="text-slate-600 mb-6">
-            Statistical analysis of defense contractor stock performance during global conflicts
-          </p>
-
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Overall Correlation</p>
-                    <p className="text-2xl font-bold text-slate-900">0.73</p>
-                  </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-blue-600" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-green-600 font-medium">Strong positive</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Avg. Conflict Gain</p>
-                    <p className="text-2xl font-bold text-slate-900">12.3%</p>
-                  </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-slate-600">First 30 days</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Events Analyzed</p>
-                    <p className="text-2xl font-bold text-slate-900">147</p>
-                  </div>
-                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-amber-600" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-slate-600">Since 2020</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Peak Response</p>
-                    <p className="text-2xl font-bold text-slate-900">3.4%</p>
-                  </div>
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <Target className="h-6 w-6 text-red-600" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-slate-600">Single day max</span>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="flex items-center mb-4">
+            <Brain className="w-8 h-8 text-blue-600 mr-3" />
+            <h1 className="text-3xl font-bold text-slate-900">AI-Powered Conflict Analysis</h1>
           </div>
-
-          {/* Correlation Trend Chart */}
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Correlation Strength Over Time</CardTitle>
-                  <p className="text-sm text-slate-600">
-                    How closely defense stocks track with conflict escalations over different periods
-                  </p>
-                </div>
-                <div className="flex space-x-2">
-                  {(["1M", "3M", "6M", "1Y", "2Y"] as const).map((timeframe) => (
-                    <Button
-                      key={timeframe}
-                      variant={selectedTimeframe === timeframe ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedTimeframe(timeframe)}
-                    >
-                      {timeframe}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={correlationTrend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="period" stroke="#64748b" fontSize={12} />
-                    <YAxis stroke="#64748b" fontSize={12} domain={[0.5, 1]} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'white',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '6px'
-                      }}
-                      formatter={(value, name) => [
-                        name === 'correlation' ? Number(value).toFixed(2) : value,
-                        name === 'correlation' ? 'Correlation' : 
-                        name === 'conflicts' ? 'Conflicts' : 'Avg Gain (%)'
-                      ]}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="correlation" 
-                      stroke="#0ea5e9" 
-                      strokeWidth={3}
-                      dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 5 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Key Conflict Events */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>Major Conflict Events Impact</CardTitle>
-              <p className="text-sm text-slate-600">
-                Stock price movements during significant conflict escalations
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {correlationEvents.map((event, index) => (
-                  <div key={index} className="border-l-4 border-blue-500 pl-6 pb-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="font-semibold text-slate-900">{event.event}</h4>
-                        <p className="text-sm text-slate-600">{new Date(event.date).toLocaleDateString()} • {event.conflict}</p>
-                      </div>
-                      <Badge variant="outline">{event.conflict}</Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-5 gap-4">
-                      {event.stockMovements.map((movement) => (
-                        <div key={movement.symbol} className="bg-slate-50 rounded-lg p-4">
-                          <div className="flex items-center mb-2">
-                            <CompanyLogo symbol={movement.symbol} name="" size="sm" />
-                            <span className="ml-2 font-medium text-slate-900">{movement.symbol}</span>
-                          </div>
-                          <div className="text-lg font-bold text-green-600">
-                            +${movement.priceChange.toFixed(2)}
-                          </div>
-                          <div className="text-sm text-green-600">
-                            +{movement.percentChange.toFixed(1)}%
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Performance Comparison */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Stock Performance Analysis</CardTitle>
-              <p className="text-sm text-slate-600">
-                Comparative performance during conflict vs. peaceful periods
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {performanceMetrics.map((metric) => (
-                  <div key={metric.symbol} className="border rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <CompanyLogo symbol={metric.symbol} name={metric.name} size="md" />
-                        <div className="ml-3">
-                          <h4 className="font-semibold text-slate-900">{metric.name}</h4>
-                          <p className="text-sm text-slate-600">{metric.symbol}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-slate-900">
-                          Correlation: {metric.correlation.toFixed(2)}
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          Volatility: {metric.volatility.toFixed(1)}%
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-slate-600">Conflict Periods</span>
-                          <span className="text-lg font-bold text-green-600">+{metric.conflictGain.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-slate-200 rounded-full h-2">
-                          <div 
-                            className="bg-green-600 h-2 rounded-full" 
-                            style={{ width: `${(metric.conflictGain / 20) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-medium text-slate-600">Peaceful Periods</span>
-                          <span className="text-lg font-bold text-blue-600">+{metric.peaceGain.toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full bg-slate-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full" 
-                            style={{ width: `${(metric.peaceGain / 20) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <p className="text-slate-600">
+            Advanced AI predictions and market insights based on current geopolitical developments
+          </p>
         </div>
+
+        <Tabs defaultValue="predictions" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="predictions">Conflict Predictions</TabsTrigger>
+            <TabsTrigger value="market">Market Analysis</TabsTrigger>
+            <TabsTrigger value="storylines">Storylines</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="predictions" className="space-y-6">
+            {/* Market Overview Card */}
+            {marketAnalysis && (
+              <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    {getSentimentIcon((marketAnalysis as MarketAnalysis).overallSentiment)}
+                    <span className="ml-2">Defense Sector Outlook</span>
+                    <Badge variant="outline" className="ml-auto">
+                      {(marketAnalysis as MarketAnalysis).timeHorizon}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold text-slate-900 mb-2">Sector Assessment</h4>
+                      <p className="text-slate-700 text-sm leading-relaxed">
+                        {(marketAnalysis as MarketAnalysis).sectorOutlook}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-900 mb-2">Key Market Drivers</h4>
+                      <ul className="space-y-1">
+                        {(marketAnalysis as MarketAnalysis).keyDrivers.map((driver, index) => (
+                          <li key={index} className="flex items-start text-sm text-slate-700">
+                            <Zap className="w-3 h-3 text-blue-500 mt-1 mr-2 flex-shrink-0" />
+                            {driver}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Predictions Grid */}
+            <div className="grid gap-6">
+              {(predictions as ConflictPrediction[] || []).map((prediction) => (
+                <Card key={prediction.conflictId} className="overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg mb-2">{prediction.conflictName}</CardTitle>
+                        <div className="flex items-center space-x-4 text-sm text-slate-600">
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {prediction.timeframe}
+                          </div>
+                          <div className="flex items-center">
+                            <Target className="w-4 h-4 mr-1" />
+                            {prediction.probability}% probability
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant={getScenarioColor(prediction.scenario)} className="flex items-center">
+                        {getScenarioIcon(prediction.scenario)}
+                        <span className="ml-1 capitalize">{prediction.scenario}</span>
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Left Column */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
+                            <Lightbulb className="w-4 h-4 mr-2" />
+                            Prediction Narrative
+                          </h4>
+                          <p className="text-slate-700 text-sm leading-relaxed">{prediction.narrative}</p>
+                        </div>
+
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
+                            <BarChart3 className="w-4 h-4 mr-2" />
+                            Key Factors
+                          </h4>
+                          <ul className="space-y-1">
+                            {prediction.keyFactors.map((factor, index) => (
+                              <li key={index} className="flex items-start text-sm text-slate-700">
+                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
+                                {factor}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            Economic Impact
+                          </h4>
+                          <p className="text-slate-700 text-sm">{prediction.economicImpact}</p>
+                        </div>
+                      </div>
+
+                      {/* Right Column */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
+                            <TrendingUp className="w-4 h-4 mr-2" />
+                            Defense Stock Impact
+                          </h4>
+                          <div className="bg-slate-50 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium">Impact Direction:</span>
+                              <Badge variant={prediction.defenseStockImpact.direction === "positive" ? "default" : 
+                                prediction.defenseStockImpact.direction === "negative" ? "destructive" : "secondary"}>
+                                {prediction.defenseStockImpact.direction}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium">Magnitude:</span>
+                              <span className={`text-sm font-medium ${getMagnitudeColor(prediction.defenseStockImpact.magnitude)}`}>
+                                {prediction.defenseStockImpact.magnitude}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium">Affected Stocks:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {prediction.defenseStockImpact.affected.map((stock, index) => (
+                                  <Badge key={index} variant="outline" className="text-xs">
+                                    {stock}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
+                            <Globe className="w-4 h-4 mr-2" />
+                            Geopolitical Implications
+                          </h4>
+                          <ul className="space-y-1">
+                            {prediction.geopoliticalImplications.map((implication, index) => (
+                              <li key={index} className="flex items-start text-sm text-slate-700">
+                                <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
+                                {implication}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div>
+                          <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
+                            <AlertTriangle className="w-4 h-4 mr-2" />
+                            Risk Factors
+                          </h4>
+                          <ul className="space-y-1">
+                            {prediction.riskFactors.map((risk, index) => (
+                              <li key={index} className="flex items-start text-sm text-slate-700">
+                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
+                                {risk}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Probability Bar */}
+                    <div className="mt-6 pt-4 border-t border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-slate-700">Prediction Confidence</span>
+                        <span className="text-sm font-semibold text-slate-900">{prediction.probability}%</span>
+                      </div>
+                      <Progress value={prediction.probability} className="h-2" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="market" className="space-y-6">
+            {marketAnalysis && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <BarChart3 className="w-5 h-5 mr-2" />
+                      Comprehensive Market Analysis
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-3">Risk Assessment</h4>
+                        <p className="text-slate-700 text-sm leading-relaxed mb-4">
+                          {(marketAnalysis as MarketAnalysis).riskAssessment}
+                        </p>
+                        
+                        <h4 className="font-semibold text-slate-900 mb-3">Investment Implications</h4>
+                        <ul className="space-y-2">
+                          {(marketAnalysis as MarketAnalysis).investmentImplications.map((implication, index) => (
+                            <li key={index} className="flex items-start text-sm text-slate-700">
+                              <DollarSign className="w-4 h-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                              {implication}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900 mb-3">Sector Outlook</h4>
+                        <div className="bg-slate-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="font-medium">Overall Sentiment:</span>
+                            <div className="flex items-center">
+                              {getSentimentIcon((marketAnalysis as MarketAnalysis).overallSentiment)}
+                              <span className="ml-2 capitalize font-semibold">
+                                {(marketAnalysis as MarketAnalysis).overallSentiment}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-slate-700 text-sm">
+                            {(marketAnalysis as MarketAnalysis).sectorOutlook}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="storylines" className="space-y-6">
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">Interactive Storylines</h3>
+              <p className="text-slate-600 max-w-md mx-auto">
+                Select a specific conflict from the predictions to explore detailed storyline scenarios and expert insights.
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
