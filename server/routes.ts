@@ -401,11 +401,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Notification routes
-  app.get("/api/notifications", async (req, res) => {
-    try {
-      // Sample notifications with current May-June 2025 data
-      const notifications = [
+  // In-memory notification storage for state persistence
+  let notificationStore = [
         {
           id: 1,
           type: "conflict_update",
@@ -472,9 +469,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
           expiresAt: null
         }
-      ];
-      
-      res.json(notifications);
+  ];
+
+  // Notification routes
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      res.json(notificationStore);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       res.status(500).json({ error: "Failed to fetch notifications" });
@@ -484,7 +484,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/notifications/:id/read", async (req, res) => {
     try {
       const notificationId = parseInt(req.params.id);
-      // In a real implementation, this would update the database
+      const notification = notificationStore.find(n => n.id === notificationId);
+      if (notification) {
+        notification.read = true;
+      }
       res.json({ success: true });
     } catch (error) {
       console.error("Error marking notification as read:", error);
