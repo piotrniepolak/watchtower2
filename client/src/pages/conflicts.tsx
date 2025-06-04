@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/hooks/useSimpleAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import ExportMenu from "@/components/export-menu";
+import ConflictSeverityMap from "@/components/conflict-severity-map";
 import type { Conflict } from "@shared/schema";
 
 export default function Conflicts() {
@@ -248,6 +249,9 @@ export default function Conflicts() {
             Detailed analysis of ongoing global conflicts and their geopolitical impact
           </p>
           
+          {/* Conflict Severity Map */}
+          <ConflictSeverityMap className="mb-8" />
+          
           {/* Conflicts Overview Table */}
           <Card className="mb-8">
             <CardHeader>
@@ -274,6 +278,7 @@ export default function Conflicts() {
                     <TableHead>Status</TableHead>
                     <TableHead>Severity</TableHead>
                     <TableHead>Parties</TableHead>
+                    {isAuthenticated && <TableHead>Watchlist</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -306,6 +311,27 @@ export default function Conflicts() {
                           )}
                         </div>
                       </TableCell>
+                      {isAuthenticated && (
+                        <TableCell>
+                          <Button
+                            variant={watchlist.isConflictWatched(conflict.id) ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              if (watchlist.isConflictWatched(conflict.id)) {
+                                watchlist.removeFromConflictWatchlist(conflict.id);
+                              } else {
+                                watchlist.addToConflictWatchlist(conflict.id);
+                              }
+                            }}
+                          >
+                            {watchlist.isConflictWatched(conflict.id) ? (
+                              <StarOff className="w-4 h-4" />
+                            ) : (
+                              <Star className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>
