@@ -201,6 +201,17 @@ export default function Conflicts() {
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active": return "destructive";
+      case "ongoing": return "default";
+      case "ceasefire": return "secondary";
+      case "low-intensity": return "outline";
+      case "post-conflict": return "secondary";
+      default: return "default";
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
