@@ -9,7 +9,7 @@ import Conflicts from "@/pages/conflicts";
 import Markets from "@/pages/markets";
 import Analysis from "@/pages/analysis";
 import Reports from "@/pages/reports";
-import Watchlist from "@/pages/watchlist";
+import DedicatedWatchlist from "@/pages/dedicated-watchlist";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,7 +21,7 @@ function Router() {
       <Route path="/markets" component={Markets} />
       <Route path="/analysis" component={Analysis} />
       <Route path="/reports" component={Reports} />
-      <Route path="/watchlist" component={Watchlist} />
+      <Route path="/watchlist" component={DedicatedWatchlist} />
       <Route component={NotFound} />
     </Switch>
   );
