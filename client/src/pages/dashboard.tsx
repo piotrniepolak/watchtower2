@@ -2,7 +2,7 @@ import Navigation from "@/components/navigation";
 import MetricsCards from "@/components/metrics-cards";
 import ChartsSection from "@/components/charts-section";
 import DataTables from "@/components/data-tables";
-import GlobalConflictsMap from "@/components/global-conflicts-map";
+// Removed global conflicts map component
 
 export default function Dashboard() {
   return (
@@ -18,7 +18,7 @@ export default function Dashboard() {
         
         <ChartsSection />
         <DataTables />
-        <GlobalConflictsMap />
+
       </main>
       
       <footer className="bg-white border-t border-slate-200 mt-12">
