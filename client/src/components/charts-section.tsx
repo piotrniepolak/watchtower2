@@ -1,21 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
-import GoogleMap from "@/components/google-map";
-import type { Conflict, Stock } from "@shared/schema";
+import type { Stock } from "@shared/schema";
 
 export default function ChartsSection() {
   const [timeframe, setTimeframe] = useState("1M");
   
   const { data: stocks, isLoading: stocksLoading } = useQuery({
     queryKey: ["/api/stocks"],
-  });
-
-  const { data: conflicts, isLoading: conflictsLoading } = useQuery({
-    queryKey: ["/api/conflicts"],
   });
 
   // Generate mock historical data for the chart
@@ -33,33 +27,7 @@ export default function ChartsSection() {
   const chartData = generateChartData();
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      {/* Global Conflicts Map */}
-      <Card className="shadow-sm border border-slate-200">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold text-slate-900">
-              Global Conflicts Map
-            </CardTitle>
-            <Button variant="link" className="text-sm text-primary hover:text-primary/80 font-medium p-0">
-              View Details
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <GoogleMap 
-              conflicts={conflicts as Conflict[] || []} 
-              className="w-full h-full"
-            />
-          </div>
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
-            <span>Last updated: 2 hours ago</span>
-            <span>{(conflicts as Conflict[] || []).length} active conflicts</span>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="mb-8">
       {/* Defense Stocks Performance */}
       <Card className="shadow-sm border border-slate-200">
         <CardHeader>
@@ -131,7 +99,7 @@ export default function ChartsSection() {
               <>
                 <div className="text-center">
                   <div className="font-medium text-slate-900">LMT</div>
-                  <div className="text-green-600">+2.3%</div>
+                  <div className="text-green-600">+2.4%</div>
                 </div>
                 <div className="text-center">
                   <div className="font-medium text-slate-900">RTX</div>
@@ -139,7 +107,7 @@ export default function ChartsSection() {
                 </div>
                 <div className="text-center">
                   <div className="font-medium text-slate-900">NOC</div>
-                  <div className="text-red-600">-0.5%</div>
+                  <div className="text-green-600">+3.1%</div>
                 </div>
               </>
             )}
