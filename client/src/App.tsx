@@ -21,6 +21,7 @@ function Router() {
       <Route path="/markets" component={Markets} />
       <Route path="/analysis" component={Analysis} />
       <Route path="/reports" component={Reports} />
+      <Route path="/watchlist" component={Watchlist} />
       <Route component={NotFound} />
     </Switch>
   );
