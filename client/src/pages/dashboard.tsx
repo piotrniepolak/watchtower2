@@ -2,6 +2,7 @@ import Navigation from "@/components/navigation";
 import MetricsCards from "@/components/metrics-cards";
 import ChartsSection from "@/components/charts-section";
 import DataTables from "@/components/data-tables";
+import ConflictHeatMap from "@/components/conflict-heat-map";
 
 export default function Dashboard() {
   return (
@@ -17,6 +18,10 @@ export default function Dashboard() {
         
         <ChartsSection />
         <DataTables />
+        
+        <div className="mt-8">
+          <ConflictHeatMap />
+        </div>
       </main>
       
       <footer className="bg-white border-t border-slate-200 mt-12">
