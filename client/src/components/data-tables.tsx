@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Circle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import CompanyLogo from "@/components/company-logo";
+import FlagIcon from "@/components/flag-icon";
+import type { Conflict, Stock } from "@shared/schema";
 
 export default function DataTables() {
   const [conflictSearch, setConflictSearch] = useState("");
@@ -19,12 +22,12 @@ export default function DataTables() {
     queryKey: ["/api/stocks"],
   });
 
-  const filteredConflicts = conflicts?.filter(conflict =>
+  const filteredConflicts = (conflicts as Conflict[] || []).filter(conflict =>
     conflict.region.toLowerCase().includes(conflictSearch.toLowerCase()) ||
     conflict.name.toLowerCase().includes(conflictSearch.toLowerCase())
   );
 
-  const filteredStocks = stocks?.filter(stock =>
+  const filteredStocks = (stocks as Stock[] || []).filter(stock =>
     stock.symbol.toLowerCase().includes(stockSearch.toLowerCase()) ||
     stock.name.toLowerCase().includes(stockSearch.toLowerCase())
   );
@@ -105,8 +108,10 @@ export default function DataTables() {
                     <TableRow key={conflict.id} className="hover:bg-slate-50 cursor-pointer">
                       <TableCell>
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8">
-                            <div className="h-8 w-8 rounded-full bg-slate-300"></div>
+                          <div className="flex-shrink-0 flex space-x-1">
+                            {conflict.parties && conflict.parties.map((party, index) => (
+                              <FlagIcon key={index} countryCode={party} size="md" />
+                            ))}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-slate-900">{conflict.region}</div>
@@ -137,7 +142,7 @@ export default function DataTables() {
           <div className="px-6 py-3 border-t border-slate-200 bg-slate-50">
             <div className="flex items-center justify-between">
               <div className="text-sm text-slate-700">
-                Showing {filteredConflicts?.length || 0} of {conflicts?.length || 0} conflicts
+                Showing {filteredConflicts.length} of {(conflicts as Conflict[] || []).length} conflicts
               </div>
               <div className="flex items-center space-x-2">
                 <Button variant="outline" size="sm" disabled>Previous</Button>
@@ -207,15 +212,7 @@ export default function DataTables() {
                   filteredStocks.map((stock) => (
                     <TableRow key={stock.symbol} className="hover:bg-slate-50 cursor-pointer">
                       <TableCell>
-                        <div className="flex items-center">
-                          <div className="h-8 w-8 rounded bg-slate-300 mr-3 flex items-center justify-center text-xs font-medium">
-                            {stock.symbol.charAt(0)}
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-slate-900">{stock.name}</div>
-                            <div className="text-sm text-slate-500">{stock.symbol}</div>
-                          </div>
-                        </div>
+                        <CompanyLogo symbol={stock.symbol} name={stock.name} size="md" />
                       </TableCell>
                       <TableCell className="text-sm text-slate-900">
                         ${stock.price.toFixed(2)}
@@ -252,7 +249,7 @@ export default function DataTables() {
           <div className="px-6 py-3 border-t border-slate-200 bg-slate-50">
             <div className="flex items-center justify-between">
               <div className="text-sm text-slate-700">
-                Showing {filteredStocks?.length || 0} companies
+                Showing {filteredStocks.length} companies
               </div>
               <div className="flex items-center space-x-2">
                 <Button variant="outline" size="sm" disabled>Previous</Button>

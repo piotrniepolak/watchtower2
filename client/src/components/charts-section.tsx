@@ -55,7 +55,7 @@ export default function ChartsSection() {
           </div>
           <div className="mt-4 flex items-center justify-between text-sm text-slate-600">
             <span>Last updated: 2 hours ago</span>
-            <span>{conflicts?.length || 0} active conflicts</span>
+            <span>{(conflicts as Conflict[] || []).length} active conflicts</span>
           </div>
         </CardContent>
       </Card>
@@ -119,14 +119,15 @@ export default function ChartsSection() {
             </ResponsiveContainer>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-            {stocks?.slice(0, 3).map((stock) => (
+            {(stocks as Stock[] || []).slice(0, 3).map((stock) => (
               <div key={stock.symbol} className="text-center">
                 <div className="font-medium text-slate-900">{stock.symbol}</div>
                 <div className={stock.changePercent >= 0 ? "text-green-600" : "text-red-600"}>
                   {stock.changePercent >= 0 ? "+" : ""}{stock.changePercent.toFixed(1)}%
                 </div>
               </div>
-            )) || (
+            ))}
+            {(stocks as Stock[] || []).length === 0 && (
               <>
                 <div className="text-center">
                   <div className="font-medium text-slate-900">LMT</div>
