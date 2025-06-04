@@ -36,7 +36,7 @@ export default function Conflicts() {
       impact: "Thousands of casualties, humanitarian crisis in Gaza, regional tension escalation.",
       wikipediaUrl: "https://en.wikipedia.org/wiki/2023_Israel–Hamas_war"
     },
-    "Maritime Dispute": {
+    "South China Sea Dispute": {
       summary: "The South China Sea territorial disputes involve competing claims by China, Philippines, Vietnam, Malaysia, and other nations over islands, reefs, and maritime rights in the strategically important waterway.",
       keyEvents: [
         "2016: International tribunal rules against China's claims",
@@ -50,13 +50,145 @@ export default function Conflicts() {
     "Mali Crisis": {
       summary: "The Mali crisis involves political instability, military coups, and security challenges including insurgency groups and international military interventions since 2012.",
       keyEvents: [
+        "2012: Tuareg rebellion and military coup",
         "2020: Military coup removes civilian government",
         "2021: Second military coup",
-        "2022: Withdrawal of French forces announced",
-        "2023: UN peacekeeping mission ends"
+        "2022: Withdrawal of French forces announced"
       ],
       impact: "Displacement of populations, humanitarian crisis, regional security concerns.",
       wikipediaUrl: "https://en.wikipedia.org/wiki/Mali_War"
+    },
+    "Ethiopia-Tigray": {
+      summary: "The Tigray War was an armed conflict from November 2020 to November 2022 between the Ethiopian federal government and Eritrea against the Tigray People's Liberation Front (TPLF).",
+      keyEvents: [
+        "November 2020: Conflict begins with federal intervention",
+        "November 2021: TPLF advances toward Addis Ababa",
+        "January 2022: Ethiopian government regains territory",
+        "November 2022: Cessation of hostilities agreement signed"
+      ],
+      impact: "Hundreds of thousands killed, millions displaced, severe humanitarian crisis.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Tigray_War"
+    },
+    "Burkina Faso Insurgency": {
+      summary: "An ongoing Islamist insurgency in Burkina Faso began in 2015, linked to regional jihadist movements and exacerbated by political instability and military coups.",
+      keyEvents: [
+        "2015: First major terrorist attacks begin",
+        "2019: Escalation with increased attacks on civilians",
+        "2022: Military coups amid security deterioration",
+        "2023: Continued displacement and humanitarian crisis"
+      ],
+      impact: "Over 2 million internally displaced, thousands killed, regional destabilization.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Insurgency_in_the_Sahel"
+    },
+    "Democratic Republic Congo": {
+      summary: "The ongoing conflicts in the Democratic Republic of Congo involve multiple armed groups, foreign interventions, and resource-related violence, particularly in the eastern provinces.",
+      keyEvents: [
+        "1998: Second Congo War begins",
+        "2012: M23 rebellion escalates tensions",
+        "2021: Renewed M23 offensive",
+        "2022: Regional diplomatic efforts intensify"
+      ],
+      impact: "Millions of deaths over decades, ongoing displacement, resource exploitation conflicts.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Kivu_conflict"
+    },
+    "Kashmir Conflict": {
+      summary: "The Kashmir conflict is a territorial dispute over the Kashmir region between India and Pakistan since 1947, with periodic escalations and ongoing tensions.",
+      keyEvents: [
+        "1947: First Indo-Pakistani War over Kashmir",
+        "1999: Kargil War escalation",
+        "2019: Balakot airstrikes following Pulwama attack",
+        "2020-2024: Periodic border clashes and tensions"
+      ],
+      impact: "Decades of military confrontation, civilian casualties, regional nuclear risk.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Kashmir_conflict"
+    },
+    "Syria Civil War": {
+      summary: "The Syrian civil war began in 2011 as part of the Arab Spring, evolving into a complex multi-sided conflict involving multiple foreign powers and non-state actors.",
+      keyEvents: [
+        "2011: Peaceful protests turn violent",
+        "2014: Rise of ISIS in Syrian territory",
+        "2015: Russian military intervention begins",
+        "2019: Turkish operations in northern Syria"
+      ],
+      impact: "Over 500,000 deaths, 13+ million displaced, regional refugee crisis.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Syrian_civil_war"
+    },
+    "Yemen Civil War": {
+      summary: "The Yemen civil war began in 2014 when Houthi forces took control of the capital Sanaa, leading to a Saudi-led coalition intervention in 2015.",
+      keyEvents: [
+        "2014: Houthis capture Sanaa",
+        "2015: Saudi-led coalition intervention begins",
+        "2019: Attacks on Saudi oil facilities",
+        "2022-2024: Renewed peace efforts and ceasefires"
+      ],
+      impact: "Hundreds of thousands dead, worst humanitarian crisis globally, economic collapse.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Yemeni_civil_war_(2014–present)"
+    },
+    "Taiwan Strait Tensions": {
+      summary: "Cross-strait tensions between China and Taiwan have escalated since 2020, with increased military activities and diplomatic pressure from Beijing.",
+      keyEvents: [
+        "2020: Increased PLA air incursions",
+        "2022: Pelosi visit triggers military exercises",
+        "2023: Record number of Chinese warplane crossings",
+        "2024: Taiwan presidential election increases tensions"
+      ],
+      impact: "Regional military buildup, global semiconductor supply concerns, US-China strategic competition.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Cross-Strait_relations"
+    },
+    "Afghanistan Taliban": {
+      summary: "Following the Taliban's return to power in August 2021 after the US withdrawal, Afghanistan faces ongoing security challenges and humanitarian crisis.",
+      keyEvents: [
+        "2021: Taliban captures Kabul, US withdrawal",
+        "2021-2022: ISIS-K attacks continue",
+        "2022: International recognition debates",
+        "2023-2024: Humanitarian aid challenges"
+      ],
+      impact: "Humanitarian crisis, women's rights restrictions, regional security concerns.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Taliban_insurgency"
+    },
+    "Nigeria Boko Haram": {
+      summary: "Boko Haram's insurgency in northeastern Nigeria began in 2009, spreading to neighboring countries and causing massive displacement and casualties.",
+      keyEvents: [
+        "2009: Founding leader killed, insurgency begins",
+        "2014: Chibok schoolgirls kidnapping",
+        "2015-2017: Military operations intensify",
+        "2018-2024: Continued attacks and counteroperations"
+      ],
+      impact: "Over 350,000 deaths, 3+ million displaced, regional humanitarian crisis.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Boko_Haram_insurgency"
+    },
+    "Somalia Al-Shabaab": {
+      summary: "Al-Shabaab's insurgency in Somalia began in 2006, controlling territory and conducting attacks across the Horn of Africa region.",
+      keyEvents: [
+        "2006: Emerges from Islamic Courts Union",
+        "2011: Famine exploitation and territorial losses",
+        "2017: Deadliest attack in Mogadishu history",
+        "2022-2024: ATMIS operations and government offensives"
+      ],
+      impact: "Tens of thousands killed, persistent instability, regional security threat.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Somali_Civil_War_(2009–present)"
+    },
+    "Myanmar Civil War": {
+      summary: "Myanmar's civil war began following the military coup on February 1, 2021, leading to widespread resistance and armed conflict across the country.",
+      keyEvents: [
+        "February 2021: Military coup removes elected government",
+        "March 2021: Civilian resistance movement begins",
+        "2022: Armed resistance groups coordinate",
+        "2023: Opposition gains territory in border regions"
+      ],
+      impact: "Thousands killed, 2+ million displaced, economic collapse, humanitarian crisis.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Myanmar_civil_war_(2021–present)"
+    },
+    "Colombia-Venezuela Border": {
+      summary: "Border tensions between Colombia and Venezuela have escalated due to migration crisis, drug trafficking, and political differences between the governments.",
+      keyEvents: [
+        "2019: Venezuelan migration crisis peaks",
+        "2020: COVID-19 border closures",
+        "2021: Diplomatic relations strain",
+        "2022-2024: Renewed cooperation efforts"
+      ],
+      impact: "7+ million Venezuelan migrants, regional stability concerns, humanitarian challenges.",
+      wikipediaUrl: "https://en.wikipedia.org/wiki/Colombia–Venezuela_relations"
     }
   };
 
