@@ -5,6 +5,7 @@ import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSc
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
+import { newsService } from "./news-service";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -634,6 +635,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Daily News Routes
+  app.get("/api/news/today", async (req, res) => {
+    try {
+      const news = await newsService.getTodaysNews();
+      if (!news) {
+        return res.status(404).json({ error: "No news available for today" });
+      }
+      res.json(news);
+    } catch (error) {
+      console.error("Error fetching today's news:", error);
+      res.status(500).json({ error: "Failed to fetch today's news" });
+    }
+  });
   
   // Daily Quiz Routes
   app.get("/api/quiz/today", async (req, res) => {

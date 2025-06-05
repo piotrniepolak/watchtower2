@@ -793,6 +793,29 @@ export class MemStorage implements IStorage {
     }
     return undefined;
   }
+
+  // Daily News
+  async getDailyNews(date: string): Promise<DailyNews | undefined> {
+    return this.dailyNewsMap.get(date);
+  }
+
+  async createDailyNews(insertNews: InsertDailyNews): Promise<DailyNews> {
+    const news: DailyNews = {
+      id: this.currentNewsId++,
+      date: insertNews.date,
+      title: insertNews.title,
+      summary: insertNews.summary,
+      keyDevelopments: insertNews.keyDevelopments,
+      marketImpact: insertNews.marketImpact,
+      conflictUpdates: insertNews.conflictUpdates,
+      defenseStockHighlights: insertNews.defenseStockHighlights,
+      geopoliticalAnalysis: insertNews.geopoliticalAnalysis,
+      createdAt: new Date(),
+    };
+    
+    this.dailyNewsMap.set(news.date, news);
+    return news;
+  }
 }
 
 export const storage = new MemStorage();
