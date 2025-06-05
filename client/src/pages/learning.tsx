@@ -299,6 +299,9 @@ export default function Learning() {
             {/* Daily Quiz Section */}
             <DailyQuiz />
             
+            {/* Daily Quiz Leaderboard */}
+            <QuizLeaderboard />
+            
             <Card>
               <CardHeader>
                 <CardTitle>Learning Modules</CardTitle>
@@ -435,9 +438,6 @@ export default function Learning() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Daily Quiz Leaderboard */}
-            <QuizLeaderboard />
           </div>
         </div>
 
