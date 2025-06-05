@@ -79,7 +79,7 @@ export default function MetricsCards() {
   const metricCards = [
     {
       title: "Active Conflicts",
-      value: metrics?.activeConflicts || 0,
+      value: `${metrics?.activeConflicts || 0} / ${metrics?.totalConflicts || 0}`,
       change: criticalHighConflicts.toString(),
       changeText: "critical/high intensity",
       icon: AlertTriangle,
