@@ -75,7 +75,7 @@ export default function Learning() {
       description: "Understanding conflict analysis, regional dynamics, and key indicators",
       difficulty: "Beginner",
       duration: "",
-      points: 100,
+      points: 100, // 4 questions × 25 points = 100 points
       prerequisites: [],
       completed: userProgress.completedModules.includes("geo-basics"),
       locked: false,
@@ -88,7 +88,7 @@ export default function Learning() {
       description: "Interstate, civil wars, proxy conflicts, and hybrid warfare patterns",
       difficulty: "Beginner",
       duration: "",
-      points: 150,
+      points: 150, // 3 quiz questions (30+30+40) + 1 scenario (50) = 150 points
       prerequisites: ["geo-basics"],
       completed: userProgress.completedModules.includes("conflict-types"),
       locked: !userProgress.completedModules.includes("geo-basics"),
@@ -101,7 +101,7 @@ export default function Learning() {
       description: "How conflicts impact defense contractor stocks and market dynamics",
       difficulty: "Intermediate",
       duration: "",
-      points: 200,
+      points: 200, // 2 quiz questions (40+35) + 2 data analysis (75+50) = 200 points
       prerequisites: ["geo-basics", "conflict-types"],
       completed: userProgress.completedModules.includes("defense-markets"),
       locked: !userProgress.completedModules.includes("conflict-types"),
@@ -114,7 +114,7 @@ export default function Learning() {
       description: "Interpreting casualty figures, displacement stats, and economic indicators",
       difficulty: "Intermediate",
       duration: "",
-      points: 250,
+      points: 50, // 1 quiz question = 50 points
       prerequisites: ["conflict-types"],
       completed: userProgress.completedModules.includes("data-interpretation"),
       locked: !userProgress.completedModules.includes("conflict-types"),
