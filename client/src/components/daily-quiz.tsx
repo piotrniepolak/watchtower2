@@ -149,47 +149,7 @@ export default function DailyQuiz() {
     );
   }
 
-  if (isCompleted && !showResults) {
-    const score = existingResponse!.score;
-    const percentage = Math.round((score / totalQuestions) * 100);
-    
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
-            Quiz Completed
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">
-              {score}/{totalQuestions}
-            </div>
-            <div className="text-lg text-slate-600 dark:text-slate-400 mb-4">
-              {percentage}% Correct
-            </div>
-            <Progress value={percentage} className="w-full max-w-xs mx-auto" />
-          </div>
-          
-          <div className="text-center text-sm text-slate-500 dark:text-slate-400">
-            Completed at {new Date(existingResponse!.completedAt).toLocaleTimeString()}
-          </div>
-          
-          <div className="text-center">
-            <Button 
-              onClick={() => setShowResults(true)}
-              variant="outline"
-            >
-              Review Answers
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (showResults || (isCompleted && showResults)) {
+  if (showResults) {
     return (
       <Card>
         <CardHeader>
@@ -200,7 +160,7 @@ export default function DailyQuiz() {
         </CardHeader>
         <CardContent className="space-y-6">
           {questions.map((question, index) => {
-            const userAnswer = isCompleted ? existingResponse!.responses[index] : selectedAnswers[index];
+            const userAnswer = selectedAnswers[index];
             const isCorrect = userAnswer === question.correctAnswer;
             
             return (

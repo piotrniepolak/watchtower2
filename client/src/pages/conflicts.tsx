@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink, Globe, Users, Calendar, AlertTriangle, Star, StarOff } from "lucide-react";
 import Navigation from "@/components/navigation";
-import { useAuth } from "@/hooks/useSimpleAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import ConflictTimeline from "@/components/conflict-timeline";
 import type { Conflict } from "@shared/schema";

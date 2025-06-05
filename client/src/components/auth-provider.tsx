@@ -1,4 +1,4 @@
-import { AuthContext, useAuthProvider } from "@/hooks/useSimpleAuth";
+import { AuthContext, useAuthProvider } from "@/hooks/useAuth";
 
 interface AuthProviderProps {
   children: React.ReactNode;
