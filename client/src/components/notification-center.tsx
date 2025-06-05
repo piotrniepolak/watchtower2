@@ -33,7 +33,16 @@ interface Notification {
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
-  const [readNotifications, setReadNotifications] = useState<Set<number>>(new Set());
+  
+  // Use localStorage for persistent read state
+  const [readNotifications, setReadNotifications] = useState<Set<number>>(() => {
+    try {
+      const stored = localStorage.getItem('readNotifications');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ["/api/notifications"],
@@ -41,12 +50,18 @@ export default function NotificationCenter() {
   });
 
   const handleNotificationClick = (notificationId: number) => {
-    setReadNotifications(prev => new Set(prev).add(notificationId));
+    setReadNotifications(prev => {
+      const newSet = new Set(prev).add(notificationId);
+      localStorage.setItem('readNotifications', JSON.stringify([...newSet]));
+      return newSet;
+    });
   };
 
   const handleMarkAllRead = () => {
     const allIds = (notifications as Notification[]).map((n: Notification) => n.id);
-    setReadNotifications(new Set(allIds));
+    const newSet = new Set(allIds);
+    setReadNotifications(newSet);
+    localStorage.setItem('readNotifications', JSON.stringify([...newSet]));
   };
 
   const isNotificationRead = (notification: Notification) => {
