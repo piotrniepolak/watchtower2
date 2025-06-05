@@ -12,10 +12,10 @@ export class StockDataManager {
   private sources: StockDataSource[] = [];
 
   constructor() {
-    // Initialize available sources in priority order
+    // Initialize available sources in priority order - Yahoo Finance first (no API key required)
     this.sources = [
-      new AlphaVantageSource(),
       new YahooFinanceSource(),
+      new AlphaVantageSource(),
       new FinnhubSource(),
       new PolygonSource()
     ];
@@ -88,37 +88,44 @@ class YahooFinanceSource extends StockDataSource {
 
   async fetchPrice(symbol: string): Promise<StockData | null> {
     try {
-      // Use Yahoo Finance quote endpoint for complete data including volume
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
+      // Using working Yahoo Finance chart API endpoint
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
       const response = await fetch(url);
       const data = await response.json();
 
-      if (data.quoteResponse?.result?.[0]) {
-        const quote = data.quoteResponse.result[0];
+      if (data.chart?.result?.[0]) {
+        const result = data.chart.result[0];
+        const meta = result.meta;
         
-        const currentPrice = quote.regularMarketPrice || quote.previousClose;
-        const previousClose = quote.previousClose;
-        const change = currentPrice - previousClose;
-        const changePercent = (change / previousClose) * 100;
+        if (meta) {
+          const currentPrice = meta.regularMarketPrice || meta.previousClose;
+          const previousClose = meta.previousClose;
+          const change = currentPrice - previousClose;
+          const changePercent = (change / previousClose) * 100;
 
-        // Get volume from quote response - this endpoint provides reliable volume data
-        let volume = 0;
-        
-        if (quote.regularMarketVolume && quote.regularMarketVolume > 0) {
-          volume = quote.regularMarketVolume;
-        } else if (quote.averageDailyVolume10Day && quote.averageDailyVolume10Day > 0) {
-          volume = quote.averageDailyVolume10Day;
-        } else if (quote.averageDailyVolume3Month && quote.averageDailyVolume3Month > 0) {
-          volume = quote.averageDailyVolume3Month;
+          // Get volume from meta data - this contains the most reliable volume information
+          let volume = 0;
+          
+          // Try multiple volume sources from meta data
+          if (meta.regularMarketVolume && meta.regularMarketVolume > 0) {
+            volume = meta.regularMarketVolume;
+          } else if (meta.averageDailyVolume10Day && meta.averageDailyVolume10Day > 0) {
+            volume = meta.averageDailyVolume10Day;
+          } else if (meta.averageDailyVolume3Month && meta.averageDailyVolume3Month > 0) {
+            volume = meta.averageDailyVolume3Month;
+          } else {
+            // For stocks that don't report current day volume, use average as fallback
+            volume = meta.averageDailyVolume10Day || meta.averageDailyVolume3Month || 1000000;
+          }
+
+          return {
+            symbol,
+            price: currentPrice,
+            change: change,
+            changePercent: changePercent,
+            volume: volume
+          };
         }
-
-        return {
-          symbol,
-          price: currentPrice,
-          change: change,
-          changePercent: changePercent,
-          volume: volume
-        };
       }
     } catch (error) {
       console.error(`Error fetching ${symbol} from Yahoo Finance:`, error);
