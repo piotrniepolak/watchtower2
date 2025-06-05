@@ -32,10 +32,10 @@ export default function Dashboard() {
               © 2024 ConflictWatch. Data updated in real-time. Market analysis for informational purposes only.
             </div>
             <div className="flex items-center space-x-6 text-sm text-slate-600">
-              <Link href="/privacy" className="hover:text-slate-900">Privacy</Link>
-              <Link href="/terms" className="hover:text-slate-900">Terms</Link>
-              <Link href="/api" className="hover:text-slate-900">API</Link>
-              <Link href="/support" className="hover:text-slate-900">Support</Link>
+              <Link to="/privacy" className="hover:text-slate-900">Privacy</Link>
+              <Link to="/terms" className="hover:text-slate-900">Terms</Link>
+              <Link to="/api" className="hover:text-slate-900">API</Link>
+              <Link to="/support" className="hover:text-slate-900">Support</Link>
             </div>
           </div>
         </div>
