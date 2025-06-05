@@ -83,7 +83,12 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   id: "q1",
                   type: "multiple-choice",
                   question: `Based on current data, how many active conflicts is ConflictWatch monitoring?`,
-                  options: ["10", "13", "15", "18"],
+                  options: [
+                    (activeConflicts.length - 2).toString(),
+                    (activeConflicts.length - 1).toString(),
+                    activeConflicts.length.toString(),
+                    (activeConflicts.length + 1).toString()
+                  ],
                   correctAnswer: activeConflicts.length.toString(),
                   explanation: `ConflictWatch currently monitors ${activeConflicts.length} active conflicts globally, providing real-time analysis of ongoing geopolitical situations.`,
                   points: 25
@@ -101,7 +106,12 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   id: "q3",
                   type: "multiple-choice",
                   question: `How many distinct regions are affected by current active conflicts?`,
-                  options: ["3", "4", "5", "6"],
+                  options: [
+                    (new Set(activeConflicts.map(c => c.region)).size - 1).toString(),
+                    new Set(activeConflicts.map(c => c.region)).size.toString(),
+                    (new Set(activeConflicts.map(c => c.region)).size + 1).toString(),
+                    (new Set(activeConflicts.map(c => c.region)).size + 2).toString()
+                  ],
                   correctAnswer: new Set(activeConflicts.map(c => c.region)).size.toString(),
                   explanation: `Current conflicts span ${new Set(activeConflicts.map(c => c.region)).size} major regions, demonstrating the global nature of contemporary geopolitical instability.`,
                   points: 25
@@ -282,7 +292,12 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   id: "dm2",
                   type: "multiple-choice",
                   question: `How many defense stocks are currently showing significant movement (>1%) today?`,
-                  options: ["2", "3", "4", "5"],
+                  options: [
+                    Math.max(0, defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length - 1).toString(),
+                    defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length.toString(),
+                    (defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length + 1).toString(),
+                    (defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length + 2).toString()
+                  ],
                   correctAnswer: defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length.toString(),
                   explanation: `${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} stocks are showing significant movement today, indicating active trading in response to market conditions.`,
                   points: 35
