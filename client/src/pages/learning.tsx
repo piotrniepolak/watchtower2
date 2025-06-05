@@ -59,6 +59,7 @@ export default function Learning() {
   });
 
   const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
 
   const { data: conflicts } = useQuery({
     queryKey: ["/api/conflicts"],

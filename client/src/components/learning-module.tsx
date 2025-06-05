@@ -252,7 +252,7 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
           <div className="space-y-4">
             <div 
               className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: currentStepData.content }}
+              dangerouslySetInnerHTML={{ __html: currentStepData.content || "" }}
             />
           </div>
         );
@@ -265,7 +265,7 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
             {currentStepData.content && (
               <div 
                 className="prose max-w-none mb-6"
-                dangerouslySetInnerHTML={{ __html: currentStepData.content }}
+                dangerouslySetInnerHTML={{ __html: currentStepData.content || "" }}
               />
             )}
             
