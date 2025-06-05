@@ -107,6 +107,106 @@ export default function Reports() {
       revenueFromConflicts: "32%",
       contractPipeline: "$51B", 
       strategicAdvantage: "Dual-use platforms serving both military and commercial markets with global service networks."
+    },
+    {
+      symbol: "RHM.DE",
+      name: "Rheinmetall AG",
+      primaryBenefit: "Artillery & Ammunition",
+      conflictExposure: "Very High",
+      keyProducts: ["Leopard Tank Systems", "Artillery Shells", "Air Defense", "Military Vehicles"],
+      revenueFromConflicts: "78%",
+      contractPipeline: "€15B",
+      strategicAdvantage: "European leader in ammunition production with massive capacity expansion during conflicts, especially Ukraine."
+    },
+    {
+      symbol: "BA.L",
+      name: "BAE Systems",
+      primaryBenefit: "Naval & Electronic Warfare",
+      conflictExposure: "High",
+      keyProducts: ["Type 26 Frigates", "M777 Howitzers", "Electronic Warfare Systems", "Cyber Defense"],
+      revenueFromConflicts: "61%",
+      contractPipeline: "£42B",
+      strategicAdvantage: "Global naval systems and advanced electronic warfare capabilities with strong government relationships."
+    },
+    {
+      symbol: "LDOS",
+      name: "Leidos Holdings",
+      primaryBenefit: "Intelligence & IT Services",
+      conflictExposure: "Medium-High",
+      keyProducts: ["Cybersecurity Solutions", "Intelligence Systems", "Command & Control", "Surveillance"],
+      revenueFromConflicts: "45%",
+      contractPipeline: "$31B",
+      strategicAdvantage: "Critical intelligence and IT infrastructure support with high-security clearance requirements."
+    },
+    {
+      symbol: "LHX",
+      name: "L3Harris Technologies",
+      primaryBenefit: "Communications & Electronics",
+      conflictExposure: "High",
+      keyProducts: ["Military Radios", "Night Vision", "Electronic Warfare", "Space Systems"],
+      revenueFromConflicts: "56%",
+      contractPipeline: "$28B",
+      strategicAdvantage: "Essential communication systems and electronic warfare technologies with rapid deployment capabilities."
+    },
+    {
+      symbol: "HWM",
+      name: "Howmet Aerospace",
+      primaryBenefit: "Advanced Materials",
+      conflictExposure: "Medium",
+      keyProducts: ["Turbine Components", "Armor Materials", "Aerospace Fasteners", "Engine Parts"],
+      revenueFromConflicts: "38%",
+      contractPipeline: "$12B",
+      strategicAdvantage: "Specialized materials and components critical for aircraft engines and military systems."
+    },
+    {
+      symbol: "KTOS",
+      name: "Kratos Defense",
+      primaryBenefit: "Unmanned Systems & Missiles",
+      conflictExposure: "Very High",
+      keyProducts: ["Target Drones", "Unmanned Aircraft", "Tactical Missiles", "Satellite Communications"],
+      revenueFromConflicts: "72%",
+      contractPipeline: "$8B",
+      strategicAdvantage: "Next-generation unmanned systems and low-cost attritable aircraft for modern warfare."
+    },
+    {
+      symbol: "AVAV",
+      name: "AeroVironment",
+      primaryBenefit: "Small Drones & Tactical UAS",
+      conflictExposure: "Very High",
+      keyProducts: ["Switchblade Loitering Munitions", "Raven Drones", "Puma Surveillance", "Tactical Missiles"],
+      revenueFromConflicts: "81%",
+      contractPipeline: "$4.2B",
+      strategicAdvantage: "Market leader in small tactical drones with proven combat effectiveness and rapid production scaling."
+    },
+    {
+      symbol: "CW",
+      name: "Curtiss-Wright",
+      primaryBenefit: "Defense Electronics & Controls",
+      conflictExposure: "Medium-High",
+      keyProducts: ["Naval Systems", "Ground Vehicle Controls", "Flight Test Equipment", "Defense Electronics"],
+      revenueFromConflicts: "47%",
+      contractPipeline: "$9B",
+      strategicAdvantage: "Critical control systems and ruggedized electronics for harsh combat environments."
+    },
+    {
+      symbol: "MRCY",
+      name: "Mercury Systems",
+      primaryBenefit: "Signal Processing & Computing",
+      conflictExposure: "High",
+      keyProducts: ["Signal Processing", "Secure Computing", "RF Solutions", "Electronic Warfare"],
+      revenueFromConflicts: "68%",
+      contractPipeline: "$3.8B",
+      strategicAdvantage: "Advanced signal processing and secure computing solutions for intelligence and electronic warfare."
+    },
+    {
+      symbol: "TXT",
+      name: "Textron",
+      primaryBenefit: "Aircraft & Ground Systems",
+      conflictExposure: "Medium",
+      keyProducts: ["Bell Helicopters", "Cessna Aircraft", "TAPV Vehicles", "Unmanned Systems"],
+      revenueFromConflicts: "41%",
+      contractPipeline: "$14B",
+      strategicAdvantage: "Diverse portfolio of aircraft and ground systems with strong aftermarket support and training services."
     }
   ];
 
