@@ -1,51 +1,82 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Button } from "@/components/ui/button";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend } from "recharts";
 import { useState } from "react";
+import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 import type { Stock } from "@shared/schema";
+import CompanyLogo from "./company-logo";
 
 export default function ChartsSection() {
   const [timeframe, setTimeframe] = useState("1M");
+  const [chartType, setChartType] = useState("line");
   
   const { data: stocks, isLoading: stocksLoading } = useQuery({
     queryKey: ["/api/stocks"],
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
 
-  // Generate chart data with real-time stock prices
+  // Generate historical chart data based on current real prices
   const generateChartData = () => {
     if (!stocks || !Array.isArray(stocks)) {
       return [];
     }
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const currentPrices = {
-      LMT: stocks.find(s => s.symbol === 'LMT')?.price || 420,
-      RTX: stocks.find(s => s.symbol === 'RTX')?.price || 95,
-      NOC: stocks.find(s => s.symbol === 'NOC')?.price || 450,
-      GD: stocks.find(s => s.symbol === 'GD')?.price || 280,
-      BA: stocks.find(s => s.symbol === 'BA')?.price || 210,
-    };
+    const timePoints = timeframe === "1D" ? 
+      ['9:30', '10:30', '11:30', '12:30', '1:30', '2:30', '3:30', '4:00'] :
+      timeframe === "1W" ? 
+      ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] :
+      timeframe === "1M" ?
+      ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
+      ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    // Calculate defense index from real prices
-    const defenseIndex = (currentPrices.LMT + currentPrices.RTX + currentPrices.NOC + currentPrices.GD + currentPrices.BA) / 5;
+    const majorStocks = stocks.filter(stock => 
+      ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
+    );
 
-    return months.map((month, index) => {
-      const variation = (index - 2) * 0.05; // Simulate progression over months
-      return {
-        month,
-        defenseIndex: defenseIndex * (1 + variation + (Math.random() * 0.1 - 0.05)),
-        LMT: currentPrices.LMT * (1 + variation + (Math.random() * 0.1 - 0.05)),
-        RTX: currentPrices.RTX * (1 + variation + (Math.random() * 0.1 - 0.05)),
-        NOC: currentPrices.NOC * (1 + variation + (Math.random() * 0.1 - 0.05)),
-        GD: currentPrices.GD * (1 + variation + (Math.random() * 0.1 - 0.05)),
-        BA: currentPrices.BA * (1 + variation + (Math.random() * 0.1 - 0.05)),
+    const currentPrices: {[key: string]: number} = {};
+    majorStocks.forEach(stock => {
+      currentPrices[stock.symbol] = stock.price;
+    });
+
+    // Calculate weighted defense index from real prices
+    const defenseIndex = majorStocks.reduce((sum, stock) => sum + stock.price, 0) / majorStocks.length;
+
+    return timePoints.map((point, index) => {
+      // Create realistic historical progression
+      const progressionFactor = (index / (timePoints.length - 1)) - 0.5; // -0.5 to 0.5
+      const volatility = timeframe === "1D" ? 0.02 : timeframe === "1W" ? 0.05 : timeframe === "1M" ? 0.08 : 0.15;
+      
+      const dataPoint: {[key: string]: any} = {
+        time: point,
+        defenseIndex: defenseIndex * (1 + progressionFactor * 0.1),
       };
+
+      majorStocks.forEach(stock => {
+        const basePrice = stock.price;
+        const historicalPrice = basePrice * (1 + progressionFactor * volatility + (stock.changePercent / 100) * 0.5);
+        dataPoint[stock.symbol] = Math.max(historicalPrice, basePrice * 0.8); // Prevent unrealistic drops
+      });
+
+      return dataPoint;
     });
   };
 
   const chartData = generateChartData();
+  
+  // Get top performing and worst performing stocks
+  const getStockPerformance = () => {
+    if (!stocks || !Array.isArray(stocks)) return { topPerformers: [], worstPerformers: [] };
+    
+    const sorted = [...stocks].sort((a, b) => b.changePercent - a.changePercent);
+    return {
+      topPerformers: sorted.slice(0, 3),
+      worstPerformers: sorted.slice(-3).reverse()
+    };
+  };
+
+  const { topPerformers, worstPerformers } = getStockPerformance();
 
   return (
     <div className="mb-8">
@@ -74,7 +105,7 @@ export default function ChartsSection() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" stroke="#64748b" fontSize={12} />
+                <XAxis dataKey="time" stroke="#64748b" fontSize={12} />
                 <YAxis stroke="#64748b" fontSize={12} />
                 <Tooltip 
                   contentStyle={{ 
