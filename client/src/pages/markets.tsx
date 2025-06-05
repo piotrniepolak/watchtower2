@@ -134,6 +134,116 @@ export default function Markets() {
       specialties: ["Commercial Airplanes", "Defense, Space & Security", "Global Services", "Boeing Capital"],
       majorContracts: ["F/A-18 Super Hornet", "KC-46 Pegasus Tanker", "P-8 Poseidon", "AH-64 Apache Helicopter"],
       website: "https://www.boeing.com"
+    },
+    "RHM.DE": {
+      fullName: "Rheinmetall AG",
+      description: "German automotive and arms manufacturer, one of the largest German defense contractors and automobile parts suppliers.",
+      headquarters: "Düsseldorf, Germany",
+      employees: "26,000",
+      founded: "1889",
+      ceo: "Armin Papperger",
+      specialties: ["Vehicle Systems", "Weapon Systems", "Ammunition", "Electronic Solutions"],
+      majorContracts: ["Leopard 2 Tank Components", "Boxer Armored Vehicle", "Skyshield Air Defense", "Future Combat Air System"],
+      website: "https://www.rheinmetall.com"
+    },
+    "BA.L": {
+      fullName: "BAE Systems plc",
+      description: "British multinational arms, security, and aerospace company based in London, England. One of the world's largest defense contractors.",
+      headquarters: "London, United Kingdom",
+      employees: "93,100",
+      founded: "1999",
+      ceo: "Charles Woodburn",
+      specialties: ["Aerospace", "Land & Armaments", "Maritime", "Electronic Systems"],
+      majorContracts: ["Eurofighter Typhoon", "M777 Howitzer", "Bradley Fighting Vehicle", "Type 26 Frigate"],
+      website: "https://www.baesystems.com"
+    },
+    "LDOS": {
+      fullName: "Leidos Holdings Inc",
+      description: "American defense, aviation, information technology, and biomedical research company headquartered in Reston, Virginia.",
+      headquarters: "Reston, Virginia, USA",
+      employees: "47,000",
+      founded: "2013",
+      ceo: "Roger Krone",
+      specialties: ["Defense Solutions", "Civil", "Health", "Intelligence"],
+      majorContracts: ["DISA Encore III", "Naval Sea Systems Command", "NASA Engineering Services", "DHS EAGLE II"],
+      website: "https://www.leidos.com"
+    },
+    "LHX": {
+      fullName: "L3Harris Technologies Inc",
+      description: "American technology company, defense contractor, and information technology services provider that produces C6ISR systems and products, wireless equipment, tactical radios, avionics and electronic systems, night vision equipment, and both terrestrial and spaceborne antennas.",
+      headquarters: "Melbourne, Florida, USA",
+      employees: "50,000",
+      founded: "2019 (merger)",
+      ceo: "Christopher Kubasik",
+      specialties: ["Space & Airborne Systems", "Integrated Mission Systems", "Communication Systems", "Aerojet Rocketdyne"],
+      majorContracts: ["F-35 Electronic Warfare", "GPS III Satellites", "FAA NextGen", "U.S. Army Tactical Radios"],
+      website: "https://www.l3harris.com"
+    },
+    "HWM": {
+      fullName: "Howmet Aerospace Inc",
+      description: "Global leader in advanced engineered solutions for the aerospace and transportation industries, specializing in engine products, fastening systems, and forged wheels.",
+      headquarters: "Pittsburgh, Pennsylvania, USA",
+      employees: "22,500",
+      founded: "2020 (spun off from Arconic)",
+      ceo: "John Plant",
+      specialties: ["Engine Products", "Fastening Systems", "Engineered Structures", "Forged Wheels"],
+      majorContracts: ["F-35 Engine Components", "Boeing 787 Fasteners", "Airbus A350 Structures", "Military Engine Parts"],
+      website: "https://www.howmet.com"
+    },
+    "KTOS": {
+      fullName: "Kratos Defense & Security Solutions Inc",
+      description: "Specialized technology company providing mission critical products, solutions and services for United States national security priorities.",
+      headquarters: "San Diego, California, USA",
+      employees: "4,200",
+      founded: "1994",
+      ceo: "Eric DeMarco",
+      specialties: ["Unmanned Systems", "Satellite Communications", "Cyber Warfare", "Microwave Electronics"],
+      majorContracts: ["BQM-167 Aerial Target", "UTAP-22 Mako", "DroneDefender", "OpenSpace Platform"],
+      website: "https://www.kratosdefense.com"
+    },
+    "AVAV": {
+      fullName: "AeroVironment Inc",
+      description: "Global leader in intelligent, multi-domain robotic systems, providing customers with actionable intelligence for better decisions.",
+      headquarters: "Arlington, Virginia, USA",
+      employees: "1,000",
+      founded: "1971",
+      ceo: "Wahid Nawabi",
+      specialties: ["Small Unmanned Aircraft", "Tactical Missile Systems", "High Altitude Pseudo-Satellites", "Commercial Solutions"],
+      majorContracts: ["Switchblade Loitering Munition", "Raven Drone System", "Puma Unmanned Aircraft", "JUMP 20 VTOL"],
+      website: "https://www.avinc.com"
+    },
+    "CW": {
+      fullName: "Curtiss-Wright Corporation",
+      description: "Global integrated business that provides highly engineered products and services to the commercial, industrial, defense and energy markets.",
+      headquarters: "Davidson, North Carolina, USA",
+      employees: "8,600",
+      founded: "1929",
+      ceo: "Lynn Bamford",
+      specialties: ["Defense Solutions", "Commercial/Industrial", "Power Generation", "Naval & Land Systems"],
+      majorContracts: ["Nuclear Reactor Controls", "Flight Test Equipment", "Weapons Handling Systems", "Naval Propulsion Components"],
+      website: "https://www.curtisswright.com"
+    },
+    "MRCY": {
+      fullName: "Mercury Systems Inc",
+      description: "Technology company serving the aerospace and defense industry, enabling customers to respond to evolving threats with secure processing power.",
+      headquarters: "Andover, Massachusetts, USA",
+      employees: "2,500",
+      founded: "1981",
+      ceo: "William Ballhaus",
+      specialties: ["Mission Computers", "Radio Frequency Solutions", "Microelectronics", "Software & Services"],
+      majorContracts: ["F-35 Mission Computer", "Aegis Combat System", "Patriot Missile Defense", "Electronic Warfare Systems"],
+      website: "https://www.mrcy.com"
+    },
+    "TXT": {
+      fullName: "Textron Inc",
+      description: "Multi-industry company leveraging global network of aircraft, defense, industrial and finance businesses to provide customers innovative solutions.",
+      headquarters: "Providence, Rhode Island, USA",
+      employees: "35,000",
+      founded: "1923",
+      ceo: "Scott Donnelly",
+      specialties: ["Aviation", "Defense", "Industrial", "Finance"],
+      majorContracts: ["V-22 Osprey", "AH-1Z Viper Helicopter", "Shadow Drone", "Ship-to-Shore Connector"],
+      website: "https://www.textron.com"
     }
   };
 
