@@ -235,7 +235,7 @@ export default function Markets() {
             if (!profile) return null;
 
             const chartData = generateStockHistory(stock.price, stock.changePercent);
-            const isWatched = watchlist.isWatched(stock.symbol);
+            const isWatched = watchlist.stockWatchlist.includes(stock.symbol);
 
             return (
               <Card key={stock.symbol} className="overflow-hidden">
@@ -270,7 +270,13 @@ export default function Markets() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => watchlist.toggle(stock.symbol)}
+                          onClick={() => {
+                            if (isWatched) {
+                              watchlist.removeFromStockWatchlist(stock.symbol);
+                            } else {
+                              watchlist.addToStockWatchlist(stock.symbol);
+                            }
+                          }}
                           className="flex items-center space-x-1"
                         >
                           {isWatched ? (
