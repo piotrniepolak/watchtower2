@@ -86,120 +86,369 @@ export default function ConflictTimeline() {
         });
       }
 
-      // Add real major events based on actual conflict history
+      // Add comprehensive historical events for each conflict
       if (conflict.name === "Ukraine-Russia Conflict") {
-        events.push({
-          id: `${conflict.id}-kharkiv`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2022-09-06"),
-          title: "Kharkiv Counteroffensive Success",
-          description: "Ukrainian forces liberate significant territory in Kharkiv region",
-          type: "milestone",
-          severity: "High",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          casualties: 2000,
-          economicImpact: "Defense stocks surge 8-12%"
-        });
+        const ukraineEvents = [
+          { date: "2014-02-20", title: "Euromaidan Revolution", description: "Ukrainian revolution leads to government change", type: "start", severity: "Medium", casualties: 130 },
+          { date: "2014-03-18", title: "Crimea Annexation", description: "Russia formally annexes Crimea following referendum", type: "escalation", severity: "High", casualties: 0, economicImpact: "Sanctions imposed, defense stocks rise 8%" },
+          { date: "2014-04-06", title: "Donbas War Begins", description: "Pro-Russian separatists declare independence in eastern Ukraine", type: "escalation", severity: "High", casualties: 3000 },
+          { date: "2014-07-17", title: "MH17 Shot Down", description: "Malaysian Airlines flight shot down over eastern Ukraine", type: "escalation", severity: "Critical", casualties: 298, economicImpact: "Aviation stocks plummet, defense stocks surge" },
+          { date: "2014-09-05", title: "Minsk Protocol Signed", description: "First ceasefire agreement between Ukraine and separatists", type: "ceasefire", severity: "Medium" },
+          { date: "2015-02-12", title: "Minsk II Agreement", description: "Second attempt at comprehensive ceasefire", type: "ceasefire", severity: "Medium" },
+          { date: "2021-03-24", title: "Military Buildup", description: "Russia begins massive troop buildup near Ukrainian border", type: "escalation", severity: "High", economicImpact: "Defense contractors gain 12%" },
+          { date: "2022-02-24", title: "Full-Scale Invasion", description: "Russia launches full-scale military invasion of Ukraine", type: "escalation", severity: "Critical", casualties: 10000, economicImpact: "Defense stocks surge 20%, energy crisis begins" },
+          { date: "2022-03-16", title: "Mariupol Theater Bombing", description: "Russian forces bomb theater sheltering civilians", type: "escalation", severity: "Critical", casualties: 600 },
+          { date: "2022-04-08", title: "Bucha Massacre Revealed", description: "Evidence of civilian massacres in liberated territories", type: "escalation", severity: "Critical", casualties: 458 },
+          { date: "2022-05-20", title: "Mariupol Falls", description: "Last Ukrainian defenders surrender at Azovstal steel plant", type: "milestone", severity: "High" },
+          { date: "2022-09-06", title: "Kharkiv Counteroffensive", description: "Ukrainian forces liberate significant territory in Kharkiv region", type: "milestone", severity: "High", casualties: 2000, economicImpact: "Defense stocks surge 8-12%" },
+          { date: "2022-10-08", title: "Crimean Bridge Attack", description: "Strategic bridge connecting Russia to Crimea damaged", type: "escalation", severity: "Critical", economicImpact: "Oil prices spike 3%, defense contractors up 5%" },
+          { date: "2022-11-11", title: "Kherson Liberation", description: "Ukrainian forces retake strategic city of Kherson", type: "milestone", severity: "High" },
+          { date: "2023-06-06", title: "Kakhovka Dam Destroyed", description: "Critical infrastructure attack causes massive flooding", type: "escalation", severity: "Critical", casualties: 89 },
+          { date: "2024-02-17", title: "Avdiivka Falls", description: "Ukrainian forces withdraw from strategic eastern city", type: "escalation", severity: "High" },
+          { date: "2024-05-10", title: "Kharkiv Offensive", description: "Russia launches new offensive in northern Ukraine", type: "escalation", severity: "High", economicImpact: "Defense stocks rally 6%" }
+        ];
         
-        events.push({
-          id: `${conflict.id}-crimea-bridge`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2022-10-08"),
-          title: "Crimean Bridge Attack",
-          description: "Strategic bridge connecting Russia to Crimea damaged in explosion",
-          type: "escalation",
-          severity: "Critical",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          economicImpact: "Oil prices spike 3%, defense contractors up 5%"
+        ukraineEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-ukraine-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
         });
       }
       
       if (conflict.name === "Israel-Palestine Conflict") {
-        events.push({
-          id: `${conflict.id}-operation-swords`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2023-10-07"),
-          title: "Operation Al-Aqsa Flood",
-          description: "Hamas launches large-scale attack on Israel, triggering major escalation",
-          type: "escalation",
-          severity: "Critical",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          casualties: 15000,
-          economicImpact: "Defense stocks rally, oil markets volatile"
+        const israelPalestineEvents = [
+          { date: "2000-09-28", title: "Second Intifada Begins", description: "Palestinian uprising following Ariel Sharon's Temple Mount visit", type: "start", severity: "High", casualties: 4000 },
+          { date: "2005-08-15", title: "Gaza Disengagement", description: "Israel withdraws all settlements from Gaza Strip", type: "milestone", severity: "Medium" },
+          { date: "2006-06-25", title: "Hamas Takes Gaza", description: "Hamas wins Palestinian elections, later takes control of Gaza", type: "escalation", severity: "High" },
+          { date: "2008-12-27", title: "Operation Cast Lead", description: "Israel launches major military operation in Gaza", type: "escalation", severity: "Critical", casualties: 1400, economicImpact: "Defense stocks rise 15%" },
+          { date: "2012-11-14", title: "Operation Pillar of Defense", description: "Eight-day conflict between Israel and Hamas", type: "escalation", severity: "High", casualties: 174 },
+          { date: "2014-07-08", title: "Operation Protective Edge", description: "50-day war between Israel and Hamas in Gaza", type: "escalation", severity: "Critical", casualties: 2251, economicImpact: "Defense contractors surge 18%" },
+          { date: "2021-05-10", title: "Operation Guardian of the Walls", description: "11-day conflict triggered by Jerusalem tensions", type: "escalation", severity: "High", casualties: 279 },
+          { date: "2023-10-07", title: "Operation Al-Aqsa Flood", description: "Hamas launches large-scale attack on Israel", type: "escalation", severity: "Critical", casualties: 1200, economicImpact: "Defense stocks rally 20%, oil volatile" },
+          { date: "2023-10-27", title: "Gaza Ground Invasion", description: "Israel launches ground offensive in Gaza Strip", type: "escalation", severity: "Critical", casualties: 8000 },
+          { date: "2024-01-15", title: "Regional Escalation", description: "Conflict spreads with Hezbollah and regional actors", type: "escalation", severity: "Critical", economicImpact: "Defense stocks maintain elevated levels" },
+          { date: "2024-07-30", title: "Haniyeh Assassination", description: "Hamas political leader killed in Tehran", type: "escalation", severity: "Critical", economicImpact: "Geopolitical risk premium spikes" }
+        ];
+        
+        israelPalestineEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-israel-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
+        });
+      }
+      
+      if (conflict.name === "Syria Civil War") {
+        const syriaEvents = [
+          { date: "2011-03-15", title: "Syrian Uprising Begins", description: "Protests begin in Daraa following Arab Spring", type: "start", severity: "Medium", casualties: 100 },
+          { date: "2011-07-29", title: "Free Syrian Army Formed", description: "Defected officers form opposition military force", type: "escalation", severity: "High" },
+          { date: "2013-08-21", title: "Ghouta Chemical Attack", description: "Chemical weapons used against civilians in Damascus suburbs", type: "escalation", severity: "Critical", casualties: 1729 },
+          { date: "2014-06-29", title: "ISIS Declares Caliphate", description: "Islamic State establishes control over large territories", type: "escalation", severity: "Critical", economicImpact: "Oil prices surge, defense spending increases" },
+          { date: "2015-09-30", title: "Russian Intervention", description: "Russia begins direct military intervention supporting Assad", type: "escalation", severity: "Critical", economicImpact: "Defense stocks rally 12%" },
+          { date: "2016-12-22", title: "Aleppo Falls", description: "Syrian government recaptures Aleppo after long siege", type: "milestone", severity: "High", casualties: 400 },
+          { date: "2018-04-07", title: "Douma Chemical Attack", description: "Alleged chemical attack prompts Western airstrikes", type: "escalation", severity: "Critical", casualties: 43 },
+          { date: "2019-10-09", title: "Turkish Invasion", description: "Turkey launches operation against Kurdish forces", type: "escalation", severity: "High", economicImpact: "Regional defense stocks rise" },
+          { date: "2020-03-05", title: "Idlib Escalation", description: "Turkish-Syrian forces clash in Idlib province", type: "escalation", severity: "High", casualties: 55 }
+        ];
+        
+        syriaEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-syria-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
+        });
+      }
+      
+      if (conflict.name === "Yemen Civil War") {
+        const yemenEvents = [
+          { date: "2014-09-21", title: "Houthis Capture Sanaa", description: "Houthi rebels seize control of Yemeni capital", type: "start", severity: "High", casualties: 500 },
+          { date: "2015-03-26", title: "Saudi Coalition Intervention", description: "Saudi-led coalition begins bombing campaign", type: "escalation", severity: "Critical", economicImpact: "Oil prices spike 8%, defense stocks surge" },
+          { date: "2016-10-08", title: "Funeral Hall Bombing", description: "Coalition airstrike kills 155 at funeral ceremony", type: "escalation", severity: "Critical", casualties: 155 },
+          { date: "2017-12-04", title: "Saleh Killed", description: "Former president Ali Abdullah Saleh killed by Houthis", type: "escalation", severity: "High", casualties: 1 },
+          { date: "2018-06-13", title: "Hodeidah Offensive", description: "Coalition launches assault on crucial port city", type: "escalation", severity: "Critical", economicImpact: "Humanitarian crisis deepens" },
+          { date: "2019-09-14", title: "Saudi Oil Attacks", description: "Drone attacks on Saudi oil facilities", type: "escalation", severity: "Critical", economicImpact: "Oil prices jump 15%, defense stocks rally" },
+          { date: "2022-04-02", title: "Nationwide Truce", description: "UN-brokered truce brings temporary calm", type: "ceasefire", severity: "Medium" }
+        ];
+        
+        yemenEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-yemen-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
         });
       }
       
       if (conflict.name === "Iran-Israel Tensions") {
-        events.push({
-          id: `${conflict.id}-april-strikes`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2024-04-13"),
-          title: "Iranian Missile Strike on Israel",
-          description: "Iran launches direct missile and drone attack on Israeli territory",
-          type: "escalation",
-          severity: "Critical",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          economicImpact: "Defense stocks surge 15%, oil up 5%"
+        const iranIsraelEvents = [
+          { date: "2020-01-03", title: "Soleimani Assassination", description: "US kills Iranian general Qasem Soleimani in Iraq", type: "escalation", severity: "Critical", economicImpact: "Oil spikes 4%, defense stocks surge 12%" },
+          { date: "2021-04-11", title: "Natanz Nuclear Facility Attack", description: "Explosion at Iranian nuclear facility attributed to Israel", type: "escalation", severity: "High" },
+          { date: "2022-03-13", title: "Erbil Missile Attack", description: "Iran launches missiles at US consulate in Iraq", type: "escalation", severity: "High" },
+          { date: "2024-04-01", title: "Damascus Consulate Strike", description: "Israel strikes Iranian consulate in Damascus", type: "escalation", severity: "Critical" },
+          { date: "2024-04-13", title: "Iranian Retaliation", description: "Iran launches direct missile and drone attack on Israel", type: "escalation", severity: "Critical", economicImpact: "Defense stocks surge 15%, oil up 5%" },
+          { date: "2024-10-01", title: "Iranian Missile Barrage", description: "Second major Iranian attack on Israeli territory", type: "escalation", severity: "Critical", economicImpact: "Regional tensions peak, defense rally continues" }
+        ];
+        
+        iranIsraelEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-iran-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
+        });
+      }
+      
+      if (conflict.name === "South China Sea Disputes") {
+        const southChinaSeaEvents = [
+          { date: "2009-05-07", title: "Nine-Dash Line Submitted", description: "China submits controversial territorial claims to UN", type: "start", severity: "Medium" },
+          { date: "2012-04-10", title: "Scarborough Shoal Standoff", description: "Naval standoff between China and Philippines", type: "escalation", severity: "High" },
+          { date: "2014-05-02", title: "HD-981 Oil Rig Crisis", description: "China places oil rig in disputed waters near Vietnam", type: "escalation", severity: "High", economicImpact: "Regional shipping concerns rise" },
+          { date: "2016-07-12", title: "Arbitration Ruling", description: "International tribunal rules against China's claims", type: "milestone", severity: "High" },
+          { date: "2020-04-18", title: "Haiyang Dizhi Incident", description: "Chinese survey ship operates in Malaysian waters", type: "escalation", severity: "Medium" },
+          { date: "2021-03-07", title: "Whitsun Reef Incident", description: "Over 200 Chinese vessels anchor at disputed reef", type: "escalation", severity: "High" },
+          { date: "2023-08-05", title: "Taiwan Strait Tensions", description: "Increased military activity following diplomatic visits", type: "escalation", severity: "High", economicImpact: "Tech and shipping stocks volatile" }
+        ];
+        
+        southChinaSeaEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-scs-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
         });
       }
 
       if (conflict.name === "Myanmar Civil War") {
-        events.push({
-          id: `${conflict.id}-operation-1027`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2023-10-27"),
-          title: "Operation 1027 Begins",
-          description: "Three Brothers Alliance launches coordinated offensive against military junta",
-          type: "escalation",
-          severity: "High",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          casualties: 3000,
-          economicImpact: "Regional defense spending increases"
+        const myanmarEvents = [
+          { date: "2021-02-01", title: "Military Coup", description: "Myanmar military seizes power, detains civilian leaders", type: "start", severity: "High", casualties: 0 },
+          { date: "2021-02-06", title: "Civil Disobedience Movement", description: "Nationwide protests and strikes against military rule", type: "escalation", severity: "Medium", casualties: 50 },
+          { date: "2021-03-27", title: "Armed Forces Day Massacre", description: "Security forces kill over 100 protesters in single day", type: "escalation", severity: "Critical", casualties: 114 },
+          { date: "2021-05-05", title: "National Unity Government Formed", description: "Opposition leaders establish parallel government", type: "milestone", severity: "High" },
+          { date: "2021-09-07", title: "People's Defense Force Declared", description: "Opposition announces armed wing to fight military", type: "escalation", severity: "High", economicImpact: "Foreign investment withdrawals accelerate" },
+          { date: "2022-07-25", title: "Execution of Democracy Activists", description: "Military executes four pro-democracy activists", type: "escalation", severity: "Critical", casualties: 4 },
+          { date: "2023-10-27", title: "Operation 1027 Begins", description: "Three Brothers Alliance launches coordinated offensive", type: "escalation", severity: "Critical", casualties: 3000, economicImpact: "Regional defense spending increases" },
+          { date: "2024-01-30", title: "Shan State Offensive", description: "Ethnic armed groups capture key military installations", type: "escalation", severity: "High", casualties: 1500 }
+        ];
+        
+        myanmarEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-myanmar-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
         });
       }
 
       if (conflict.name === "Sudan Civil War") {
-        events.push({
-          id: `${conflict.id}-rsf-offensive`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2023-04-15"),
-          title: "RSF-SAF Conflict Erupts",
-          description: "Rapid Support Forces clash with Sudanese Armed Forces in Khartoum",
-          type: "escalation",
-          severity: "Critical",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          casualties: 12000,
-          economicImpact: "Oil markets disrupted, humanitarian crisis"
+        const sudanEvents = [
+          { date: "2019-04-11", title: "Omar al-Bashir Ousted", description: "Military coup removes long-time dictator after protests", type: "start", severity: "High", casualties: 100 },
+          { date: "2019-06-03", title: "Khartoum Massacre", description: "Security forces kill protesters at sit-in", type: "escalation", severity: "Critical", casualties: 128 },
+          { date: "2019-08-17", title: "Transitional Government Formed", description: "Civilian-military power-sharing agreement signed", type: "milestone", severity: "Medium" },
+          { date: "2021-10-25", title: "Second Military Coup", description: "Military dissolves transitional government", type: "escalation", severity: "High", casualties: 0 },
+          { date: "2023-04-15", title: "RSF-SAF War Begins", description: "Rapid Support Forces clash with Sudanese Armed Forces", type: "escalation", severity: "Critical", casualties: 5000, economicImpact: "Oil production halted, refugee crisis" },
+          { date: "2023-06-20", title: "Khartoum Battle Intensifies", description: "Fighting spreads throughout capital city", type: "escalation", severity: "Critical", casualties: 3000 },
+          { date: "2024-02-14", title: "Darfur Ethnic Violence", description: "RSF accused of ethnic cleansing in West Darfur", type: "escalation", severity: "Critical", casualties: 2000 }
+        ];
+        
+        sudanEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-sudan-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
         });
       }
 
-      if (conflict.name === "South China Sea Tensions") {
-        events.push({
-          id: `${conflict.id}-scarborough-incident`,
-          conflictId: conflict.id,
-          conflictName: conflict.name,
-          date: new Date("2024-08-19"),
-          title: "Scarborough Shoal Confrontation",
-          description: "Chinese and Philippine vessels collide near disputed waters",
-          type: "escalation",
-          severity: "Medium",
-          region: conflict.region,
-          parties: conflict.parties || [],
-          economicImpact: "Regional trade routes affected"
+      if (conflict.name === "Ethiopia Tigray Conflict") {
+        const ethiopiaEvents = [
+          { date: "2020-11-04", title: "Tigray War Begins", description: "Ethiopian federal forces attack Tigray regional government", type: "start", severity: "Critical", casualties: 1000, economicImpact: "Regional markets disrupted" },
+          { date: "2020-11-28", title: "Mekelle Falls", description: "Federal forces capture Tigray regional capital", type: "milestone", severity: "High", casualties: 500 },
+          { date: "2021-06-28", title: "Tigray Forces Counterattack", description: "TPLF launches successful counteroffensive", type: "escalation", severity: "High", casualties: 2000 },
+          { date: "2021-11-02", title: "State of Emergency Declared", description: "Ethiopia declares nationwide state of emergency", type: "escalation", severity: "Critical" },
+          { date: "2022-03-24", title: "Humanitarian Truce", description: "Government declares humanitarian truce", type: "ceasefire", severity: "Medium" },
+          { date: "2022-11-02", title: "Pretoria Peace Agreement", description: "Warring parties sign comprehensive peace deal", type: "resolution", severity: "Low", economicImpact: "Markets rally on peace prospects" }
+        ];
+        
+        ethiopiaEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-ethiopia-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
         });
       }
+
+      if (conflict.name === "Afghanistan Taliban Control") {
+        const afghanistanEvents = [
+          { date: "2021-05-01", title: "US Withdrawal Begins", description: "NATO forces begin final withdrawal from Afghanistan", type: "milestone", severity: "High", economicImpact: "Defense contractor stocks decline" },
+          { date: "2021-08-06", title: "Taliban Offensive Accelerates", description: "Taliban rapidly captures provincial capitals", type: "escalation", severity: "Critical", casualties: 2000 },
+          { date: "2021-08-15", title: "Kabul Falls", description: "Taliban enters Kabul, government collapses", type: "escalation", severity: "Critical", casualties: 500, economicImpact: "Regional markets crash, refugee crisis" },
+          { date: "2021-08-26", title: "Kabul Airport Attack", description: "ISIS-K bombing kills 170 at evacuation site", type: "escalation", severity: "Critical", casualties: 170 },
+          { date: "2021-09-07", title: "Interim Government Announced", description: "Taliban announces all-male interim cabinet", type: "milestone", severity: "High" },
+          { date: "2022-03-23", title: "Girls' Education Banned", description: "Taliban bans girls from secondary education", type: "escalation", severity: "High", economicImpact: "International aid frozen" },
+          { date: "2022-11-24", title: "Women University Ban", description: "Taliban bans women from universities", type: "escalation", severity: "High" },
+          { date: "2024-05-12", title: "Flooding Crisis", description: "Severe flooding kills hundreds, highlights governance challenges", type: "milestone", severity: "Medium", casualties: 300 }
+        ];
+        
+        afghanistanEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-afghanistan-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
+        });
+      }
+
+      if (conflict.name === "Taiwan Strait Tensions") {
+        const taiwanEvents = [
+          { date: "2022-08-02", title: "Pelosi Taiwan Visit", description: "US House Speaker visits Taiwan despite Chinese warnings", type: "escalation", severity: "High", economicImpact: "Tech stocks volatile, shipping disrupted" },
+          { date: "2022-08-04", title: "China Military Drills", description: "PLA conducts unprecedented military exercises around Taiwan", type: "escalation", severity: "Critical", economicImpact: "Semiconductor stocks plunge 8%" },
+          { date: "2023-04-05", title: "Tsai-McCarthy Meeting", description: "Taiwan president meets US House Speaker in California", type: "escalation", severity: "Medium", economicImpact: "Regional tensions increase" },
+          { date: "2023-08-12", title: "Chinese Military Patrols", description: "Daily Chinese military incursions into Taiwan's ADIZ", type: "escalation", severity: "High" },
+          { date: "2024-01-13", title: "Taiwan Elections", description: "DPP wins presidency, China denounces results", type: "escalation", severity: "Medium", economicImpact: "Tech stocks rally on stability" },
+          { date: "2024-05-20", title: "Lai Inauguration", description: "New Taiwan president inaugurated amid Chinese threats", type: "escalation", severity: "High", economicImpact: "Defense stocks gain on regional tensions" }
+        ];
+        
+        taiwanEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-taiwan-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
+        });
+      }
+
+      if (conflict.name === "Armenia-Azerbaijan Tensions") {
+        const armeniaAzerbaijanEvents = [
+          { date: "2020-09-27", title: "Second Nagorno-Karabakh War", description: "Azerbaijan launches offensive to reclaim territories", type: "start", severity: "Critical", casualties: 7000, economicImpact: "Energy markets spike on regional instability" },
+          { date: "2020-11-10", title: "Ceasefire Agreement", description: "Russia-brokered deal ends 44-day war", type: "ceasefire", severity: "High", economicImpact: "Regional stability improves" },
+          { date: "2022-09-13", title: "Border Clashes Resume", description: "Deadliest fighting since 2020 war erupts", type: "escalation", severity: "High", casualties: 286 },
+          { date: "2023-09-19", title: "Azerbaijan Offensive", description: "Baku launches operation against Armenian positions", type: "escalation", severity: "Critical", casualties: 200, economicImpact: "European gas supply concerns" },
+          { date: "2023-09-28", title: "Nagorno-Karabakh Dissolved", description: "Ethnic Armenian enclave formally dissolved", type: "milestone", severity: "High" }
+        ];
+        
+        armeniaAzerbaijanEvents.forEach((event, index) => {
+          events.push({
+            id: `${conflict.id}-armenia-${index}`,
+            conflictId: conflict.id,
+            conflictName: conflict.name,
+            date: new Date(event.date),
+            title: event.title,
+            description: event.description,
+            type: event.type as any,
+            severity: event.severity as any,
+            region: conflict.region,
+            parties: conflict.parties || [],
+            casualties: event.casualties,
+            economicImpact: event.economicImpact
+          });
+        });
+      }
+
+
     });
 
     return events.sort((a, b) => b.date.getTime() - a.date.getTime());
