@@ -114,7 +114,7 @@ export default function Learning() {
       description: "Interpreting casualty figures, displacement stats, and economic indicators",
       difficulty: "Intermediate",
       duration: "",
-      points: 50, // 1 quiz question = 50 points
+      points: 150, // 4 quiz questions (30+40+35+45) = 150 points
       prerequisites: ["conflict-types"],
       completed: userProgress.completedModules.includes("data-interpretation"),
       locked: !userProgress.completedModules.includes("conflict-types"),
@@ -127,7 +127,7 @@ export default function Learning() {
       description: "Identifying relationships between geopolitical events and stock movements",
       difficulty: "Advanced",
       duration: "",
-      points: 100, // 1 scenario question = 100 points
+      points: 225, // 3 quiz questions (35+40+45) + 2 scenario questions (50+55) = 225 points
       prerequisites: ["defense-markets", "data-interpretation"],
       completed: userProgress.completedModules.includes("correlation-analysis"),
       locked: !userProgress.completedModules.includes("defense-markets") || !userProgress.completedModules.includes("data-interpretation"),
@@ -140,7 +140,7 @@ export default function Learning() {
       description: "Apply your knowledge to current conflicts using real ConflictWatch data",
       difficulty: "Advanced",
       duration: "",
-      points: 150, // 1 data analysis question = 150 points
+      points: 260, // 3 quiz questions (40+45+50) + 2 data analysis questions (60+65) = 260 points
       prerequisites: ["correlation-analysis"],
       completed: userProgress.completedModules.includes("practical-case"),
       locked: !userProgress.completedModules.includes("correlation-analysis"),

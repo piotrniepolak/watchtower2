@@ -355,7 +355,50 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   options: ["2", "3", "4", "5"],
                   correctAnswer: activeConflicts.filter(c => c.severity === "High").length.toString(),
                   explanation: `Currently ${activeConflicts.filter(c => c.severity === "High").length} conflicts are classified as high severity, indicating significant impact on regional stability.`,
-                  points: 50
+                  points: 30
+                },
+                {
+                  id: "di2",
+                  type: "multiple-choice",
+                  question: "What is the most critical factor when assessing conflict severity?",
+                  options: [
+                    "Duration of the conflict",
+                    "Number of countries involved",
+                    "Civilian casualties and displacement",
+                    "Media coverage intensity"
+                  ],
+                  correctAnswer: "Civilian casualties and displacement",
+                  explanation: "Civilian impact is the primary indicator of conflict severity, as it reflects the humanitarian crisis and long-term regional stability implications.",
+                  points: 40
+                },
+                {
+                  id: "di3",
+                  type: "multiple-choice",
+                  question: `Which region currently has the highest concentration of active conflicts?`,
+                  options: ["Eastern Europe", "Middle East", "Africa", "Asia"],
+                  correctAnswer: activeConflicts.reduce((acc, conflict) => {
+                    acc[conflict.region] = (acc[conflict.region] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>) && Object.entries(activeConflicts.reduce((acc, conflict) => {
+                    acc[conflict.region] = (acc[conflict.region] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)).sort(([,a], [,b]) => b - a)[0]?.[0] || "Eastern Europe",
+                  explanation: `Based on current data analysis, this region shows the highest concentration of active conflicts, requiring focused intelligence monitoring.`,
+                  points: 35
+                },
+                {
+                  id: "di4",
+                  type: "multiple-choice",
+                  question: "What is the primary purpose of conflict data classification?",
+                  options: [
+                    "Generating media headlines",
+                    "Supporting military planning",
+                    "Enabling informed policy decisions and resource allocation",
+                    "Predicting stock market movements"
+                  ],
+                  correctAnswer: "Enabling informed policy decisions and resource allocation",
+                  explanation: "Conflict data classification serves as the foundation for strategic decision-making, helping governments and organizations allocate resources and develop appropriate responses.",
+                  points: 45
                 }
               ]
             }
@@ -391,6 +434,50 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
               `
             },
             {
+              type: "quiz",
+              questions: [
+                {
+                  id: "ca1",
+                  type: "multiple-choice",
+                  question: "What statistical measure best indicates correlation strength between geopolitical events and market movements?",
+                  options: [
+                    "Standard deviation",
+                    "Correlation coefficient (r)",
+                    "Moving average",
+                    "Volume-weighted average price"
+                  ],
+                  correctAnswer: "Correlation coefficient (r)",
+                  explanation: "The correlation coefficient (r) ranges from -1 to +1 and quantifies the strength and direction of linear relationships between variables, making it ideal for measuring event-market correlations.",
+                  points: 35
+                },
+                {
+                  id: "ca2",
+                  type: "multiple-choice",
+                  question: `Based on current market volatility, how many defense stocks show significant movement (>1%)?`,
+                  options: ["1-2", "3-4", "5-6", "7+"],
+                  correctAnswer: defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length <= 2 ? "1-2" : 
+                                defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length <= 4 ? "3-4" :
+                                defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length <= 6 ? "5-6" : "7+",
+                  explanation: `Currently ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} defense stocks show significant movement, indicating market responsiveness to geopolitical factors.`,
+                  points: 40
+                },
+                {
+                  id: "ca3",
+                  type: "multiple-choice",
+                  question: "What time frame typically shows the strongest correlation between conflict escalation and defense stock prices?",
+                  options: [
+                    "Immediate (same day)",
+                    "Short-term (1-5 days)",
+                    "Medium-term (1-4 weeks)",
+                    "Long-term (months)"
+                  ],
+                  correctAnswer: "Short-term (1-5 days)",
+                  explanation: "Defense markets typically show the strongest correlation in the 1-5 day window following conflict developments, as initial market reactions stabilize and institutional investors adjust positions.",
+                  points: 45
+                }
+              ]
+            },
+            {
               type: "scenario",
               title: "Real-Time Correlation Exercise",
               content: `
@@ -398,13 +485,14 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                 <p>Analyze this real scenario:</p>
                 <div class="bg-amber-50 p-4 rounded-lg">
                   <p><strong>Current Situation:</strong> ${activeConflicts[0]?.name || "Regional Conflict"} continues with ${activeConflicts[0]?.severity || "High"} severity.</p>
-                  <p><strong>Market Response:</strong> Defense stocks showing mixed performance today.</p>
-                  <p><strong>Key Indicator:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "Top performer"} leads with ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.changePercent.toFixed(2) || "strong"}% change.</p>
+                  <p><strong>Market Response:</strong> Defense stocks showing ${(defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length) > 0 ? 'positive' : 'negative'} performance today.</p>
+                  <p><strong>Key Indicator:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "Top performer"} leads with ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.changePercent >= 0 ? '+' : ''}${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.changePercent.toFixed(2) || "0.00"}% change.</p>
+                  <p><strong>Sector Analysis:</strong> ${defensiveStocks.filter(s => s.changePercent > 0).length} stocks positive, ${defensiveStocks.filter(s => s.changePercent < 0).length} negative</p>
                 </div>
               `,
               questions: [
                 {
-                  id: "ca1",
+                  id: "ca4",
                   type: "multiple-choice",
                   question: "What is the most likely driver of today's defense market performance?",
                   options: [
@@ -415,7 +503,21 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   ],
                   correctAnswer: "Ongoing conflict developments",
                   explanation: "Given the current geopolitical climate and active conflicts, defense market movements are primarily driven by conflict-related developments and military spending expectations.",
-                  points: 100
+                  points: 50
+                },
+                {
+                  id: "ca5",
+                  type: "multiple-choice",
+                  question: `Given that ${defensiveStocks.filter(s => s.changePercent > 0).length} stocks are positive and ${defensiveStocks.filter(s => s.changePercent < 0).length} are negative, what does this indicate?`,
+                  options: [
+                    "Strong bullish sentiment across the sector",
+                    "Mixed market reaction with selective positioning",
+                    "Bearish outlook for defense contractors",
+                    "No correlation with geopolitical events"
+                  ],
+                  correctAnswer: "Mixed market reaction with selective positioning",
+                  explanation: "The mixed performance suggests investors are making selective decisions based on specific company fundamentals and contract exposure rather than broad sector movements.",
+                  points: 55
                 }
               ]
             }
@@ -454,13 +556,60 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
               `
             },
             {
-              type: "data-analysis",
-              title: "Professional Assessment Exercise",
+              type: "quiz",
               questions: [
                 {
                   id: "pc1",
                   type: "multiple-choice",
-                  question: `Based on the ${activeConflicts[0]?.name || "current conflict"} situation, what is the most appropriate investment strategy?`,
+                  question: "What is the most critical factor in professional geopolitical risk assessment?",
+                  options: [
+                    "Historical precedent analysis",
+                    "Real-time data integration and pattern recognition",
+                    "Media sentiment analysis",
+                    "Economic indicator correlation"
+                  ],
+                  correctAnswer: "Real-time data integration and pattern recognition",
+                  explanation: "Professional analysis requires combining multiple real-time data streams with pattern recognition to identify emerging trends and potential escalation scenarios.",
+                  points: 40
+                },
+                {
+                  id: "pc2",
+                  type: "multiple-choice",
+                  question: `Given the current ${activeConflicts[0]?.severity || "High"} severity rating of the ${activeConflicts[0]?.name || "regional conflict"}, what should be the primary analytical focus?`,
+                  options: [
+                    "Long-term economic impact projections",
+                    "Immediate humanitarian response needs",
+                    "Escalation potential and spillover risks",
+                    "Post-conflict reconstruction planning"
+                  ],
+                  correctAnswer: "Escalation potential and spillover risks",
+                  explanation: "High-severity conflicts require immediate focus on escalation dynamics and regional spillover risks to prevent broader destabilization.",
+                  points: 45
+                },
+                {
+                  id: "pc3",
+                  type: "multiple-choice",
+                  question: "What makes ConflictWatch's analytical approach more effective than traditional intelligence methods?",
+                  options: [
+                    "Exclusive government access",
+                    "Real-time market correlation integration",
+                    "Larger analyst teams",
+                    "Historical database size"
+                  ],
+                  correctAnswer: "Real-time market correlation integration",
+                  explanation: "ConflictWatch's integration of real-time market data with conflict analysis provides unique insights into economic impacts and stakeholder sentiment that traditional methods miss.",
+                  points: 50
+                }
+              ]
+            },
+            {
+              type: "data-analysis",
+              title: "Professional Assessment Exercise",
+              questions: [
+                {
+                  id: "pc4",
+                  type: "multiple-choice",
+                  question: `Based on the ${activeConflicts[0]?.name || "current conflict"} situation and today's defense market showing ${(defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length).toFixed(2)}% average change, what is the most appropriate investment strategy?`,
                   options: [
                     "Immediate portfolio rebalancing toward defense stocks",
                     "Gradual position building with risk management",
@@ -468,8 +617,22 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                     "Diversify away from defense sector entirely"
                   ],
                   correctAnswer: "Gradual position building with risk management",
-                  explanation: "Professional analysts recommend measured approaches that account for volatility while capitalizing on sustained geopolitical trends. Immediate reactions often lead to poor timing, while excessive caution misses opportunities.",
-                  points: 150
+                  explanation: "Professional analysts recommend measured approaches that account for volatility while capitalizing on sustained geopolitical trends. The current market data supports cautious but strategic positioning.",
+                  points: 60
+                },
+                {
+                  id: "pc5",
+                  type: "multiple-choice",
+                  question: `With ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} defense stocks showing significant movement today, what does this indicate about market efficiency?`,
+                  options: [
+                    "Markets are overreacting to geopolitical news",
+                    "Information is being efficiently processed and priced",
+                    "There is insufficient correlation between events and prices",
+                    "Institutional investors are manipulating prices"
+                  ],
+                  correctAnswer: "Information is being efficiently processed and priced",
+                  explanation: "Significant movement in multiple defense stocks indicates that markets are actively processing and incorporating geopolitical information into pricing decisions, demonstrating market efficiency.",
+                  points: 65
                 }
               ]
             }
