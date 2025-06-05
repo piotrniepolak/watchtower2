@@ -4,7 +4,7 @@ import {
   type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc, asc } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -51,6 +51,9 @@ export interface IStorage {
   // Daily News
   getDailyNews(date: string): Promise<DailyNews | undefined>;
   createDailyNews(news: InsertDailyNews): Promise<DailyNews>;
+  
+  // Quiz Leaderboard
+  getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -181,6 +184,26 @@ export class DatabaseStorage implements IStorage {
   async createDailyNews(insertNews: InsertDailyNews): Promise<DailyNews> {
     const [news] = await db.insert(dailyNews).values(insertNews).returning();
     return news;
+  }
+
+  async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {
+    const quiz = await this.getDailyQuiz(date);
+    if (!quiz) return [];
+
+    const results = await db
+      .select({
+        username: users.username,
+        totalPoints: userQuizResponses.totalPoints,
+        score: userQuizResponses.score,
+        timeBonus: userQuizResponses.timeBonus,
+        completedAt: userQuizResponses.completedAt,
+      })
+      .from(userQuizResponses)
+      .innerJoin(users, eq(userQuizResponses.userId, users.id))
+      .where(eq(userQuizResponses.quizId, quiz.id))
+      .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
+
+    return results;
   }
 
   // Utility method for password verification
@@ -818,6 +841,39 @@ export class MemStorage implements IStorage {
     
     this.dailyNewsMap.set(news.date, news);
     return news;
+  }
+
+  async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {
+    const quiz = await this.getDailyQuiz(date);
+    if (!quiz) return [];
+
+    const leaderboard: { username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[] = [];
+    
+    for (const response of this.userQuizResponses.values()) {
+      if (response.quizId === quiz.id) {
+        const user = this.users.get(response.userId);
+        if (user) {
+          leaderboard.push({
+            username: user.username,
+            totalPoints: response.totalPoints,
+            score: response.score,
+            timeBonus: response.timeBonus,
+            completedAt: response.completedAt,
+          });
+        }
+      }
+    }
+    
+    // Sort by total points (descending), then by completion time (ascending)
+    return leaderboard.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      if (a.completedAt && b.completedAt) {
+        return a.completedAt.getTime() - b.completedAt.getTime();
+      }
+      return 0;
+    });
   }
 }
 
