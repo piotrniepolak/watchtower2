@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import LearningModule from "@/components/learning-module";
+import DailyQuiz from "@/components/daily-quiz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -294,6 +295,9 @@ export default function Learning() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Learning Modules */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Daily Quiz Section */}
+            <DailyQuiz />
+            
             <Card>
               <CardHeader>
                 <CardTitle>Learning Modules</CardTitle>
