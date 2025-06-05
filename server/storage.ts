@@ -359,6 +359,76 @@ export class MemStorage implements IStorage {
         latitude: 23.6,
         longitude: -102.5,
         parties: ["MX"]
+      },
+      {
+        id: 13,
+        region: "Middle East",
+        name: "Iran-Israel Shadow War",
+        description: "Ongoing covert conflict involving cyber attacks, proxy warfare, assassinations, and regional power projection across the Middle East.",
+        severity: "High",
+        status: "Active",
+        duration: "15+ years",
+        startDate: new Date("2010-01-01"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 32.0,
+        longitude: 53.0,
+        parties: ["IR", "IL"]
+      },
+      {
+        id: 14,
+        region: "Africa",
+        name: "West Africa Sahel Crisis",
+        description: "Multi-country insurgency involving jihadist groups across Mali, Burkina Faso, Niger, and Chad. Over 20,000 deaths since 2012.",
+        severity: "High",
+        status: "Active",
+        duration: "12+ years",
+        startDate: new Date("2012-01-16"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 15.0,
+        longitude: -5.0,
+        parties: ["ML", "BF", "NE", "TD"]
+      },
+      {
+        id: 15,
+        region: "Europe",
+        name: "Georgia-Russia Border Tensions",
+        description: "Ongoing tensions over occupied territories of South Ossetia and Abkhazia with periodic escalations and borderization activities.",
+        severity: "Medium",
+        status: "Active",
+        duration: "17+ years",
+        startDate: new Date("2008-08-07"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 42.3,
+        longitude: 43.4,
+        parties: ["GE", "RU"]
+      },
+      {
+        id: 16,
+        region: "South America",
+        name: "Venezuela Border Crisis",
+        description: "Multi-faceted crisis involving mass migration, territorial disputes with neighbors, and internal political conflict. 7.7 million migrants and refugees.",
+        severity: "High",
+        status: "Active",
+        duration: "10+ years",
+        startDate: new Date("2015-01-01"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 6.4,
+        longitude: -66.9,
+        parties: ["VE", "GY", "CO", "BR"]
+      },
+      {
+        id: 17,
+        region: "North America",
+        name: "Haiti Gang Crisis",
+        description: "Complete breakdown of state authority with criminal gangs controlling majority of territory. Over 8,000 deaths in 2023 alone.",
+        severity: "Critical",
+        status: "Active",
+        duration: "4+ years",
+        startDate: new Date("2021-07-07"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 18.9,
+        longitude: -72.3,
+        parties: ["HT"]
       }
     ];
 

@@ -264,6 +264,85 @@ export default function Conflicts() {
       impact: "Displacement of 100,000 Armenians from Karabakh, altered regional balance, refugee integration challenges.",
       economicImpact: "Infrastructure damage, energy corridor implications, reconstruction costs, displaced population burden",
       internationalResponse: "Russian peacekeeping mission ended, EU monitoring mission, international mediation attempts"
+    },
+    "Iran-Israel Shadow War": {
+      summary: "Ongoing covert conflict between Iran and Israel involving cyber attacks, proxy warfare, assassinations, and regional power projection across the Middle East.",
+      background: "Long-standing rivalry intensified after Iran's 1979 revolution, centered on Iran's nuclear program, support for anti-Israeli groups, and competing regional influence.",
+      keyEvents: [
+        "2010-2012: Stuxnet cyber attacks on Iranian nuclear facilities",
+        "2018: Israel reveals Iran's nuclear archive theft",
+        "2020: Assassination of Iranian nuclear scientist Mohsen Fakhrizadeh",
+        "2021-2023: Escalating attacks on Iranian nuclear facilities",
+        "2024: Direct military exchanges and drone attacks",
+        "2025: Continued proxy conflicts in Syria, Lebanon, and Gaza (June 2025)"
+      ],
+      casualties: "Hundreds of casualties from proxy conflicts, targeted assassinations, and indirect confrontations",
+      impact: "Regional destabilization, nuclear proliferation concerns, proxy warfare across multiple countries.",
+      economicImpact: "Billions spent on defense systems, sanctions impact on Iranian economy, regional trade disruption",
+      internationalResponse: "US sanctions on Iran, European diplomatic efforts, IAEA monitoring, regional security partnerships"
+    },
+    "West Africa Sahel Crisis": {
+      summary: "Multi-country insurgency involving jihadist groups across Mali, Burkina Faso, Niger, and Chad, creating regional security and humanitarian crisis.",
+      background: "Crisis began with 2012 Tuareg rebellion in Mali, exploited by jihadist groups including JNIM and Islamic State affiliates, spreading across Sahel region.",
+      keyEvents: [
+        "2012: Tuareg rebellion and jihadist takeover in northern Mali",
+        "2013: French Operation Serval intervention in Mali",
+        "2014-2020: Expansion of violence to Burkina Faso and Niger",
+        "2021-2023: Military coups in Mali, Burkina Faso, and Niger",
+        "2023: French forces withdraw from region",
+        "2024-2025: Continued insurgency and regional instability (June 2025)"
+      ],
+      casualties: "Over 20,000 deaths since 2012, millions displaced across the region",
+      impact: "State collapse risks, massive displacement, humanitarian crisis, democratic backsliding.",
+      economicImpact: "Agricultural disruption, mining operations threatened, foreign investment withdrawal, aid dependency",
+      internationalResponse: "UN peacekeeping missions, French military intervention, EU training missions, regional cooperation efforts"
+    },
+    "Georgia-Russia Border Tensions": {
+      summary: "Ongoing tensions between Georgia and Russia over occupied territories of South Ossetia and Abkhazia, with periodic escalations and borderization activities.",
+      background: "Conflict stems from 1990s civil wars and 2008 Russo-Georgian War, resulting in Russian occupation of 20% of Georgian territory.",
+      keyEvents: [
+        "1992-1993: Abkhazia and South Ossetia conflicts",
+        "August 2008: Five-day war, Russian recognition of breakaway regions",
+        "2009-present: 'Borderization' process by Russian forces",
+        "2019-2021: Periodic detentions and border incidents",
+        "2022: Impact of Ukraine war on regional dynamics",
+        "2023-2025: Continued occupation and international mediation efforts (June 2025)"
+      ],
+      casualties: "Over 400 deaths in 2008 war, occasional casualties from border incidents",
+      impact: "Territorial occupation, 280,000 internally displaced persons, frozen conflict status.",
+      economicImpact: "Loss of territory and resources, trade route disruption, limited foreign investment in occupied regions",
+      internationalResponse: "EU monitoring mission, Geneva International Discussions, US support for Georgia, international non-recognition policy"
+    },
+    "Venezuela Border Crisis": {
+      summary: "Multi-faceted crisis involving mass migration, territorial disputes with neighbors, and internal political conflict affecting regional stability.",
+      background: "Economic collapse since 2013 led to massive emigration, while territorial disputes with Guyana over Essequibo region have escalated.",
+      keyEvents: [
+        "2015: Beginning of major migration crisis",
+        "2019: Political crisis and disputed presidential election",
+        "2020: Failed maritime invasion attempt",
+        "2023: Guyana-Venezuela Essequibo territorial dispute escalation",
+        "2024: Referendum on Essequibo annexation",
+        "2025: Continued regional tensions and migration flows (June 2025)"
+      ],
+      casualties: "Thousands of deaths from violence and humanitarian crisis, border incidents with irregular armed groups",
+      impact: "7.7 million Venezuelan migrants and refugees, regional destabilization, humanitarian emergency.",
+      economicImpact: "Economic collapse with 75% GDP contraction, hyperinflation, oil industry deterioration, migration costs for neighbors",
+      internationalResponse: "Lima Group sanctions, US sanctions, humanitarian aid programs, regional migration agreements"
+    },
+    "Haiti Gang Crisis": {
+      summary: "Complete breakdown of state authority in Haiti with criminal gangs controlling majority of territory, creating humanitarian catastrophe and regional security concerns.",
+      background: "Political vacuum following 2021 presidential assassination led to gang alliance 'G9' seizing control of capital and countryside.",
+      keyEvents: [
+        "July 2021: Assassination of President Jovenel Moïse",
+        "2022: Gang alliance G9 gains control of Port-au-Prince",
+        "2023: Cholera outbreak amid gang violence",
+        "2024: Prime minister resigns, transitional council formed",
+        "2025: International intervention discussions, continued gang control (June 2025)"
+      ],
+      casualties: "Over 8,000 deaths in 2023 alone, thousands more injured and kidnapped",
+      impact: "State collapse, 5.5 million facing acute hunger, mass displacement, complete breakdown of public services.",
+      economicImpact: "Economic activity ceased, infrastructure destroyed, complete dependence on humanitarian aid",
+      internationalResponse: "UN Security Council resolutions, Kenya-led international intervention force, humanitarian aid operations"
     }
   };
 
