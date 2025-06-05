@@ -144,6 +144,9 @@ export const userQuizResponses = pgTable("user_quiz_responses", {
   quizId: integer("quiz_id").notNull().references(() => dailyQuizzes.id),
   responses: jsonb("responses").notNull(), // User's answers
   score: integer("score").notNull(),
+  totalPoints: integer("total_points").notNull().default(0), // Points earned including time bonus
+  timeBonus: integer("time_bonus").notNull().default(0), // Speed completion bonus
+  completionTimeSeconds: integer("completion_time_seconds"), // Time taken to complete quiz
   completedAt: timestamp("completed_at").defaultNow(),
 });
 

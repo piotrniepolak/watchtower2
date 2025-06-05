@@ -778,6 +778,9 @@ export class MemStorage implements IStorage {
       quizId: insertResponse.quizId,
       responses: insertResponse.responses,
       score: insertResponse.score,
+      totalPoints: insertResponse.totalPoints || 0,
+      timeBonus: insertResponse.timeBonus || 0,
+      completionTimeSeconds: insertResponse.completionTimeSeconds || null,
       completedAt: new Date(),
     };
     

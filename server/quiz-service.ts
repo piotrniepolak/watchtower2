@@ -191,7 +191,7 @@ export class QuizService {
     return quiz;
   }
 
-  async submitQuizResponse(userId: number, quizId: number, responses: number[]): Promise<{ score: number; total: number }> {
+  async submitQuizResponse(userId: number, quizId: number, responses: number[], completionTimeSeconds?: number): Promise<{ score: number; total: number; totalPoints: number; timeBonus: number }> {
     const quiz = await storage.getDailyQuizById(quizId);
     if (!quiz) {
       throw new Error("Quiz not found");
@@ -206,14 +206,29 @@ export class QuizService {
       }
     });
 
+    // Calculate points: 500 points per correct answer
+    const basePoints = score * 500;
+    
+    // Calculate time bonus: Maximum 300 points for completing under 300 seconds
+    // Bonus decreases by 1 point per second after that
+    let timeBonus = 0;
+    if (completionTimeSeconds !== undefined && completionTimeSeconds <= 300) {
+      timeBonus = Math.max(0, 300 - completionTimeSeconds);
+    }
+    
+    const totalPoints = basePoints + timeBonus;
+
     await storage.createUserQuizResponse({
       userId,
       quizId,
       responses: responses as any,
-      score
+      score,
+      totalPoints,
+      timeBonus,
+      completionTimeSeconds: completionTimeSeconds || null
     });
 
-    return { score, total: questions.length };
+    return { score, total: questions.length, totalPoints, timeBonus };
   }
 
   private getTodayDateET(): string {
