@@ -8,6 +8,7 @@ import { ArrowUpDown, Circle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import CompanyLogo from "@/components/company-logo";
 import FlagIcon from "@/components/flag-icon";
+import GeopoliticalLoader from "@/components/geopolitical-loader";
 import type { Conflict, Stock } from "@shared/schema";
 
 export default function DataTables() {
@@ -90,14 +91,15 @@ export default function DataTables() {
               </TableHeader>
               <TableBody>
                 {conflictsLoading ? (
-                  [...Array(4)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                    </TableRow>
-                  ))
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      <GeopoliticalLoader 
+                        type="conflict" 
+                        message="Analyzing global conflicts..."
+                        className="mx-auto"
+                      />
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   filteredConflicts?.map((conflict) => (
                     <TableRow key={conflict.id} className="hover:bg-slate-50 cursor-pointer">
@@ -184,14 +186,15 @@ export default function DataTables() {
               </TableHeader>
               <TableBody>
                 {stocksLoading ? (
-                  [...Array(4)].map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                      <TableCell><div className="h-4 bg-slate-200 rounded animate-pulse"></div></TableCell>
-                    </TableRow>
-                  ))
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      <GeopoliticalLoader 
+                        type="market" 
+                        message="Fetching real-time market data..."
+                        className="mx-auto"
+                      />
+                    </TableCell>
+                  </TableRow>
                 ) : filteredStocks && filteredStocks.length > 0 ? (
                   filteredStocks.map((stock) => (
                     <TableRow key={stock.symbol} className="hover:bg-slate-50 cursor-pointer">

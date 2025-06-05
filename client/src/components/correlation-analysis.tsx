@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
 
 export default function CorrelationAnalysis() {
   const [timeframe, setTimeframe] = useState("Last 6 months");

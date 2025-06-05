@@ -7,6 +7,7 @@ import { useState } from "react";
 import { TrendingUp, TrendingDown, Activity, BarChart3, LineChart as LineChartIcon } from "lucide-react";
 import type { Stock } from "@shared/schema";
 import CompanyLogo from "./company-logo";
+import GeopoliticalLoader from "@/components/geopolitical-loader";
 
 export default function EnhancedChartsSection() {
   const [timeframe, setTimeframe] = useState("1M");
@@ -90,8 +91,12 @@ export default function EnhancedChartsSection() {
     return (
       <div className="space-y-6 mb-8">
         <Card className="shadow-sm border border-slate-200">
-          <CardContent className="p-6">
-            <div className="h-80 bg-slate-100 rounded-lg animate-pulse"></div>
+          <CardContent className="p-6 flex flex-col items-center justify-center h-80">
+            <GeopoliticalLoader 
+              type="market" 
+              size="lg"
+              message="Loading real-time defense market data..."
+            />
           </CardContent>
         </Card>
       </div>
