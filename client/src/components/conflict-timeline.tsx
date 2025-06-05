@@ -638,18 +638,6 @@ export default function ConflictTimeline() {
                     variant="outline"
                     className="justify-start"
                     onClick={() => {
-                      const wikiQuery = detailsEvent.conflictName.replace(/\s+/g, '_');
-                      window.open(`https://en.wikipedia.org/wiki/${wikiQuery}`, '_blank');
-                    }}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Wikipedia Article
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="justify-start"
-                    onClick={() => {
                       const searchQuery = encodeURIComponent(`${detailsEvent.conflictName} current news`);
                       window.open(`https://news.google.com/search?q=${searchQuery}`, '_blank');
                     }}
@@ -673,12 +661,11 @@ export default function ConflictTimeline() {
                     variant="outline"
                     className="justify-start"
                     onClick={() => {
-                      const searchQuery = encodeURIComponent(`${detailsEvent.conflictName} academic research`);
-                      window.open(`https://scholar.google.com/scholar?q=${searchQuery}`, '_blank');
+                      window.open('/conflicts', '_self');
                     }}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Academic Sources
+                    Conflict Overview
                   </Button>
                 </div>
               </div>

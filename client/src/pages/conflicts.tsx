@@ -7,6 +7,7 @@ import { ExternalLink, Globe, Users, Calendar, AlertTriangle, Star, StarOff } fr
 import Navigation from "@/components/navigation";
 import { useAuth } from "@/hooks/useSimpleAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
+import ConflictTimeline from "@/components/conflict-timeline";
 import type { Conflict } from "@shared/schema";
 
 export default function Conflicts() {
@@ -571,6 +572,17 @@ export default function Conflicts() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Timeline Section */}
+        <div className="mt-12">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Conflict Timeline</h2>
+            <p className="text-slate-600">
+              Interactive timeline showing key events and developments across global conflicts
+            </p>
+          </div>
+          <ConflictTimeline />
         </div>
       </main>
     </div>
