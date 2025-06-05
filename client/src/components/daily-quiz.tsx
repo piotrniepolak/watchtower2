@@ -50,10 +50,14 @@ export default function DailyQuiz() {
   const [showResults, setShowResults] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
 
-  const { data: quiz, isLoading: quizLoading } = useQuery<DailyQuiz>({
+  const quizQuery = useQuery<DailyQuiz>({
     queryKey: ['/api/quiz/today'],
-    retry: false,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    refetchInterval: 5000, // Poll every 5 seconds to check for new quiz
   });
+
+  const { data: quiz, isLoading: quizLoading, refetch } = quizQuery;
 
   const submitMutation = useMutation({
     mutationFn: async (responses: number[]) => {
@@ -140,10 +144,21 @@ export default function DailyQuiz() {
             Daily Intelligence Quiz
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <p className="text-slate-600 dark:text-slate-400">
-            No quiz available for today. Our AI is generating new questions based on current developments.
+            Our AI is generating new questions based on current geopolitical developments.
           </p>
+          <div className="flex items-center justify-between">
+            <MiniGeopoliticalLoader type="intelligence" />
+            <Button 
+              onClick={() => refetch()} 
+              variant="outline" 
+              size="sm"
+              disabled={quizLoading}
+            >
+              {quizLoading ? "Checking..." : "Check Again"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
