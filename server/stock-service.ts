@@ -37,41 +37,27 @@ class StockService {
       const prioritySymbols = ["LMT", "RTX", "NOC", "GD", "BA"]; // Update major stocks first
       
       let successfulUpdates = 0;
-      let rateLimitHit = false;
 
       // Update priority stocks first
       for (const symbol of prioritySymbols) {
         const stock = stocks.find(s => s.symbol === symbol);
-        if (stock && !rateLimitHit) {
-          const result = await this.updateSingleStock(stock.symbol);
-          if (result === 'rate_limit') {
-            rateLimitHit = true;
-            console.log("Alpha Vantage API rate limit reached. Using cached prices until reset.");
-            break;
-          } else if (result === 'success') {
-            successfulUpdates++;
-          }
-          // Add delay to respect API rate limits
-          await new Promise(resolve => setTimeout(resolve, 12000));
+        if (stock) {
+          await this.updateSingleStock(stock.symbol);
+          successfulUpdates++;
+          // Small delay between requests
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
-      // Update remaining stocks if not rate limited
-      if (!rateLimitHit) {
-        const remainingStocks = stocks.filter(s => !prioritySymbols.includes(s.symbol));
-        for (const stock of remainingStocks.slice(0, 3)) {
-          const result = await this.updateSingleStock(stock.symbol);
-          if (result === 'rate_limit') {
-            rateLimitHit = true;
-            break;
-          } else if (result === 'success') {
-            successfulUpdates++;
-          }
-          await new Promise(resolve => setTimeout(resolve, 12000));
-        }
+      // Update remaining stocks
+      const remainingStocks = stocks.filter(s => !prioritySymbols.includes(s.symbol));
+      for (const stock of remainingStocks) {
+        await this.updateSingleStock(stock.symbol);
+        successfulUpdates++;
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      console.log(`Updated ${successfulUpdates} stocks successfully${rateLimitHit ? ' (rate limit reached)' : ''}`);
+      console.log(`Updated ${successfulUpdates} stocks successfully`);
 
     } catch (error) {
       console.error("Error updating stock prices:", error);

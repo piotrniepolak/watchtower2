@@ -46,7 +46,7 @@ export class StockDataManager {
         const result = await source.fetchPrice("AAPL");
         console.log(`${source.name}: ${result ? "✓ Working" : "✗ No data"}`);
       } catch (error) {
-        console.log(`${source.name}: ✗ Error - ${error.message}`);
+        console.log(`${source.name}: ✗ Error - ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
   }
