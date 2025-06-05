@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage, DatabaseStorage } from "./storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
+import { stockService } from "./stock-service";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -533,6 +534,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Real-time stock price updates
+  app.post("/api/stocks/update", async (req, res) => {
+    try {
+      await stockService.updateAllStockPrices();
+      res.json({ success: true, message: "Stock prices updated successfully" });
+    } catch (error) {
+      console.error("Error updating stock prices:", error);
+      res.status(500).json({ error: "Failed to update stock prices" });
+    }
+  });
+
+  app.get("/api/stocks/status", async (req, res) => {
+    try {
+      const hasApiKey = !!process.env.ALPHA_VANTAGE_API_KEY;
+      res.json({ 
+        realTimeEnabled: hasApiKey,
+        lastUpdate: new Date().toISOString(),
+        apiProvider: "Alpha Vantage"
+      });
+    } catch (error) {
+      console.error("Error getting stock service status:", error);
+      res.status(500).json({ error: "Failed to get status" });
+    }
+  });
+
   const httpServer = createServer(app);
+  
+  // Start real-time stock price updates when server starts
+  if (process.env.ALPHA_VANTAGE_API_KEY) {
+    console.log("Starting real-time stock price updates...");
+    stockService.startRealTimeUpdates();
+  } else {
+    console.warn("ALPHA_VANTAGE_API_KEY not found - real-time stock updates disabled");
+  }
+  
   return httpServer;
 }

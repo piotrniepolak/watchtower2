@@ -16,6 +16,7 @@ export default function Markets() {
   
   const { data: stocks, isLoading } = useQuery({
     queryKey: ["/api/stocks"],
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
   // Generate mock historical data for each stock
