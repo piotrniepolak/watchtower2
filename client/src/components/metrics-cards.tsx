@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, TrendingUp, DollarSign, Link } from "lucide-react";
+import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
 
 export default function MetricsCards() {
   const { data: metrics, isLoading } = useQuery({
