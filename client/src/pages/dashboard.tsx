@@ -1,6 +1,6 @@
 import Navigation from "@/components/navigation";
 import MetricsCards from "@/components/metrics-cards";
-import ChartsSection from "@/components/charts-section";
+import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DataTables from "@/components/data-tables";
 import SimpleConflictMap from "@/components/simple-conflict-map";
 
@@ -16,7 +16,7 @@ export default function Dashboard() {
           <MetricsCards />
         </div>
         
-        <ChartsSection />
+        <EnhancedChartsSection />
         <DataTables />
         
         <div className="mt-8">
