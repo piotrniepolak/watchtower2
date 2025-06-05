@@ -76,14 +76,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { identifier, password } = req.body; // identifier can be email or username
       
-      const user = await dbStorage.getUserByEmail(email);
+      // Try to find user by email first, then by username
+      let user = await storage.getUserByEmail(identifier);
+      if (!user) {
+        user = await storage.getUserByUsername(identifier);
+      }
+      
       if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
 
-      const isValid = await dbStorage.verifyPassword(password, user.password);
+      const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
@@ -91,7 +96,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
       
       res.json({ 
-        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          firstName: user.firstName, 
+          lastName: user.lastName 
+        },
         token 
       });
     } catch (error) {
@@ -101,14 +112,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
     res.json({ 
       user: { 
-        id: req.user.id, 
-        email: req.user.email, 
-        firstName: req.user.firstName, 
-        lastName: req.user.lastName 
-      }
+        id: user.id, 
+        username: user.username,
+        email: user.email, 
+        firstName: user.firstName, 
+        lastName: user.lastName 
+      } 
     });
+  });
+
+  app.put('/api/auth/profile', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const updateData = req.body;
+
+      // Check if username or email already exists for other users
+      if (updateData.username) {
+        const existingUser = await storage.getUserByUsername(updateData.username);
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(400).json({ message: 'Username already exists' });
+        }
+      }
+
+      if (updateData.email) {
+        const existingUser = await storage.getUserByEmail(updateData.email);
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(400).json({ message: 'Email already exists' });
+        }
+      }
+
+      const updatedUser = await storage.updateUser(userId, updateData);
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.json({
+        user: {
+          id: updatedUser.id,
+          username: updatedUser.username,
+          email: updatedUser.email,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Profile update error:', error);
+      res.status(500).json({ message: 'Failed to update profile' });
+    }
   });
 
   // Watchlist routes
