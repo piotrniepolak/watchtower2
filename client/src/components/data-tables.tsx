@@ -135,14 +135,8 @@ export default function DataTables() {
             </Table>
           </div>
           <div className="px-6 py-3 border-t border-slate-200 bg-slate-50">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-slate-700">
-                Showing {filteredConflicts.length} of {(conflicts as Conflict[] || []).length} conflicts
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
-              </div>
+            <div className="text-sm text-slate-700">
+              Showing {filteredConflicts.length} of {(conflicts as Conflict[] || []).length} conflicts
             </div>
           </div>
         </CardContent>
@@ -237,14 +231,8 @@ export default function DataTables() {
             </Table>
           </div>
           <div className="px-6 py-3 border-t border-slate-200 bg-slate-50">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-slate-700">
-                Showing {filteredStocks.length} companies
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
-              </div>
+            <div className="text-sm text-slate-700">
+              Showing {filteredStocks.length} companies
             </div>
           </div>
         </CardContent>
