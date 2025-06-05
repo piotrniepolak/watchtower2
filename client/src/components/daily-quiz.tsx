@@ -207,6 +207,10 @@ export default function DailyQuiz() {
   }
 
   if (showResults) {
+    const correctAnswers = Object.entries(selectedAnswers).filter(([index, answer]) => 
+      answer === questions[parseInt(index)]?.correctAnswer
+    ).length;
+    
     return (
       <Card>
         <CardHeader>
@@ -216,6 +220,66 @@ export default function DailyQuiz() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Score Summary */}
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{correctAnswers}</div>
+                <div className="text-sm text-slate-600">Correct</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-slate-600">{totalQuestions}</div>
+                <div className="text-sm text-slate-600">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+                </div>
+                <div className="text-sm text-slate-600">Time</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">{Math.round((correctAnswers / totalQuestions) * 100)}%</div>
+                <div className="text-sm text-slate-600">Score</div>
+              </div>
+            </div>
+            
+            {quizResult && (
+              <div className="space-y-3 border-t pt-4">
+                <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                  <Star className="w-4 h-4 text-yellow-500" />
+                  Point Breakdown
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="bg-white rounded-lg p-3 border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Base Points</span>
+                      <span className="font-bold text-blue-600">{correctAnswers * 500}</span>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">500 points per correct answer</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600 flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        Speed Bonus
+                      </span>
+                      <span className="font-bold text-green-600">+{quizResult.timeBonus}</span>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">
+                      {elapsedTime <= 300 ? `Fast completion bonus` : 'No speed bonus'}
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 border border-purple-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-700 font-medium">Total Points</span>
+                      <span className="font-bold text-purple-700 text-lg">{quizResult.totalPoints}</span>
+                    </div>
+                    <div className="text-xs text-purple-600 mt-1">Final score for today</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           {questions.map((question, index) => {
             const userAnswer = selectedAnswers[index];
             const isCorrect = userAnswer === question.correctAnswer;
