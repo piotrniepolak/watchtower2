@@ -87,30 +87,41 @@ class YahooFinanceSource extends StockDataSource {
   name = "Yahoo Finance";
 
   async fetchPrice(symbol: string): Promise<StockData | null> {
-    // Using unofficial Yahoo Finance API
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
-    const response = await fetch(url);
-    const data = await response.json();
+    try {
+      // Use Yahoo Finance quote endpoint for complete data including volume
+      const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`;
+      const response = await fetch(url);
+      const data = await response.json();
 
-    if (data.chart?.result?.[0]) {
-      const result = data.chart.result[0];
-      const meta = result.meta;
-      const quote = result.indicators.quote[0];
-      
-      if (meta && quote) {
-        const currentPrice = meta.regularMarketPrice || meta.previousClose;
-        const previousClose = meta.previousClose;
+      if (data.quoteResponse?.result?.[0]) {
+        const quote = data.quoteResponse.result[0];
+        
+        const currentPrice = quote.regularMarketPrice || quote.previousClose;
+        const previousClose = quote.previousClose;
         const change = currentPrice - previousClose;
         const changePercent = (change / previousClose) * 100;
+
+        // Get volume from quote response - this endpoint provides reliable volume data
+        let volume = 0;
+        
+        if (quote.regularMarketVolume && quote.regularMarketVolume > 0) {
+          volume = quote.regularMarketVolume;
+        } else if (quote.averageDailyVolume10Day && quote.averageDailyVolume10Day > 0) {
+          volume = quote.averageDailyVolume10Day;
+        } else if (quote.averageDailyVolume3Month && quote.averageDailyVolume3Month > 0) {
+          volume = quote.averageDailyVolume3Month;
+        }
 
         return {
           symbol,
           price: currentPrice,
           change: change,
           changePercent: changePercent,
-          volume: quote.volume?.[quote.volume.length - 1] || 0
+          volume: volume
         };
       }
+    } catch (error) {
+      console.error(`Error fetching ${symbol} from Yahoo Finance:`, error);
     }
     return null;
   }
