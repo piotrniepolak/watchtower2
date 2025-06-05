@@ -64,7 +64,8 @@ export default function DailyQuiz() {
       console.log('Submitting quiz responses:', responses);
       console.log('Quiz ID:', quiz?.id);
       try {
-        const result = await apiRequest(`/api/quiz/${quiz!.id}/submit`, 'POST', { responses });
+        const response = await apiRequest('POST', `/api/quiz/${quiz!.id}/submit`, { responses });
+        const result = await response.json();
         console.log('Quiz submission result:', result);
         return result;
       } catch (error) {
