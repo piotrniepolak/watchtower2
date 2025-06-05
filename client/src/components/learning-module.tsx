@@ -194,6 +194,166 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
           ]
         };
 
+      case "data-interpretation":
+        return {
+          title: "Data Analysis & Intelligence",
+          steps: [
+            {
+              type: "lesson",
+              title: "Understanding Conflict Data",
+              content: `
+                <h3>Key Metrics in Conflict Analysis</h3>
+                <p>Intelligence analysts focus on several critical data points when assessing conflicts:</p>
+                
+                <h4>Severity Assessment</h4>
+                <p>Conflicts are classified by severity levels:</p>
+                <ul>
+                  <li><strong>Low:</strong> Limited engagement, minimal casualties</li>
+                  <li><strong>Medium:</strong> Regular combat operations, moderate impact</li>
+                  <li><strong>High:</strong> Intense fighting, significant civilian impact</li>
+                  <li><strong>Critical:</strong> Full-scale warfare, regional destabilization</li>
+                </ul>
+                
+                <h4>Current Intelligence Summary</h4>
+                <p>Based on our real-time monitoring:</p>
+                <ul>
+                  <li><strong>Active Conflicts:</strong> ${activeConflicts.length} situations under observation</li>
+                  <li><strong>High Severity:</strong> ${activeConflicts.filter(c => c.severity === "High").length} conflicts</li>
+                  <li><strong>Regional Distribution:</strong> Spanning ${new Set(activeConflicts.map(c => c.region)).size} major regions</li>
+                </ul>
+              `
+            },
+            {
+              type: "quiz",
+              questions: [
+                {
+                  id: "di1",
+                  type: "multiple-choice",
+                  question: `How many conflicts are currently classified as "High" severity?`,
+                  options: ["2", "3", "4", "5"],
+                  correctAnswer: activeConflicts.filter(c => c.severity === "High").length.toString(),
+                  explanation: `Currently ${activeConflicts.filter(c => c.severity === "High").length} conflicts are classified as high severity, indicating significant impact on regional stability.`,
+                  points: 50
+                }
+              ]
+            }
+          ]
+        };
+
+      case "correlation-analysis":
+        return {
+          title: "Market Correlation Analysis",
+          steps: [
+            {
+              type: "lesson",
+              title: "Understanding Market Correlations",
+              content: `
+                <h3>Event-Driven Market Analysis</h3>
+                <p>Geopolitical events create measurable impacts on defense markets through various channels:</p>
+                
+                <h4>Direct Correlation Factors</h4>
+                <ul>
+                  <li><strong>Conflict Escalation:</strong> Typically increases defense stock prices</li>
+                  <li><strong>Military Aid Packages:</strong> Benefits specific contractors</li>
+                  <li><strong>Defense Budget Changes:</strong> Affects entire sector outlook</li>
+                  <li><strong>Technology Developments:</strong> Impacts specialized companies</li>
+                </ul>
+                
+                <h4>Current Market Analysis</h4>
+                <p>Today's correlation indicators:</p>
+                <ul>
+                  <li><strong>Market Volatility:</strong> Defense sector showing ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} stocks with >1% movement</li>
+                  <li><strong>Volume Analysis:</strong> Average trading volume indicates ${defensiveStocks.filter(s => s.volume > 1000000).length} stocks with high activity</li>
+                  <li><strong>Sector Performance:</strong> Overall trend is ${(defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length) > 0 ? 'positive' : 'negative'}</li>
+                </ul>
+              `
+            },
+            {
+              type: "scenario",
+              title: "Real-Time Correlation Exercise",
+              content: `
+                <h3>Market Impact Assessment</h3>
+                <p>Analyze this real scenario:</p>
+                <div class="bg-amber-50 p-4 rounded-lg">
+                  <p><strong>Current Situation:</strong> ${activeConflicts[0]?.name || "Regional Conflict"} continues with ${activeConflicts[0]?.severity || "High"} severity.</p>
+                  <p><strong>Market Response:</strong> Defense stocks showing mixed performance today.</p>
+                  <p><strong>Key Indicator:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "Top performer"} leads with ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.changePercent.toFixed(2) || "strong"}% change.</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: "ca1",
+                  type: "multiple-choice",
+                  question: "What is the most likely driver of today's defense market performance?",
+                  options: [
+                    "Ongoing conflict developments",
+                    "Quarterly earnings reports",
+                    "General market sentiment",
+                    "Currency fluctuations"
+                  ],
+                  correctAnswer: "Ongoing conflict developments",
+                  explanation: "Given the current geopolitical climate and active conflicts, defense market movements are primarily driven by conflict-related developments and military spending expectations.",
+                  points: 100
+                }
+              ]
+            }
+          ]
+        };
+
+      case "practical-case":
+        return {
+          title: "Advanced Case Study Analysis",
+          steps: [
+            {
+              type: "lesson",
+              title: "Professional Intelligence Analysis",
+              content: `
+                <h3>Comprehensive Conflict Assessment</h3>
+                <p>In this advanced module, you'll conduct a full intelligence assessment using current ConflictWatch data.</p>
+                
+                <h4>Case Study: ${activeConflicts[0]?.name || "Current Regional Conflict"}</h4>
+                <div class="bg-slate-100 p-4 rounded-lg">
+                  <p><strong>Conflict Overview:</strong></p>
+                  <ul>
+                    <li><strong>Location:</strong> ${activeConflicts[0]?.region || "Eastern Europe"}</li>
+                    <li><strong>Duration:</strong> Since ${activeConflicts[0]?.startDate || "2022"}</li>
+                    <li><strong>Current Status:</strong> ${activeConflicts[0]?.status || "Active"}</li>
+                    <li><strong>Severity Level:</strong> ${activeConflicts[0]?.severity || "High"}</li>
+                  </ul>
+                </div>
+                
+                <h4>Market Impact Analysis</h4>
+                <p>Corresponding defense market indicators:</p>
+                <ul>
+                  <li><strong>Sector Performance:</strong> ${(defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length).toFixed(2)}% average change</li>
+                  <li><strong>Volume Trends:</strong> ${defensiveStocks.filter(s => s.volume > 1000000).length} stocks with elevated trading</li>
+                  <li><strong>Leading Companies:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent).slice(0, 3).map(s => s.symbol).join(', ')}</li>
+                </ul>
+              `
+            },
+            {
+              type: "data-analysis",
+              title: "Professional Assessment Exercise",
+              questions: [
+                {
+                  id: "pc1",
+                  type: "multiple-choice",
+                  question: `Based on the ${activeConflicts[0]?.name || "current conflict"} situation, what is the most appropriate investment strategy?`,
+                  options: [
+                    "Immediate portfolio rebalancing toward defense stocks",
+                    "Gradual position building with risk management",
+                    "Wait-and-see approach until situation stabilizes",
+                    "Diversify away from defense sector entirely"
+                  ],
+                  correctAnswer: "Gradual position building with risk management",
+                  explanation: "Professional analysts recommend measured approaches that account for volatility while capitalizing on sustained geopolitical trends. Immediate reactions often lead to poor timing, while excessive caution misses opportunities.",
+                  points: 150
+                }
+              ]
+            }
+          ]
+        };
+
       default:
         return {
           title: "Learning Module",

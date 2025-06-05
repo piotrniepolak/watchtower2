@@ -193,15 +193,18 @@ export default function Learning() {
     }
   ];
 
-  const handleModuleComplete = (moduleId: string) => {
-    const module = learningModules.find(m => m.id === moduleId);
-    if (module && !userProgress.completedModules.includes(moduleId)) {
-      setUserProgress(prev => ({
-        ...prev,
-        completedModules: [...prev.completedModules, moduleId],
-        totalPoints: prev.totalPoints + module.points,
-        level: Math.floor((prev.totalPoints + module.points) / 500) + 1
-      }));
+  const handleModuleComplete = (score: number) => {
+    if (activeModuleId) {
+      const module = learningModules.find(m => m.id === activeModuleId);
+      if (module && !userProgress.completedModules.includes(activeModuleId)) {
+        setUserProgress(prev => ({
+          ...prev,
+          completedModules: [...prev.completedModules, activeModuleId],
+          totalPoints: prev.totalPoints + Math.floor((score / 100) * module.points),
+          level: Math.floor((prev.totalPoints + Math.floor((score / 100) * module.points)) / 500) + 1
+        }));
+      }
+      setActiveModuleId(null);
     }
   };
 
@@ -342,7 +345,14 @@ export default function Learning() {
                           </div>
                         </div>
                         {!module.locked && !module.completed && (
-                          <Button size="sm" className="ml-4">
+                          <Button 
+                            size="sm" 
+                            className="ml-4"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveModuleId(module.id);
+                            }}
+                          >
                             <Play className="w-4 h-4 mr-1" />
                             Start
                           </Button>
@@ -425,6 +435,21 @@ export default function Learning() {
             </Card>
           </div>
         </div>
+
+        {/* Interactive Learning Module */}
+        {activeModuleId && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <CardContent className="p-6">
+                <LearningModule
+                  moduleId={activeModuleId}
+                  onComplete={handleModuleComplete}
+                  onClose={() => setActiveModuleId(null)}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Module Detail Modal */}
         {selectedModule && (
@@ -533,7 +558,7 @@ export default function Learning() {
                   <Button 
                     className="flex-1" 
                     onClick={() => {
-                      handleModuleComplete(selectedModule.id);
+                      setActiveModuleId(selectedModule.id);
                       setSelectedModule(null);
                     }}
                     disabled={selectedModule.completed}
