@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, LogIn, Mail, User, Lock, AlertCircle } from "lucide-react";
+import { UserPlus, LogIn, Mail, User, Lock, AlertCircle, Check, X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -42,6 +42,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
     password: ""
   });
   const [error, setError] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<"checking" | "available" | "taken" | "">("");
 
   const registerMutation = useMutation({
     mutationFn: async (data: Omit<RegisterData, 'confirmPassword'>) => {
@@ -118,7 +119,9 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">ConflictWatch</CardTitle>
           <CardDescription>
-            Access your geopolitical intelligence dashboard
+            {activeTab === "register" 
+              ? "Create your account with a unique username" 
+              : "Access your geopolitical intelligence dashboard"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -211,19 +214,44 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username *</Label>
+                  <Label htmlFor="username" className="text-sm font-semibold">
+                    Username * 
+                    <span className="text-xs font-normal text-slate-500 ml-1">
+                      (This will be your unique identifier)
+                    </span>
+                  </Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                     <Input
                       id="username"
                       type="text"
-                      placeholder="Choose a username"
+                      placeholder="Choose a unique username"
                       value={registerData.username}
                       onChange={(e) => setRegisterData(prev => ({ ...prev, username: e.target.value }))}
                       className="pl-10"
                       required
+                      minLength={3}
                     />
                   </div>
+                  {registerData.username && (
+                    <div className="flex items-center gap-2 text-xs">
+                      {registerData.username.length < 3 ? (
+                        <>
+                          <X className="w-3 h-3 text-amber-500" />
+                          <span className="text-amber-600 dark:text-amber-400">
+                            Username must be at least 3 characters long
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-3 h-3 text-green-500" />
+                          <span className="text-green-600 dark:text-green-400">
+                            Username length is valid
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

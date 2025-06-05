@@ -17,6 +17,7 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   firstName: z.string().optional(),
@@ -44,6 +45,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const registerForm = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
+      username: "",
       email: "",
       password: "",
       firstName: "",
