@@ -340,17 +340,18 @@ export default function Learning() {
                             </div>
                           </div>
                         </div>
-                        {!module.locked && !module.completed && (
+                        {!module.locked && (
                           <Button 
                             size="sm" 
                             className="ml-4"
+                            variant={module.completed ? "outline" : "default"}
                             onClick={(e) => {
                               e.stopPropagation();
                               setActiveModuleId(module.id);
                             }}
                           >
                             <Play className="w-4 h-4 mr-1" />
-                            Start
+                            {module.completed ? "Replay" : "Start"}
                           </Button>
                         )}
                       </div>
