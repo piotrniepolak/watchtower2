@@ -3,6 +3,7 @@ import MetricsCards from "@/components/metrics-cards";
 import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DataTables from "@/components/data-tables";
 import SimpleConflictMap from "@/components/simple-conflict-map";
+import DailyNews from "@/components/daily-news";
 import { Link } from "wouter";
 
 export default function Dashboard() {
@@ -18,6 +19,12 @@ export default function Dashboard() {
         </div>
         
         <EnhancedChartsSection />
+        
+        {/* Daily Intelligence Brief */}
+        <div className="mb-8">
+          <DailyNews />
+        </div>
+        
         <DataTables />
         
         <div className="mt-8">
