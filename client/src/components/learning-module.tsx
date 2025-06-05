@@ -71,6 +71,9 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                 
                 <h4>Current Global Context</h4>
                 <p>Today, we're monitoring <strong>${activeConflicts.length} active conflicts</strong> worldwide, each with unique characteristics and implications for global stability.</p>
+                
+                <h4>Regional Distribution Analysis</h4>
+                <p>The conflicts span across ${new Set(activeConflicts.map(c => c.region)).size} major regions, with the highest concentration in areas of strategic importance.</p>
               `
             },
             {
@@ -92,6 +95,29 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   options: ["Geographic positioning", "Cultural preferences", "Economic dependencies", "Historical context"],
                   correctAnswer: "Cultural preferences",
                   explanation: "While culture influences geopolitics, individual cultural preferences are less significant than geographic, economic, and historical factors in conflict analysis.",
+                  points: 25
+                },
+                {
+                  id: "q3",
+                  type: "multiple-choice",
+                  question: `How many distinct regions are affected by current active conflicts?`,
+                  options: ["3", "4", "5", "6"],
+                  correctAnswer: new Set(activeConflicts.map(c => c.region)).size.toString(),
+                  explanation: `Current conflicts span ${new Set(activeConflicts.map(c => c.region)).size} major regions, demonstrating the global nature of contemporary geopolitical instability.`,
+                  points: 25
+                },
+                {
+                  id: "q4",
+                  type: "multiple-choice",
+                  question: "What is the primary purpose of geopolitical intelligence analysis?",
+                  options: [
+                    "Predicting stock market movements",
+                    "Understanding power dynamics and strategic implications",
+                    "Supporting military operations",
+                    "Influencing diplomatic negotiations"
+                  ],
+                  correctAnswer: "Understanding power dynamics and strategic implications",
+                  explanation: "Geopolitical intelligence analysis focuses on understanding how geographic, political, and economic factors interact to influence global power dynamics and strategic decision-making.",
                   points: 25
                 }
               ]

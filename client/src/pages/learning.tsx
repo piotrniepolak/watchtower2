@@ -12,7 +12,6 @@ import {
   Lock, 
   Play, 
   CheckCircle, 
-  Clock, 
   Target, 
   Book, 
   Map, 
@@ -75,7 +74,7 @@ export default function Learning() {
       title: "Geopolitical Fundamentals",
       description: "Understanding conflict analysis, regional dynamics, and key indicators",
       difficulty: "Beginner",
-      duration: "15 min",
+      duration: "",
       points: 100,
       prerequisites: [],
       completed: userProgress.completedModules.includes("geo-basics"),
@@ -88,7 +87,7 @@ export default function Learning() {
       title: "Types of Modern Conflicts",
       description: "Interstate, civil wars, proxy conflicts, and hybrid warfare patterns",
       difficulty: "Beginner",
-      duration: "20 min",
+      duration: "",
       points: 150,
       prerequisites: ["geo-basics"],
       completed: userProgress.completedModules.includes("conflict-types"),
@@ -101,7 +100,7 @@ export default function Learning() {
       title: "Defense Industry Analysis",
       description: "How conflicts impact defense contractor stocks and market dynamics",
       difficulty: "Intermediate",
-      duration: "25 min",
+      duration: "",
       points: 200,
       prerequisites: ["geo-basics", "conflict-types"],
       completed: userProgress.completedModules.includes("defense-markets"),
@@ -114,7 +113,7 @@ export default function Learning() {
       title: "Reading Conflict Data",
       description: "Interpreting casualty figures, displacement stats, and economic indicators",
       difficulty: "Intermediate",
-      duration: "30 min",
+      duration: "",
       points: 250,
       prerequisites: ["conflict-types"],
       completed: userProgress.completedModules.includes("data-interpretation"),
@@ -127,7 +126,7 @@ export default function Learning() {
       title: "Market Correlation Patterns",
       description: "Identifying relationships between geopolitical events and stock movements",
       difficulty: "Advanced",
-      duration: "35 min",
+      duration: "",
       points: 300,
       prerequisites: ["defense-markets", "data-interpretation"],
       completed: userProgress.completedModules.includes("correlation-analysis"),
@@ -140,7 +139,7 @@ export default function Learning() {
       title: "Live Case Study Analysis",
       description: "Apply your knowledge to current conflicts using real ConflictWatch data",
       difficulty: "Advanced",
-      duration: "45 min",
+      duration: "",
       points: 400,
       prerequisites: ["correlation-analysis"],
       completed: userProgress.completedModules.includes("practical-case"),
@@ -197,11 +196,12 @@ export default function Learning() {
     if (activeModuleId) {
       const module = learningModules.find(m => m.id === activeModuleId);
       if (module && !userProgress.completedModules.includes(activeModuleId)) {
+        const earnedPoints = score; // Use actual score, not percentage calculation
         setUserProgress(prev => ({
           ...prev,
           completedModules: [...prev.completedModules, activeModuleId],
-          totalPoints: prev.totalPoints + Math.floor((score / 100) * module.points),
-          level: Math.floor((prev.totalPoints + Math.floor((score / 100) * module.points)) / 500) + 1
+          totalPoints: prev.totalPoints + earnedPoints,
+          level: Math.floor((prev.totalPoints + earnedPoints) / 500) + 1
         }));
       }
       setActiveModuleId(null);
@@ -333,10 +333,6 @@ export default function Learning() {
                             </div>
                             <p className="text-sm text-slate-600 mb-2">{module.description}</p>
                             <div className="flex items-center space-x-4 text-xs text-slate-500">
-                              <div className="flex items-center space-x-1">
-                                <Clock className="w-3 h-3" />
-                                <span>{module.duration}</span>
-                              </div>
                               <div className="flex items-center space-x-1">
                                 <Star className="w-3 h-3" />
                                 <span>{module.points} points</span>
@@ -475,11 +471,7 @@ export default function Learning() {
               <CardContent className="space-y-4">
                 <p className="text-slate-700">{selectedModule.description}</p>
                 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-slate-500" />
-                    <span>Duration: {selectedModule.duration}</span>
-                  </div>
+                <div className="flex items-center space-x-4 text-sm">
                   <div className="flex items-center space-x-2">
                     <Star className="w-4 h-4 text-slate-500" />
                     <span>Points: {selectedModule.points}</span>
