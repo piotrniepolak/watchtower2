@@ -39,17 +39,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = insertUserSchema.parse(req.body);
       
-      // Check if user already exists
-      const existingUser = await dbStorage.getUserByEmail(userData.email);
-      if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
+      // Check if user already exists by email or username
+      const existingUserByEmail = await storage.getUserByEmail(userData.email);
+      const existingUserByUsername = await storage.getUserByUsername(userData.username);
+      
+      if (existingUserByEmail) {
+        return res.status(400).json({ message: 'Email already exists' });
+      }
+      
+      if (existingUserByUsername) {
+        return res.status(400).json({ message: 'Username already exists' });
       }
 
-      const user = await dbStorage.createUser(userData);
+      // Hash password before storing
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const userToCreate = { ...userData, password: hashedPassword };
+
+      const user = await storage.createUser(userToCreate);
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
       
       res.json({ 
-        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          firstName: user.firstName, 
+          lastName: user.lastName 
+        },
         token 
       });
     } catch (error) {

@@ -27,6 +27,7 @@ export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   
@@ -179,6 +180,8 @@ export class MemStorage implements IStorage {
   private stocks: Map<string, Stock>;
   private correlationEvents: Map<number, CorrelationEvent>;
   private users: Map<number, User> = new Map();
+  private usersByEmail: Map<string, User> = new Map();
+  private usersByUsername: Map<string, User> = new Map();
   private stockWatchlists: Map<number, StockWatchlist> = new Map();
   private conflictWatchlists: Map<number, ConflictWatchlist> = new Map();
   private dailyQuizzes: Map<string, DailyQuiz> = new Map();
@@ -645,19 +648,60 @@ export class MemStorage implements IStorage {
 
   // User methods - placeholder for compatibility (will switch to database later)
   async getUser(id: number): Promise<User | undefined> {
-    return undefined;
+    return this.users.get(id);
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return undefined;
+    return this.usersByEmail.get(email);
   }
 
-  async createUser(user: InsertUser): Promise<User> {
-    throw new Error("User creation not implemented in MemStorage");
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return this.usersByUsername.get(username);
   }
 
-  async updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined> {
-    return undefined;
+  async createUser(userData: InsertUser): Promise<User> {
+    const user: User = {
+      id: this.currentUserId++,
+      username: userData.username,
+      email: userData.email,
+      password: userData.password,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    this.users.set(user.id, user);
+    this.usersByEmail.set(user.email, user);
+    this.usersByUsername.set(user.username, user);
+    
+    return user;
+  }
+
+  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser: User = {
+      ...existingUser,
+      ...updateData,
+      updatedAt: new Date(),
+    };
+
+    this.users.set(id, updatedUser);
+    
+    // Update index maps if email or username changed
+    if (updateData.email && updateData.email !== existingUser.email) {
+      this.usersByEmail.delete(existingUser.email);
+      this.usersByEmail.set(updateData.email, updatedUser);
+    }
+    
+    if (updateData.username && updateData.username !== existingUser.username) {
+      this.usersByUsername.delete(existingUser.username);
+      this.usersByUsername.set(updateData.username, updatedUser);
+    }
+
+    return updatedUser;
   }
 
   async getUserStockWatchlist(userId: number): Promise<StockWatchlist[]> {
