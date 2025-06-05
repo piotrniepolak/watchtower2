@@ -15,6 +15,7 @@ import Terms from "@/pages/terms";
 import ApiDocs from "@/pages/api-docs";
 import Support from "@/pages/support";
 import Learning from "@/pages/learning";
+import Timeline from "@/pages/timeline";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/watchlist" component={DedicatedWatchlist} />
       <Route path="/learning" component={Learning} />
+      <Route path="/timeline" component={Timeline} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/api" component={ApiDocs} />
