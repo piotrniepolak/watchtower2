@@ -1,4 +1,4 @@
-import { Building2, Plane, Shield, Ship, Satellite, Cog, Search, Radar, Zap } from "lucide-react";
+import { Building2, Plane, Shield, Ship, Satellite, Cog, Search, Radar, Zap, Target, Radio, Cpu, Wrench, CircuitBoard, Globe } from "lucide-react";
 
 interface CompanyLogoProps {
   symbol: string;
@@ -85,6 +85,48 @@ export default function CompanyLogo({ symbol, name, size = "md" }: CompanyLogoPr
         return (
           <div className={`${sizeClasses[size]} bg-yellow-600 rounded flex items-center justify-center`}>
             <Zap className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "RHM.DE":
+        return (
+          <div className={`${sizeClasses[size]} bg-red-700 rounded flex items-center justify-center`}>
+            <Target className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "BA.L":
+        return (
+          <div className={`${sizeClasses[size]} bg-blue-800 rounded flex items-center justify-center`}>
+            <Shield className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "HWM":
+        return (
+          <div className={`${sizeClasses[size]} bg-gray-600 rounded flex items-center justify-center`}>
+            <Wrench className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "AVAV":
+        return (
+          <div className={`${sizeClasses[size]} bg-green-700 rounded flex items-center justify-center`}>
+            <Plane className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "CW":
+        return (
+          <div className={`${sizeClasses[size]} bg-blue-600 rounded flex items-center justify-center`}>
+            <Cog className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "MRCY":
+        return (
+          <div className={`${sizeClasses[size]} bg-purple-700 rounded flex items-center justify-center`}>
+            <CircuitBoard className="w-4 h-4 text-white" />
+          </div>
+        );
+      case "TXT":
+        return (
+          <div className={`${sizeClasses[size]} bg-indigo-700 rounded flex items-center justify-center`}>
+            <Plane className="w-4 h-4 text-white" />
           </div>
         );
       default:
