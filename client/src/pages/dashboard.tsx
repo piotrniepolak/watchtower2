@@ -3,6 +3,7 @@ import MetricsCards from "@/components/metrics-cards";
 import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DataTables from "@/components/data-tables";
 import SimpleConflictMap from "@/components/simple-conflict-map";
+import { Link } from "wouter";
 
 export default function Dashboard() {
   return (
@@ -31,10 +32,10 @@ export default function Dashboard() {
               © 2024 ConflictWatch. Data updated in real-time. Market analysis for informational purposes only.
             </div>
             <div className="flex items-center space-x-6 text-sm text-slate-600">
-              <a href="#" className="hover:text-slate-900">Privacy</a>
-              <a href="#" className="hover:text-slate-900">Terms</a>
-              <a href="#" className="hover:text-slate-900">API</a>
-              <a href="#" className="hover:text-slate-900">Support</a>
+              <Link href="/privacy" className="hover:text-slate-900">Privacy</Link>
+              <Link href="/terms" className="hover:text-slate-900">Terms</Link>
+              <Link href="/api" className="hover:text-slate-900">API</Link>
+              <Link href="/support" className="hover:text-slate-900">Support</Link>
             </div>
           </div>
         </div>
