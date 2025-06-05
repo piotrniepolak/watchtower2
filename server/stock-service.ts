@@ -1,21 +1,5 @@
 import { storage } from "./storage";
-
-interface AlphaVantageQuote {
-  "01. symbol": string;
-  "02. open": string;
-  "03. high": string;
-  "04. low": string;
-  "05. price": string;
-  "06. volume": string;
-  "07. latest trading day": string;
-  "08. previous close": string;
-  "09. change": string;
-  "10. change percent": string;
-}
-
-interface AlphaVantageResponse {
-  "Global Quote": AlphaVantageQuote;
-}
+import { stockDataManager } from "./stock-sources";
 
 class StockService {
   private apiKey: string;
@@ -36,39 +20,7 @@ class StockService {
     changePercent: number;
     volume: number;
   } | null> {
-    if (!this.apiKey) {
-      console.error("Alpha Vantage API key not configured");
-      return null;
-    }
-
-    try {
-      const cleanSymbol = symbol.replace(/\.(L|DE)$/, ''); // Remove exchange suffixes for API call
-      const url = `${this.baseUrl}?function=GLOBAL_QUOTE&symbol=${cleanSymbol}&apikey=${this.apiKey}`;
-      
-      const response = await fetch(url);
-      const data: AlphaVantageResponse = await response.json();
-
-      if (!data["Global Quote"] || !data["Global Quote"]["05. price"]) {
-        console.error(`No data received for ${symbol}:`, data);
-        return null;
-      }
-
-      const quote = data["Global Quote"];
-      const price = parseFloat(quote["05. price"]);
-      const change = parseFloat(quote["09. change"]);
-      const changePercent = parseFloat(quote["10. change percent"].replace('%', ''));
-      const volume = parseInt(quote["06. volume"]);
-
-      return {
-        price,
-        change,
-        changePercent,
-        volume
-      };
-    } catch (error) {
-      console.error(`Error fetching stock price for ${symbol}:`, error);
-      return null;
-    }
+    return await stockDataManager.fetchStockPrice(symbol);
   }
 
   async updateAllStockPrices(): Promise<void> {
@@ -84,22 +36,42 @@ class StockService {
       const stocks = await storage.getStocks();
       const prioritySymbols = ["LMT", "RTX", "NOC", "GD", "BA"]; // Update major stocks first
       
+      let successfulUpdates = 0;
+      let rateLimitHit = false;
+
       // Update priority stocks first
       for (const symbol of prioritySymbols) {
         const stock = stocks.find(s => s.symbol === symbol);
-        if (stock) {
-          await this.updateSingleStock(stock.symbol);
-          // Add delay to respect API rate limits (Alpha Vantage free tier: 5 calls per minute)
-          await new Promise(resolve => setTimeout(resolve, 12000)); // 12 seconds between calls
+        if (stock && !rateLimitHit) {
+          const result = await this.updateSingleStock(stock.symbol);
+          if (result === 'rate_limit') {
+            rateLimitHit = true;
+            console.log("Alpha Vantage API rate limit reached. Using cached prices until reset.");
+            break;
+          } else if (result === 'success') {
+            successfulUpdates++;
+          }
+          // Add delay to respect API rate limits
+          await new Promise(resolve => setTimeout(resolve, 12000));
         }
       }
 
-      // Update remaining stocks
-      const remainingStocks = stocks.filter(s => !prioritySymbols.includes(s.symbol));
-      for (const stock of remainingStocks.slice(0, 3)) { // Limit to avoid hitting rate limits
-        await this.updateSingleStock(stock.symbol);
-        await new Promise(resolve => setTimeout(resolve, 12000));
+      // Update remaining stocks if not rate limited
+      if (!rateLimitHit) {
+        const remainingStocks = stocks.filter(s => !prioritySymbols.includes(s.symbol));
+        for (const stock of remainingStocks.slice(0, 3)) {
+          const result = await this.updateSingleStock(stock.symbol);
+          if (result === 'rate_limit') {
+            rateLimitHit = true;
+            break;
+          } else if (result === 'success') {
+            successfulUpdates++;
+          }
+          await new Promise(resolve => setTimeout(resolve, 12000));
+        }
       }
+
+      console.log(`Updated ${successfulUpdates} stocks successfully${rateLimitHit ? ' (rate limit reached)' : ''}`);
 
     } catch (error) {
       console.error("Error updating stock prices:", error);
