@@ -1,7 +1,7 @@
 import { 
-  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists,
-  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist,
-  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist 
+  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses,
+  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse,
+  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -39,6 +39,13 @@ export interface IStorage {
   getUserConflictWatchlist(userId: number): Promise<ConflictWatchlist[]>;
   addConflictToWatchlist(watchlist: InsertConflictWatchlist): Promise<ConflictWatchlist>;
   removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void>;
+  
+  // Daily Quizzes
+  getDailyQuiz(date: string): Promise<DailyQuiz | undefined>;
+  getDailyQuizById(id: number): Promise<DailyQuiz | undefined>;
+  createDailyQuiz(quiz: InsertDailyQuiz): Promise<DailyQuiz>;
+  createUserQuizResponse(response: InsertUserQuizResponse): Promise<UserQuizResponse>;
+  getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, real, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
@@ -128,3 +128,66 @@ export type StockWatchlist = typeof stockWatchlists.$inferSelect;
 
 export type InsertConflictWatchlist = z.infer<typeof insertConflictWatchlistSchema>;
 export type ConflictWatchlist = typeof conflictWatchlists.$inferSelect;
+
+// Daily Quiz Tables
+export const dailyQuizzes = pgTable("daily_quizzes", {
+  id: serial("id").primaryKey(),
+  date: date("date").notNull().unique(),
+  questions: jsonb("questions").notNull(), // Array of quiz questions
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userQuizResponses = pgTable("user_quiz_responses", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  quizId: integer("quiz_id").notNull().references(() => dailyQuizzes.id),
+  responses: jsonb("responses").notNull(), // User's answers
+  score: integer("score").notNull(),
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
+export const insertDailyQuizSchema = createInsertSchema(dailyQuizzes, {
+  questions: z.array(z.any())
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserQuizResponseSchema = createInsertSchema(userQuizResponses, {
+  responses: z.array(z.number())
+}).omit({
+  id: true,
+  completedAt: true,
+});
+
+export const dailyQuizzesRelations = relations(dailyQuizzes, ({ many }) => ({
+  responses: many(userQuizResponses),
+}));
+
+export const userQuizResponsesRelations = relations(userQuizResponses, ({ one }) => ({
+  user: one(users, {
+    fields: [userQuizResponses.userId],
+    references: [users.id],
+  }),
+  quiz: one(dailyQuizzes, {
+    fields: [userQuizResponses.quizId],
+    references: [dailyQuizzes.id],
+  }),
+}));
+
+export type InsertDailyQuiz = z.infer<typeof insertDailyQuizSchema>;
+export type DailyQuiz = typeof dailyQuizzes.$inferSelect;
+
+export type InsertUserQuizResponse = z.infer<typeof insertUserQuizResponseSchema>;
+export type UserQuizResponse = typeof userQuizResponses.$inferSelect;
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  difficulty: "easy" | "medium" | "hard";
+  category: "geopolitical" | "market" | "defense" | "general";
+  source?: string;
+}
