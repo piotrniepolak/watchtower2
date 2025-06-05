@@ -61,10 +61,23 @@ export default function DailyQuiz() {
 
   const submitMutation = useMutation({
     mutationFn: async (responses: number[]) => {
-      return apiRequest(`/api/quiz/${quiz!.id}/submit`, 'POST', { responses });
+      console.log('Submitting quiz responses:', responses);
+      console.log('Quiz ID:', quiz?.id);
+      try {
+        const result = await apiRequest(`/api/quiz/${quiz!.id}/submit`, 'POST', { responses });
+        console.log('Quiz submission result:', result);
+        return result;
+      } catch (error) {
+        console.error('Quiz submission error:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Quiz submitted successfully:', data);
       setShowResults(true);
+    },
+    onError: (error) => {
+      console.error('Quiz submission failed:', error);
     },
   });
 
