@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import LearningModule from "@/components/learning-module";
 import DailyQuiz from "@/components/daily-quiz";
+import QuizLeaderboard from "@/components/quiz-leaderboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -434,6 +435,9 @@ export default function Learning() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Daily Quiz Leaderboard */}
+            <QuizLeaderboard />
           </div>
         </div>
 

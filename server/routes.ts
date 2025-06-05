@@ -664,6 +664,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/quiz/leaderboard", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const leaderboard = await storage.getDailyQuizLeaderboard(today);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching quiz leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch quiz leaderboard" });
+    }
+  });
+
   app.post("/api/quiz/:quizId/submit", async (req, res) => {
     try {
       const quizId = parseInt(req.params.quizId);
