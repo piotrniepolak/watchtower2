@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, TrendingUp, DollarSign, Link } from "lucide-react";
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
+import type { Conflict } from "@shared/schema";
 
 export default function MetricsCards() {
   const { data: metrics, isLoading } = useQuery({
@@ -12,6 +13,11 @@ export default function MetricsCards() {
   const { data: stocks } = useQuery({
     queryKey: ["/api/stocks"],
     refetchInterval: 30000, // Real-time stock data for calculations
+  });
+
+  const { data: conflicts } = useQuery({
+    queryKey: ["/api/conflicts"],
+    refetchInterval: 30000, // Real-time conflict data
   });
 
   // Calculate real-time defense index and market cap from live stock data
@@ -66,12 +72,16 @@ export default function MetricsCards() {
     );
   }
 
+  // Calculate critical/high intensity conflicts
+  const criticalHighConflicts = (conflicts as Conflict[] || [])
+    .filter(c => c.severity === "Critical" || c.severity === "High").length;
+
   const metricCards = [
     {
       title: "Active Conflicts",
       value: metrics?.activeConflicts || 0,
-      change: "+2",
-      changeText: "from last month",
+      change: criticalHighConflicts.toString(),
+      changeText: "critical/high intensity",
       icon: AlertTriangle,
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
