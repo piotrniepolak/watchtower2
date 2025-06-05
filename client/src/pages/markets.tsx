@@ -149,16 +149,93 @@ export default function Markets() {
       majorContracts: ["Navy SeaPort-NxG", "DISA Encore III", "GSA OASIS", "Army CIO-SP3"],
       website: "https://www.saic.com"
     },
+    "RHM.DE": {
+      fullName: "Rheinmetall AG",
+      description: "German automotive and arms manufacturer focusing on mobility and security technologies including defense systems and military vehicles.",
+      headquarters: "Düsseldorf, Germany",
+      employees: "25,000",
+      founded: "1889",
+      ceo: "Armin Papperger",
+      specialties: ["Defence", "Automotive", "Electronic Solutions", "Digital Solutions"],
+      majorContracts: ["Lynx Infantry Fighting Vehicle", "Leopard 2 Tank Systems", "Oerlikon Air Defence", "Future Combat Air System"],
+      website: "https://www.rheinmetall.com"
+    },
+    "BA.L": {
+      fullName: "BAE Systems plc",
+      description: "British multinational arms, security, and aerospace company providing defense, aerospace and security solutions globally.",
+      headquarters: "London, United Kingdom",
+      employees: "93,500",
+      founded: "1999",
+      ceo: "Charles Woodburn",
+      specialties: ["Air", "Maritime", "Land & Armaments", "Electronic Systems", "Cyber & Intelligence"],
+      majorContracts: ["Eurofighter Typhoon", "F-35 Lightning II Components", "Type 26 Frigate", "M777 Howitzer"],
+      website: "https://www.baesystems.com"
+    },
+    "HWM": {
+      fullName: "Howmet Aerospace Inc",
+      description: "Leading global provider of advanced engineered solutions for the aerospace and transportation industries.",
+      headquarters: "Pittsburgh, Pennsylvania, USA",
+      employees: "22,500",
+      founded: "2020",
+      ceo: "John Plant",
+      specialties: ["Engine Products", "Fastening Systems", "Engineered Structures", "Forged Wheels"],
+      majorContracts: ["F-35 Engine Components", "Boeing 787 Fasteners", "Airbus A350 Structures", "Commercial Engine Parts"],
+      website: "https://www.howmet.com"
+    },
     "KTOS": {
-      fullName: "Kratos Defense & Security Solutions",
-      description: "Technology company focused on directed energy systems, unmanned systems, satellite communications, cyber security, microwave electronics and defense.",
+      fullName: "Kratos Defense & Security Solutions Inc",
+      description: "Specialized technology company providing mission critical products, solutions and services for United States national security priorities.",
       headquarters: "San Diego, California, USA",
-      employees: "4,400",
+      employees: "4,200",
       founded: "1994",
       ceo: "Eric DeMarco",
-      specialties: ["Unmanned Systems", "Satellite Communications", "Cyber Security/Warfare", "Microwave Electronics"],
-      majorContracts: ["Valkyrie Drone Program", "Target Drone Systems", "Tactical Satellite Communications", "C5ISR Systems"],
+      specialties: ["Unmanned Systems", "Satellite Communications", "Cyber Warfare", "Microwave Electronics"],
+      majorContracts: ["BQM-167 Aerial Target", "UTAP-22 Mako", "DroneDefender", "OpenSpace Platform"],
       website: "https://www.kratosdefense.com"
+    },
+    "AVAV": {
+      fullName: "AeroVironment Inc",
+      description: "Global leader in intelligent, multi-domain robotic systems, providing customers with actionable intelligence for better decisions.",
+      headquarters: "Arlington, Virginia, USA",
+      employees: "1,000",
+      founded: "1971",
+      ceo: "Wahid Nawabi",
+      specialties: ["Small Unmanned Aircraft", "Tactical Missile Systems", "High Altitude Pseudo-Satellites", "Commercial Solutions"],
+      majorContracts: ["Switchblade Loitering Munition", "Raven Drone System", "Puma Unmanned Aircraft", "JUMP 20 VTOL"],
+      website: "https://www.avinc.com"
+    },
+    "CW": {
+      fullName: "Curtiss-Wright Corporation",
+      description: "Global integrated business that provides highly engineered products and services to the commercial, industrial, defense and energy markets.",
+      headquarters: "Davidson, North Carolina, USA",
+      employees: "8,600",
+      founded: "1929",
+      ceo: "Lynn Bamford",
+      specialties: ["Defense Solutions", "Commercial/Industrial", "Power Generation", "Naval & Land Systems"],
+      majorContracts: ["Nuclear Reactor Controls", "Flight Test Equipment", "Weapons Handling Systems", "Naval Propulsion Components"],
+      website: "https://www.curtisswright.com"
+    },
+    "MRCY": {
+      fullName: "Mercury Systems Inc",
+      description: "Technology company serving the aerospace and defense industry, enabling customers to respond to evolving threats with secure processing power.",
+      headquarters: "Andover, Massachusetts, USA",
+      employees: "2,500",
+      founded: "1981",
+      ceo: "William Ballhaus",
+      specialties: ["Mission Computers", "Radio Frequency Solutions", "Microelectronics", "Software & Services"],
+      majorContracts: ["F-35 Mission Computer", "Aegis Combat System", "Patriot Missile Defense", "Electronic Warfare Systems"],
+      website: "https://www.mrcy.com"
+    },
+    "TXT": {
+      fullName: "Textron Inc",
+      description: "Multi-industry company leveraging global network of aircraft, defense, industrial and finance businesses to provide customers innovative solutions.",
+      headquarters: "Providence, Rhode Island, USA",
+      employees: "35,000",
+      founded: "1923",
+      ceo: "Scott Donnelly",
+      specialties: ["Aviation", "Defense", "Industrial", "Finance"],
+      majorContracts: ["V-22 Osprey", "AH-1Z Viper Helicopter", "Shadow Drone", "Ship-to-Shore Connector"],
+      website: "https://www.textron.com"
     }
   };
 
