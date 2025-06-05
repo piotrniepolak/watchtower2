@@ -3,6 +3,7 @@ import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
+  username: string;
   email: string;
   firstName?: string;
   lastName?: string;
@@ -12,7 +13,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  register: (username: string, email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -43,12 +44,9 @@ export function useAuthProvider(): AuthContextType {
 
   const fetchUser = async () => {
     try {
-      const response = await apiRequest('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      setUser(response.user);
+      const response = await apiRequest('GET', '/api/auth/me');
+      const data = await response.json();
+      setUser(data.user);
     } catch (error) {
       console.error('Failed to fetch user:', error);
       logout();
@@ -59,13 +57,8 @@ export function useAuthProvider(): AuthContextType {
 
   const login = async (email: string, password: string) => {
     try {
-      const data = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await apiRequest('POST', '/api/auth/login', { email, password });
+      const data = await response.json();
 
       setUser(data.user);
       setToken(data.token);
@@ -75,15 +68,16 @@ export function useAuthProvider(): AuthContextType {
     }
   };
 
-  const register = async (email: string, password: string, firstName?: string, lastName?: string) => {
+  const register = async (username: string, email: string, password: string, firstName?: string, lastName?: string) => {
     try {
-      const data = await apiRequest('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, firstName, lastName }),
+      const response = await apiRequest('POST', '/api/auth/register', { 
+        username, 
+        email, 
+        password, 
+        firstName, 
+        lastName 
       });
+      const data = await response.json();
 
       setUser(data.user);
       setToken(data.token);

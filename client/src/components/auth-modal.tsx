@@ -76,7 +76,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleRegister = async (data: z.infer<typeof registerSchema>) => {
     setIsLoading(true);
     try {
-      await register(data.email, data.password, data.firstName, data.lastName);
+      await register(data.username, data.email, data.password, data.firstName, data.lastName);
       toast({
         title: "Registration successful",
         description: "Welcome to ConflictWatch!",
@@ -157,6 +157,20 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               </CardHeader>
               <CardContent>
                 <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="register-username">Username *</Label>
+                    <Input
+                      id="register-username"
+                      placeholder="Choose a unique username"
+                      {...registerForm.register("username")}
+                    />
+                    {registerForm.formState.errors.username && (
+                      <p className="text-sm text-red-600">
+                        {registerForm.formState.errors.username.message}
+                      </p>
+                    )}
+                  </div>
+                  
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="register-firstName">First Name</Label>
