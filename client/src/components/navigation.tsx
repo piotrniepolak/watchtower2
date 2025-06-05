@@ -126,6 +126,13 @@ export default function Navigation() {
                 }`}>
                   Reports
                 </Link>
+                <Link href="/learning" className={`px-3 py-2 text-sm font-medium ${
+                  isActive("/learning") 
+                    ? "text-primary border-b-2 border-primary" 
+                    : "text-slate-600 hover:text-slate-900"
+                }`}>
+                  Learning
+                </Link>
                 {isAuthenticated && (
                   <Link href="/watchlist" className={`px-3 py-2 text-sm font-medium ${
                     isActive("/watchlist") 

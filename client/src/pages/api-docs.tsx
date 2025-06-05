@@ -75,7 +75,7 @@ export default function ApiDocs() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">GET</Badge>
-                  <code className="text-sm font-mono">/api/conflicts/{id}</code>
+                  <code className="text-sm font-mono">/api/conflicts/{"{id}"}</code>
                 </div>
                 <p className="text-slate-700 text-sm">Get detailed information about a specific conflict</p>
               </div>
@@ -119,7 +119,7 @@ export default function ApiDocs() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">GET</Badge>
-                  <code className="text-sm font-mono">/api/stocks/{symbol}</code>
+                  <code className="text-sm font-mono">/api/stocks/{"{symbol}"}</code>
                 </div>
                 <p className="text-slate-700 text-sm">Get detailed data for a specific stock symbol</p>
               </div>
