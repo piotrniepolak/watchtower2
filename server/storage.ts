@@ -290,78 +290,9 @@ export class MemStorage implements IStorage {
         longitude: 29.0,
         parties: ["CD", "RW"]
       },
+
       {
         id: 8,
-        region: "Middle East",
-        name: "Iran-Israel Shadow War",
-        description: "Escalating proxy conflicts, cyber warfare, and regional tensions",
-        severity: "Medium",
-        status: "Active",
-        duration: "1+ year",
-        startDate: new Date("2024-04-01"),
-        lastUpdated: new Date("2025-06-04"),
-        latitude: 32.0,
-        longitude: 53.0,
-        parties: ["IR", "IL"]
-      },
-      {
-        id: 9,
-        region: "Africa",
-        name: "West Africa Sahel Security Crisis",
-        description: "Regional security crisis involving multiple nations and terrorist groups",
-        severity: "Medium",
-        status: "Active",
-        duration: "1+ year",
-        startDate: new Date("2024-06-01"),
-        lastUpdated: new Date("2025-06-04"),
-        latitude: 15.0,
-        longitude: 0.0,
-        parties: ["ML", "BF", "NE"]
-      },
-      {
-        id: 10,
-        region: "Europe",
-        name: "Georgia-Russia Border Tensions",
-        description: "Border incidents and political tensions following regional developments",
-        severity: "Low",
-        status: "Monitoring",
-        duration: "6+ months",
-        startDate: new Date("2024-11-01"),
-        lastUpdated: new Date("2025-06-04"),
-        latitude: 42.0,
-        longitude: 43.5,
-        parties: ["GE", "RU"]
-      },
-      {
-        id: 11,
-        region: "Latin America",
-        name: "Venezuela Border Crisis",
-        description: "Border tensions and migration crisis affecting regional stability. Over 150 casualties from border incidents.",
-        severity: "Low",
-        status: "Active",
-        duration: "6+ months",
-        startDate: new Date("2024-12-01"),
-        lastUpdated: new Date("2025-06-04"),
-        latitude: 8.0,
-        longitude: -66.0,
-        parties: ["VE", "CO", "BR"]
-      },
-      {
-        id: 12,
-        region: "North America",
-        name: "Mexico Drug War",
-        description: "Ongoing conflict between Mexican government and drug cartels. Over 400,000 deaths and 100,000+ disappeared since 2006 (June 2025).",
-        severity: "High",
-        status: "Active",
-        duration: "18+ years",
-        startDate: new Date("2006-12-11"),
-        lastUpdated: new Date("2025-06-04"),
-        latitude: 23.6,
-        longitude: -102.5,
-        parties: ["MX"]
-      },
-      {
-        id: 13,
         region: "Middle East",
         name: "Iran-Israel Shadow War",
         description: "Ongoing covert conflict involving cyber attacks, proxy warfare, assassinations, and regional power projection across the Middle East.",
@@ -375,7 +306,7 @@ export class MemStorage implements IStorage {
         parties: ["IR", "IL"]
       },
       {
-        id: 14,
+        id: 9,
         region: "Africa",
         name: "West Africa Sahel Crisis",
         description: "Multi-country insurgency involving jihadist groups across Mali, Burkina Faso, Niger, and Chad. Over 20,000 deaths since 2012.",
@@ -389,7 +320,7 @@ export class MemStorage implements IStorage {
         parties: ["ML", "BF", "NE", "TD"]
       },
       {
-        id: 15,
+        id: 10,
         region: "Europe",
         name: "Georgia-Russia Border Tensions",
         description: "Ongoing tensions over occupied territories of South Ossetia and Abkhazia with periodic escalations and borderization activities.",
@@ -403,7 +334,21 @@ export class MemStorage implements IStorage {
         parties: ["GE", "RU"]
       },
       {
-        id: 16,
+        id: 11,
+        region: "North America",
+        name: "Mexico Drug War",
+        description: "Ongoing conflict between Mexican government and drug cartels. Over 400,000 deaths and 100,000+ disappeared since 2006 (June 2025).",
+        severity: "High",
+        status: "Active",
+        duration: "18+ years",
+        startDate: new Date("2006-12-11"),
+        lastUpdated: new Date("2025-06-04"),
+        latitude: 23.6,
+        longitude: -102.5,
+        parties: ["MX"]
+      },
+      {
+        id: 12,
         region: "South America",
         name: "Venezuela Border Crisis",
         description: "Multi-faceted crisis involving mass migration, territorial disputes with neighbors, and internal political conflict. 7.7 million migrants and refugees.",
@@ -417,7 +362,7 @@ export class MemStorage implements IStorage {
         parties: ["VE", "GY", "CO", "BR"]
       },
       {
-        id: 17,
+        id: 13,
         region: "North America",
         name: "Haiti Gang Crisis",
         description: "Complete breakdown of state authority with criminal gangs controlling majority of territory. Over 8,000 deaths in 2023 alone.",

@@ -553,12 +553,11 @@ export default function Learning() {
                       setActiveModuleId(selectedModule.id);
                       setSelectedModule(null);
                     }}
-                    disabled={selectedModule.completed}
                   >
                     {selectedModule.completed ? (
                       <>
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Completed
+                        Replay Module
                       </>
                     ) : (
                       <>
