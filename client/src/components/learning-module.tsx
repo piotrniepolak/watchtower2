@@ -147,7 +147,57 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                 
                 <h4>Hybrid Warfare</h4>
                 <p>Combining conventional military tactics with cyber warfare, disinformation, and economic pressure.</p>
+                
+                <h4>Current Conflict Distribution</h4>
+                <p>Analysis of active conflicts by severity:</p>
+                <ul>
+                  <li><strong>High Severity:</strong> ${activeConflicts.filter(c => c.severity === "High").length} conflicts</li>
+                  <li><strong>Medium Severity:</strong> ${activeConflicts.filter(c => c.severity === "Medium").length} conflicts</li>
+                  <li><strong>Low Severity:</strong> ${activeConflicts.filter(c => c.severity === "Low").length} conflicts</li>
+                </ul>
               `
+            },
+            {
+              type: "quiz",
+              questions: [
+                {
+                  id: "ct1",
+                  type: "multiple-choice",
+                  question: "What distinguishes interstate conflicts from intrastate conflicts?",
+                  options: [
+                    "Interstate involves multiple countries, intrastate occurs within one country",
+                    "Interstate uses conventional weapons, intrastate uses irregular tactics",
+                    "Interstate lasts longer, intrastate resolves quickly",
+                    "Interstate affects global markets, intrastate has local impact"
+                  ],
+                  correctAnswer: "Interstate involves multiple countries, intrastate occurs within one country",
+                  explanation: "The key distinction is the scope: interstate conflicts occur between sovereign states, while intrastate conflicts happen within the borders of a single state.",
+                  points: 30
+                },
+                {
+                  id: "ct2",
+                  type: "multiple-choice",
+                  question: `Based on current data, how many conflicts are classified as "High" severity?`,
+                  options: ["1", "2", "3", "4"],
+                  correctAnswer: activeConflicts.filter(c => c.severity === "High").length.toString(),
+                  explanation: `Currently ${activeConflicts.filter(c => c.severity === "High").length} conflicts are classified as high severity, representing the most critical situations requiring immediate attention.`,
+                  points: 30
+                },
+                {
+                  id: "ct3",
+                  type: "multiple-choice",
+                  question: "Which characteristic best defines hybrid warfare?",
+                  options: [
+                    "Use of nuclear weapons alongside conventional forces",
+                    "Combination of military, cyber, and information operations",
+                    "Involvement of both state and non-state actors",
+                    "Simultaneous conflicts in multiple geographic regions"
+                  ],
+                  correctAnswer: "Combination of military, cyber, and information operations",
+                  explanation: "Hybrid warfare combines conventional military tactics with cyber operations, disinformation campaigns, and economic pressure to achieve strategic objectives.",
+                  points: 40
+                }
+              ]
             },
             {
               type: "scenario",
@@ -159,6 +209,7 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   <p><strong>Scenario:</strong> ${activeConflicts[0]?.name || "Regional Conflict"} has been ongoing since ${activeConflicts[0]?.startDate || "2022"}.</p>
                   <p><strong>Current Status:</strong> ${activeConflicts[0]?.status || "Active"}</p>
                   <p><strong>Severity Level:</strong> ${activeConflicts[0]?.severity || "High"}</p>
+                  <p><strong>Regional Impact:</strong> Affecting ${activeConflicts[0]?.region || "Eastern Europe"} with broader global implications.</p>
                 </div>
               `,
               questions: [
@@ -168,7 +219,7 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   question: `What type of conflict best describes the ${activeConflicts[0]?.name || "current situation"}?`,
                   options: ["Interstate", "Intrastate", "Proxy", "Hybrid"],
                   correctAnswer: "Interstate",
-                  explanation: "This represents an interstate conflict as it involves direct confrontation between sovereign nations.",
+                  explanation: "This represents an interstate conflict as it involves direct confrontation between sovereign nations with international implications.",
                   points: 50
                 }
               ]
@@ -193,14 +244,50 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                 <h4>Market Expectations</h4>
                 <p>Anticipated conflicts can drive stock prices even before actual contracts are awarded.</p>
                 
+                <h4>Sector Categories</h4>
+                <ul>
+                  <li><strong>Prime Contractors:</strong> Large companies like Lockheed Martin (LMT), Raytheon (RTX)</li>
+                  <li><strong>Aerospace & Defense:</strong> Boeing Defense (BA), Northrop Grumman (NOC)</li>
+                  <li><strong>Specialized Systems:</strong> L3Harris (LHX), General Dynamics (GD)</li>
+                </ul>
+                
                 <h4>Current Market Status</h4>
                 <p>Today's defense market data shows:</p>
                 <ul>
                   <li><strong>Total Companies Tracked:</strong> ${defensiveStocks.length} major contractors</li>
                   <li><strong>Average Price Change:</strong> ${(defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length).toFixed(2)}%</li>
                   <li><strong>Top Performer:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "N/A"}</li>
+                  <li><strong>Market Volatility:</strong> ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} stocks showing >1% movement</li>
                 </ul>
               `
+            },
+            {
+              type: "quiz",
+              questions: [
+                {
+                  id: "dm1",
+                  type: "multiple-choice",
+                  question: "What is the primary driver of defense contractor stock performance?",
+                  options: [
+                    "Consumer demand for military products",
+                    "Government defense spending and contracts",
+                    "International trade agreements",
+                    "Commercial aviation markets"
+                  ],
+                  correctAnswer: "Government defense spending and contracts",
+                  explanation: "Defense contractors primarily rely on government contracts and military spending programs, making government budget decisions the key performance driver.",
+                  points: 40
+                },
+                {
+                  id: "dm2",
+                  type: "multiple-choice",
+                  question: `How many defense stocks are currently showing significant movement (>1%) today?`,
+                  options: ["2", "3", "4", "5"],
+                  correctAnswer: defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length.toString(),
+                  explanation: `${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} stocks are showing significant movement today, indicating active trading in response to market conditions.`,
+                  points: 35
+                }
+              ]
             },
             {
               type: "data-analysis",
@@ -214,6 +301,15 @@ export default function LearningModule({ moduleId, onComplete, onClose }: Learni
                   correctAnswer: `${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "LMT"} (${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.changePercent >= 0 ? '+' : ''}${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.changePercent.toFixed(2) || "0.00"}%)`,
                   explanation: `${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "This company"} is leading today's performance, likely due to positive market sentiment or recent contract announcements.`,
                   points: 75
+                },
+                {
+                  id: "d2",
+                  type: "multiple-choice",
+                  question: `What is the overall trend of the defense sector today?`,
+                  options: ["Strongly positive", "Moderately positive", "Mixed/neutral", "Negative"],
+                  correctAnswer: (defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length) > 0.5 ? "Moderately positive" : (defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length) < -0.5 ? "Negative" : "Mixed/neutral",
+                  explanation: `The defense sector is showing a ${(defensiveStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / defensiveStocks.length).toFixed(2)}% average change, reflecting current market sentiment and geopolitical factors.`,
+                  points: 50
                 }
               ]
             }
