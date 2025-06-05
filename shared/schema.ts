@@ -192,3 +192,53 @@ export interface QuizQuestion {
   category: "geopolitical" | "market" | "defense" | "general";
   source?: string;
 }
+
+// Daily News Schema
+export const dailyNews = pgTable("daily_news", {
+  id: serial("id").primaryKey(),
+  date: varchar("date").notNull().unique(),
+  title: varchar("title").notNull(),
+  summary: text("summary").notNull(),
+  keyDevelopments: jsonb("key_developments").notNull(),
+  marketImpact: text("market_impact").notNull(),
+  conflictUpdates: jsonb("conflict_updates").notNull(),
+  defenseStockHighlights: jsonb("defense_stock_highlights").notNull(),
+  geopoliticalAnalysis: text("geopolitical_analysis").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertDailyNewsSchema = createInsertSchema(dailyNews, {
+  keyDevelopments: z.array(z.string()),
+  conflictUpdates: z.array(z.object({
+    conflict: z.string(),
+    update: z.string(),
+    severity: z.enum(["low", "medium", "high", "critical"]),
+  })),
+  defenseStockHighlights: z.array(z.object({
+    symbol: z.string(),
+    name: z.string(),
+    change: z.number(),
+    changePercent: z.number(),
+    reason: z.string(),
+  })),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDailyNews = z.infer<typeof insertDailyNewsSchema>;
+export type DailyNews = typeof dailyNews.$inferSelect;
+
+export interface NewsConflictUpdate {
+  conflict: string;
+  update: string;
+  severity: "low" | "medium" | "high" | "critical";
+}
+
+export interface NewsStockHighlight {
+  symbol: string;
+  name: string;
+  change: number;
+  changePercent: number;
+  reason: string;
+}

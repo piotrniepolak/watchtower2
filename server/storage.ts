@@ -1,7 +1,7 @@
 import { 
-  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses,
-  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse,
-  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse
+  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
+  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
+  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
@@ -47,6 +47,10 @@ export interface IStorage {
   createDailyQuiz(quiz: InsertDailyQuiz): Promise<DailyQuiz>;
   createUserQuizResponse(response: InsertUserQuizResponse): Promise<UserQuizResponse>;
   getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined>;
+  
+  // Daily News
+  getDailyNews(date: string): Promise<DailyNews | undefined>;
+  createDailyNews(news: InsertDailyNews): Promise<DailyNews>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -168,6 +172,17 @@ export class DatabaseStorage implements IStorage {
     );
   }
 
+  // Daily News
+  async getDailyNews(date: string): Promise<DailyNews | undefined> {
+    const [news] = await db.select().from(dailyNews).where(eq(dailyNews.date, date));
+    return news || undefined;
+  }
+
+  async createDailyNews(insertNews: InsertDailyNews): Promise<DailyNews> {
+    const [news] = await db.insert(dailyNews).values(insertNews).returning();
+    return news;
+  }
+
   // Utility method for password verification
   async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return await bcrypt.compare(plainPassword, hashedPassword);
@@ -186,6 +201,7 @@ export class MemStorage implements IStorage {
   private conflictWatchlists: Map<number, ConflictWatchlist> = new Map();
   private dailyQuizzes: Map<string, DailyQuiz> = new Map();
   private userQuizResponses: Map<number, UserQuizResponse> = new Map();
+  private dailyNewsMap: Map<string, DailyNews> = new Map();
   private currentConflictId: number;
   private currentCorrelationId: number;
   private currentUserId: number = 1;
@@ -193,6 +209,7 @@ export class MemStorage implements IStorage {
   private currentConflictWatchlistId: number = 1;
   private currentQuizId: number = 1;
   private currentQuizResponseId: number = 1;
+  private currentNewsId: number = 1;
 
   constructor() {
     this.conflicts = new Map();
