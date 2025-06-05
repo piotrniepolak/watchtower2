@@ -4,6 +4,7 @@ import { storage, DatabaseStorage } from "./storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
+import { quizService } from "./quiz-service";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -561,12 +562,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
+  // Daily Quiz Routes
+  app.get("/api/quiz/today", async (req, res) => {
+    try {
+      const quiz = await quizService.getTodaysQuiz();
+      if (!quiz) {
+        return res.status(404).json({ error: "No quiz available for today" });
+      }
+      res.json(quiz);
+    } catch (error) {
+      console.error("Error fetching today's quiz:", error);
+      res.status(500).json({ error: "Failed to fetch today's quiz" });
+    }
+  });
+
+  app.post("/api/quiz/:quizId/submit", authenticateToken, async (req, res) => {
+    try {
+      const quizId = parseInt(req.params.quizId);
+      const { responses } = req.body;
+      const userId = req.user.id;
+
+      if (!Array.isArray(responses)) {
+        return res.status(400).json({ error: "Responses must be an array" });
+      }
+
+      // Check if user already submitted this quiz
+      const existingResponse = await storage.getUserQuizResponse(userId, quizId);
+      if (existingResponse) {
+        return res.status(400).json({ error: "Quiz already completed" });
+      }
+
+      const result = await quizService.submitQuizResponse(userId, quizId, responses);
+      res.json(result);
+    } catch (error) {
+      console.error("Error submitting quiz response:", error);
+      res.status(500).json({ error: "Failed to submit quiz response" });
+    }
+  });
+
+  app.get("/api/quiz/:quizId/response", authenticateToken, async (req, res) => {
+    try {
+      const quizId = parseInt(req.params.quizId);
+      const userId = req.user.id;
+
+      const response = await storage.getUserQuizResponse(userId, quizId);
+      res.json(response || null);
+    } catch (error) {
+      console.error("Error fetching quiz response:", error);
+      res.status(500).json({ error: "Failed to fetch quiz response" });
+    }
+  });
+
   // Start real-time stock price updates when server starts
   if (process.env.ALPHA_VANTAGE_API_KEY) {
     console.log("Starting real-time stock price updates...");
     stockService.startRealTimeUpdates();
   } else {
     console.warn("ALPHA_VANTAGE_API_KEY not found - real-time stock updates disabled");
+  }
+
+  // Start daily quiz scheduler
+  if (process.env.OPENAI_API_KEY) {
+    quizService.startDailyQuizScheduler();
+    console.log("Daily quiz scheduler started");
+  } else {
+    console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
   }
   
   return httpServer;

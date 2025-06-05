@@ -178,14 +178,18 @@ export class MemStorage implements IStorage {
   private conflicts: Map<number, Conflict>;
   private stocks: Map<string, Stock>;
   private correlationEvents: Map<number, CorrelationEvent>;
-  private users: Map<number, User>;
-  private stockWatchlists: Map<number, StockWatchlist>;
-  private conflictWatchlists: Map<number, ConflictWatchlist>;
+  private users: Map<number, User> = new Map();
+  private stockWatchlists: Map<number, StockWatchlist> = new Map();
+  private conflictWatchlists: Map<number, ConflictWatchlist> = new Map();
+  private dailyQuizzes: Map<string, DailyQuiz> = new Map();
+  private userQuizResponses: Map<number, UserQuizResponse> = new Map();
   private currentConflictId: number;
   private currentCorrelationId: number;
-  private currentUserId: number;
-  private currentStockWatchlistId: number;
-  private currentConflictWatchlistId: number;
+  private currentUserId: number = 1;
+  private currentStockWatchlistId: number = 1;
+  private currentConflictWatchlistId: number = 1;
+  private currentQuizId: number = 1;
+  private currentQuizResponseId: number = 1;
 
   constructor() {
     this.conflicts = new Map();
@@ -678,6 +682,55 @@ export class MemStorage implements IStorage {
 
   async removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void> {
     // No-op
+  }
+
+  // Daily Quiz methods
+  async getDailyQuiz(date: string): Promise<DailyQuiz | undefined> {
+    return this.dailyQuizzes.get(date);
+  }
+
+  async getDailyQuizById(id: number): Promise<DailyQuiz | undefined> {
+    for (const quiz of this.dailyQuizzes.values()) {
+      if (quiz.id === id) {
+        return quiz;
+      }
+    }
+    return undefined;
+  }
+
+  async createDailyQuiz(insertQuiz: InsertDailyQuiz): Promise<DailyQuiz> {
+    const quiz: DailyQuiz = {
+      id: this.currentQuizId++,
+      date: insertQuiz.date,
+      questions: insertQuiz.questions,
+      createdAt: new Date(),
+    };
+    
+    this.dailyQuizzes.set(insertQuiz.date, quiz);
+    return quiz;
+  }
+
+  async createUserQuizResponse(insertResponse: InsertUserQuizResponse): Promise<UserQuizResponse> {
+    const response: UserQuizResponse = {
+      id: this.currentQuizResponseId++,
+      userId: insertResponse.userId,
+      quizId: insertResponse.quizId,
+      responses: insertResponse.responses,
+      score: insertResponse.score,
+      completedAt: new Date(),
+    };
+    
+    this.userQuizResponses.set(response.id, response);
+    return response;
+  }
+
+  async getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined> {
+    for (const response of this.userQuizResponses.values()) {
+      if (response.userId === userId && response.quizId === quizId) {
+        return response;
+      }
+    }
+    return undefined;
   }
 }
 
