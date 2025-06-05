@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Brain, CheckCircle, XCircle, Award, Clock, TrendingUp } from "lucide-react";
+import { Brain, CheckCircle, XCircle, Award, Clock, TrendingUp, Timer, Star, Zap } from "lucide-react";
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
 // Temporarily removing auth dependency for quiz functionality
 import { apiRequest } from "@/lib/queryClient";
@@ -41,6 +41,8 @@ interface QuizResponse {
 interface QuizResult {
   score: number;
   total: number;
+  totalPoints: number;
+  timeBonus: number;
 }
 
 export default function DailyQuiz() {
@@ -49,6 +51,9 @@ export default function DailyQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
   const quizQuery = useQuery<DailyQuiz>({
     queryKey: ['/api/quiz/today'],
@@ -61,10 +66,15 @@ export default function DailyQuiz() {
 
   const submitMutation = useMutation({
     mutationFn: async (responses: number[]) => {
+      const completionTimeSeconds = startTime ? Math.floor((Date.now() - startTime) / 1000) : undefined;
       console.log('Submitting quiz responses:', responses);
       console.log('Quiz ID:', quiz?.id);
+      console.log('Completion time:', completionTimeSeconds, 'seconds');
       try {
-        const response = await apiRequest('POST', `/api/quiz/${quiz!.id}/submit`, { responses });
+        const response = await apiRequest('POST', `/api/quiz/${quiz!.id}/submit`, { 
+          responses, 
+          completionTimeSeconds 
+        });
         const result = await response.json();
         console.log('Quiz submission result:', result);
         return result;
@@ -73,8 +83,9 @@ export default function DailyQuiz() {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (data: QuizResult) => {
       console.log('Quiz submitted successfully:', data);
+      setQuizResult(data);
       setShowResults(true);
     },
     onError: (error) => {
@@ -82,8 +93,25 @@ export default function DailyQuiz() {
     },
   });
 
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (quizStarted && startTime && !showResults) {
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [quizStarted, startTime, showResults]);
+
   const questions = quiz?.questions || [];
   const totalQuestions = questions.length;
+
+  const handleStartQuiz = () => {
+    setQuizStarted(true);
+    setStartTime(Date.now());
+    setElapsedTime(0);
+  };
 
   const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
     setSelectedAnswers(prev => ({
@@ -286,7 +314,7 @@ export default function DailyQuiz() {
           
           <div className="text-center">
             <Button 
-              onClick={() => setQuizStarted(true)}
+              onClick={handleStartQuiz}
               className="w-full"
             >
               Start Quiz
@@ -313,6 +341,12 @@ export default function DailyQuiz() {
             Question {currentQuestion + 1} of {totalQuestions}
           </CardTitle>
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-md">
+              <Timer className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-700">
+                {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
             <Badge className={getDifficultyColor(currentQ.difficulty)}>
               {currentQ.difficulty}
             </Badge>

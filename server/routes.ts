@@ -667,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/quiz/:quizId/submit", async (req, res) => {
     try {
       const quizId = parseInt(req.params.quizId);
-      const { responses } = req.body;
+      const { responses, completionTimeSeconds } = req.body;
       const userId = 1; // Using default user ID for demo
 
       if (!Array.isArray(responses)) {
@@ -680,7 +680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Quiz already completed" });
       }
 
-      const result = await quizService.submitQuizResponse(userId, quizId, responses);
+      const result = await quizService.submitQuizResponse(userId, quizId, responses, completionTimeSeconds);
       res.json(result);
     } catch (error) {
       console.error("Error submitting quiz response:", error);
