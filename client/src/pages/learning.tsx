@@ -127,7 +127,7 @@ export default function Learning() {
       description: "Identifying relationships between geopolitical events and stock movements",
       difficulty: "Advanced",
       duration: "",
-      points: 300,
+      points: 100, // 1 scenario question = 100 points
       prerequisites: ["defense-markets", "data-interpretation"],
       completed: userProgress.completedModules.includes("correlation-analysis"),
       locked: !userProgress.completedModules.includes("defense-markets") || !userProgress.completedModules.includes("data-interpretation"),
@@ -140,7 +140,7 @@ export default function Learning() {
       description: "Apply your knowledge to current conflicts using real ConflictWatch data",
       difficulty: "Advanced",
       duration: "",
-      points: 400,
+      points: 150, // 1 data analysis question = 150 points
       prerequisites: ["correlation-analysis"],
       completed: userProgress.completedModules.includes("practical-case"),
       locked: !userProgress.completedModules.includes("correlation-analysis"),
