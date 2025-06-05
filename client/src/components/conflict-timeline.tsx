@@ -6,6 +6,8 @@ import { Calendar, Clock, MapPin, Users, AlertTriangle, TrendingUp, Filter } fro
 import { useState } from "react";
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
 import FlagIcon from "@/components/flag-icon";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ExternalLink, Globe, TrendingUp as TrendingUpIcon } from "lucide-react";
 import type { Conflict } from "@shared/schema";
 
 interface TimelineEvent {
@@ -39,6 +41,8 @@ export default function ConflictTimeline() {
   });
   
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [detailsEvent, setDetailsEvent] = useState<TimelineEvent | null>(null);
 
   const { data: conflicts = [] } = useQuery<Conflict[]>({
     queryKey: ['/api/conflicts'],
@@ -440,8 +444,8 @@ export default function ConflictTimeline() {
                                   className="text-xs"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const wikiQuery = event.conflictName.replace(/\s+/g, '_');
-                                    window.open(`https://en.wikipedia.org/wiki/${wikiQuery}`, '_blank');
+                                    setDetailsEvent(event);
+                                    setDetailsModalOpen(true);
                                   }}
                                 >
                                   View Details
@@ -501,6 +505,199 @@ export default function ConflictTimeline() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Details Modal */}
+      <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              {detailsEvent?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {detailsEvent && (
+            <div className="space-y-6">
+              {/* Event Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-600" />
+                    <span className="font-medium">Date:</span>
+                    <span>{formatDate(detailsEvent.date)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-slate-600" />
+                    <span className="font-medium">Region:</span>
+                    <span>{detailsEvent.region}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-slate-600" />
+                    <span className="font-medium">Severity:</span>
+                    <Badge variant={getSeverityColor(detailsEvent.severity) as any}>
+                      {detailsEvent.severity}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Type:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getEventTypeColor(detailsEvent.type)}`}>
+                      {detailsEvent.type}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  {detailsEvent.parties.length > 0 && (
+                    <div>
+                      <span className="font-medium block mb-2">Involved Parties:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {detailsEvent.parties.map(party => (
+                          <div key={party} className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                            <FlagIcon countryCode={party} size="sm" />
+                            <span className="text-xs">{party}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {detailsEvent.casualties && (
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <span className="font-medium">Estimated Casualties:</span>
+                      <span className="text-red-600">{detailsEvent.casualties.toLocaleString()}</span>
+                    </div>
+                  )}
+                  
+                  {detailsEvent.economicImpact && (
+                    <div className="flex items-center gap-2">
+                      <TrendingUpIcon className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium">Economic Impact:</span>
+                      <span className="text-blue-600">{detailsEvent.economicImpact}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Description */}
+              <div>
+                <h3 className="font-semibold mb-2">Event Description</h3>
+                <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {detailsEvent.description}
+                </p>
+              </div>
+              
+              {/* Detailed Analysis Based on Conflict */}
+              <div>
+                <h3 className="font-semibold mb-3">Detailed Analysis</h3>
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg space-y-3">
+                  {detailsEvent.conflictName === "Ukraine-Russia Conflict" && (
+                    <div className="space-y-2">
+                      <p><strong>Background:</strong> The conflict began on February 24, 2022, when Russia launched a full-scale invasion of Ukraine, escalating tensions that had been building since 2014.</p>
+                      <p><strong>Key Developments:</strong> Major battles in Kyiv, Kharkiv, Mariupol, and ongoing fighting in eastern regions. International sanctions imposed on Russia.</p>
+                      <p><strong>Global Impact:</strong> Significant disruption to global food and energy supplies, refugee crisis with over 6 million displaced persons.</p>
+                    </div>
+                  )}
+                  
+                  {detailsEvent.conflictName === "Israel-Palestine Conflict" && (
+                    <div className="space-y-2">
+                      <p><strong>Background:</strong> Long-standing territorial and political conflict with roots dating back to the mid-20th century.</p>
+                      <p><strong>Recent Escalation:</strong> October 7, 2023 Hamas attack led to unprecedented escalation with ongoing military operations in Gaza.</p>
+                      <p><strong>Regional Impact:</strong> Heightened tensions across the Middle East, affecting regional stability and oil markets.</p>
+                    </div>
+                  )}
+                  
+                  {detailsEvent.conflictName === "Iran-Israel Tensions" && (
+                    <div className="space-y-2">
+                      <p><strong>Background:</strong> Proxy conflicts and direct confrontations between Iran and Israel over regional influence and nuclear programs.</p>
+                      <p><strong>Strategic Implications:</strong> Potential for wider Middle East conflict involving regional powers and international allies.</p>
+                      <p><strong>Market Effects:</strong> Oil price volatility, defense spending increases across the region.</p>
+                    </div>
+                  )}
+                  
+                  {(detailsEvent.conflictName === "Myanmar Civil War" || 
+                    detailsEvent.conflictName === "Sudan Civil War" || 
+                    detailsEvent.conflictName === "South China Sea Tensions") && (
+                    <div className="space-y-2">
+                      <p><strong>Regional Significance:</strong> This conflict represents broader patterns of regional instability and international power competition.</p>
+                      <p><strong>Humanitarian Impact:</strong> Significant civilian displacement and humanitarian needs requiring international attention.</p>
+                      <p><strong>Strategic Considerations:</strong> Implications for regional security architecture and international trade routes.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* External Resources */}
+              <div>
+                <h3 className="font-semibold mb-3">Additional Resources</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Button
+                    variant="outline"
+                    className="justify-start"
+                    onClick={() => {
+                      const wikiQuery = detailsEvent.conflictName.replace(/\s+/g, '_');
+                      window.open(`https://en.wikipedia.org/wiki/${wikiQuery}`, '_blank');
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Wikipedia Article
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="justify-start"
+                    onClick={() => {
+                      const searchQuery = encodeURIComponent(`${detailsEvent.conflictName} current news`);
+                      window.open(`https://news.google.com/search?q=${searchQuery}`, '_blank');
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Latest News
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="justify-start"
+                    onClick={() => {
+                      window.open('/analysis', '_self');
+                    }}
+                  >
+                    <TrendingUpIcon className="h-4 w-4 mr-2" />
+                    Market Analysis
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="justify-start"
+                    onClick={() => {
+                      const searchQuery = encodeURIComponent(`${detailsEvent.conflictName} academic research`);
+                      window.open(`https://scholar.google.com/scholar?q=${searchQuery}`, '_blank');
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Academic Sources
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Timeline Context */}
+              <div>
+                <h3 className="font-semibold mb-3">Timeline Context</h3>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    This event occurred on <strong>{formatDate(detailsEvent.date)}</strong> as part of the ongoing {detailsEvent.conflictName}. 
+                    The event had {detailsEvent.severity.toLowerCase()} severity impact and resulted in significant {detailsEvent.type === 'escalation' ? 'escalation' : 'developments'} 
+                    in the conflict dynamics.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
