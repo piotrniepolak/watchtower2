@@ -18,6 +18,7 @@ import Learning from "@/pages/learning";
 import Profile from "@/pages/profile";
 import Landing from "@/pages/landing";
 import Register from "@/pages/register";
+import Login from "@/pages/login";
 import { useAuth } from "@/hooks/useAuth";
 
 import NotFound from "@/pages/not-found";
@@ -27,6 +28,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/landing" component={Landing} />
+      <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/conflicts" component={Conflicts} />

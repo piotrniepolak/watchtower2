@@ -138,7 +138,7 @@ export default function Login() {
                 <Button 
                   variant="ghost" 
                   className="w-full"
-                  onClick={() => navigate('/register')}
+                  onClick={() => setLocation('/register')}
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Create New Account
