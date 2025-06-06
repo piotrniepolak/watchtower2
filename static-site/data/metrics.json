@@ -1,0 +1,12 @@
+{
+  "activeConflicts": 12,
+  "totalConflicts": 13,
+  "defenseStocks": 15,
+  "avgStockChange": 0.2,
+  "correlationScore": 0.95,
+  "defenseIndex": {
+    "value": 181.78,
+    "change": 1.59,
+    "changePercent": 0.88
+  }
+}

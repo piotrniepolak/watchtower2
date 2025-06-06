@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geopolitical Intelligence Platform</title>
+    <meta name="description" content="Advanced geopolitical intelligence platform with real-time conflict analysis and defense market insights">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6; color: #333; background: #f8fafc;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 40px 20px; text-align: center; margin-bottom: 30px;
+            border-radius: 12px;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { 
+            background: white; border-radius: 12px; padding: 25px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;
+        }
+        .card h3 { color: #2d3748; margin-bottom: 15px; font-size: 1.3rem; }
+        .metric-value { font-size: 2rem; font-weight: bold; color: #4299e1; margin-bottom: 5px; }
+        .conflict-item, .stock-item { 
+            padding: 12px; margin: 8px 0; background: #f7fafc; 
+            border-radius: 8px; border-left: 4px solid #e2e8f0;
+        }
+        .status-active { border-left-color: #f56565; }
+        .status-resolved { border-left-color: #48bb78; }
+        .stock-positive { color: #38a169; }
+        .stock-negative { color: #e53e3e; }
+        .loading { text-align: center; padding: 40px; }
+        .error { color: #e53e3e; text-align: center; padding: 20px; }
+        .last-updated { 
+            text-align: center; color: #718096; font-size: 0.9rem; 
+            margin-top: 30px; padding: 20px; background: white; border-radius: 8px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Geopolitical Intelligence Platform</h1>
+            <p>Real-time conflict analysis and defense market intelligence</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            <p>Loading intelligence data...</p>
+        </div>
+        
+        <div id="content" style="display: none;"></div>
+        
+        <div id="error" class="error" style="display: none;">
+            <p>Unable to load data. Please check that data files are accessible.</p>
+        </div>
+        
+        <div id="last-updated" class="last-updated" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function loadIntelligenceData() {
+            try {
+                const [conflicts, stocks, metrics, news, buildInfo] = await Promise.all([
+                    fetch('./data/conflicts.json').then(r => r.json()).catch(() => []),
+                    fetch('./data/stocks.json').then(r => r.json()).catch(() => []),
+                    fetch('./data/metrics.json').then(r => r.json()).catch(() => ({})),
+                    fetch('./data/news-today.json').then(r => r.json()).catch(() => null),
+                    fetch('./data/build-info.json').then(r => r.json()).catch(() => ({}))
+                ]);
+
+                displayIntelligence({ conflicts, stocks, metrics, news, buildInfo });
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function displayIntelligence({ conflicts, stocks, metrics, news, buildInfo }) {
+            const content = document.getElementById('content');
+            const loading = document.getElementById('loading');
+            const lastUpdated = document.getElementById('last-updated');
+            
+            const activeConflicts = conflicts.filter(c => c.status === 'Active');
+            const topStocks = stocks.slice(0, 8);
+            
+            content.innerHTML = `
+                <div class="grid">
+                    <div class="card">
+                        <h3>🌍 Global Conflicts</h3>
+                        <div class="metric-value">${activeConflicts.length}</div>
+                        <p>Active conflicts monitored</p>
+                        <div style="margin-top: 15px;">
+                            ${activeConflicts.slice(0, 4).map(conflict => `
+                                <div class="conflict-item status-${conflict.status.toLowerCase()}">
+                                    <strong>${conflict.name}</strong>
+                                    <div style="font-size: 0.9rem; color: #718096;">
+                                        ${conflict.region} • ${conflict.severity} severity
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📈 Defense Markets</h3>
+                        <div class="metric-value ${metrics.defenseIndexChange >= 0 ? 'stock-positive' : 'stock-negative'}">
+                            ${metrics.defenseIndexChange >= 0 ? '+' : ''}${(metrics.defenseIndexChange || 0).toFixed(2)}%
+                        </div>
+                        <p>Defense sector performance</p>
+                        <div style="margin-top: 15px;">
+                            ${topStocks.map(stock => `
+                                <div class="stock-item">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span><strong>${stock.symbol}</strong></span>
+                                        <span class="${stock.change >= 0 ? 'stock-positive' : 'stock-negative'}">
+                                            $${stock.price} (${stock.change >= 0 ? '+' : ''}${stock.changePercent}%)
+                                        </span>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #718096;">${stock.name}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🎯 Intelligence Summary</h3>
+                        <div class="metric-value">${conflicts.length}</div>
+                        <p>Total conflicts tracked</p>
+                        <div style="margin-top: 15px;">
+                            <div class="conflict-item">
+                                <strong>Market Volatility</strong>
+                                <div style="color: #718096;">Current: ${metrics.marketVolatility || 'Normal'}</div>
+                            </div>
+                            <div class="conflict-item">
+                                <strong>Risk Assessment</strong>
+                                <div style="color: #718096;">AI-powered analysis active</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${news ? `
+                    <div class="card">
+                        <h3>📰 Latest Intelligence</h3>
+                        <div style="line-height: 1.6;">
+                            <strong>${news.title}</strong>
+                            <p style="margin-top: 10px; color: #4a5568;">${news.summary || 'Daily intelligence briefing available'}</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            lastUpdated.innerHTML = `
+                <p>Last updated: ${new Date(buildInfo.buildTime || Date.now()).toLocaleString()}</p>
+                <p>Data source: Live Replit CMS • Static deployment ready</p>
+            `;
+            
+            loading.style.display = 'none';
+            content.style.display = 'block';
+            lastUpdated.style.display = 'block';
+        }
+
+        // Load data when page loads
+        loadIntelligenceData();
+    </script>
+</body>
+</html>

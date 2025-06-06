@@ -1,5 +1,4 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { apiFetch } from "./staticDataAdapter";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -13,15 +12,6 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Use static data adapter for GET requests
-  if (method === "GET") {
-    const data = await apiFetch(url);
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -39,22 +29,16 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Use static data adapter for query function
-    try {
-      return await apiFetch(queryKey[0] as string);
-    } catch (error) {
-      // Fallback to regular fetch for dynamic mode
-      const res = await fetch(queryKey[0] as string, {
-        credentials: "include",
-      });
+    const res = await fetch(queryKey[0] as string, {
+      credentials: "include",
+    });
 
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        return null;
-      }
-
-      await throwIfResNotOk(res);
-      return await res.json();
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
     }
+
+    await throwIfResNotOk(res);
+    return await res.json();
   };
 
 export const queryClient = new QueryClient({

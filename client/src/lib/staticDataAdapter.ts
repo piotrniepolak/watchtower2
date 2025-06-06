@@ -10,19 +10,12 @@ class StaticDataAdapter {
   private isStatic = false;
 
   constructor() {
-    // Check if we're in static mode by looking for data files
-    this.detectStaticMode();
-  }
-
-  private async detectStaticMode() {
-    try {
-      const response = await fetch('/data/metadata.json');
-      if (response.ok) {
-        this.isStatic = true;
-        console.log('Static mode detected - using pre-generated data');
-      }
-    } catch (error) {
-      this.isStatic = false;
+    // Only enable static mode when explicitly set
+    this.isStatic = (window as any)?.__STATIC_MODE__ === true || import.meta.env.VITE_STATIC_MODE === 'true';
+    
+    if (this.isStatic) {
+      console.log('Static mode detected - using pre-generated data');
+    } else {
       console.log('Dynamic mode detected - using API endpoints');
     }
   }

@@ -1,0 +1,52 @@
+{
+  "id": 1,
+  "date": "2025-06-06",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Which company recently adjusted its profit expectations for 2025 to a range of $590 million to $630 million?",
+      "options": [
+        "Parsons Corporation",
+        "Lockheed Martin",
+        "Northrop Grumman",
+        "Leidos Inc."
+      ],
+      "correctAnswer": 0,
+      "explanation": "Parsons Corporation adjusted its profit expectations for 2025 to a range of $590 million to $630 million, down from the prior outlook of $640 million to $710 million.",
+      "difficulty": "easy",
+      "category": "market",
+      "source": "Parsons Corporation's earnings adjustment"
+    },
+    {
+      "id": "q2",
+      "question": "What is the value of the contract that Lockheed Martin secured in May 2025 for upgrading Multiple Launch Rocket Systems?",
+      "options": [
+        "$214.4 million",
+        "$4.94 billion",
+        "$481.3 million",
+        "$20.9 million"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Lockheed Martin secured a $214.4 million contract to upgrade Multiple Launch Rocket Systems to the M270A2 configuration in May 2025.",
+      "difficulty": "medium",
+      "category": "defense",
+      "source": "Lockheed Martin's recent contract awards"
+    },
+    {
+      "id": "q3",
+      "question": "Which company has seen a significant trading volume of $12.519 billion amid its defense sector expansion?",
+      "options": [
+        "Conrad Shipyard LLC",
+        "Palantir Technologies",
+        "Leidos Inc.",
+        "Northrop Grumman"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Palantir Technologies has experienced significant trading volume of $12.519 billion due to its expansion in the defense sector and strong earnings.",
+      "difficulty": "hard",
+      "category": "market",
+      "source": "Palantir Technologies' trading volume and defense sector expansion"
+    }
+  ],
+  "createdAt": "2025-06-06T18:04:03.017Z"
+}

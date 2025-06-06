@@ -1,0 +1,8 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+<FilesMatch "\.(json)$">
+    Header set Cache-Control "max-age=21600"
+</FilesMatch>
