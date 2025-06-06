@@ -25,11 +25,12 @@ export interface IStorage {
   createCorrelationEvent(event: InsertCorrelationEvent): Promise<CorrelationEvent>;
   
   // Users
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   // Stock Watchlists
   getUserStockWatchlist(userId: number): Promise<StockWatchlist[]>;
@@ -718,8 +719,9 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
-    const existingUser = this.users.get(id);
+  async updateUser(id: string, updateData: Partial<InsertUser>): Promise<User | undefined> {
+    const numericId = parseInt(id);
+    const existingUser = this.users.get(numericId);
     if (!existingUser) return undefined;
 
     const updatedUser: User = {
@@ -728,7 +730,7 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
     };
 
-    this.users.set(id, updatedUser);
+    this.users.set(numericId, updatedUser);
     
     // Update index maps if email or username changed
     if (updateData.email && updateData.email !== existingUser.email) {
@@ -742,6 +744,19 @@ export class MemStorage implements IStorage {
     }
 
     return updatedUser;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = await this.getUser(userData.id);
+    if (existingUser) {
+      return await this.updateUser(userData.id, userData) || existingUser;
+    } else {
+      return await this.createUser({
+        ...userData,
+        username: userData.email || `user_${userData.id}`,
+        password: 'oauth_user' // OAuth users don't need passwords
+      });
+    }
   }
 
   async getUserStockWatchlist(userId: number): Promise<StockWatchlist[]> {

@@ -123,6 +123,7 @@ export type CorrelationEvent = typeof correlationEvents.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type UpsertUser = typeof users.$inferInsert;
 
 export type InsertStockWatchlist = z.infer<typeof insertStockWatchlistSchema>;
 export type StockWatchlist = typeof stockWatchlists.$inferSelect;
