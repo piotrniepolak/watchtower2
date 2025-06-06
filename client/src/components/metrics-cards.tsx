@@ -82,10 +82,10 @@ export default function MetricsCards() {
       changeColor: "text-red-600",
     },
     {
-      title: "S&P Aerospace & Defense",
-      value: realTimeMetrics.defenseIndex,
+      title: "iShares US Aerospace & Defense",
+      value: `$${realTimeMetrics.defenseIndex}`,
       change: realTimeMetrics.indexChange,
-      changeText: "Select Industry Index",
+      changeText: "ETF (ITA) today",
       icon: TrendingUp,
       iconBg: realTimeMetrics.indexChange.startsWith('+') ? "bg-green-100" : "bg-red-100",
       iconColor: realTimeMetrics.indexChange.startsWith('+') ? "text-green-600" : "text-red-600",
@@ -99,7 +99,7 @@ export default function MetricsCards() {
       icon: DollarSign,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
-      changeColor: "text-green-600",
+      changeColor: realTimeMetrics.marketCapChange.startsWith('+') ? "text-green-600" : "text-red-600",
     },
     {
       title: "Correlation Score",
