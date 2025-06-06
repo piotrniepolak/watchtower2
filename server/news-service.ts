@@ -10,7 +10,48 @@ export class NewsService {
     if (!process.env.OPENAI_API_KEY) {
       throw new Error("OPENAI_API_KEY environment variable is required");
     }
+    if (!process.env.PERPLEXITY_API_KEY) {
+      throw new Error("PERPLEXITY_API_KEY environment variable is required");
+    }
     this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+
+  private async fetchCurrentEvents(): Promise<string> {
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a geopolitical intelligence analyst. Provide comprehensive, current information about global events, defense industry developments, and military affairs.'
+            },
+            {
+              role: 'user',
+              content: 'Provide a detailed briefing on the most significant geopolitical developments, defense industry news, and military events from the past week. Include: 1) Major conflict updates and regional tensions, 2) Defense contractor earnings, contracts, and market movements, 3) International diplomatic meetings and policy announcements, 4) Military exercises, defense spending, and procurement decisions, 5) Technology developments in defense and security sectors. Focus on events that impact global security and defense markets.'
+            }
+          ],
+          max_tokens: 2000,
+          temperature: 0.2,
+          search_recency_filter: 'week'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('Error fetching current events for news:', error);
+      return 'Unable to fetch current events. Using general geopolitical knowledge.';
+    }
   }
 
   async generateDailyNews(date: string): Promise<DailyNews | null> {
@@ -31,11 +72,14 @@ export class NewsService {
         return existing;
       }
 
+      // Get current events from Perplexity API first
+      const currentEvents = await this.fetchCurrentEvents();
+      
       // Get current conflicts and stocks for context
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
 
-      const newsData = await this.generateNewsContent(conflicts, stocks);
+      const newsData = await this.generateNewsContent(conflicts, stocks, currentEvents);
       
       const insertData: InsertDailyNews = {
         date,
@@ -54,15 +98,27 @@ export class NewsService {
     }
   }
 
-  private async generateNewsContent(conflicts: any[], stocks: any[]) {
+  private async generateNewsContent(conflicts: any[], stocks: any[], currentEvents: string) {
     const activeConflicts = conflicts.filter(c => c.status === "Active").slice(0, 8);
     const defenseStocks = stocks.slice(0, 10);
 
-    const prompt = `Generate a comprehensive daily intelligence briefing for a geopolitical defense intelligence platform. Focus on real-world developments that would impact defense contractors and global security markets.
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
 
-CONTEXT:
+    const prompt = `Generate a comprehensive daily intelligence briefing for a geopolitical defense intelligence platform. Today is ${currentDate}. Base your briefing on the CURRENT EVENTS provided below and focus on developments that impact defense contractors and global security markets.
+
+CURRENT EVENTS DATA:
+${currentEvents}
+
+PLATFORM CONTEXT:
 - Current active conflicts: ${activeConflicts.map(c => `${c.name} (${c.region})`).join(", ")}
 - Major defense stocks: ${defenseStocks.map(s => `${s.symbol} (${s.name})`).join(", ")}
+
+IMPORTANT: Base your briefing primarily on the current events data provided above. Ensure the content correlates with the same information used for daily quiz generation.
 
 Generate a structured news briefing with:
 
@@ -109,7 +165,11 @@ Return as JSON in this exact format:
           },
           {
             role: "user",
-            content: prompt
+            content: `${prompt}
+
+CRITICAL: Base all content on the current events data provided above. This briefing should correlate with quiz questions generated from the same source material. Focus on the specific defense contractor news, geopolitical developments, and market events mentioned in the current events data.
+
+Make the briefing comprehensive but ensure all information is derived from the current events provided, not from general knowledge.`
           }
         ],
         response_format: { type: "json_object" },
