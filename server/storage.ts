@@ -1,7 +1,7 @@
 import { 
   conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
   type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
-  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews
+  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -243,6 +243,7 @@ export class MemStorage implements IStorage {
     this.currentCorrelationId = 1;
     this.initializeConflicts();
     this.initializeStocks();
+    this.initializeDemoUser();
   }
 
   private initializeConflicts() {
@@ -612,6 +613,23 @@ export class MemStorage implements IStorage {
     });
   }
 
+  private initializeDemoUser() {
+    const demoUser: User = {
+      id: 1,
+      username: "demo_user",
+      email: "demo@conflictwatch.com",
+      password: "demo_password",
+      firstName: "Demo",
+      lastName: "User",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.users.set(1, demoUser);
+    this.usersByEmail.set(demoUser.email, demoUser);
+    this.usersByUsername.set(demoUser.username, demoUser);
+  }
+
   async getConflicts(): Promise<Conflict[]> {
     return Array.from(this.conflicts.values());
   }
@@ -688,8 +706,8 @@ export class MemStorage implements IStorage {
   }
 
   // User methods - placeholder for compatibility (will switch to database later)
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  async getUser(id: string): Promise<User | undefined> {
+    return this.users.get(parseInt(id));
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {

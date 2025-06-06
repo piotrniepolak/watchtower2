@@ -1,40 +1,63 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage, DatabaseStorage } from "./storage";
+import { storage } from "./storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import session from "express-session";
 
-const dbStorage = new DatabaseStorage();
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-
-// Auth middleware
-const authenticateToken = async (req: any, res: any, next: any) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'Access token required' });
+// Simple session-based auth for now
+const sessionConfig = session({
+  secret: process.env.SESSION_SECRET || 'dev-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
+});
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    const user = await dbStorage.getUser(decoded.userId);
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid token' });
+// Simple auth middleware
+const isAuthenticated = async (req: any, res: any, next: any) => {
+  if (req.session?.userId) {
+    const user = await storage.getUser(req.session.userId.toString());
+    if (user) {
+      req.user = user;
+      return next();
     }
-    req.user = user;
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: 'Invalid token' });
   }
+  return res.status(401).json({ message: 'Unauthorized' });
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Enable sessions
+  app.use(sessionConfig);
+
+  // Simple login endpoint for demo
+  app.get('/api/login', (req: any, res) => {
+    // Create a demo user session
+    req.session.userId = 1;
+    res.redirect('/');
+  });
+
+  app.get('/api/logout', (req: any, res) => {
+    req.session.destroy(() => {
+      res.redirect('/');
+    });
+  });
+
+  app.get('/api/auth/user', async (req: any, res) => {
+    if (req.session?.userId) {
+      const user = await storage.getUser(req.session.userId.toString());
+      if (user) {
+        return res.json(user);
+      }
+    }
+    res.status(401).json({ message: 'Not authenticated' });
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
