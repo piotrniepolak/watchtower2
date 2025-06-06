@@ -162,11 +162,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch('/api/auth/username', isAuthenticated, async (req: any, res) => {
+    console.log('Username update endpoint hit');
+    console.log('Request body:', req.body);
+    console.log('User from middleware:', req.user);
+    
     try {
       const { username } = req.body;
-      const userId = req.session.userId.toString();
+      const userId = req.user.id.toString();
+
+      console.log('Updating username for user:', userId, 'to:', username);
 
       if (!username || username.trim().length === 0) {
+        console.log('Username validation failed: empty username');
         return res.status(400).json({ message: "Username is required" });
       }
 

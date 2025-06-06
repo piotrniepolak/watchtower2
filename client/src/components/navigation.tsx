@@ -299,12 +299,7 @@ export default function Navigation() {
                           My Profile
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/settings" className="flex items-center cursor-pointer">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Settings
-                        </Link>
-                      </DropdownMenuItem>
+
                       <DropdownMenuItem asChild>
                         <Link href="/watchlist" className="flex items-center cursor-pointer">
                           <Star className="h-4 w-4 mr-2" />
