@@ -30,6 +30,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  updateUsername(id: string, newUsername: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Stock Watchlists
@@ -128,13 +129,30 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
+  async updateUser(id: string, updateData: Partial<InsertUser>): Promise<User | undefined> {
     // Hash password if it's being updated
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
     }
     
     const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async updateUsername(id: string, newUsername: string): Promise<User | undefined> {
+    // Check if username is already taken
+    const existingUser = await this.getUserByUsername(newUsername);
+    if (existingUser && existingUser.id !== id) {
+      throw new Error("Username already taken");
+    }
+    
+    const [user] = await db.update(users)
+      .set({ 
+        username: newUsername,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
     return user;
   }
 
@@ -778,6 +796,35 @@ export class MemStorage implements IStorage {
       this.usersByUsername.set(updateData.username, updatedUser);
     }
 
+    return updatedUser;
+  }
+
+  async updateUsername(id: string, newUsername: string): Promise<User | undefined> {
+    // Check if username is already taken
+    const existingUser = await this.getUserByUsername(newUsername);
+    if (existingUser && existingUser.id.toString() !== id) {
+      throw new Error("Username already taken");
+    }
+    
+    const user = this.users.get(parseInt(id));
+    if (!user) {
+      return undefined;
+    }
+    
+    // Remove old username mapping
+    this.usersByUsername.delete(user.username);
+    
+    // Update user
+    const updatedUser: User = {
+      ...user,
+      username: newUsername,
+      updatedAt: new Date()
+    };
+    
+    // Update mappings
+    this.users.set(parseInt(id), updatedUser);
+    this.usersByUsername.set(newUsername, updatedUser);
+    
     return updatedUser;
   }
 

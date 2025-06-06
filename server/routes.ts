@@ -161,6 +161,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: 'Not authenticated' });
   });
 
+  app.patch('/api/auth/username', isAuthenticated, async (req: any, res) => {
+    try {
+      const { username } = req.body;
+      const userId = req.session.userId.toString();
+
+      if (!username || username.trim().length === 0) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      if (username.length < 3 || username.length > 20) {
+        return res.status(400).json({ message: "Username must be between 3 and 20 characters" });
+      }
+
+      // Check if username contains only valid characters
+      const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+      if (!usernameRegex.test(username)) {
+        return res.status(400).json({ message: "Username can only contain letters, numbers, underscores, and hyphens" });
+      }
+
+      const updatedUser = await storage.updateUsername(userId, username.trim());
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        message: "Username updated successfully",
+        user: {
+          id: updatedUser.id,
+          username: updatedUser.username,
+          email: updatedUser.email,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName
+        }
+      });
+    } catch (error: any) {
+      console.error("Error updating username:", error);
+      if (error.message === "Username already taken") {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+      res.status(500).json({ message: "Failed to update username" });
+    }
+  });
+
   // Simple test endpoint
   app.get('/api/auth/profile-test', (req, res) => {
     res.json({ message: "Profile endpoint is working" });
