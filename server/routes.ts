@@ -161,26 +161,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: 'Not authenticated' });
   });
 
-  app.patch('/api/auth/profile', async (req: any, res) => {
-    try {
-      const { firstName, lastName, bio, profileImageUrl } = req.body;
-      
-      const updatedUser = {
-        id: 1,
-        firstName: firstName || "Demo",
-        lastName: lastName || "User", 
-        bio: bio || "Intelligence analyst specializing in geopolitical risk assessment.",
-        profileImageUrl: profileImageUrl || "",
-        email: "demo@geopolitical-intel.com",
-        username: "demo_user",
-        updatedAt: new Date().toISOString(),
-      };
-      
-      res.json(updatedUser);
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-      res.status(500).json({ message: "Failed to update profile" });
-    }
+  // Simple test endpoint
+  app.get('/api/auth/profile-test', (req, res) => {
+    res.json({ message: "Profile endpoint is working" });
+  });
+
+  app.patch('/api/auth/profile', (req, res) => {
+    console.log('=== PROFILE UPDATE REQUEST ===');
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    console.log('==============================');
+    
+    // Simple JSON response to test
+    const response = {
+      success: true,
+      message: "Profile updated successfully",
+      data: {
+        firstName: req.body?.firstName || "Test",
+        lastName: req.body?.lastName || "User",
+        bio: req.body?.bio || "Test bio"
+      }
+    };
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(response);
   });
 
   // Auth routes
