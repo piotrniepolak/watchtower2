@@ -82,10 +82,10 @@ export default function MetricsCards() {
       changeColor: "text-red-600",
     },
     {
-      title: "iShares US Aerospace & Defense",
+      title: "iShares Aerospace & Defense ETF",
       value: `$${realTimeMetrics.defenseIndex}`,
       change: realTimeMetrics.indexChange,
-      changeText: "ETF (ITA) today",
+      changeText: "(ITA) today",
       icon: TrendingUp,
       iconBg: realTimeMetrics.indexChange.startsWith('+') ? "bg-green-100" : "bg-red-100",
       iconColor: realTimeMetrics.indexChange.startsWith('+') ? "text-green-600" : "text-red-600",

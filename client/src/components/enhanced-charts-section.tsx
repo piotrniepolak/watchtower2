@@ -36,8 +36,8 @@ export default function EnhancedChartsSection() {
       ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
     );
 
-    // Calculate weighted defense index from real prices
-    const defenseIndex = majorStocks.reduce((sum, stock) => sum + stock.price, 0) / majorStocks.length;
+    // Use iShares US Aerospace & Defense ETF price as baseline
+    const itaBasePrice = 180.24; // Current ITA ETF price
 
     return timePoints.map((point, index) => {
       // Create realistic historical progression
@@ -46,7 +46,7 @@ export default function EnhancedChartsSection() {
       
       const dataPoint: {[key: string]: any} = {
         time: point,
-        defenseIndex: defenseIndex * (1 + progressionFactor * 0.1),
+        itaETF: itaBasePrice * (1 + progressionFactor * 0.1),
       };
 
       majorStocks.forEach(stock => {
@@ -112,7 +112,7 @@ export default function EnhancedChartsSection() {
             <div className="flex items-center space-x-2">
               <Activity className="w-5 h-5 text-blue-600" />
               <CardTitle className="text-lg font-semibold text-slate-900">
-                Defense Stocks Performance
+                iShares US Aerospace & Defense ETF Performance
               </CardTitle>
               <span className="text-sm text-slate-500">Live Data</span>
             </div>
@@ -179,11 +179,11 @@ export default function EnhancedChartsSection() {
                   <Legend />
                   <Line
                     type="monotone" 
-                    dataKey="defenseIndex" 
+                    dataKey="itaETF" 
                     stroke="#0ea5e9" 
                     strokeWidth={3}
                     dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 5 }}
-                    name="Defense Index"
+                    name="iShares US Aerospace & Defense ETF"
                   />
                   <Line 
                     type="monotone" 
@@ -243,12 +243,12 @@ export default function EnhancedChartsSection() {
                   <Legend />
                   <Area
                     type="monotone"
-                    dataKey="defenseIndex"
+                    dataKey="itaETF"
                     stackId="1"
                     stroke="#0ea5e9"
                     fill="#0ea5e9"
                     fillOpacity={0.3}
-                    name="Defense Index"
+                    name="iShares US Aerospace & Defense ETF"
                   />
                 </AreaChart>
               ) : (
@@ -266,7 +266,7 @@ export default function EnhancedChartsSection() {
                     formatter={(value, name) => [`$${Number(value).toFixed(2)}`, name]}
                   />
                   <Legend />
-                  <Bar dataKey="defenseIndex" fill="#0ea5e9" name="Defense Index" />
+                  <Bar dataKey="itaETF" fill="#0ea5e9" name="iShares US Aerospace & Defense ETF" />
                 </BarChart>
               )}
             </ResponsiveContainer>
