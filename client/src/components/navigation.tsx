@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -297,6 +297,12 @@ export default function Navigation() {
                         <Link href="/profile" className="flex items-center cursor-pointer">
                           <User className="h-4 w-4 mr-2" />
                           My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/settings" className="flex items-center cursor-pointer">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Settings
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
