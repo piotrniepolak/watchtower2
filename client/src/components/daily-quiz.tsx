@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Brain, CheckCircle, XCircle, Award, Clock, TrendingUp, Timer, Star, Zap } from "lucide-react";
+import { Brain, CheckCircle, XCircle, Award, Clock, TrendingUp, Timer, Star, Zap, Lock, UserPlus } from "lucide-react";
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
-// Temporarily removing auth dependency for quiz functionality
+import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 
 interface QuizQuestion {
@@ -46,6 +46,7 @@ interface QuizResult {
 }
 
 export default function DailyQuiz() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -54,6 +55,9 @@ export default function DailyQuiz() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+
+  // Check if user is demo account
+  const isDemoUser = user?.username === 'demo_user';
 
   const quizQuery = useQuery<DailyQuiz>({
     queryKey: ['/api/quiz/today'],
@@ -158,7 +162,78 @@ export default function DailyQuiz() {
     }
   };
 
-  if (quizLoading) {
+  // Show restricted access for demo users
+  if (!authLoading && isAuthenticated && isDemoUser) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Brain className="w-5 h-5 mr-2" />
+            Daily Intelligence Quiz
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-8">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+              <Lock className="w-8 h-8 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Quiz Restricted for Demo Account
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 max-w-md">
+                Daily quizzes are only available to registered users. Create a real account to participate in the intelligence quiz and compete on the leaderboard.
+              </p>
+            </div>
+            <Button 
+              onClick={() => window.location.href = '/register'}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Create Account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show login prompt for non-authenticated users
+  if (!authLoading && !isAuthenticated) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Brain className="w-5 h-5 mr-2" />
+            Daily Intelligence Quiz
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-8">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+              <Brain className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Sign In Required
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 max-w-md">
+                Access daily intelligence quizzes and compete on the leaderboard by signing in to your account.
+              </p>
+            </div>
+            <Button 
+              onClick={() => window.location.href = '/api/login'}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Sign In
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (authLoading || quizLoading) {
     return (
       <Card>
         <CardHeader>

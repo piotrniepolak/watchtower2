@@ -15,6 +15,7 @@ export default function ActiveConflictsList() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
+      case "Critical": return "destructive";
       case "High": return "destructive";
       case "Medium": return "default";
       case "Low": return "secondary";
@@ -24,6 +25,7 @@ export default function ActiveConflictsList() {
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
+      case "Critical": return <AlertTriangle className="h-4 w-4 text-red-800" style={{ color: '#dc143c' }} />;
       case "High": return <AlertTriangle className="h-4 w-4 text-red-600" />;
       case "Medium": return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
       case "Low": return <AlertTriangle className="h-4 w-4 text-green-600" />;

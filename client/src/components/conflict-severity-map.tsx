@@ -36,11 +36,11 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
-      case 'critical': return '#8B0000'; // Dark red
-      case 'high': return '#DC143C';     // Red
-      case 'medium': return '#FF8C00';   // Orange
-      case 'low': return '#FFD700';      // Yellow
-      default: return '#808080';         // Grey
+      case 'critical': return '#DC143C'; // Crimson red
+      case 'high': return '#DC2626';     // Red
+      case 'medium': return '#F59E0B';   // Orange
+      case 'low': return '#10B981';      // Green
+      default: return '#6B7280';         // Grey
     }
   };
 
