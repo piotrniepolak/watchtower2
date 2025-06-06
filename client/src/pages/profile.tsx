@@ -114,10 +114,10 @@ export default function Profile() {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 1 * 1024 * 1024) { // 1MB limit to prevent payload errors
         toast({
           title: "File Too Large",
-          description: "Please select an image smaller than 5MB.",
+          description: "Please select an image smaller than 1MB.",
           variant: "destructive",
         });
         return;
@@ -134,10 +134,39 @@ export default function Profile() {
 
       setProfileImage(file);
       
-      // Create preview URL
+      // Create compressed preview URL
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Resize image to max 200x200 for profile pictures
+        const maxSize = 200;
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setPreviewUrl(compressedDataUrl);
+      };
+      
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
+        img.src = e.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -145,15 +174,6 @@ export default function Profile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!isAuthenticated) {
-      toast({
-        title: "Demo Mode",
-        description: "Profile updates are not available in demo mode. Changes are displayed locally only.",
-        variant: "default",
-      });
-      return;
-    }
     
     const updateData = {
       firstName: formData.firstName,
