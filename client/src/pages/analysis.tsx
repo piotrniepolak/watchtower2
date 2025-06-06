@@ -68,12 +68,12 @@ export default function Analysis() {
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
 
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
-    queryKey: ["/api/ai/predictions"],
+    queryKey: ["/api/analysis/predictions"],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
-    queryKey: ["/api/ai/market-analysis"],
+    queryKey: ["/api/analysis/market"],
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -83,7 +83,7 @@ export default function Analysis() {
   });
 
   const { data: storyline, isLoading: storylineLoading } = useQuery({
-    queryKey: [`/api/ai/storyline/${selectedConflictId}`],
+    queryKey: [`/api/analysis/storyline/${selectedConflictId}`],
     enabled: !!selectedConflictId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
