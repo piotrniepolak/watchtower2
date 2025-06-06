@@ -118,7 +118,11 @@ export default function DataTables() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getSeverityVariant(conflict.severity)}>
+                        <Badge 
+                          variant={getSeverityVariant(conflict.severity)}
+                          className={conflict.severity.toLowerCase() === 'critical' ? 'bg-crimson-600 text-white border-crimson-600' : ''}
+                          style={conflict.severity.toLowerCase() === 'critical' ? { backgroundColor: '#DC143C', borderColor: '#DC143C', color: 'white' } : {}}
+                        >
                           {conflict.severity}
                         </Badge>
                       </TableCell>
