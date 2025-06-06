@@ -8,12 +8,19 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import { useRealTimeStocks, type Stock } from "@/hooks/useRealTimeStocks";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Markets() {
   const { isAuthenticated } = useAuth();
   const watchlist = useLocalWatchlist();
   
   const { stocks, isLoading, isConnected } = useRealTimeStocks();
+  
+  // Fetch authentic S&P Aerospace & Defense Index data
+  const { data: metricsData } = useQuery({
+    queryKey: ["/api/metrics"],
+    refetchInterval: 30000,
+  });
 
   // Generate historical data based on real Yahoo Finance current prices
   const generateStockHistory = (currentPrice: number, changePercent: number) => {
@@ -37,7 +44,7 @@ export default function Markets() {
     });
   };
 
-  // Calculate real-time metrics from Yahoo Finance data
+  // Use authentic S&P Aerospace & Defense Index data from API
   const calculateRealTimeMetrics = () => {
     if (!stocks || !Array.isArray(stocks)) {
       return {
@@ -49,25 +56,23 @@ export default function Markets() {
       };
     }
 
-    // Calculate defense index from major stocks
-    const majorStocks = stocks.filter(stock => 
-      ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
-    );
-    const defenseIndex = (majorStocks.reduce((sum, stock) => sum + stock.price, 0) / majorStocks.length).toFixed(2);
+    // Use authentic S&P Aerospace & Defense Index data from ITA ETF
+    const defenseIndexValue = metricsData?.defenseIndex?.value || 0;
+    const defenseIndexChange = metricsData?.defenseIndex?.changePercent || 0;
     
-    // Calculate total market cap
+    // Calculate total market cap from all tracked defense stocks
     const totalMarketCap = stocks.reduce((sum, stock) => {
       const marketCapValue = parseFloat(stock.marketCap?.replace(/[$B€£]/g, '') || '0');
       return sum + marketCapValue;
     }, 0);
     
-    // Calculate average change percentage
+    // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
     
     return {
-      defenseIndex,
+      defenseIndex: defenseIndexValue.toFixed(2),
       totalMarketCap: `${totalMarketCap.toFixed(1)}B`,
-      indexChange: `${avgChangePercent >= 0 ? '+' : ''}${avgChangePercent.toFixed(2)}%`,
+      indexChange: `${defenseIndexChange >= 0 ? '+' : ''}${defenseIndexChange.toFixed(2)}%`,
       marketCapChange: `${avgChangePercent >= 0 ? '+' : ''}${(avgChangePercent * 0.8).toFixed(1)}%`,
       activeCompanies: stocks.length
     };
@@ -296,7 +301,7 @@ export default function Markets() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600">Defense Index</p>
+                    <p className="text-sm font-medium text-slate-600">S&P Aerospace & Defense</p>
                     <p className="text-2xl font-bold text-slate-900">${metrics.defenseIndex}</p>
                   </div>
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
