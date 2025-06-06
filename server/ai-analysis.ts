@@ -4,6 +4,47 @@ import type { Conflict, Stock } from "@shared/schema";
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Perplexity API for real-time search
+async function searchCurrentEvents(query: string): Promise<string> {
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-sonar-small-128k-online",
+        messages: [
+          {
+            role: "system",
+            content: "You are a geopolitical intelligence analyst. Provide factual, current information about conflicts and defense developments. Focus on recent developments in the past 30 days."
+          },
+          {
+            role: "user",
+            content: query
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.2,
+        search_recency_filter: "month",
+        return_related_questions: false,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Perplexity API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content || "";
+  } catch (error) {
+    console.error('Error fetching current events:', error);
+    return "";
+  }
+}
+
 export interface ConflictPrediction {
   conflictId: number;
   conflictName: string;
@@ -56,7 +97,15 @@ async function generateSingleConflictPrediction(
 ): Promise<ConflictPrediction> {
   const stockSymbols = stocks.map(s => s.symbol).join(", ");
   
-  const prompt = `As a geopolitical analyst and defense market expert, analyze the current conflict and provide a comprehensive prediction.
+  // Fetch current events and developments for this conflict
+  const currentEventsQuery = `Latest developments and news about ${conflict.name} conflict in ${conflict.region}. Recent military activities, diplomatic efforts, economic impacts, and defense industry implications in the past 30 days.`;
+  const currentEvents = await searchCurrentEvents(currentEventsQuery);
+  
+  // Search for broader geopolitical context
+  const contextQuery = `Current geopolitical situation in ${conflict.region}. Regional tensions, military buildups, alliance activities, and defense spending trends affecting ${conflict.name}.`;
+  const geopoliticalContext = await searchCurrentEvents(contextQuery);
+  
+  const prompt = `As a geopolitical analyst and defense market expert, analyze the current conflict using the latest available information and provide a comprehensive prediction.
 
 Conflict: ${conflict.name}
 Region: ${conflict.region}
@@ -64,16 +113,22 @@ Current Status: ${conflict.status}
 Severity: ${conflict.severity}
 Duration: ${conflict.duration}
 
+CURRENT EVENTS AND DEVELOPMENTS:
+${currentEvents}
+
+GEOPOLITICAL CONTEXT:
+${geopoliticalContext}
+
 Available Defense Stocks: ${stockSymbols}
 
-Provide a detailed analysis in the following JSON format:
+Based on the latest information above, provide a detailed analysis in the following JSON format:
 {
   "scenario": "escalation|de-escalation|stalemate|resolution",
   "probability": 0-100,
   "timeframe": "specific timeframe like '3-6 months', '1-2 years'",
-  "narrative": "detailed 3-4 sentence prediction story",
+  "narrative": "detailed 3-4 sentence prediction story based on current developments",
   "keyFactors": ["factor1", "factor2", "factor3"],
-  "economicImpact": "economic implications description",
+  "economicImpact": "economic implications description based on current trends",
   "defenseStockImpact": {
     "affected": ["stock symbols that would be most affected"],
     "direction": "positive|negative|neutral",
@@ -84,14 +139,14 @@ Provide a detailed analysis in the following JSON format:
   "mitigationStrategies": ["strategy1", "strategy2"]
 }
 
-Base your analysis on current geopolitical trends, historical patterns, and market dynamics. Be realistic and data-driven.`;
+Use the current events and recent developments to make realistic, data-driven predictions. Focus on what is actually happening now rather than historical patterns alone.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
       {
         role: "system",
-        content: "You are a senior geopolitical analyst with expertise in defense markets and conflict prediction. Provide realistic, well-reasoned analyses based on current global dynamics."
+        content: "You are a senior geopolitical analyst with access to current intelligence. Provide realistic, well-reasoned analyses based on the latest developments and current global dynamics. Always ground your predictions in factual, recent information."
       },
       {
         role: "user",
@@ -122,9 +177,9 @@ Base your analysis on current geopolitical trends, historical patterns, and mark
 }
 
 export async function generateMarketAnalysis(
-  conflicts: Conflict[],
   stocks: Stock[],
-  predictions: ConflictPrediction[]
+  conflicts: Conflict[],
+  correlationEvents: any[]
 ): Promise<MarketAnalysis> {
   const conflictSummary = conflicts.map(c => 
     `${c.name} (${c.region}): ${c.status} - ${c.severity}`
@@ -134,11 +189,15 @@ export async function generateMarketAnalysis(
     `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
   ).join('\n');
 
-  const predictionSummary = predictions.map(p => 
-    `${p.conflictName}: ${p.scenario} (${p.probability}% probability)`
-  ).join('\n');
+  // Fetch current defense market trends and analysis
+  const marketTrendsQuery = `Current defense industry market trends, defense spending budgets, military procurement contracts, and geopolitical impacts on defense stocks in the past 30 days. Include major defense contractors performance and outlook.`;
+  const marketTrends = await searchCurrentEvents(marketTrendsQuery);
+  
+  // Search for economic and investment context
+  const investmentQuery = `Defense sector investment outlook, military budget allocations, geopolitical risk impacts on defense stocks, and recent defense industry earnings and forecasts.`;
+  const investmentContext = await searchCurrentEvents(investmentQuery);
 
-  const prompt = `As a defense sector analyst, provide a comprehensive market analysis based on current conflicts and predictions.
+  const prompt = `As a defense sector analyst, provide a comprehensive market analysis based on current real-world conditions and latest market developments.
 
 Current Conflicts:
 ${conflictSummary}
@@ -146,27 +205,30 @@ ${conflictSummary}
 Defense Stock Performance:
 ${stockPerformance}
 
-AI Predictions:
-${predictionSummary}
+CURRENT MARKET TRENDS AND DEVELOPMENTS:
+${marketTrends}
 
-Provide analysis in JSON format:
+INVESTMENT CONTEXT AND ECONOMIC FACTORS:
+${investmentContext}
+
+Based on the latest market information above, provide analysis in JSON format:
 {
   "overallSentiment": "bullish|bearish|neutral",
-  "sectorOutlook": "detailed sector outlook description",
+  "sectorOutlook": "detailed sector outlook description based on current trends",
   "keyDrivers": ["driver1", "driver2", "driver3"],
-  "riskAssessment": "risk assessment description",
+  "riskAssessment": "risk assessment description based on current conditions",
   "investmentImplications": ["implication1", "implication2"],
   "timeHorizon": "relevant time horizon for analysis"
 }
 
-Focus on defense sector dynamics, geopolitical risk premiums, and market opportunities.`;
+Ground your analysis in the current market conditions, recent earnings, budget allocations, and geopolitical developments affecting the defense sector.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
       {
         role: "system",
-        content: "You are a senior defense sector analyst with deep expertise in geopolitical risk assessment and defense market dynamics."
+        content: "You are a senior defense sector analyst with access to current market intelligence. Provide realistic, data-driven analysis based on the latest defense industry developments, earnings reports, and geopolitical factors affecting defense markets."
       },
       {
         role: "user",
@@ -202,7 +264,15 @@ export async function generateConflictStoryline(conflict: Conflict): Promise<{
   keyWatchPoints: string[];
   expertInsights: string;
 }> {
-  const prompt = `As a geopolitical storyteller and analyst, create a comprehensive narrative analysis for this conflict.
+  // Fetch current detailed situation and recent developments
+  const currentSituationQuery = `Detailed current situation of ${conflict.name} conflict in ${conflict.region}. Latest military positions, diplomatic negotiations, casualty reports, humanitarian situation, and key players involved in the past 30 days.`;
+  const currentSituation = await searchCurrentEvents(currentSituationQuery);
+  
+  // Search for expert analysis and predictions
+  const expertAnalysisQuery = `Expert analysis and predictions for ${conflict.name} conflict outcomes. Military analysts, diplomatic experts, and think tank assessments of possible scenarios and conflict resolution prospects.`;
+  const expertAnalysis = await searchCurrentEvents(expertAnalysisQuery);
+  
+  const prompt = `As a geopolitical storyteller and analyst, create a comprehensive narrative analysis for this conflict using the latest available information.
 
 Conflict: ${conflict.name}
 Region: ${conflict.region}
@@ -210,30 +280,36 @@ Status: ${conflict.status}
 Severity: ${conflict.severity}
 Duration: ${conflict.duration}
 
-Create a detailed storyline analysis in JSON format:
+CURRENT SITUATION AND DEVELOPMENTS:
+${currentSituation}
+
+EXPERT ANALYSIS AND PREDICTIONS:
+${expertAnalysis}
+
+Based on the latest intelligence above, create a detailed storyline analysis in JSON format:
 {
-  "currentSituation": "comprehensive current situation narrative",
+  "currentSituation": "comprehensive current situation narrative based on recent developments",
   "possibleOutcomes": [
     {
       "scenario": "scenario name",
       "probability": 0-100,
-      "description": "detailed description",
+      "description": "detailed description based on current facts",
       "timeline": "expected timeline",
       "implications": ["implication1", "implication2"]
     }
   ],
   "keyWatchPoints": ["indicator1", "indicator2", "indicator3"],
-  "expertInsights": "expert analytical insights and commentary"
+  "expertInsights": "expert analytical insights based on current intelligence"
 }
 
-Provide 3-4 realistic scenarios with compelling narratives. Be objective and analytical.`;
+Provide 3-4 realistic scenarios grounded in the current facts and expert assessments. Use the latest developments to inform your analysis.`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
     messages: [
       {
         role: "system",
-        content: "You are a renowned geopolitical analyst and storyteller who creates compelling, accurate narratives about global conflicts and their potential trajectories."
+        content: "You are a renowned geopolitical analyst with access to current intelligence who creates compelling, factual narratives about global conflicts based on the latest developments and expert assessments."
       },
       {
         role: "user",
