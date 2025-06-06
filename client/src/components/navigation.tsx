@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -284,13 +284,43 @@ export default function Navigation() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button 
-                onClick={() => window.location.href = '/api/login'}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-              >
-                <User className="h-4 w-4 mr-2" />
-                Account
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center space-x-2 border-slate-300 hover:bg-slate-50"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">Account</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem 
+                    onClick={() => window.location.href = '/api/login'}
+                    className="flex items-center cursor-pointer"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => window.location.href = '/register'}
+                    className="flex items-center cursor-pointer"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Create Account
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => window.location.href = '/landing'}
+                    className="flex items-center cursor-pointer text-slate-600"
+                  >
+                    <Info className="h-4 w-4 mr-2" />
+                    About Platform
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
