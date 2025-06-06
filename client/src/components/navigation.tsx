@@ -93,56 +93,56 @@ export default function Navigation() {
             </Link>
 
             {/* Navigation links */}
-            <div className="hidden md:block ml-10">
-              <div className="flex items-baseline space-x-8">
-                <Link href="/" className={`px-3 py-2 text-sm font-medium ${
+            <div className="hidden md:block ml-8">
+              <div className="flex items-center space-x-6">
+                <Link href="/" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Dashboard
                 </Link>
-                <Link href="/conflicts" className={`px-3 py-2 text-sm font-medium ${
+                <Link href="/conflicts" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/conflicts") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Conflicts
                 </Link>
-                <Link href="/markets" className={`px-3 py-2 text-sm font-medium ${
+                <Link href="/markets" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/markets") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Markets
                 </Link>
-                <Link href="/analysis" className={`px-3 py-2 text-sm font-medium ${
+                <Link href="/analysis" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/analysis") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   AI Analysis
                 </Link>
-                <Link href="/reports" className={`px-3 py-2 text-sm font-medium ${
+                <Link href="/reports" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/reports") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Reports
                 </Link>
-                <Link href="/learning" className={`px-3 py-2 text-sm font-medium ${
+                <Link href="/learning" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/learning") 
-                    ? "text-primary border-b-2 border-primary" 
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Learning
                 </Link>
 
                 {isAuthenticated && (
-                  <Link href="/watchlist" className={`px-3 py-2 text-sm font-medium ${
+                  <Link href="/watchlist" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     isActive("/watchlist") 
-                      ? "text-primary border-b-2 border-primary" 
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-100 text-blue-700" 
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}>
                     Watchlist
                   </Link>
