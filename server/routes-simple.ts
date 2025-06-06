@@ -226,16 +226,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/quiz/submit', isAuthenticated, async (req: any, res) => {
+  app.post('/api/quiz/:quizId/submit', async (req: any, res) => {
     try {
-      const { quizId, responses, completionTimeSeconds } = req.body;
-      const userId = req.user.id;
+      const quizId = parseInt(req.params.quizId);
+      const { responses, completionTimeSeconds } = req.body;
+      const userId = 1; // Using default user ID for demo
       
+      if (!Array.isArray(responses)) {
+        return res.status(400).json({ error: "Responses must be an array" });
+      }
+
+      // Check if user already submitted this quiz
+      const existingResponse = await storage.getUserQuizResponse(userId, quizId);
+      if (existingResponse) {
+        return res.status(400).json({ error: "Quiz already completed" });
+      }
+
       const result = await quizService.submitQuizResponse(userId, quizId, responses, completionTimeSeconds);
       res.json(result);
     } catch (error) {
       console.error('Error submitting quiz:', error);
-      res.status(500).json({ message: 'Failed to submit quiz' });
+      res.status(500).json({ error: 'Failed to submit quiz response' });
+    }
+  });
+
+  app.get('/api/quiz/:quizId/response', async (req, res) => {
+    try {
+      const quizId = parseInt(req.params.quizId);
+      const userId = 1; // Using default user ID for demo
+
+      const response = await storage.getUserQuizResponse(userId, quizId);
+      res.json(response || null);
+    } catch (error) {
+      console.error('Error fetching quiz response:', error);
+      res.status(500).json({ error: 'Failed to fetch quiz response' });
     }
   });
 

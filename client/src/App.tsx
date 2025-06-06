@@ -19,6 +19,7 @@ import Profile from "@/pages/profile";
 import Landing from "@/pages/landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
+import Quiz from "@/pages/quiz";
 import { useAuth } from "@/hooks/useAuth";
 
 import NotFound from "@/pages/not-found";
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/watchlist" component={DedicatedWatchlist} />
       <Route path="/learning" component={Learning} />
+      <Route path="/quiz" component={Quiz} />
       <Route path="/profile" component={Profile} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
