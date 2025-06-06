@@ -134,8 +134,27 @@ export default function Profile() {
 
   const usernameUpdateMutation = useMutation({
     mutationFn: async (username: string) => {
-      const response = await apiRequest('PATCH', '/api/auth/username', { username });
-      return response.json();
+      try {
+        const response = await apiRequest('PATCH', '/api/auth/username', { username });
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type:', contentType);
+        
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.log('Non-JSON response:', text);
+          throw new Error('Server returned non-JSON response');
+        }
+        
+        const data = await response.json();
+        console.log('JSON data:', data);
+        return data;
+      } catch (error) {
+        console.error('Username update error:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
       toast({
