@@ -33,12 +33,12 @@ export class NewsService {
             },
             {
               role: 'user',
-              content: 'Provide a detailed briefing on the most significant geopolitical developments, defense industry news, and military events from the past week. Include: 1) Major conflict updates and regional tensions, 2) Defense contractor earnings, contracts, and market movements, 3) International diplomatic meetings and policy announcements, 4) Military exercises, defense spending, and procurement decisions, 5) Technology developments in defense and security sectors. Focus on events that impact global security and defense markets.'
+              content: `Provide a comprehensive intelligence briefing for today's date (${new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}). Include the most significant geopolitical developments, defense industry news, and military events from today and the past 24-48 hours. Cover: 1) Current conflict updates and regional tensions with specific details, 2) Defense contractor news, earnings, contracts, and market movements, 3) International diplomatic developments and policy announcements, 4) Military exercises, defense spending, and procurement decisions, 5) Technology developments in defense and security sectors. Focus on events from today and very recent developments that impact global security and defense markets. Provide specific dates, numbers, and verifiable details.`
             }
           ],
           max_tokens: 2000,
           temperature: 0.2,
-          search_recency_filter: 'week'
+          search_recency_filter: 'day'
         })
       });
 
@@ -230,13 +230,17 @@ Make the briefing comprehensive but ensure all information is derived from the c
 
   async getTodaysNews(): Promise<DailyNews | null> {
     const today = this.getTodayDateET();
-    return await storage.getDailyNews(today);
+    const news = await storage.getDailyNews(today);
+    return news || null;
   }
 
   private getTodayDateET(): string {
     const now = new Date();
     const etTime = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
-    return etTime.toISOString().split('T')[0];
+    const year = etTime.getFullYear();
+    const month = String(etTime.getMonth() + 1).padStart(2, '0');
+    const day = String(etTime.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   startDailyNewsScheduler(): void {
