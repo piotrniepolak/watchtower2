@@ -9,8 +9,8 @@ interface AuthModalProps {
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const handleLogin = () => {
-    // Redirect to Replit Auth login endpoint
-    window.location.href = '/api/login';
+    // Redirect to login page
+    window.location.href = '/login';
   };
 
   return (

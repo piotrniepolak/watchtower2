@@ -238,7 +238,7 @@ export default function Register() {
                 Already have an account?{' '}
                 <Button
                   variant="link"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/login'}
                   className="p-0 h-auto text-blue-600 hover:text-blue-700"
                 >
                   Sign in here

@@ -224,7 +224,7 @@ export default function DailyQuiz() {
               </p>
             </div>
             <Button 
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => setLocation('/login')}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               Sign In
