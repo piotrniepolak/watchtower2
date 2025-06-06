@@ -23,40 +23,23 @@ import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
   return (
     <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/register" component={Register} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/conflicts" component={Conflicts} />
-          <Route path="/markets" component={Markets} />
-          <Route path="/analysis" component={Analysis} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/watchlist" component={DedicatedWatchlist} />
-          <Route path="/learning" component={Learning} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/privacy" component={Privacy} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/api" component={ApiDocs} />
-          <Route path="/support" component={Support} />
-        </>
-      )}
+      <Route path="/" component={Dashboard} />
+      <Route path="/landing" component={Landing} />
+      <Route path="/register" component={Register} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/conflicts" component={Conflicts} />
+      <Route path="/markets" component={Markets} />
+      <Route path="/analysis" component={Analysis} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/watchlist" component={DedicatedWatchlist} />
+      <Route path="/learning" component={Learning} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/api" component={ApiDocs} />
+      <Route path="/support" component={Support} />
       <Route component={NotFound} />
     </Switch>
   );
