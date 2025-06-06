@@ -6,6 +6,7 @@ import { generateConflictPredictions, generateMarketAnalysis, generateConflictSt
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
+import { conflictTimelineService } from "./conflict-timeline-service";
 import session from "express-session";
 
 // Simple session-based auth
@@ -295,6 +296,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching correlation events:', error);
       res.status(500).json({ message: 'Failed to fetch correlation events' });
+    }
+  });
+
+  // Conflict timeline endpoints
+  app.get('/api/conflicts/:id/timeline', async (req, res) => {
+    try {
+      const conflictId = parseInt(req.params.id);
+      const timeline = await conflictTimelineService.getConflictTimeline(conflictId);
+      res.json(timeline);
+    } catch (error) {
+      console.error('Error fetching conflict timeline:', error);
+      res.status(500).json({ error: 'Failed to fetch timeline' });
+    }
+  });
+
+  app.post('/api/conflicts/:id/update-timeline', async (req, res) => {
+    try {
+      const conflictId = parseInt(req.params.id);
+      const conflict = await storage.getConflict(conflictId);
+      
+      if (!conflict) {
+        return res.status(404).json({ error: 'Conflict not found' });
+      }
+
+      const events = await conflictTimelineService.fetchConflictUpdates(conflict);
+      
+      for (const event of events) {
+        const correlationEvent = {
+          title: event.title,
+          description: event.description,
+          date: event.timestamp,
+          conflictId: event.conflictId,
+          stockSymbol: null,
+          impact: event.impact,
+          severity: event.severity
+        };
+        
+        await storage.createCorrelationEvent(correlationEvent);
+      }
+
+      await storage.updateConflict(conflictId, {
+        lastUpdated: new Date()
+      });
+
+      res.json({ 
+        message: 'Timeline updated successfully',
+        eventsAdded: events.length 
+      });
+    } catch (error) {
+      console.error('Error updating conflict timeline:', error);
+      res.status(500).json({ error: 'Failed to update timeline' });
+    }
+  });
+
+  app.post('/api/conflicts/update-all-timelines', async (req, res) => {
+    try {
+      await conflictTimelineService.updateAllConflictTimelines();
+      res.json({ message: 'All conflict timelines updated successfully' });
+    } catch (error) {
+      console.error('Error updating all timelines:', error);
+      res.status(500).json({ error: 'Failed to update timelines' });
     }
   });
 
