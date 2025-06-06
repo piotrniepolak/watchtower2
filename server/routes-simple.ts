@@ -35,11 +35,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enable sessions
   app.use(sessionConfig);
 
-  // Simple login endpoint for demo
-  app.get('/api/login', (req: any, res) => {
+  // Demo login endpoint - only for demo account
+  app.get('/api/demo-login', (req: any, res) => {
     // Create a demo user session
     req.session.userId = 1;
     res.redirect('/');
+  });
+
+  // Regular login endpoint for user authentication
+  app.post('/api/auth/login', async (req: any, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // For now, check if password matches (in production, use proper hashing)
+      if (user.password !== password) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Create user session
+      req.session.userId = user.id;
+      
+      res.json({ 
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Registration endpoint
+  app.post('/api/auth/register', async (req: any, res) => {
+    try {
+      const { username, email, password, firstName, lastName } = req.body;
+      
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Username, email, and password are required' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ message: 'Email already registered' });
+      }
+
+      // Create new user
+      const newUser = await storage.createUser({
+        username,
+        email,
+        password, // In production, hash this password
+        firstName: firstName || null,
+        lastName: lastName || null,
+        profileImageUrl: null,
+        bio: null
+      });
+
+      // Create user session
+      req.session.userId = newUser.id;
+      
+      res.json({ 
+        message: 'Registration successful',
+        user: {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   });
 
   app.get('/api/logout', (req: any, res) => {

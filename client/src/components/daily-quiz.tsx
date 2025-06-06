@@ -10,6 +10,7 @@ import { Brain, CheckCircle, XCircle, Award, Clock, TrendingUp, Timer, Star, Zap
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 interface QuizQuestion {
   id: string;
@@ -48,6 +49,7 @@ interface QuizResult {
 export default function DailyQuiz() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -186,7 +188,7 @@ export default function DailyQuiz() {
               </p>
             </div>
             <Button 
-              onClick={() => window.location.href = '/register'}
+              onClick={() => setLocation('/register')}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <UserPlus className="w-4 h-4 mr-2" />
