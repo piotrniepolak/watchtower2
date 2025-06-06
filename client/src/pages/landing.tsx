@@ -33,10 +33,19 @@ export default function Landing() {
                 <p className="text-xs text-slate-600">Defense & Conflict Analytics</p>
               </div>
             </div>
-            <Button onClick={handleLogin} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              Get Started
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={handleLogin} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                Sign In
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => window.location.href = '/register'}
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                Sign Up
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -68,7 +77,11 @@ export default function Landing() {
                 <Play className="mr-2 h-5 w-5" />
                 Start Analyzing
               </Button>
-              <Button size="lg" variant="outline">
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={handleLogin}
+              >
                 <BarChart3 className="mr-2 h-5 w-5" />
                 View Demo
               </Button>

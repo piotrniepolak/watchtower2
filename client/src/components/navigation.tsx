@@ -234,7 +234,7 @@ export default function Navigation() {
                       </div>
                     )}
                     <span className="hidden sm:inline font-medium text-slate-900">
-                      {user?.firstName || user?.email?.split('@')[0] || 'Account'}
+                      {user?.firstName || user?.username || user?.email?.split('@')[0] || 'Account'}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -256,7 +256,7 @@ export default function Navigation() {
                         <div className="font-medium text-slate-900">
                           {user?.firstName && user?.lastName 
                             ? `${user.firstName} ${user.lastName}`
-                            : user?.firstName || user?.email?.split('@')[0] || 'User'
+                            : user?.firstName || user?.username || user?.email?.split('@')[0] || 'User'
                           }
                         </div>
                         <div className="text-sm text-slate-600">{user?.email}</div>
