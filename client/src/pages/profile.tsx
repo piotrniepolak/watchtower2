@@ -69,43 +69,40 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch('/api/auth/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`${response.status}: ${error.message || 'Profile update failed'}`);
+      try {
+        const response = await fetch('/api/auth/profile', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Profile update error:', error);
+        throw error;
       }
-      
-      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Profile update successful:', data);
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
+    onError: (error: any) => {
+      console.error('Profile update mutation error:', error);
       toast({
-        title: "Update Failed",
-        description: "Failed to update profile. Please try again.",
+        title: "Update Failed", 
+        description: error?.message || "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     },
