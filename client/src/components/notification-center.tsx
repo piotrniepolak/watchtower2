@@ -15,7 +15,13 @@ import {
   Brain,
   X,
   Check,
-  Filter
+  Filter,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Archive,
+  Star,
+  MessageSquare
 } from "lucide-react";
 
 interface Notification {
@@ -33,6 +39,15 @@ interface Notification {
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<string>("all");
+  const [starredNotifications, setStarredNotifications] = useState<Set<number>>(() => {
+    try {
+      const stored = localStorage.getItem('starredNotifications');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  const [animatingNotifications, setAnimatingNotifications] = useState<Set<number>>(new Set());
   
   // Use localStorage for persistent read state
   const [readNotifications, setReadNotifications] = useState<Set<number>>(() => {
@@ -49,10 +64,34 @@ export default function NotificationCenter() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const handleNotificationClick = (notificationId: number) => {
+  const handleNotificationClick = (notificationId: number, action?: 'read' | 'star' | 'view') => {
+    if (action === 'star') {
+      setStarredNotifications(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(notificationId)) {
+          newSet.delete(notificationId);
+        } else {
+          newSet.add(notificationId);
+        }
+        localStorage.setItem('starredNotifications', JSON.stringify(Array.from(newSet)));
+        return newSet;
+      });
+      return;
+    }
+
+    // Add animation effect
+    setAnimatingNotifications(prev => new Set(prev).add(notificationId));
+    setTimeout(() => {
+      setAnimatingNotifications(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(notificationId);
+        return newSet;
+      });
+    }, 300);
+
     setReadNotifications(prev => {
       const newSet = new Set(prev).add(notificationId);
-      localStorage.setItem('readNotifications', JSON.stringify([...newSet]));
+      localStorage.setItem('readNotifications', JSON.stringify(Array.from(newSet)));
       return newSet;
     });
   };
@@ -61,7 +100,28 @@ export default function NotificationCenter() {
     const allIds = (notifications as Notification[]).map((n: Notification) => n.id);
     const newSet = new Set(allIds);
     setReadNotifications(newSet);
-    localStorage.setItem('readNotifications', JSON.stringify([...newSet]));
+    localStorage.setItem('readNotifications', JSON.stringify(Array.from(newSet)));
+  };
+
+  const handleNotificationAction = (notificationId: number, action: string) => {
+    const notification = (notifications as Notification[]).find(n => n.id === notificationId);
+    if (!notification) return;
+
+    switch (action) {
+      case 'view_details':
+        // Navigate to relevant page based on notification type
+        if (notification.type === 'conflict_update') {
+          window.location.href = '/conflicts';
+        } else if (notification.type === 'market_alert') {
+          window.location.href = '/stocks';
+        } else if (notification.type === 'ai_analysis') {
+          window.location.href = '/news';
+        }
+        break;
+      case 'dismiss':
+        handleNotificationClick(notificationId);
+        break;
+    }
   };
 
   const isNotificationRead = (notification: Notification) => {
@@ -69,9 +129,11 @@ export default function NotificationCenter() {
   };
 
   const unreadCount = (notifications as Notification[]).filter((n: Notification) => !isNotificationRead(n)).length;
-  const filteredNotifications = (notifications as Notification[]).filter((n: Notification) => 
-    filter === "all" || n.type === filter
-  );
+  const filteredNotifications = (notifications as Notification[]).filter((n: Notification) => {
+    if (filter === "all") return true;
+    if (filter === "starred") return starredNotifications.has(n.id);
+    return n.type === filter;
+  });
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -170,24 +232,56 @@ export default function NotificationCenter() {
                   variant={filter === "all" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("all")}
+                  className="text-xs"
                 >
                   All
+                  {filter === "all" && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {filteredNotifications.length}
+                    </Badge>
+                  )}
                 </Button>
                 <Button
                   variant={filter === "conflict_update" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("conflict_update")}
+                  className="text-xs"
                 >
                   <Globe className="w-3 h-3 mr-1" />
                   Conflicts
+                  {filter === "conflict_update" && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {(notifications as Notification[]).filter(n => n.type === "conflict_update").length}
+                    </Badge>
+                  )}
                 </Button>
                 <Button
                   variant={filter === "market_alert" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("market_alert")}
+                  className="text-xs"
                 >
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Markets
+                  {filter === "market_alert" && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {(notifications as Notification[]).filter(n => n.type === "market_alert").length}
+                    </Badge>
+                  )}
+                </Button>
+                <Button
+                  variant={filter === "starred" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setFilter("starred")}
+                  className="text-xs"
+                >
+                  <Star className="w-3 h-3 mr-1" />
+                  Starred
+                  {filter === "starred" && (
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {starredNotifications.size}
+                    </Badge>
+                  )}
                 </Button>
               </div>
             </CardHeader>
@@ -207,10 +301,13 @@ export default function NotificationCenter() {
                     {filteredNotifications.map((notification: Notification, index: number) => (
                       <div key={notification.id}>
                         <div 
-                          className={`p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
-                            !notification.read ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                          className={`p-4 transition-all duration-300 ${
+                            animatingNotifications.has(notification.id) ? "scale-98 opacity-80" : ""
+                          } ${
+                            !isNotificationRead(notification) ? "bg-blue-50 border-l-4 border-l-blue-500 hover:bg-blue-100" : "hover:bg-slate-50"
+                          } ${
+                            starredNotifications.has(notification.id) ? "bg-yellow-50 border-l-4 border-l-yellow-500" : ""
                           }`}
-                          onClick={() => handleNotificationClick(notification.id)}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start space-x-3 flex-1">
@@ -220,7 +317,7 @@ export default function NotificationCenter() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center space-x-2 mb-1">
                                   <h4 className={`text-sm font-medium ${
-                                    !notification.read ? "text-slate-900" : "text-slate-700"
+                                    !isNotificationRead(notification) ? "text-slate-900" : "text-slate-700"
                                   }`}>
                                     {notification.title}
                                   </h4>
@@ -230,23 +327,72 @@ export default function NotificationCenter() {
                                   >
                                     {notification.priority}
                                   </Badge>
+                                  {starredNotifications.has(notification.id) && (
+                                    <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                                  )}
                                 </div>
-                                <p className="text-xs text-slate-600 leading-relaxed">
+                                <p className="text-xs text-slate-600 leading-relaxed mb-2">
                                   {notification.message}
                                 </p>
-                                <div className="flex items-center justify-between mt-2">
-                                  <span className="text-xs text-slate-400">
-                                    {formatTimeAgo(notification.createdAt)}
-                                  </span>
-                                  {!notification.read && (
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                  )}
+                                
+                                {/* Interactive Action Buttons */}
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-2 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleNotificationAction(notification.id, 'view_details');
+                                      }}
+                                    >
+                                      <ExternalLink className="w-3 h-3 mr-1" />
+                                      View
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 px-2 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleNotificationClick(notification.id, 'star');
+                                      }}
+                                    >
+                                      <Star className={`w-3 h-3 mr-1 ${
+                                        starredNotifications.has(notification.id) ? "fill-current text-yellow-500" : ""
+                                      }`} />
+                                      {starredNotifications.has(notification.id) ? "Starred" : "Star"}
+                                    </Button>
+                                    
+                                    {!isNotificationRead(notification) && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-2 text-xs"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleNotificationClick(notification.id);
+                                        }}
+                                      >
+                                        <Check className="w-3 h-3 mr-1" />
+                                        Mark Read
+                                      </Button>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-xs text-slate-400">
+                                      {formatTimeAgo(notification.createdAt)}
+                                    </span>
+                                    {!isNotificationRead(notification) && (
+                                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            {!isNotificationRead(notification) && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full ml-2"></div>
-                            )}
                           </div>
                         </div>
                         {index < filteredNotifications.length - 1 && <Separator />}
