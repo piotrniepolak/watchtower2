@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "@/components/auth-modal";
 import NotificationCenter from "@/components/notification-center";
+import { useTheme } from "@/components/theme-provider";
 
 import type { Conflict, Stock } from "@shared/schema";
 
@@ -21,6 +22,7 @@ export default function Navigation() {
   const searchRef = useRef<HTMLDivElement>(null);
   
   const { user, isAuthenticated } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     window.location.href = '/api/logout';
@@ -216,6 +218,20 @@ export default function Navigation() {
 
             {/* Notifications */}
             <NotificationCenter />
+
+            {/* Dark Mode Toggle */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={toggleTheme}
+              className="hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
 
             {/* Profile/Auth */}
             {isAuthenticated ? (
