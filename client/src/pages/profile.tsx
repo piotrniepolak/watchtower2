@@ -41,6 +41,8 @@ export default function Profile() {
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
 
   // Create demo user data if not authenticated
   const demoUser = {
@@ -58,14 +60,17 @@ export default function Profile() {
 
   // Initialize form data when user loads
   useEffect(() => {
-    setFormData({
-      firstName: currentUser.firstName || '',
-      lastName: currentUser.lastName || '',
-      bio: currentUser.bio || '',
-      profileImageUrl: currentUser.profileImageUrl || ''
-    });
-    setPreviewUrl(currentUser.profileImageUrl || '');
-  }, [user, currentUser]);
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        bio: user.bio || '',
+        profileImageUrl: user.profileImageUrl || ''
+      });
+      setPreviewUrl(user.profileImageUrl || '');
+      setNewUsername(user.username || '');
+    }
+  }, [user]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -126,6 +131,49 @@ export default function Profile() {
       });
     },
   });
+
+  const usernameUpdateMutation = useMutation({
+    mutationFn: async (username: string) => {
+      const response = await apiRequest('PATCH', '/api/auth/username', { username });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Username updated successfully",
+      });
+      setIsEditingUsername(false);
+      setNewUsername(data.user.username);
+      // Update the user data in the cache
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error: any) => {
+      const message = error.message || "Failed to update username";
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditUsername = () => {
+    setNewUsername(currentUser?.username || "");
+    setIsEditingUsername(true);
+  };
+
+  const handleSaveUsername = () => {
+    if (newUsername.trim() && newUsername !== currentUser?.username) {
+      usernameUpdateMutation.mutate(newUsername.trim());
+    } else {
+      setIsEditingUsername(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingUsername(false);
+    setNewUsername(currentUser?.username || "");
+  };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -320,6 +368,59 @@ export default function Profile() {
                         placeholder="Enter your last name"
                       />
                     </div>
+                  </div>
+
+                  {/* Username */}
+                  <div>
+                    <Label htmlFor="username">Username</Label>
+                    {isEditingUsername ? (
+                      <div className="flex space-x-2">
+                        <Input
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                          placeholder="Enter username"
+                          className="flex-1"
+                          minLength={3}
+                          maxLength={20}
+                          pattern="^[a-zA-Z0-9_-]+$"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleSaveUsername}
+                          disabled={usernameUpdateMutation.isPending || !newUsername.trim()}
+                          size="sm"
+                        >
+                          {usernameUpdateMutation.isPending ? "Saving..." : "Save"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          value={currentUser?.username || ''}
+                          disabled
+                          className="bg-slate-50 flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleEditUsername}
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    )}
+                    <p className="text-xs text-slate-500 mt-1">
+                      Username must be 3-20 characters, alphanumeric with hyphens and underscores allowed
+                    </p>
                   </div>
 
                   {/* Email (readonly) */}
