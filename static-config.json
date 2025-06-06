@@ -1,0 +1,56 @@
+{
+  "staticGeneration": {
+    "outputDir": "static-dist",
+    "dataDir": "static-dist/data",
+    "serverUrl": "http://localhost:5000",
+    "endpoints": [
+      {
+        "name": "conflicts",
+        "url": "/api/conflicts",
+        "required": true
+      },
+      {
+        "name": "stocks",
+        "url": "/api/stocks",
+        "required": true
+      },
+      {
+        "name": "metrics",
+        "url": "/api/metrics",
+        "required": true
+      },
+      {
+        "name": "notifications",
+        "url": "/api/notifications",
+        "required": false
+      },
+      {
+        "name": "correlation-events",
+        "url": "/api/correlation-events",
+        "required": false
+      },
+      {
+        "name": "quiz",
+        "url": "/api/quiz/today",
+        "required": false
+      },
+      {
+        "name": "news",
+        "url": "/api/news/today",
+        "required": false
+      }
+    ],
+    "deployment": {
+      "methods": ["rsync", "scp", "s3", "netlify", "vercel"],
+      "defaultMethod": "rsync"
+    },
+    "sync": {
+      "intervals": {
+        "hourly": "0 * * * *",
+        "every6hours": "0 */6 * * *",
+        "daily": "0 2 * * *"
+      },
+      "defaultInterval": "every6hours"
+    }
+  }
+}
