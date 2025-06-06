@@ -178,6 +178,12 @@ export default function Profile() {
         ctx?.drawImage(img, 0, 0, width, height);
         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
         setPreviewUrl(compressedDataUrl);
+        
+        // Update form data with the compressed image
+        setFormData(prev => ({
+          ...prev,
+          profileImageUrl: compressedDataUrl
+        }));
       };
       
       const reader = new FileReader();
@@ -191,13 +197,11 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Only send text data to avoid payload size issues
     const updateData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       bio: formData.bio,
-      // Skip image data for now to prevent payload errors
-      profileImageUrl: formData.profileImageUrl
+      profileImageUrl: previewUrl || formData.profileImageUrl
     };
 
     updateProfileMutation.mutate(updateData);
