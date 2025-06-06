@@ -21,6 +21,27 @@ interface ConflictTimelineProps {
   conflictName: string;
 }
 
+const cleanEventDescription = (description: string) => {
+  // Remove duplicate titles and clean up formatting
+  let cleaned = description
+    .replace(/Title:\*\*\s*/g, '')
+    .replace(/\*\*Title:\*\*/g, '')
+    .replace(/Description:\*\*\s*/g, '')
+    .replace(/\*\*Description:\*\*/g, '')
+    .replace(/\[Source:.*?\]/g, '')
+    .replace(/\s*-\s*\*\*.*?\*\*/g, '')
+    .replace(/\*\*/g, '')
+    .trim();
+
+  // Extract the main content, avoiding duplicates
+  const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 10);
+  const uniqueSentences = Array.from(new Set(sentences.map(s => s.trim())));
+  
+  // Return first 2 meaningful sentences, max 150 chars
+  const result = uniqueSentences.slice(0, 2).join('. ').trim();
+  return result.length > 150 ? result.substring(0, 150) + '...' : result + '.';
+};
+
 export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineProps) {
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -75,6 +96,8 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
+
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
@@ -120,46 +143,44 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
+            <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               {(timeline as TimelineEvent[]).map((event: TimelineEvent, index: number) => (
-                <div key={event.id} className="relative flex gap-4">
+                <div key={event.id} className="relative flex gap-3">
                   {/* Timeline dot */}
                   <div className={`
-                    relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-2 
+                    relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 flex-shrink-0
                     ${getSeverityColor(event.severity) === 'destructive' ? 'bg-red-100 border-red-500 text-red-700' :
                       getSeverityColor(event.severity) === 'secondary' ? 'bg-orange-100 border-orange-500 text-orange-700' :
                       getSeverityColor(event.severity) === 'outline' ? 'bg-yellow-100 border-yellow-500 text-yellow-700' :
                       'bg-blue-100 border-blue-500 text-blue-700'}
                   `}>
-                    {getSeverityIcon(event.severity)}
+                    <div className="w-3 h-3 rounded-full bg-current"></div>
                   </div>
                   
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <Badge variant={getSeverityColor(event.severity)} className="shrink-0">
-                        Severity {event.severity}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <Badge variant={getSeverityColor(event.severity)} className="text-xs px-2 py-0.5">
+                        Level {event.severity}
                       </Badge>
-                      <span className="text-xs text-muted-foreground shrink-0">
+                      <span className="text-xs text-muted-foreground">
                         {formatTimeAgo(event.eventDate)}
                       </span>
                     </div>
                     
-                    <div className="bg-card border rounded-lg p-3">
-                      <p className="text-sm leading-relaxed">
-                        {event.eventDescription}
+                    <div className="bg-muted/30 rounded-md p-2">
+                      <p className="text-sm text-foreground/90 leading-relaxed">
+                        {cleanEventDescription(event.eventDescription)}
                       </p>
                       
                       {event.stockMovement !== 0 && (
-                        <div className="mt-2 pt-2 border-t">
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="text-muted-foreground">Market Impact:</span>
-                            <span className={event.stockMovement > 0 ? 'text-green-600' : 'text-red-600'}>
-                              {event.stockMovement > 0 ? '+' : ''}{event.stockMovement}%
-                            </span>
-                          </div>
+                        <div className="mt-1 pt-1 border-t border-border/50">
+                          <span className="text-xs text-muted-foreground">Market: </span>
+                          <span className={`text-xs font-medium ${event.stockMovement > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {event.stockMovement > 0 ? '+' : ''}{event.stockMovement}%
+                          </span>
                         </div>
                       )}
                     </div>
