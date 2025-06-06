@@ -705,7 +705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate market alert notifications from stock movements
       const significantStocks = stocks.filter(stock => 
-        Math.abs(stock.changePercent || 0) > 1.5
+        Math.abs(stock.changePercent || 0) > 1.5 && stock.price != null
       ).slice(0, 2);
 
       for (const stock of significantStocks) {
@@ -716,7 +716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: notificationId++,
           type: "market_alert",
           title: `Defense Stock ${direction === "up" ? "Rally" : "Decline"}`,
-          message: `${stock.symbol} ${direction} ${changePercent.toFixed(1)}% to $${stock.currentPrice?.toFixed(2)}`,
+          message: `${stock.symbol} ${direction} ${changePercent.toFixed(1)}% to $${stock.price.toFixed(2)}`,
           timestamp: new Date(Date.now() - 30 * 60 * 1000),
           read: false,
           priority: changePercent > 3 ? "high" : "normal"
