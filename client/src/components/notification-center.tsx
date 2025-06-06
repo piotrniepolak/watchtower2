@@ -211,8 +211,8 @@ export default function NotificationCenter() {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <Card className="absolute right-0 top-12 w-[420px] max-h-96 z-50 shadow-lg border">
-            <CardHeader className="pb-3">
+          <Card className="absolute right-0 top-12 w-[420px] max-h-[500px] z-50 shadow-lg border flex flex-col">
+            <CardHeader className="pb-3 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Notifications</CardTitle>
                 <div className="flex items-center space-x-2">
@@ -235,16 +235,16 @@ export default function NotificationCenter() {
                 </div>
               </div>
               
-              <div className="flex space-x-2 mt-2">
+              <div className="flex flex-wrap gap-1 mt-2">
                 <Button
                   variant={filter === "all" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("all")}
-                  className="text-xs"
+                  className="text-xs h-7"
                 >
                   All
                   {filter === "all" && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
+                    <Badge variant="secondary" className="ml-1 text-xs h-4 px-1">
                       {filteredNotifications.length}
                     </Badge>
                   )}
@@ -253,12 +253,12 @@ export default function NotificationCenter() {
                   variant={filter === "conflict_update" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("conflict_update")}
-                  className="text-xs"
+                  className="text-xs h-7"
                 >
                   <Globe className="w-3 h-3 mr-1" />
                   Conflicts
                   {filter === "conflict_update" && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
+                    <Badge variant="secondary" className="ml-1 text-xs h-4 px-1">
                       {(notifications as Notification[]).filter(n => n.type === "conflict_update").length}
                     </Badge>
                   )}
@@ -267,12 +267,12 @@ export default function NotificationCenter() {
                   variant={filter === "market_alert" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("market_alert")}
-                  className="text-xs"
+                  className="text-xs h-7"
                 >
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Markets
                   {filter === "market_alert" && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
+                    <Badge variant="secondary" className="ml-1 text-xs h-4 px-1">
                       {(notifications as Notification[]).filter(n => n.type === "market_alert").length}
                     </Badge>
                   )}
@@ -281,12 +281,12 @@ export default function NotificationCenter() {
                   variant={filter === "starred" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setFilter("starred")}
-                  className="text-xs"
+                  className="text-xs h-7"
                 >
                   <Star className="w-3 h-3 mr-1" />
                   Starred
                   {filter === "starred" && (
-                    <Badge variant="secondary" className="ml-2 text-xs">
+                    <Badge variant="secondary" className="ml-1 text-xs h-4 px-1">
                       {starredNotifications.size}
                     </Badge>
                   )}
@@ -294,8 +294,8 @@ export default function NotificationCenter() {
               </div>
             </CardHeader>
             
-            <CardContent className="p-0">
-              <ScrollArea className="h-80">
+            <CardContent className="p-0 flex-1 overflow-hidden">
+              <div className="h-[350px] overflow-y-auto scrollbar-thin scrollbar-track-slate-100 scrollbar-thumb-slate-300">
                 {isLoading ? (
                   <div className="p-4 text-center text-slate-500">
                     Loading notifications...
@@ -305,11 +305,11 @@ export default function NotificationCenter() {
                     No notifications to display
                   </div>
                 ) : (
-                  <div className="space-y-0">
+                  <div>
                     {filteredNotifications.map((notification: Notification, index: number) => (
                       <div key={notification.id}>
                         <div 
-                          className={`p-3 transition-all duration-200 cursor-pointer ${
+                          className={`p-3 transition-all duration-200 cursor-pointer border-b border-slate-100 last:border-b-0 ${
                             animatingNotifications.has(notification.id) ? "scale-98 opacity-80" : ""
                           } ${
                             !isNotificationRead(notification) 
@@ -321,25 +321,25 @@ export default function NotificationCenter() {
                           onClick={() => handleNotificationClick(notification.id)}
                         >
                           <div className="flex items-start space-x-3">
-                            <div className="mt-0.5">
+                            <div className="mt-0.5 flex-shrink-0">
                               {getNotificationIcon(notification.type)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between mb-1">
-                                <div className="flex items-center space-x-2">
-                                  <h4 className={`text-sm font-medium ${
+                                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                  <h4 className={`text-sm font-medium truncate ${
                                     !isNotificationRead(notification) ? "text-slate-900" : "text-slate-700"
                                   }`}>
                                     {notification.title}
                                   </h4>
                                   <Badge 
                                     variant={getPriorityColor(notification.priority) as any}
-                                    className="text-xs px-1.5 py-0.5"
+                                    className="text-xs px-1.5 py-0.5 flex-shrink-0"
                                   >
                                     {notification.priority}
                                   </Badge>
                                 </div>
-                                <div className="flex items-center space-x-1 ml-2">
+                                <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
                                   {starredNotifications.has(notification.id) && (
                                     <Star className="w-3 h-3 text-yellow-500 fill-current" />
                                   )}
@@ -349,7 +349,7 @@ export default function NotificationCenter() {
                                 </div>
                               </div>
                               
-                              <p className="text-xs text-slate-600 leading-relaxed mb-2">
+                              <p className="text-xs text-slate-600 leading-relaxed mb-2 line-clamp-2">
                                 {notification.message}
                               </p>
                               
@@ -384,19 +384,18 @@ export default function NotificationCenter() {
                                   )}
                                 </div>
                                 
-                                <span className="text-xs text-slate-400">
+                                <span className="text-xs text-slate-400 flex-shrink-0">
                                   {formatTimeAgo(notification.createdAt || (notification as any).timestamp || '')}
                                 </span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        {index < filteredNotifications.length - 1 && <Separator />}
                       </div>
                     ))}
                   </div>
                 )}
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </>
