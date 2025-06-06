@@ -9,6 +9,88 @@ import { newsService } from "./news-service";
 import { conflictTimelineService } from "./conflict-timeline-service";
 import session from "express-session";
 
+// Real-time notification generation based on authentic data
+async function generateRealTimeNotifications() {
+  const notifications = [];
+  let notificationId = 1;
+
+  try {
+    // Get recent conflict timeline events for notifications
+    const conflicts = await storage.getConflicts();
+    const stocks = await storage.getStocks();
+    
+    // Generate conflict update notifications from recent timeline events
+    for (const conflict of conflicts.slice(0, 3)) {
+      const timeline = await conflictTimelineService.getConflictTimeline(conflict.id);
+      if (timeline.length > 0) {
+        const recentEvent = timeline[0];
+        const cleanDescription = recentEvent.eventDescription
+          .replace(/^\*+/g, '')
+          .replace(/\*\*/g, '')
+          .replace(/\(Source:.*?\)$/g, '')
+          .trim();
+        
+        const firstSentence = cleanDescription.split(/[.!?]/)[0].trim();
+        const shortMessage = firstSentence.length > 80 
+          ? firstSentence.substring(0, 80) + '...'
+          : firstSentence;
+
+        notifications.push({
+          id: notificationId++,
+          type: "conflict_update",
+          title: `${conflict.name} Status Update`,
+          message: shortMessage,
+          timestamp: recentEvent.eventDate,
+          read: false,
+          priority: recentEvent.severity >= 7 ? "high" : "normal"
+        });
+      }
+    }
+
+    // Generate market alert notifications from stock movements
+    const significantStocks = stocks.filter(stock => 
+      Math.abs(stock.changePercent || 0) > 1.5
+    ).slice(0, 2);
+
+    for (const stock of significantStocks) {
+      const direction = (stock.changePercent || 0) > 0 ? "up" : "down";
+      const changePercent = Math.abs(stock.changePercent || 0);
+      
+      notifications.push({
+        id: notificationId++,
+        type: "market_alert",
+        title: `Defense Stock ${direction === "up" ? "Rally" : "Decline"}`,
+        message: `${stock.symbol} ${direction} ${changePercent.toFixed(1)}% to $${stock.currentPrice?.toFixed(2)}`,
+        timestamp: new Date(Date.now() - 30 * 60 * 1000),
+        read: false,
+        priority: changePercent > 3 ? "high" : "normal"
+      });
+    }
+
+    // Add AI analysis notification if daily news exists
+    const todayNews = await newsService.getTodaysNews();
+    if (todayNews) {
+      notifications.push({
+        id: notificationId++,
+        type: "ai_analysis",
+        title: "Daily Intelligence Brief Ready",
+        message: `New geopolitical analysis: ${todayNews.title}`,
+        timestamp: todayNews.createdAt || new Date(Date.now() - 2 * 60 * 60 * 1000),
+        read: true,
+        priority: "normal"
+      });
+    }
+
+    return notifications.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+  } catch (error) {
+    console.error('Error generating notifications:', error);
+    return []; // Return empty array instead of fallback data
+  }
+}
+
 // Simple session-based auth
 const sessionConfig = session({
   secret: process.env.SESSION_SECRET || 'dev-secret',
@@ -586,37 +668,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Notifications route
   app.get('/api/notifications', async (req, res) => {
     try {
-      // Sample notifications for demo
-      const notifications = [
-        {
-          id: 1,
-          type: "conflict_update",
-          title: "Ukraine Conflict Status Update",
-          message: "Recent developments in Eastern Ukraine with defense stock implications",
-          timestamp: new Date(),
+      const notifications = [];
+      let notificationId = 1;
+
+      // Get recent conflict timeline events for notifications
+      const conflicts = await storage.getConflicts();
+      const stocks = await storage.getStocks();
+      
+      // Generate conflict update notifications from recent timeline events
+      for (const conflict of conflicts.slice(0, 3)) {
+        const timeline = await conflictTimelineService.getConflictTimeline(conflict.id);
+        if (timeline.length > 0) {
+          const recentEvent = timeline[0];
+          const cleanDescription = recentEvent.eventDescription
+            .replace(/^\*+/g, '')
+            .replace(/\*\*/g, '')
+            .replace(/\(Source:.*?\)$/g, '')
+            .trim();
+          
+          const firstSentence = cleanDescription.split(/[.!?]/)[0].trim();
+          const shortMessage = firstSentence.length > 80 
+            ? firstSentence.substring(0, 80) + '...'
+            : firstSentence;
+
+          notifications.push({
+            id: notificationId++,
+            type: "conflict_update",
+            title: `${conflict.name} Status Update`,
+            message: shortMessage,
+            timestamp: recentEvent.eventDate,
+            read: false,
+            priority: recentEvent.severity >= 7 ? "high" : "normal"
+          });
+        }
+      }
+
+      // Generate market alert notifications from stock movements
+      const significantStocks = stocks.filter(stock => 
+        Math.abs(stock.changePercent || 0) > 1.5
+      ).slice(0, 2);
+
+      for (const stock of significantStocks) {
+        const direction = (stock.changePercent || 0) > 0 ? "up" : "down";
+        const changePercent = Math.abs(stock.changePercent || 0);
+        
+        notifications.push({
+          id: notificationId++,
+          type: "market_alert",
+          title: `Defense Stock ${direction === "up" ? "Rally" : "Decline"}`,
+          message: `${stock.symbol} ${direction} ${changePercent.toFixed(1)}% to $${stock.currentPrice?.toFixed(2)}`,
+          timestamp: new Date(Date.now() - 30 * 60 * 1000),
           read: false,
-          priority: "high"
-        },
-        {
-          id: 2,
-          type: "market_alert", 
-          title: "Defense Sector Rally",
-          message: "LMT, RTX showing strong performance (+2.5% avg)",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-          read: false,
-          priority: "normal"
-        },
-        {
-          id: 3,
+          priority: changePercent > 3 ? "high" : "normal"
+        });
+      }
+
+      // Add AI analysis notification if daily news exists
+      const todayNews = await newsService.getTodaysNews();
+      if (todayNews) {
+        notifications.push({
+          id: notificationId++,
           type: "ai_analysis",
-          title: "Weekly Conflict Prediction Ready",
-          message: "New AI analysis available for 12 active conflicts",
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+          title: "Daily Intelligence Brief Ready",
+          message: `New geopolitical analysis: ${todayNews.title}`,
+          timestamp: todayNews.createdAt || new Date(Date.now() - 2 * 60 * 60 * 1000),
           read: true,
           priority: "normal"
-        }
-      ];
-      res.json(notifications);
+        });
+      }
+
+      const sortedNotifications = notifications.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      res.json(sortedNotifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
       res.status(500).json({ message: 'Failed to fetch notifications' });
