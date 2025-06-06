@@ -25,16 +25,21 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { data: timeline = [], isLoading } = useQuery({
+  const { data: timeline = [], isLoading } = useQuery<TimelineEvent[]>({
     queryKey: [`/api/conflicts/${conflictId}/timeline`],
     refetchInterval: 60000, // Refetch every minute
   });
 
   const updateTimelineMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest(`/api/conflicts/${conflictId}/update-timeline`, {
+      const response = await fetch(`/api/conflicts/${conflictId}/update-timeline`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
+      if (!response.ok) throw new Error('Failed to update timeline');
+      return response.json();
     },
     onMutate: () => {
       setIsUpdating(true);
@@ -104,7 +109,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
               </div>
             ))}
           </div>
-        ) : timeline.length === 0 ? (
+        ) : !timeline || timeline.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No recent timeline events</p>
@@ -118,7 +123,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
             <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
             
             <div className="space-y-6">
-              {timeline.map((event: TimelineEvent, index: number) => (
+              {(timeline as TimelineEvent[]).map((event: TimelineEvent, index: number) => (
                 <div key={event.id} className="relative flex gap-4">
                   {/* Timeline dot */}
                   <div className={`
