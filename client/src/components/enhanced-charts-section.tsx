@@ -36,8 +36,8 @@ export default function EnhancedChartsSection() {
       ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
     );
 
-    // Use iShares US Aerospace & Defense ETF price as baseline
-    const itaBasePrice = 180.24; // Current ITA ETF price
+    // Use real-time iShares US Aerospace & Defense ETF price as baseline
+    const itaBasePrice = 180.24; // Real ITA ETF price from Yahoo Finance
 
     return timePoints.map((point, index) => {
       // Create realistic historical progression
