@@ -497,9 +497,20 @@ export default function Conflicts() {
                 </CardHeader>
                 
                 <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-6">
+                  <div className="grid lg:grid-cols-3 gap-6">
+                    {/* Real-time Timeline */}
+                    <div className="lg:col-span-1">
+                      <ConflictTimeline 
+                        conflictId={conflict.id} 
+                        conflictName={conflict.name}
+                      />
+                    </div>
+                    
+                    {/* Conflict Details */}
+                    <div className="lg:col-span-2">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* Left Column */}
+                        <div className="space-y-6">
                       <div>
                         <h4 className="font-semibold text-slate-900 mb-3">Overview</h4>
                         <p className="text-slate-700 leading-relaxed">{details.summary}</p>
@@ -566,6 +577,8 @@ export default function Conflicts() {
                           </div>
                         </div>
                       )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

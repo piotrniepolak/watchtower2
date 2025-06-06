@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes-simple";
 import { setupVite, serveStatic, log } from "./vite";
 import { newsService } from "./news-service";
 import { stockService } from "./stock-service";
+import { conflictTimelineService } from "./conflict-timeline-service";
 
 // Make environment variables available to Vite frontend
 process.env.VITE_GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -77,5 +78,7 @@ app.use((req, res, next) => {
     newsService.startDailyNewsScheduler();
     // Start real-time stock updates
     stockService.startRealTimeUpdates();
+    // Start real-time conflict timeline updates
+    conflictTimelineService.startRealTimeUpdates();
   });
 })();

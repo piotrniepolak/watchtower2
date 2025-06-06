@@ -324,21 +324,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const event of events) {
         const correlationEvent = {
-          title: event.title,
-          description: event.description,
-          date: event.timestamp,
+          eventDate: event.timestamp,
+          eventDescription: `${event.title}: ${event.description}`,
+          stockMovement: 0,
           conflictId: event.conflictId,
-          stockSymbol: null,
-          impact: event.impact,
-          severity: event.severity
+          severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
         };
         
         await storage.createCorrelationEvent(correlationEvent);
       }
 
-      await storage.updateConflict(conflictId, {
-        lastUpdated: new Date()
-      });
+      const updatedConflict = await storage.getConflict(conflictId);
+      if (updatedConflict) {
+        await storage.updateConflict(conflictId, {
+          name: updatedConflict.name,
+          status: updatedConflict.status,
+          region: updatedConflict.region,
+          severity: updatedConflict.severity,
+          duration: updatedConflict.duration,
+          startDate: updatedConflict.startDate
+        });
+      }
 
       res.json({ 
         message: 'Timeline updated successfully',
