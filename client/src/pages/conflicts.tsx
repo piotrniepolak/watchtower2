@@ -469,28 +469,28 @@ export default function Conflicts() {
 
             return (
               <Card key={conflict.id} className="overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+                <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b p-4">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-xl mb-2">{conflict.name}</CardTitle>
-                      <div className="flex items-center space-x-4 text-sm text-slate-600">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg mb-2 leading-tight">{conflict.name}</CardTitle>
+                      <div className="flex items-center flex-wrap gap-3 text-xs text-slate-600">
                         <div className="flex items-center">
-                          <Globe className="w-4 h-4 mr-1" />
+                          <Globe className="w-3 h-3 mr-1" />
                           {conflict.region}
                         </div>
                         <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1" />
+                          <Calendar className="w-3 h-3 mr-1" />
                           {conflict.duration}
                         </div>
                         <div className="flex items-center">
-                          <AlertTriangle className="w-4 h-4 mr-1" />
-                          <Badge variant={getSeverityColor(conflict.severity)} className="ml-1">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          <Badge variant={getSeverityColor(conflict.severity)} className="ml-1 text-xs">
                             {conflict.severity}
                           </Badge>
                         </div>
                       </div>
                     </div>
-                    <Badge variant={getStatusColor(conflict.status)} className="text-sm">
+                    <Badge variant={getStatusColor(conflict.status)} className="text-xs flex-shrink-0 ml-2">
                       {conflict.status}
                     </Badge>
                   </div>
