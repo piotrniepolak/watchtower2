@@ -92,7 +92,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/analysis/predictions', async (req, res) => {
     try {
       const conflicts = await storage.getConflicts();
-      const predictions = await generateConflictPredictions(conflicts);
+      const stocks = await storage.getStocks();
+      const predictions = await generateConflictPredictions(conflicts, stocks);
       res.json(predictions);
     } catch (error) {
       console.error('Error generating predictions:', error);
@@ -103,7 +104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/analysis/market', async (req, res) => {
     try {
       const stocks = await storage.getStocks();
-      const analysis = await generateMarketAnalysis(stocks);
+      const conflicts = await storage.getConflicts();
+      const correlationEvents = await storage.getCorrelationEvents();
+      const analysis = await generateMarketAnalysis(stocks, conflicts, correlationEvents);
       res.json(analysis);
     } catch (error) {
       console.error('Error generating market analysis:', error);
