@@ -22,13 +22,19 @@ class StaticSiteGenerator {
     await this.cleanOutputDir();
     await this.createDirectories();
     
-    // Start the server temporarily for data extraction
-    const serverProcess = await this.startTempServer();
+    // Check if server is already running
+    const serverRunning = await this.checkServerRunning();
+    let serverProcess = null;
+    
+    if (!serverRunning) {
+      console.log('🔧 Starting temporary server for data extraction...');
+      serverProcess = await this.startTempServer();
+      await this.waitForServer();
+    } else {
+      console.log('✅ Using existing server for data extraction');
+    }
     
     try {
-      // Wait for server to be ready
-      await this.waitForServer();
-      
       // Extract all dynamic data
       await this.extractData();
       
@@ -48,7 +54,7 @@ class StaticSiteGenerator {
       console.log(`📁 Output directory: ${this.outputDir}`);
       
     } finally {
-      // Clean up server process
+      // Clean up server process only if we started it
       if (serverProcess) {
         serverProcess.kill();
       }
@@ -67,6 +73,15 @@ class StaticSiteGenerator {
     await fs.mkdir(this.outputDir, { recursive: true });
     await fs.mkdir(this.dataDir, { recursive: true });
     await fs.mkdir(path.join(this.outputDir, 'assets'), { recursive: true });
+  }
+
+  async checkServerRunning() {
+    try {
+      const response = await fetch(`${this.serverUrl}/api/conflicts`);
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
   }
 
   async startTempServer() {
@@ -177,15 +192,26 @@ class StaticSiteGenerator {
     return new Promise((resolve, reject) => {
       const buildProcess = spawn('npm', ['run', 'build'], {
         cwd: rootDir,
-        stdio: 'inherit',
-        env: { ...process.env, NODE_ENV: 'production' }
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, NODE_ENV: 'production', VITE_STATIC_MODE: 'true' }
+      });
+
+      let output = '';
+      buildProcess.stdout.on('data', (data) => {
+        output += data.toString();
+        console.log('Build:', data.toString().trim());
+      });
+
+      buildProcess.stderr.on('data', (data) => {
+        output += data.toString();
+        console.log('Build:', data.toString().trim());
       });
 
       buildProcess.on('close', (code) => {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Build process failed with code ${code}`));
+          reject(new Error(`Build process failed with code ${code}. Output: ${output}`));
         }
       });
     });

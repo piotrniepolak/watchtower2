@@ -1,0 +1,226 @@
+[
+  {
+    "id": 1,
+    "region": "Eastern Europe",
+    "name": "Ukraine-Russia Conflict",
+    "description": "Ongoing military conflict with recent developments in drone warfare and territorial dynamics. Over 1 million+ military casualties combined (June 2025).",
+    "severity": "High",
+    "status": "Active",
+    "duration": "3+ years",
+    "startDate": "2022-02-24T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 49,
+    "longitude": 32,
+    "parties": [
+      "UA",
+      "RU"
+    ]
+  },
+  {
+    "id": 2,
+    "region": "Middle East",
+    "name": "Israel-Gaza Conflict",
+    "description": "Continued military operations with ongoing humanitarian crisis and regional tensions. Over 55,000 casualties reported.",
+    "severity": "High",
+    "status": "Active",
+    "duration": "20+ months",
+    "startDate": "2023-10-07T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 31.5,
+    "longitude": 34.5,
+    "parties": [
+      "IL",
+      "PS"
+    ]
+  },
+  {
+    "id": 3,
+    "region": "Africa",
+    "name": "Sudan Civil War",
+    "description": "Devastating civil war between Sudanese Armed Forces and Rapid Support Forces. Over 40,000 casualties and millions displaced.",
+    "severity": "High",
+    "status": "Active",
+    "duration": "2+ years",
+    "startDate": "2023-04-15T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 15.5,
+    "longitude": 32.5,
+    "parties": [
+      "SD"
+    ]
+  },
+  {
+    "id": 4,
+    "region": "Asia",
+    "name": "Myanmar Civil War",
+    "description": "Intensifying civil war with resistance forces gaining territory against military junta. Estimated 15,000+ casualties.",
+    "severity": "High",
+    "status": "Active",
+    "duration": "4+ years",
+    "startDate": "2021-02-01T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 21.9,
+    "longitude": 95.9,
+    "parties": [
+      "MM"
+    ]
+  },
+  {
+    "id": 5,
+    "region": "Asia-Pacific",
+    "name": "South China Sea Tensions",
+    "description": "Escalating territorial disputes with increased naval presence and confrontations. Recent incidents involving 25+ casualties.",
+    "severity": "Medium",
+    "status": "Active",
+    "duration": "Ongoing",
+    "startDate": "2023-01-01T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 15,
+    "longitude": 115,
+    "parties": [
+      "CN",
+      "PH",
+      "VN",
+      "MY"
+    ]
+  },
+  {
+    "id": 6,
+    "region": "Asia-Pacific",
+    "name": "Taiwan Strait Tensions",
+    "description": "Heightened military exercises and diplomatic tensions with increased defense buildups. No direct casualties but rising military alert levels.",
+    "severity": "High",
+    "status": "Monitoring",
+    "duration": "Ongoing",
+    "startDate": "2024-01-01T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 24,
+    "longitude": 121,
+    "parties": [
+      "TW",
+      "CN",
+      "US"
+    ]
+  },
+  {
+    "id": 7,
+    "region": "Africa",
+    "name": "Democratic Republic of Congo M23 Crisis",
+    "description": "M23 insurgency in eastern DRC with regional involvement and humanitarian crisis",
+    "severity": "Medium",
+    "status": "Active",
+    "duration": "3+ years",
+    "startDate": "2022-01-01T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": -2,
+    "longitude": 29,
+    "parties": [
+      "CD",
+      "RW"
+    ]
+  },
+  {
+    "id": 8,
+    "region": "Middle East",
+    "name": "Iran-Israel Shadow War",
+    "description": "Ongoing covert conflict involving cyber attacks, proxy warfare, assassinations, and regional power projection across the Middle East.",
+    "severity": "High",
+    "status": "Active",
+    "duration": "15+ years",
+    "startDate": "2010-01-01T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 32,
+    "longitude": 53,
+    "parties": [
+      "IR",
+      "IL"
+    ]
+  },
+  {
+    "id": 9,
+    "region": "Africa",
+    "name": "West Africa Sahel Crisis",
+    "description": "Multi-country insurgency involving jihadist groups across Mali, Burkina Faso, Niger, and Chad. Over 20,000 deaths since 2012.",
+    "severity": "High",
+    "status": "Active",
+    "duration": "12+ years",
+    "startDate": "2012-01-16T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 15,
+    "longitude": -5,
+    "parties": [
+      "ML",
+      "BF",
+      "NE",
+      "TD"
+    ]
+  },
+  {
+    "id": 10,
+    "region": "Europe",
+    "name": "Georgia-Russia Border Tensions",
+    "description": "Ongoing tensions over occupied territories of South Ossetia and Abkhazia with periodic escalations and borderization activities.",
+    "severity": "Medium",
+    "status": "Active",
+    "duration": "17+ years",
+    "startDate": "2008-08-07T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 42.3,
+    "longitude": 43.4,
+    "parties": [
+      "GE",
+      "RU"
+    ]
+  },
+  {
+    "id": 11,
+    "region": "North America",
+    "name": "Mexico Drug War",
+    "description": "Ongoing conflict between Mexican government and drug cartels. Over 400,000 deaths and 100,000+ disappeared since 2006 (June 2025).",
+    "severity": "High",
+    "status": "Active",
+    "duration": "18+ years",
+    "startDate": "2006-12-11T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 23.6,
+    "longitude": -102.5,
+    "parties": [
+      "MX"
+    ]
+  },
+  {
+    "id": 12,
+    "region": "South America",
+    "name": "Venezuela Border Crisis",
+    "description": "Multi-faceted crisis involving mass migration, territorial disputes with neighbors, and internal political conflict. 7.7 million migrants and refugees.",
+    "severity": "High",
+    "status": "Active",
+    "duration": "10+ years",
+    "startDate": "2015-01-01T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 6.4,
+    "longitude": -66.9,
+    "parties": [
+      "VE",
+      "GY",
+      "CO",
+      "BR"
+    ]
+  },
+  {
+    "id": 13,
+    "region": "North America",
+    "name": "Haiti Gang Crisis",
+    "description": "Complete breakdown of state authority with criminal gangs controlling majority of territory. Over 8,000 deaths in 2023 alone.",
+    "severity": "Critical",
+    "status": "Active",
+    "duration": "4+ years",
+    "startDate": "2021-07-07T00:00:00.000Z",
+    "lastUpdated": "2025-06-04T00:00:00.000Z",
+    "latitude": 18.9,
+    "longitude": -72.3,
+    "parties": [
+      "HT"
+    ]
+  }
+]

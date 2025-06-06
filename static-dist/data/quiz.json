@@ -1,0 +1,52 @@
+{
+  "id": 1,
+  "date": "2025-06-06",
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Which company recently revised its profit expectations due to zeroing out a State Department contract, adjusting its earnings outlook to between $590 million and $630 million?",
+      "options": [
+        "Parsons Corporation",
+        "Lockheed Martin",
+        "Northrop Grumman",
+        "Leidos Inc."
+      ],
+      "correctAnswer": 0,
+      "explanation": "Parsons Corporation revised its profit expectations after zeroing out its State Department contract, adjusting the outlook to $590 million to $630 million.",
+      "difficulty": "easy",
+      "category": "market",
+      "source": "Parsons Corporation's earnings revision due to contract changes."
+    },
+    {
+      "id": "q2",
+      "question": "In May 2025, which company secured a $214.4 million contract to upgrade Multiple Launch Rocket Systems to the M270A2 configuration?",
+      "options": [
+        "Northrop Grumman",
+        "Lockheed Martin",
+        "Leidos Inc.",
+        "Parsons Corporation"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Lockheed Martin won a $214.4 million contract in May 2025 to upgrade Multiple Launch Rocket Systems to the M270A2 configuration.",
+      "difficulty": "medium",
+      "category": "defense",
+      "source": "Lockheed Martin's recent contract win for upgrading rocket systems."
+    },
+    {
+      "id": "q3",
+      "question": "Which company was awarded a contract modification for integrated logistics support and lifecycle sustainment for the AN/SQQ-89 undersea warfare combat system, with work to be performed in multiple locations including Yokosuka, Japan?",
+      "options": [
+        "Conrad Shipyard LLC",
+        "Palantir Technologies Inc.",
+        "Leidos Inc.",
+        "Northrop Grumman"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Leidos Inc. received a contract modification for integrated logistics support and lifecycle sustainment for the AN/SQQ-89 system, with work in various locations including Yokosuka, Japan.",
+      "difficulty": "hard",
+      "category": "defense",
+      "source": "Leidos Inc.'s contract modification for the AN/SQQ-89 system."
+    }
+  ],
+  "createdAt": "2025-06-06T18:01:58.736Z"
+}
