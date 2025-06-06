@@ -20,7 +20,11 @@ export default function Navigation() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+
+  const handleLogout = () => {
+    window.location.href = '/api/logout';
+  };
 
   const { data: conflicts = [] } = useQuery({
     queryKey: ["/api/conflicts"],
