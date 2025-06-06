@@ -54,15 +54,15 @@ export class ConflictTimelineService {
           messages: [
             {
               role: 'system',
-              content: 'You are a news analyst. Provide only the most recent developments about the conflict in clear, concise sentences. Focus on events from the last 24-48 hours. Each update should be a complete, standalone sentence describing what happened.'
+              content: 'You are a conflict analyst. Provide recent developments as a numbered list. Each item should be one complete sentence describing a specific event. Focus on factual developments from the past 48 hours.'
             },
             {
               role: 'user',
-              content: `Latest news and developments about ${conflict.name}. What are the most recent events, military actions, diplomatic developments, or significant changes in the last 1-2 days?`
+              content: `List 6 recent developments in ${conflict.name} from the past 2 days. Format as numbered list (1. 2. 3. etc). Include military actions, diplomatic meetings, casualty reports, or territorial changes.`
             }
           ],
-          max_tokens: 1000,
-          temperature: 0.1,
+          max_tokens: 600,
+          temperature: 0.2,
           top_p: 0.9,
           search_recency_filter: 'day',
           return_related_questions: false,
@@ -94,38 +94,67 @@ export class ConflictTimelineService {
   private parseTimelineEvents(content: string, conflictId: number, citations?: string[]): TimelineEvent[] {
     const events: TimelineEvent[] = [];
     
-    // Split content into sentences and clean each one
-    const sentences = content
-      .split(/[.!?]+/)
-      .map(s => s.trim())
-      .filter(s => s.length > 20 && !s.includes('I don\'t have') && !s.includes('I cannot'))
-      .slice(0, 8); // Limit to 8 most relevant sentences
+    // Look for numbered list items or bullet points first
+    const listItems = content.match(/^\d+\.\s+.+$/gm) || content.match(/^[\-\*]\s+.+$/gm);
+    
+    if (listItems && listItems.length > 0) {
+      listItems.forEach((item, index) => {
+        const cleanItem = item
+          .replace(/^\d+\.\s*/, '')
+          .replace(/^[\-\*]\s*/, '')
+          .trim();
 
-    sentences.forEach((sentence, index) => {
-      const cleanSentence = sentence
-        .replace(/^[\d\-\*\•\s]+/, '')
-        .replace(/According to|Reports indicate|Sources suggest/gi, '')
-        .trim();
+        if (cleanItem.length > 20) {
+          const event: TimelineEvent = {
+            id: `${conflictId}-${Date.now()}-${index}`,
+            conflictId,
+            timestamp: new Date(Date.now() - index * 3600000), // Stagger by hours
+            title: this.extractMeaningfulTitle(cleanItem),
+            description: cleanItem,
+            severity: this.determineSeverity(cleanItem),
+            source: citations?.[0] || 'News Sources',
+            url: citations?.[0],
+            impact: this.extractImpact(cleanItem),
+            verified: true
+          };
+          
+          events.push(event);
+        }
+      });
+    } else {
+      // Fallback to sentence parsing
+      const sentences = content
+        .split(/[.!?]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 30 && !s.includes('I don\'t have') && !s.includes('I cannot'))
+        .slice(0, 6);
 
-      if (cleanSentence.length > 15) {
-        const event: TimelineEvent = {
-          id: `${conflictId}-${Date.now()}-${index}`,
-          conflictId,
-          timestamp: new Date(),
-          title: this.extractMeaningfulTitle(cleanSentence),
-          description: cleanSentence,
-          severity: this.determineSeverity(cleanSentence),
-          source: citations?.[0] || 'Perplexity Research',
-          url: citations?.[0],
-          impact: this.extractImpact(cleanSentence),
-          verified: true
-        };
-        
-        events.push(event);
-      }
-    });
+      sentences.forEach((sentence, index) => {
+        const cleanSentence = sentence
+          .replace(/^[\d\-\*\•\s]+/, '')
+          .replace(/According to|Reports indicate|Sources suggest/gi, '')
+          .trim();
 
-    return events;
+        if (cleanSentence.length > 20) {
+          const event: TimelineEvent = {
+            id: `${conflictId}-${Date.now()}-${index}`,
+            conflictId,
+            timestamp: new Date(Date.now() - index * 7200000), // Stagger by 2 hours
+            title: this.extractMeaningfulTitle(cleanSentence),
+            description: cleanSentence,
+            severity: this.determineSeverity(cleanSentence),
+            source: citations?.[0] || 'News Sources',
+            url: citations?.[0],
+            impact: this.extractImpact(cleanSentence),
+            verified: true
+          };
+          
+          events.push(event);
+        }
+      });
+    }
+
+    return events.slice(0, 6); // Limit to 6 most recent events
   }
 
   private extractMeaningfulTitle(text: string): string {
