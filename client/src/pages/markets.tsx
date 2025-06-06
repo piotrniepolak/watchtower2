@@ -296,19 +296,19 @@ export default function Markets() {
           </div>
 
           {/* Market Overview - Real Data from Yahoo Finance */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">iShares US Aerospace & Defense ETF</p>
-                    <p className="text-2xl font-bold text-slate-900">${metrics.defenseIndex}</p>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-600 leading-tight">iShares US Aerospace & Defense ETF</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">${metrics.defenseIndex}</p>
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
+                <div className="flex items-center text-xs">
                   <span className={`font-medium ${metrics.indexChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.indexChange}
                   </span>
@@ -318,17 +318,17 @@ export default function Markets() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Total Market Cap</p>
-                    <p className="text-2xl font-bold text-slate-900">${metrics.totalMarketCap}</p>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-600 leading-tight">Total Market Cap</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">${metrics.totalMarketCap}</p>
                   </div>
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <DollarSign className="h-6 w-6 text-green-600" />
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <DollarSign className="h-5 w-5 text-green-600" />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
+                <div className="flex items-center text-xs">
                   <span className={`font-medium ${metrics.marketCapChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.marketCapChange}
                   </span>
@@ -338,17 +338,17 @@ export default function Markets() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-600">Active Companies</p>
-                    <p className="text-2xl font-bold text-slate-900">{metrics.activeCompanies}</p>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-600 leading-tight">Active Companies</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metrics.activeCompanies}</p>
                   </div>
-                  <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-amber-600" />
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <Building2 className="h-5 w-5 text-amber-600" />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center text-sm">
+                <div className="flex items-center text-xs">
                   <span className="text-slate-600">defense contractors</span>
                 </div>
               </CardContent>
