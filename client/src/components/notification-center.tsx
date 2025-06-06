@@ -164,9 +164,16 @@ export default function NotificationCenter() {
   };
 
   const formatTimeAgo = (dateString: string) => {
+    if (!dateString) return 'Unknown';
+    
     const now = new Date();
     const date = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) return 'Unknown';
+    
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
     
     if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
@@ -301,21 +308,24 @@ export default function NotificationCenter() {
                     {filteredNotifications.map((notification: Notification, index: number) => (
                       <div key={notification.id}>
                         <div 
-                          className={`p-4 transition-all duration-300 ${
+                          className={`p-3 transition-all duration-200 cursor-pointer ${
                             animatingNotifications.has(notification.id) ? "scale-98 opacity-80" : ""
                           } ${
-                            !isNotificationRead(notification) ? "bg-blue-50 border-l-4 border-l-blue-500 hover:bg-blue-100" : "hover:bg-slate-50"
+                            !isNotificationRead(notification) 
+                              ? "bg-blue-50 border-l-4 border-l-blue-500 hover:bg-blue-100" 
+                              : "hover:bg-slate-50"
                           } ${
                             starredNotifications.has(notification.id) ? "bg-yellow-50 border-l-4 border-l-yellow-500" : ""
                           }`}
+                          onClick={() => handleNotificationClick(notification.id)}
                         >
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start space-x-3 flex-1">
-                              <div className="mt-1">
-                                {getNotificationIcon(notification.type)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center space-x-2 mb-1">
+                          <div className="flex items-start space-x-3">
+                            <div className="mt-0.5">
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between mb-1">
+                                <div className="flex items-center space-x-2">
                                   <h4 className={`text-sm font-medium ${
                                     !isNotificationRead(notification) ? "text-slate-900" : "text-slate-700"
                                   }`}>
@@ -323,74 +333,59 @@ export default function NotificationCenter() {
                                   </h4>
                                   <Badge 
                                     variant={getPriorityColor(notification.priority) as any}
-                                    className="text-xs"
+                                    className="text-xs px-1.5 py-0.5"
                                   >
                                     {notification.priority}
                                   </Badge>
+                                </div>
+                                <div className="flex items-center space-x-1 ml-2">
                                   {starredNotifications.has(notification.id) && (
                                     <Star className="w-3 h-3 text-yellow-500 fill-current" />
                                   )}
+                                  {!isNotificationRead(notification) && (
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  )}
                                 </div>
-                                <p className="text-xs text-slate-600 leading-relaxed mb-2">
-                                  {notification.message}
-                                </p>
-                                
-                                {/* Interactive Action Buttons */}
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 px-2 text-xs"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleNotificationAction(notification.id, 'view_details');
-                                      }}
-                                    >
-                                      <ExternalLink className="w-3 h-3 mr-1" />
-                                      View
-                                    </Button>
-                                    
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 px-2 text-xs"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleNotificationClick(notification.id, 'star');
-                                      }}
-                                    >
-                                      <Star className={`w-3 h-3 mr-1 ${
-                                        starredNotifications.has(notification.id) ? "fill-current text-yellow-500" : ""
-                                      }`} />
-                                      {starredNotifications.has(notification.id) ? "Starred" : "Star"}
-                                    </Button>
-                                    
-                                    {!isNotificationRead(notification) && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 px-2 text-xs"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleNotificationClick(notification.id);
-                                        }}
-                                      >
-                                        <Check className="w-3 h-3 mr-1" />
-                                        Mark Read
-                                      </Button>
-                                    )}
-                                  </div>
+                              </div>
+                              
+                              <p className="text-xs text-slate-600 leading-relaxed mb-2">
+                                {notification.message}
+                              </p>
+                              
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-yellow-100"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleNotificationClick(notification.id, 'star');
+                                    }}
+                                  >
+                                    <Star className={`w-3 h-3 ${
+                                      starredNotifications.has(notification.id) ? "fill-current text-yellow-500" : "text-slate-400"
+                                    }`} />
+                                  </Button>
                                   
-                                  <div className="flex items-center space-x-2">
-                                    <span className="text-xs text-slate-400">
-                                      {formatTimeAgo(notification.createdAt)}
-                                    </span>
-                                    {!isNotificationRead(notification) && (
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                    )}
-                                  </div>
+                                  {!isNotificationRead(notification) && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 hover:bg-green-100"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleNotificationClick(notification.id);
+                                      }}
+                                    >
+                                      <Check className="w-3 h-3 text-slate-400" />
+                                    </Button>
+                                  )}
                                 </div>
+                                
+                                <span className="text-xs text-slate-400">
+                                  {formatTimeAgo(notification.createdAt)}
+                                </span>
                               </div>
                             </div>
                           </div>
