@@ -39,6 +39,70 @@ export class StockDataManager {
     return null;
   }
 
+  async fetchDefenseIndex(): Promise<{ price: number; change: number; changePercent: number } | null> {
+    // Try multiple S&P Aerospace & Defense index symbols
+    const indexSymbols = [
+      "^SP500-2010", // S&P Aerospace & Defense Index
+      "ITA",         // iShares U.S. Aerospace & Defense ETF
+      "PPA",         // Invesco Aerospace & Defense ETF
+      "XAR"          // SPDR S&P Aerospace & Defense ETF
+    ];
+    
+    for (const indexSymbol of indexSymbols) {
+      for (const source of this.sources) {
+        try {
+          const data = await source.fetchPrice(indexSymbol);
+          if (data) {
+            console.log(`Successfully fetched Defense Index ${indexSymbol} from ${source.name}`);
+            return {
+              price: data.price,
+              change: data.change,
+              changePercent: data.changePercent
+            };
+          }
+        } catch (error) {
+          console.log(`${source.name} failed for ${indexSymbol}:`, error instanceof Error ? error.message : 'Unknown error');
+          continue;
+        }
+      }
+    }
+    
+    // Calculate from major defense stocks weighted by market cap
+    console.log("Defense Index unavailable, calculating weighted index from major defense stocks");
+    const majorSymbols = ["LMT", "RTX", "NOC", "GD", "BA"];
+    const stockData = [];
+    
+    for (const symbol of majorSymbols) {
+      const data = await this.fetchStockPrice(symbol);
+      if (data) stockData.push(data);
+    }
+    
+    if (stockData.length > 0) {
+      // Weight by typical market caps (approximate)
+      const weights = { LMT: 0.25, RTX: 0.22, NOC: 0.18, GD: 0.15, BA: 0.20 };
+      let weightedPrice = 0;
+      let weightedChange = 0;
+      let weightedChangePercent = 0;
+      let totalWeight = 0;
+      
+      stockData.forEach(stock => {
+        const weight = weights[stock.symbol as keyof typeof weights] || 0.1;
+        weightedPrice += stock.price * weight;
+        weightedChange += stock.change * weight;
+        weightedChangePercent += stock.changePercent * weight;
+        totalWeight += weight;
+      });
+      
+      return {
+        price: weightedPrice / totalWeight,
+        change: weightedChange / totalWeight,
+        changePercent: weightedChangePercent / totalWeight
+      };
+    }
+    
+    return null;
+  }
+
   async testSources(): Promise<void> {
     console.log("Testing stock data sources...");
     for (const source of this.sources) {

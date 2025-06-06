@@ -190,6 +190,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const defenseStocks = stocks.length;
       const avgStockChange = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
 
+      // Get S&P Aerospace & Defense Index data from ITA ETF
+      const { stockDataManager } = require('./stock-sources');
+      const defenseIndexData = await stockDataManager.fetchDefenseIndex();
+
       // Calculate correlation score based on conflict severity and stock performance
       const calculateCorrelationScore = () => {
         const highSeverityConflicts = conflicts.filter(c => c.severity === 'High' || c.severity === 'Critical').length;
@@ -214,7 +218,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalConflicts,
         defenseStocks,
         avgStockChange: parseFloat(avgStockChange.toFixed(2)),
-        correlationScore: parseFloat(correlationScore.toFixed(2))
+        correlationScore: parseFloat(correlationScore.toFixed(2)),
+        defenseIndex: defenseIndexData ? {
+          value: parseFloat(defenseIndexData.price.toFixed(2)),
+          change: parseFloat(defenseIndexData.change.toFixed(2)),
+          changePercent: parseFloat(defenseIndexData.changePercent.toFixed(2))
+        } : null
       });
     } catch (error) {
       console.error('Error fetching metrics:', error);
