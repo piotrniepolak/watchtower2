@@ -125,7 +125,7 @@ export class ConflictTimelineService {
             conflictId,
             timestamp: this.extractTimestamp(line) || new Date(),
             title: this.extractTitle(line),
-            description: line,
+            description: line.replace(/Title:\*\*\s*/g, '').replace(/\*\*Title:\*\*/g, '').replace(/Description:\*\*\s*/g, '').replace(/\*\*Description:\*\*/g, '').replace(/\*\*/g, '').trim(),
             severity: this.determineSeverity(line),
             source: citations?.[0] || 'Perplexity Research',
             url: citations?.[0],
@@ -169,6 +169,30 @@ export class ConflictTimelineService {
     }
 
     return null;
+  }
+
+  private cleanDescription(text: string): string {
+    // Remove duplicate titles and formatting markers
+    let cleaned = text
+      .replace(/Title:\*\*\s*/g, '')
+      .replace(/\*\*Title:\*\*/g, '')
+      .replace(/Description:\*\*\s*/g, '')
+      .replace(/\*\*Description:\*\*/g, '')
+      .replace(/\*\*Timestamp:\*\*/g, '')
+      .replace(/Timestamp:\*\*/g, '')
+      .replace(/\[Source:.*?\]/g, '')
+      .replace(/\s*-\s*\*\*.*?\*\*/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/^[\d\-\*\•\s]+/, '')
+      .trim();
+
+    // Split into sentences and take the first meaningful ones
+    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    const uniqueSentences = Array.from(new Set(sentences.map(s => s.trim())));
+    
+    // Return first 2 sentences, max 200 chars
+    const result = uniqueSentences.slice(0, 2).join('. ').trim();
+    return result.length > 200 ? result.substring(0, 200) + '...' : result + '.';
   }
 
   private extractTitle(text: string): string {
