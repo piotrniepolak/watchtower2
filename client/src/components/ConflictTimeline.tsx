@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, AlertTriangle, Zap, RefreshCw, ExternalLink } from "lucide-react";
+import { Clock, AlertTriangle, Zap, RefreshCw, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface TimelineEvent {
@@ -22,63 +22,46 @@ interface ConflictTimelineProps {
 }
 
 const cleanEventDescription = (description: string) => {
-  // Remove all formatting markers and duplicates
+  // Remove formatting markers and clean up text
   let cleaned = description
-    .replace(/Title:\*\*\s*/g, '')
-    .replace(/\*\*Title:\*\*/g, '')
-    .replace(/Description:\*\*\s*/g, '')
-    .replace(/\*\*Description:\*\*/g, '')
-    .replace(/\*\*Timestamp:\*\*/g, '')
-    .replace(/Timestamp:\*\*/g, '')
-    .replace(/\[Source:.*?\]/g, '')
-    .replace(/\s*-\s*\*\*.*?\*\*/g, '')
-    .replace(/\*\*/g, '')
-    .replace(/^[\d\-\*\•\s]+/, '')
-    .replace(/:\s*-\s*/g, ': ')
+    .replace(/^\*+/g, '') // Remove leading asterisks
+    .replace(/\*\*/g, '') // Remove markdown bold
+    .replace(/Title:\s*/g, '')
+    .replace(/Description:\s*/g, '')
+    .replace(/\(Source:.*?\)$/g, '') // Remove source citations at end
+    .replace(/\[Source:.*?\]$/g, '') // Remove bracketed sources
     .trim();
-
-  // Remove duplicate text patterns (e.g., "Title: - Title" or ". **June 6, 2025**: 1. June 6, 2025")
-  const colonIndex = cleaned.indexOf(':');
-  if (colonIndex > 0) {
-    const beforeColon = cleaned.substring(0, colonIndex).trim();
-    const afterColon = cleaned.substring(colonIndex + 1).trim();
-    
-    // If text after colon repeats the before part, clean it
-    if (afterColon.startsWith('- ') && afterColon.substring(2).trim().startsWith(beforeColon)) {
-      cleaned = afterColon.substring(2 + beforeColon.length).trim();
-    } else if (afterColon.startsWith('- ')) {
-      cleaned = afterColon.substring(2).trim();
-    } else if (afterColon.includes(beforeColon)) {
-      // Handle cases like ". **June 6, 2025**: 1. June 6, 2025"
-      const duplicateIndex = afterColon.indexOf(beforeColon);
-      if (duplicateIndex > 0) {
-        cleaned = afterColon.substring(duplicateIndex + beforeColon.length).trim();
-      } else {
-        cleaned = afterColon.trim();
-      }
-    } else {
-      cleaned = afterColon.trim();
-    }
-  }
-
-  // Clean up leading punctuation and numbers
-  cleaned = cleaned.replace(/^[.,;:\s\d]+/, '').trim();
   
-  // Extract meaningful content only
-  if (cleaned.length < 10) return 'Recent development';
+  return cleaned;
+};
+
+const truncateText = (text: string, maxLength: number = 200) => {
+  if (text.length <= maxLength) return { text, isTruncated: false };
   
-  // Take first sentence, max 120 chars
-  const firstSentence = cleaned.split(/[.!?]/)[0].trim();
-  if (firstSentence.length > 120) {
-    return firstSentence.substring(0, 120) + '...';
+  const sentences = text.split(/[.!?]+/);
+  if (sentences.length > 1 && sentences[0].length > 50 && sentences[0].length <= maxLength) {
+    return { text: sentences[0].trim() + '.', isTruncated: true };
   }
   
-  return firstSentence + (firstSentence.endsWith('.') ? '' : '.');
+  return { text: text.substring(0, maxLength) + '...', isTruncated: true };
 };
 
 export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineProps) {
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (eventId: number) => {
+    setExpandedEvents(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(eventId)) {
+        newSet.delete(eventId);
+      } else {
+        newSet.add(eventId);
+      }
+      return newSet;
+    });
+  };
 
   const { data: timeline = [], isLoading } = useQuery<TimelineEvent[]>({
     queryKey: [`/api/conflicts/${conflictId}/timeline`],
@@ -205,9 +188,40 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
                     </div>
                     
                     <div className="bg-muted/30 rounded-md p-2">
-                      <p className="text-sm text-foreground/90 leading-relaxed">
-                        {cleanEventDescription(event.eventDescription)}
-                      </p>
+                      {(() => {
+                        const cleanedDescription = cleanEventDescription(event.eventDescription);
+                        const { text, isTruncated } = truncateText(cleanedDescription);
+                        const isExpanded = expandedEvents.has(event.id);
+                        const displayText = isExpanded ? cleanedDescription : text;
+                        
+                        return (
+                          <div>
+                            <p className="text-sm text-foreground/90 leading-relaxed">
+                              {displayText}
+                            </p>
+                            {isTruncated && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleExpanded(event.id)}
+                                className="mt-2 h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    <ChevronUp className="w-3 h-3 mr-1" />
+                                    Show less
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="w-3 h-3 mr-1" />
+                                    Read more
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })()}
                       
                       {event.stockMovement !== 0 && (
                         <div className="mt-1 pt-1 border-t border-border/50">
