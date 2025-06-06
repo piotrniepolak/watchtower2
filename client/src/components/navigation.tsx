@@ -329,7 +329,7 @@ export default function Navigation() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem 
-                    onClick={() => window.location.href = '/api/login'}
+                    onClick={() => window.location.href = '/login'}
                     className="flex items-center cursor-pointer"
                   >
                     <LogIn className="h-4 w-4 mr-2" />

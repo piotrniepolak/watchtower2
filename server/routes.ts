@@ -42,6 +42,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/');
   });
 
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Verify password
+      const bcrypt = await import('bcrypt');
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      // Create session
+      (req as any).session.userId = user.id;
+
+      res.json({ 
+        message: "Login successful", 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        } 
+      });
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   app.get('/api/logout', (req: any, res) => {
     req.session.destroy(() => {
       res.redirect('/');
@@ -69,14 +109,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create user
       const newUser = await storage.createUser({
-        id: Date.now().toString(),
         username,
         email,
+        password: hashedPassword,
         firstName,
-        lastName,
-        passwordHash: hashedPassword,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        lastName
       });
 
       // Auto-login the user
