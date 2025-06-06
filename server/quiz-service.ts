@@ -8,6 +8,44 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export class QuizService {
   private isGenerating = false;
 
+  private async fetchCurrentEvents(): Promise<string> {
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a news analyst focused on geopolitical events and defense industry developments. Provide current, factual information.'
+            },
+            {
+              role: 'user',
+              content: 'What are the most significant geopolitical events, defense industry news, and military developments that have occurred in the past 7 days? Focus on: 1) International conflicts and tensions, 2) Defense contractor earnings and major contracts, 3) Military exercises and diplomatic meetings, 4) Defense technology and procurement news. Provide specific, recent events with dates and details.'
+            }
+          ],
+          max_tokens: 1500,
+          temperature: 0.2,
+          search_recency_filter: 'week'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error) {
+      console.error('Error fetching current events:', error);
+      return 'Unable to fetch current events. Using general geopolitical knowledge.';
+    }
+  }
+
   async generateDailyQuiz(date: string): Promise<DailyQuiz | null> {
     if (this.isGenerating) {
       console.log("Quiz generation already in progress");
@@ -47,51 +85,70 @@ export class QuizService {
 
   private async generateQuestions(): Promise<QuizQuestion[]> {
     try {
+      const currentDate = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+
+      // First, get current geopolitical and defense news using Perplexity
+      const currentEvents = await this.fetchCurrentEvents();
+
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are a geopolitical intelligence expert creating daily quiz questions. Generate 3 unique, challenging questions based on CURRENT global events from the last 7 days. Focus on:
-            - Recent geopolitical developments and conflicts
-            - Defense industry news and market movements  
-            - International relations and diplomatic events
-            - Military actions and security developments
-            - Economic impacts of geopolitical events
+            content: `You are a geopolitical intelligence expert creating daily quiz questions. Today is ${currentDate}. Generate 3 unique, challenging questions based on the CURRENT EVENTS provided below from recent news sources.
             
-            Each question should test knowledge of recent events, not general history. Questions should be factual and based on real developments.
+            Focus on creating quiz questions from the actual current events data, covering:
+            - Recent geopolitical developments and ongoing conflicts
+            - Defense industry news, stock movements, and contract announcements
+            - International relations, diplomatic meetings, and policy changes
+            - Military actions, defense spending, and security developments
+            - Economic impacts of geopolitical events on defense markets
+            - Technology developments in defense and security sectors
+            
+            IMPORTANT: Base questions ONLY on the current events information provided. Do not use general knowledge or historical events.
             
             Return a JSON array with exactly 3 questions in this format:
             {
               "questions": [
                 {
                   "id": "unique_id",
-                  "question": "Question text",
+                  "question": "Question text based on provided current events",
                   "options": ["Option A", "Option B", "Option C", "Option D"],
                   "correctAnswer": 0,
-                  "explanation": "Detailed explanation with context",
+                  "explanation": "Detailed explanation referencing the specific current event",
                   "difficulty": "medium",
                   "category": "geopolitical",
-                  "source": "Brief source context"
+                  "source": "Reference to the current event source"
                 }
               ]
             }`
           },
           {
             role: "user",
-            content: `Generate 3 quiz questions about current geopolitical and defense market developments from the past week. Make sure questions are:
-            1. Based on actual recent events (within last 7 days)
-            2. Relevant to geopolitical intelligence and defense markets
-            3. Challenging but fair for informed readers
-            4. Include proper explanations with context
-            
-            Categories should be distributed among: geopolitical, market, defense.
-            Difficulty should be mostly medium with one easy and one hard question.`
+            content: `Based on the following current events from the past week, generate 3 quiz questions:
+
+CURRENT EVENTS DATA:
+${currentEvents}
+
+Create questions that:
+1. Are directly based on the events described above
+2. Test knowledge of these specific recent developments
+3. Are challenging but fair for informed readers
+4. Include explanations that reference the source events
+5. Cover different categories: geopolitical, market, defense
+6. Have varying difficulty: one easy, one medium, one hard
+
+Only use information from the current events data provided above.`
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 2000
+        temperature: 0.3,
+        max_tokens: 2500
       });
 
       const content = response.choices[0].message.content;
