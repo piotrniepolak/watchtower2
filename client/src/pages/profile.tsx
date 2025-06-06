@@ -42,51 +42,30 @@ export default function Profile() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
-  // Check if user is demo account
-  const isDemoUser = user?.username === 'demo_user';
+  // Create demo user data if not authenticated
+  const demoUser = {
+    email: "demo@geopolitical-intel.com",
+    firstName: "Demo",
+    lastName: "User",
+    bio: "Intelligence analyst specializing in geopolitical risk assessment and defense market analysis.",
+    profileImageUrl: "",
+    createdAt: "2024-01-01T00:00:00.000Z",
+    username: "demo_user"
+  };
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
-
-  // Redirect demo users to dashboard with message
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && isDemoUser) {
-      toast({
-        title: "Access Restricted",
-        description: "Demo accounts cannot access profile settings. Create a real account for full features.",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, isDemoUser, toast]);
+  const currentUser = user || demoUser;
+  const isDemoUser = (user as any)?.username === 'demo_user' || !isAuthenticated;
 
   // Initialize form data when user loads
   useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        bio: user.bio || '',
-        profileImageUrl: user.profileImageUrl || ''
-      });
-      setPreviewUrl(user.profileImageUrl || '');
-    }
-  }, [user]);
+    setFormData({
+      firstName: currentUser.firstName || '',
+      lastName: currentUser.lastName || '',
+      bio: currentUser.bio || '',
+      profileImageUrl: currentUser.profileImageUrl || ''
+    });
+    setPreviewUrl(currentUser.profileImageUrl || '');
+  }, [user, currentUser]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -167,11 +146,20 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isAuthenticated) {
+      toast({
+        title: "Demo Mode",
+        description: "Profile updates are not available in demo mode. Changes are displayed locally only.",
+        variant: "default",
+      });
+      return;
+    }
+    
     const updateData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       bio: formData.bio,
-      profileImageUrl: previewUrl // In a real app, you'd upload the image and get a URL
+      profileImageUrl: previewUrl
     };
 
     updateProfileMutation.mutate(updateData);
@@ -233,7 +221,7 @@ export default function Profile() {
                         />
                       ) : (
                         <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-medium">
-                          {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                          {currentUser?.firstName?.[0] || currentUser?.email?.[0] || 'U'}
                         </div>
                       )}
                       <Button
@@ -296,7 +284,7 @@ export default function Profile() {
                     <Label htmlFor="email">Email Address</Label>
                     <Input
                       id="email"
-                      value={user?.email || ''}
+                      value={currentUser?.email || ''}
                       disabled
                       className="bg-slate-50"
                     />
@@ -349,7 +337,7 @@ export default function Profile() {
                   <span className="text-sm text-slate-600">Member Since</span>
                   <Badge variant="outline">
                     <Calendar className="h-3 w-3 mr-1" />
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'}
+                    {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'Recently'}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
