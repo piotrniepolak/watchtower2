@@ -69,11 +69,11 @@ export default function Register() {
       if (response.ok) {
         toast({
           title: "Registration Successful",
-          description: "Your account has been created successfully.",
+          description: "Your account has been created and you're now logged in!",
         });
         
-        // Automatically log in the user
-        window.location.href = '/api/login';
+        // User is automatically logged in by the server, redirect to dashboard
+        window.location.href = '/';
       } else {
         toast({
           title: "Registration Failed",
