@@ -53,7 +53,7 @@ export default function Profile() {
     username: "demo_user"
   };
 
-  const currentUser = user || demoUser;
+  const currentUser = (user as any) || demoUser;
   const isDemoUser = (user as any)?.username === 'demo_user' || !isAuthenticated;
 
   // Initialize form data when user loads
@@ -184,9 +184,10 @@ export default function Profile() {
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  // Always show profile page for demo purposes
+  // if (!isAuthenticated) {
+  //   return null;
+  // }
 
   return (
     <div className="min-h-screen bg-slate-50">
