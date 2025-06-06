@@ -53,7 +53,10 @@ export default function ActiveConflictsList() {
                   {getSeverityIcon(conflict.severity)}
                   <h3 className="font-semibold text-sm">{conflict.name}</h3>
                 </div>
-                <Badge variant={getSeverityColor(conflict.severity) as any}>
+                <Badge 
+                  variant={getSeverityColor(conflict.severity) as any}
+                  className={conflict.severity.toLowerCase() === 'critical' ? 'critical-severity-badge' : ''}
+                >
                   {conflict.severity}
                 </Badge>
               </div>

@@ -72,3 +72,10 @@
 .font-inter {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
+
+/* Force Critical severity badges to show crimson red */
+.critical-severity-badge {
+  background-color: #DC143C !important;
+  border-color: #DC143C !important;
+  color: white !important;
+}
