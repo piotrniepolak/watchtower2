@@ -1,258 +1,377 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, Edit3, Save, X, Shield, Calendar, LogOut } from "lucide-react";
-import { useAuth } from "@/contexts/auth-context";
-import { useMutation } from "@tanstack/react-query";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import Navigation from "@/components/navigation";
+import { 
+  User, 
+  Camera, 
+  Upload, 
+  Save, 
+  Mail, 
+  Calendar,
+  Shield,
+  Star,
+  TrendingUp,
+  Target
+} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-
-interface ProfileUpdateData {
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-}
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { useEffect } from "react";
 
 export default function Profile() {
-  const { user, logout } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [formData, setFormData] = useState<ProfileUpdateData>({
-    username: user?.username || "",
-    email: user?.email || "",
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || ""
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    bio: '',
+    profileImageUrl: ''
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async (data: Partial<ProfileUpdateData>) => {
-      const response = await apiRequest('PUT', '/api/auth/profile', data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      setSuccess("Profile updated successfully");
-      setError("");
-      setIsEditing(false);
-    },
-    onError: (error: any) => {
-      setError(error.message || "Failed to update profile");
-      setSuccess("");
-    }
-  });
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!formData.username || !formData.email) {
-      setError("Username and email are required");
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
       return;
     }
+  }, [isAuthenticated, isLoading, toast]);
 
-    updateMutation.mutate(formData);
+  // Initialize form data when user loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        bio: user.bio || '',
+        profileImageUrl: user.profileImageUrl || ''
+      });
+      setPreviewUrl(user.profileImageUrl || '');
+    }
+  }, [user]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('/api/auth/profile', {
+        method: 'PATCH',
+        body: data
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File Too Large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please select a valid image file.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProfileImage(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      username: user?.username || "",
-      email: user?.email || "",
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || ""
-    });
-    setIsEditing(false);
-    setError("");
-    setSuccess("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const updateData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      bio: formData.bio,
+      profileImageUrl: previewUrl // In a real app, you'd upload the image and get a URL
+    };
+
+    updateProfileMutation.mutate(updateData);
   };
 
-  if (!user) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <Navigation />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-slate-200 rounded w-48 mb-6"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <div className="h-96 bg-slate-200 rounded-lg"></div>
+              </div>
+              <div className="h-64 bg-slate-200 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
     return null;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Profile Settings</h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            Manage your account information and preferences
-          </p>
+    <div className="min-h-screen bg-slate-50">
+      <Navigation />
+      
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">My Profile</h1>
+          <p className="text-slate-600">Manage your account settings and profile information</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl">
-                    {user.firstName && user.lastName 
-                      ? `${user.firstName} ${user.lastName}` 
-                      : user.username}
-                  </CardTitle>
-                  <CardDescription>@{user.username}</CardDescription>
-                </div>
-              </div>
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Shield className="w-3 h-3" />
-                Verified
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {(error || success) && (
-              <Alert variant={error ? "destructive" : "default"} className={error ? "" : "border-green-200 bg-green-50 dark:bg-green-950"}>
-                <AlertDescription>{error || success}</AlertDescription>
-              </Alert>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    disabled={!isEditing}
-                    placeholder="First name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    disabled={!isEditing}
-                    placeholder="Last name"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="username"
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    disabled={!isEditing}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    disabled={!isEditing}
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-4">
-                {!isEditing ? (
-                  <Button
-                    type="button"
-                    onClick={() => setIsEditing(true)}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    Edit Profile
-                  </Button>
-                ) : (
-                  <div className="flex space-x-2">
-                    <Button
-                      type="submit"
-                      disabled={updateMutation.isPending}
-                      className="flex items-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      {updateMutation.isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleCancel}
-                      className="flex items-center gap-2"
-                    >
-                      <X className="w-4 h-4" />
-                      Cancel
-                    </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Profile Form */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <User className="h-5 w-5 mr-2" />
+                  Profile Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Profile Picture */}
+                  <div className="flex items-center space-x-6">
+                    <div className="relative">
+                      {previewUrl ? (
+                        <img 
+                          src={previewUrl} 
+                          alt="Profile"
+                          className="w-24 h-24 rounded-full object-cover border-4 border-slate-200"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-medium">
+                          {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                        </div>
+                      )}
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="absolute -bottom-2 -right-2 rounded-full p-2"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium text-slate-900">Profile Picture</h3>
+                      <p className="text-sm text-slate-600 mb-2">Upload a new profile picture</p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose File
+                      </Button>
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
                   </div>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Account Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Calendar className="w-5 h-5 text-slate-400" />
-                <div>
-                  <p className="font-medium">Member since</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
+                  <Separator />
+
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email (readonly) */}
+                  <div>
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="bg-slate-50"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
+                  </div>
+
+                  {/* Bio */}
+                  <div>
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={formData.bio}
+                      onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                      placeholder="Tell us about yourself..."
+                      rows={4}
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    {updateProfileMutation.isPending ? (
+                      "Saving..."
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Account Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="h-5 w-5 mr-2" />
+                  Account Stats
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Member Since</span>
+                  <Badge variant="outline">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'}
+                  </Badge>
                 </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <LogOut className="w-5 h-5 text-red-500" />
-                <div>
-                  <p className="font-medium">Sign out</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Sign out of your account
-                  </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Watchlists</span>
+                  <Badge>
+                    <Star className="h-3 w-3 mr-1" />
+                    Active
+                  </Badge>
                 </div>
-              </div>
-              <Button
-                variant="outline"
-                onClick={logout}
-                className="text-red-600 border-red-200 hover:bg-red-50 dark:hover:bg-red-950"
-              >
-                Sign Out
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Account Type</span>
+                  <Badge variant="secondary">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Standard
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="h-5 w-5 mr-2" />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a href="/watchlist">
+                    <Star className="h-4 w-4 mr-2" />
+                    Manage Watchlists
+                  </a>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a href="/learning">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    View Learning Progress
+                  </a>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild>
+                  <a href="/privacy">
+                    <Shield className="h-4 w-4 mr-2" />
+                    Privacy Settings
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
