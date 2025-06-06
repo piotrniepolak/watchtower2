@@ -58,6 +58,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: 'Not authenticated' });
   });
 
+  app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { firstName, lastName, bio, profileImageUrl } = req.body;
+      
+      const updatedUser = await storage.updateUser(userId.toString(), {
+        firstName,
+        lastName,
+        bio,
+        profileImageUrl,
+        updatedAt: new Date(),
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
