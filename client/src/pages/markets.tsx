@@ -1,23 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff, Wifi, WifiOff } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
-import type { Stock } from "@shared/schema";
+import { useRealTimeStocks, type Stock } from "@/hooks/useRealTimeStocks";
 
 export default function Markets() {
   const { isAuthenticated } = useAuth();
   const watchlist = useLocalWatchlist();
   
-  const { data: stocks, isLoading } = useQuery({
-    queryKey: ["/api/stocks"],
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
-  });
+  const { stocks, isLoading, isConnected } = useRealTimeStocks();
 
   // Generate historical data based on real Yahoo Finance current prices
   const generateStockHistory = (currentPrice: number, changePercent: number) => {
@@ -270,12 +266,29 @@ export default function Markets() {
       <Navigation />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Defense Contractor Markets
-          </h2>
-          <p className="text-slate-600 mb-6">
-            Real-time analysis of major defense contractors powered by Yahoo Finance
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                Defense Contractor Markets
+              </h2>
+              <p className="text-slate-600">
+                Real-time analysis of major defense contractors powered by Yahoo Finance
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              {isConnected ? (
+                <>
+                  <Wifi className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-600 font-medium">Live Data</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4 text-red-600" />
+                  <span className="text-sm text-red-600 font-medium">Reconnecting...</span>
+                </>
+              )}
+            </div>
+          </div>
 
           {/* Market Overview - Real Data from Yahoo Finance */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

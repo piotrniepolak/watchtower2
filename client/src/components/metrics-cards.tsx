@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, DollarSign, Link } from "lucide-react";
+import { AlertTriangle, TrendingUp, DollarSign, Link, Wifi, WifiOff } from "lucide-react";
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
+import { useRealTimeStocks } from "@/hooks/useRealTimeStocks";
 import type { Conflict } from "@shared/schema";
 
 export default function MetricsCards() {
@@ -10,10 +11,7 @@ export default function MetricsCards() {
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
-  const { data: stocks } = useQuery({
-    queryKey: ["/api/stocks"],
-    refetchInterval: 30000, // Real-time stock data for calculations
-  });
+  const { stocks, isConnected } = useRealTimeStocks();
 
   const { data: conflicts } = useQuery({
     queryKey: ["/api/conflicts"],
@@ -120,26 +118,46 @@ export default function MetricsCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {metricCards.map((metric, index) => (
-        <Card key={index} className="shadow-sm border border-slate-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600">{metric.title}</p>
-                <p className="text-2xl font-bold text-slate-900">{metric.value}</p>
+    <div className="space-y-4">
+      {/* Real-time data indicator */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-900">Market Overview</h3>
+        <div className="flex items-center space-x-2">
+          {isConnected ? (
+            <>
+              <Wifi className="h-4 w-4 text-green-600" />
+              <span className="text-sm text-green-600 font-medium">Live Data</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-4 w-4 text-orange-600" />
+              <span className="text-sm text-orange-600 font-medium">Updating...</span>
+            </>
+          )}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {metricCards.map((metric, index) => (
+          <Card key={index} className="shadow-sm border border-slate-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600">{metric.title}</p>
+                  <p className="text-2xl font-bold text-slate-900">{metric.value}</p>
+                </div>
+                <div className={`w-12 h-12 ${metric.iconBg} rounded-lg flex items-center justify-center`}>
+                  <metric.icon className={`h-6 w-6 ${metric.iconColor}`} />
+                </div>
               </div>
-              <div className={`w-12 h-12 ${metric.iconBg} rounded-lg flex items-center justify-center`}>
-                <metric.icon className={`h-6 w-6 ${metric.iconColor}`} />
+              <div className="mt-4 flex items-center text-sm">
+                <span className={`${metric.changeColor} font-medium`}>{metric.change}</span>
+                <span className="text-slate-600 ml-1">{metric.changeText}</span>
               </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className={`${metric.changeColor} font-medium`}>{metric.change}</span>
-              <span className="text-slate-600 ml-1">{metric.changeText}</span>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
