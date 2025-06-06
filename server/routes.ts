@@ -262,8 +262,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
-    const user = await storage.getUser(req.user.id);
+  app.get('/api/auth/me', isAuthenticated, async (req: any, res) => {
+    const user = await storage.getUser(req.user.id.toString());
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -279,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.put('/api/auth/profile', authenticateToken, async (req: any, res) => {
+  app.put('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const updateData = req.body;
