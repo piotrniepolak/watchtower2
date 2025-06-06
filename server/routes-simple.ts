@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
@@ -242,5 +243,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // WebSocket server for real-time updates
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws) => {
+    console.log('Client connected to WebSocket');
+    
+    // Send initial stock data
+    storage.getStocks().then(stocks => {
+      ws.send(JSON.stringify({ type: 'stocks', data: stocks }));
+    });
+    
+    ws.on('close', () => {
+      console.log('Client disconnected from WebSocket');
+    });
+  });
+  
+  // Broadcast stock updates to all connected clients
+  const broadcastStockUpdate = async () => {
+    const stocks = await storage.getStocks();
+    const message = JSON.stringify({ type: 'stocks', data: stocks });
+    
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+  
+  // Set up periodic stock updates broadcast
+  setInterval(broadcastStockUpdate, 30000); // Every 30 seconds
+  
   return httpServer;
 }

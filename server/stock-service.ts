@@ -91,10 +91,10 @@ class StockService {
     // Initial update
     this.updateAllStockPrices();
 
-    // Update every 5 minutes (to respect free tier rate limits)
+    // Update every 2 minutes for more real-time data
     this.updateInterval = setInterval(() => {
       this.updateAllStockPrices();
-    }, 5 * 60 * 1000);
+    }, 2 * 60 * 1000);
   }
 
   stopRealTimeUpdates(): void {

@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes-simple";
 import { setupVite, serveStatic, log } from "./vite";
 import { newsService } from "./news-service";
+import { stockService } from "./stock-service";
 
 // Make environment variables available to Vite frontend
 process.env.VITE_GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -73,5 +74,7 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
     // Start daily news scheduler
     newsService.startDailyNewsScheduler();
+    // Start real-time stock updates
+    stockService.startRealTimeUpdates();
   });
 })();
