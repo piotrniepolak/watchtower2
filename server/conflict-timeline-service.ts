@@ -94,27 +94,52 @@ export class ConflictTimelineService {
   private parseTimelineEvents(content: string, conflictId: number, citations?: string[]): TimelineEvent[] {
     const events: TimelineEvent[] = [];
     
-    // Look for numbered list items or bullet points first
-    const listItems = content.match(/^\d+\.\s+.+$/gm) || content.match(/^[\-\*]\s+.+$/gm);
+    // Extract numbered list items
+    const lines = content.split('\n');
+    const numberedItems = [];
+    let currentItem = '';
+    let inItem = false;
     
-    if (listItems && listItems.length > 0) {
-      listItems.forEach((item, index) => {
-        const cleanItem = item
-          .replace(/^\d+\.\s*/, '')
-          .replace(/^[\-\*]\s*/, '')
+    for (const line of lines) {
+      if (line.match(/^\d+\./)) {
+        if (currentItem) {
+          numberedItems.push(currentItem.trim());
+        }
+        currentItem = line.replace(/^\d+\.\s*/, '');
+        inItem = true;
+      } else if (inItem && line.trim()) {
+        currentItem += ' ' + line.trim();
+      } else if (inItem && !line.trim()) {
+        if (currentItem) {
+          numberedItems.push(currentItem.trim());
+          currentItem = '';
+        }
+        inItem = false;
+      }
+    }
+    if (currentItem) {
+      numberedItems.push(currentItem.trim());
+    }
+    
+    if (numberedItems.length > 0) {
+      numberedItems.forEach((item, index) => {
+        const cleanText = item
+          .replace(/\*\*/g, '')
+          .replace(/^\*/g, '')
+          .replace(/\[?\d+\]\.?$/g, '')
           .trim();
 
-        if (cleanItem.length > 20) {
+        if (cleanText.length > 30) {
           const event: TimelineEvent = {
             id: `${conflictId}-${Date.now()}-${index}`,
             conflictId,
-            timestamp: new Date(Date.now() - index * 3600000), // Stagger by hours
-            title: this.extractMeaningfulTitle(cleanItem),
-            description: cleanItem,
-            severity: this.determineSeverity(cleanItem),
+            timestamp: new Date(Date.now() - index * 3600000),
+            title: this.extractMeaningfulTitle(cleanText),
+            description: cleanText,
+            severity: this.determineSeverity(cleanText),
             source: citations?.[0] || 'News Sources',
             url: citations?.[0],
-            impact: this.extractImpact(cleanItem),
+            impact: this.extractImpact(cleanText),
             verified: true
           };
           
@@ -122,30 +147,30 @@ export class ConflictTimelineService {
         }
       });
     } else {
-      // Fallback to sentence parsing
-      const sentences = content
-        .split(/[.!?]+/)
-        .map(s => s.trim())
-        .filter(s => s.length > 30 && !s.includes('I don\'t have') && !s.includes('I cannot'))
+      // Fallback: look for bullet points or paragraphs
+      const lines = content
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 30 && !line.includes('Here are') && !line.includes('developments'))
         .slice(0, 6);
 
-      sentences.forEach((sentence, index) => {
-        const cleanSentence = sentence
-          .replace(/^[\d\-\*\•\s]+/, '')
-          .replace(/According to|Reports indicate|Sources suggest/gi, '')
+      lines.forEach((line, index) => {
+        const cleanLine = line
+          .replace(/^[\-\*\•]\s*/, '')
+          .replace(/\*\*/g, '')
           .trim();
 
-        if (cleanSentence.length > 20) {
+        if (cleanLine.length > 30) {
           const event: TimelineEvent = {
             id: `${conflictId}-${Date.now()}-${index}`,
             conflictId,
-            timestamp: new Date(Date.now() - index * 7200000), // Stagger by 2 hours
-            title: this.extractMeaningfulTitle(cleanSentence),
-            description: cleanSentence,
-            severity: this.determineSeverity(cleanSentence),
+            timestamp: new Date(Date.now() - index * 7200000),
+            title: this.extractMeaningfulTitle(cleanLine),
+            description: cleanLine,
+            severity: this.determineSeverity(cleanLine),
             source: citations?.[0] || 'News Sources',
             url: citations?.[0],
-            impact: this.extractImpact(cleanSentence),
+            impact: this.extractImpact(cleanLine),
             verified: true
           };
           
@@ -154,7 +179,7 @@ export class ConflictTimelineService {
       });
     }
 
-    return events.slice(0, 6); // Limit to 6 most recent events
+    return events.slice(0, 6);
   }
 
   private extractMeaningfulTitle(text: string): string {
