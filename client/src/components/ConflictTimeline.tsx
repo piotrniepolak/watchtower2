@@ -170,7 +170,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
           </div>
         )}
         
-        {timeline.length > 0 && (
+        {timeline && timeline.length > 0 && (
           <>
             <Separator />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
