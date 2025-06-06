@@ -4,7 +4,7 @@ import {
   type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, gt } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -210,6 +210,15 @@ export class DatabaseStorage implements IStorage {
   // Utility method for password verification
   async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return await bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  // Method to clear all registered users (keeping only demo accounts)
+  async clearRegisteredUsers(): Promise<void> {
+    try {
+      await db.delete(users).where(gt(users.id, "1")); // Keep user ID 1 (demo user)
+    } catch (error) {
+      console.error("Error clearing registered users:", error);
+    }
   }
 }
 
@@ -614,6 +623,14 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDemoUser() {
+    // Clear all existing users first
+    this.users.clear();
+    this.usersByEmail.clear();
+    this.usersByUsername.clear();
+    
+    // Reset user ID counter to ensure only demo user exists
+    this.currentUserId = 2; // Next user will get ID 2
+    
     const demoUser: User = {
       id: 1,
       username: "demo_user",

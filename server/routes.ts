@@ -88,6 +88,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Admin endpoint to clear all registered users
+  app.post('/api/admin/clear-users', async (req, res) => {
+    try {
+      if (storage instanceof DatabaseStorage) {
+        await storage.clearRegisteredUsers();
+      }
+      // Also clear from memory storage
+      storage = new MemStorage();
+      
+      res.json({ message: "All registered users have been cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing users:", error);
+      res.status(500).json({ message: "Failed to clear users" });
+    }
+  });
+
   app.post('/api/auth/register', async (req, res) => {
     try {
       const { username, email, password, firstName, lastName } = req.body;
