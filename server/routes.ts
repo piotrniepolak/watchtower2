@@ -320,9 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Watchlist routes
-  app.get('/api/watchlist/stocks', authenticateToken, async (req: any, res) => {
+  app.get('/api/watchlist/stocks', isAuthenticated, async (req: any, res) => {
     try {
-      const watchlist = await dbStorage.getUserStockWatchlist(req.user.id);
+      const watchlist = await storage.getUserStockWatchlist(req.user.id);
       res.json(watchlist);
     } catch (error) {
       console.error('Error fetching stock watchlist:', error);
@@ -330,14 +330,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/watchlist/stocks', authenticateToken, async (req: any, res) => {
+  app.post('/api/watchlist/stocks', isAuthenticated, async (req: any, res) => {
     try {
       const watchlistData = insertStockWatchlistSchema.parse({
         ...req.body,
         userId: req.user.id
       });
       
-      const watchlist = await dbStorage.addStockToWatchlist(watchlistData);
+      const watchlist = await storage.addStockToWatchlist(watchlistData);
       res.json(watchlist);
     } catch (error) {
       console.error('Error adding to stock watchlist:', error);
@@ -748,7 +748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected routes example  
-  app.get("/api/watchlist/stocks", authenticateToken, async (req: any, res) => {
+  app.get("/api/watchlist/stocks", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const watchlist = await storage.getUserStockWatchlist(userId);

@@ -58,6 +58,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(401).json({ message: 'Not authenticated' });
   });
 
+  // Registration endpoint
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const { username, email, password, firstName, lastName } = req.body;
+
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Username, email, and password are required' });
+      }
+
+      // Check if user already exists
+      const existingUserByEmail = await storage.getUserByEmail(email);
+      if (existingUserByEmail) {
+        return res.status(400).json({ message: 'User with this email already exists' });
+      }
+
+      const existingUserByUsername = await storage.getUserByUsername(username);
+      if (existingUserByUsername) {
+        return res.status(400).json({ message: 'Username is already taken' });
+      }
+
+      // Create new user
+      const newUser = await storage.createUser({
+        username,
+        email,
+        password, // In a real app, this should be hashed
+        firstName: firstName || null,
+        lastName: lastName || null,
+        profileImageUrl: null,
+        bio: null
+      });
+
+      res.status(201).json({ 
+        message: 'User registered successfully',
+        user: {
+          id: newUser.id,
+          username: newUser.username,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  });
+
+  // Login endpoint
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // In a real app, you would verify the hashed password
+      if (user.password !== password) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Create session
+      req.session.userId = parseInt(user.id);
+
+      res.json({
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
   // Public routes
   app.get('/api/conflicts', async (req, res) => {
     try {
