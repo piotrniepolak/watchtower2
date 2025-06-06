@@ -65,7 +65,7 @@ export default function Login() {
   };
 
   const handleDemoLogin = () => {
-    window.location.href = '/api/login';
+    window.location.href = '/api/demo-login';
   };
 
   return (
