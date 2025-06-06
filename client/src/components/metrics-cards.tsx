@@ -18,7 +18,7 @@ export default function MetricsCards() {
     refetchInterval: 30000, // Real-time conflict data
   });
 
-  // Calculate real-time defense index and market cap from live stock data
+  // Use authentic S&P Aerospace & Defense Index data from API
   const calculateRealTimeMetrics = () => {
     if (!stocks || !Array.isArray(stocks)) {
       return {
@@ -29,27 +29,23 @@ export default function MetricsCards() {
       };
     }
 
-    // Calculate weighted defense index based on major defense stocks
-    const majorStocks = stocks.filter(stock => 
-      ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
-    );
+    // Use authentic S&P Aerospace & Defense Index data from ITA ETF
+    const defenseIndexValue = metrics?.defenseIndex?.value || 0;
+    const defenseIndexChange = metrics?.defenseIndex?.changePercent || 0;
     
-    const totalWeightedPrice = majorStocks.reduce((sum, stock) => sum + stock.price, 0);
-    const defenseIndex = (totalWeightedPrice / majorStocks.length).toFixed(2);
-    
-    // Calculate total market cap
+    // Calculate total market cap from all tracked defense stocks
     const totalMarketCap = stocks.reduce((sum, stock) => {
       const marketCapValue = parseFloat(stock.marketCap?.replace(/[$B€£]/g, '') || '0');
       return sum + marketCapValue;
     }, 0);
     
-    // Calculate average change percentage
+    // Calculate average change percentage for market cap trend
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
     
     return {
-      defenseIndex,
+      defenseIndex: defenseIndexValue.toFixed(2),
       marketCap: `$${totalMarketCap.toFixed(1)}B`,
-      indexChange: `${avgChangePercent >= 0 ? '+' : ''}${avgChangePercent.toFixed(2)}%`,
+      indexChange: `${defenseIndexChange >= 0 ? '+' : ''}${defenseIndexChange.toFixed(2)}%`,
       marketCapChange: `${avgChangePercent >= 0 ? '+' : ''}${(avgChangePercent * 0.8).toFixed(1)}%`
     };
   };

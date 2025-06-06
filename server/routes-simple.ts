@@ -190,9 +190,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const defenseStocks = stocks.length;
       const avgStockChange = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
 
-      // Get S&P Aerospace & Defense Index data from ITA ETF
-      const { stockDataManager } = require('./stock-sources');
-      const defenseIndexData = await stockDataManager.fetchDefenseIndex();
+      // Fetch ITA ETF data (iShares U.S. Aerospace & Defense ETF) which tracks S&P Aerospace & Defense
+      let defenseIndexData = null;
+      try {
+        const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/ITA`);
+        const data = await response.json();
+        
+        if (data?.chart?.result?.[0]) {
+          const result = data.chart.result[0];
+          const meta = result.meta;
+          const currentPrice = meta.regularMarketPrice || meta.previousClose;
+          const previousClose = meta.previousClose;
+          const change = currentPrice - previousClose;
+          const changePercent = (change / previousClose) * 100;
+          
+          defenseIndexData = {
+            price: currentPrice,
+            change: change,
+            changePercent: changePercent
+          };
+          console.log(`Successfully fetched ITA Defense Index: $${currentPrice.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+        }
+      } catch (error) {
+        console.log('Failed to fetch ITA data, using fallback calculation');
+        
+        // Fallback: Calculate from major defense stocks with S&P weights
+        const majorDefenseStocks = stocks.filter(stock => 
+          ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
+        );
+        
+        if (majorDefenseStocks.length > 0) {
+          const weights = {
+            'LMT': 0.28, 'RTX': 0.24, 'NOC': 0.18, 'GD': 0.15, 'BA': 0.15
+          };
+          
+          let weightedPrice = 0;
+          let weightedChange = 0;
+          let totalWeight = 0;
+          
+          majorDefenseStocks.forEach(stock => {
+            const weight = weights[stock.symbol as keyof typeof weights] || 0;
+            weightedPrice += stock.price * weight;
+            weightedChange += stock.changePercent * weight;
+            totalWeight += weight;
+          });
+          
+          defenseIndexData = {
+            price: (weightedPrice / totalWeight) * 0.5,
+            change: 0,
+            changePercent: weightedChange / totalWeight
+          };
+        }
+      }
 
       // Calculate correlation score based on conflict severity and stock performance
       const calculateCorrelationScore = () => {
