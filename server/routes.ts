@@ -48,6 +48,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const { username, email, password, firstName, lastName } = req.body;
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      const existingUsername = await storage.getUserByUsername(username);
+      if (existingUsername) {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+
+      // Hash password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const newUser = await storage.createUser({
+        id: Date.now().toString(),
+        username,
+        email,
+        firstName,
+        lastName,
+        passwordHash: hashedPassword,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      // Auto-login the user
+      (req as any).session.userId = newUser.id;
+
+      res.status(201).json({ 
+        message: "User created successfully", 
+        user: { 
+          id: newUser.id, 
+          username: newUser.username, 
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName
+        } 
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
   app.get('/api/auth/user', async (req: any, res) => {
     if (req.session?.userId) {
       const user = await storage.getUser(req.session.userId.toString());

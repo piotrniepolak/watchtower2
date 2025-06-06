@@ -228,7 +228,7 @@ export default function Landing() {
           </p>
           <Button 
             size="lg" 
-            onClick={handleLogin}
+            onClick={() => window.location.href = '/register'}
             className="bg-white text-blue-600 hover:bg-slate-50"
           >
             <Users className="mr-2 h-5 w-5" />
