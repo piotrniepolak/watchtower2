@@ -18,7 +18,7 @@ export default function Landing() {
   const { isAuthenticated } = useAuth();
   
   const handleLogin = () => {
-    window.location.href = '/api/login';
+    window.location.href = '/login';
   };
 
   const handleStartAnalyzing = () => {
