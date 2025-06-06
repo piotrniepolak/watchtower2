@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create user session
-      req.session.userId = user.id;
+      req.session.userId = parseInt(user.id);
       
       res.json({ 
         message: 'Login successful',
@@ -172,6 +172,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profileImageUrl: null,
         bio: null
       });
+
+      // Automatically log in the user after registration
+      req.session.userId = parseInt(newUser.id);
 
       res.status(201).json({ 
         message: 'User registered successfully',
@@ -310,11 +313,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/quiz/:quizId/submit', async (req: any, res) => {
+  app.post('/api/quiz/:quizId/submit', isAuthenticated, async (req: any, res) => {
     try {
       const quizId = parseInt(req.params.quizId);
       const { responses, completionTimeSeconds } = req.body;
-      const userId = 1; // Using default user ID for demo
+      const userId = req.session.userId; // Get actual logged-in user
       
       if (!Array.isArray(responses)) {
         return res.status(400).json({ error: "Responses must be an array" });
@@ -334,10 +337,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/quiz/:quizId/response', async (req, res) => {
+  app.get('/api/quiz/:quizId/response', isAuthenticated, async (req: any, res) => {
     try {
       const quizId = parseInt(req.params.quizId);
-      const userId = 1; // Using default user ID for demo
+      const userId = req.session.userId; // Get actual logged-in user
 
       const response = await storage.getUserQuizResponse(userId, quizId);
       res.json(response || null);
