@@ -32,7 +32,8 @@ interface Notification {
   data?: any;
   read: boolean;
   priority: "low" | "normal" | "high" | "urgent";
-  createdAt: string;
+  createdAt?: string;
+  timestamp?: string;
   expiresAt?: string;
 }
 
@@ -210,7 +211,7 @@ export default function NotificationCenter() {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <Card className="absolute right-0 top-12 w-96 max-h-96 z-50 shadow-lg border">
+          <Card className="absolute right-0 top-12 w-[420px] max-h-96 z-50 shadow-lg border">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Notifications</CardTitle>
@@ -384,7 +385,7 @@ export default function NotificationCenter() {
                                 </div>
                                 
                                 <span className="text-xs text-slate-400">
-                                  {formatTimeAgo(notification.createdAt)}
+                                  {formatTimeAgo(notification.createdAt || (notification as any).timestamp || '')}
                                 </span>
                               </div>
                             </div>
