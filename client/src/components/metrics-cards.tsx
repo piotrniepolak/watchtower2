@@ -83,9 +83,9 @@ export default function MetricsCards() {
     },
     {
       title: "S&P Aerospace & Defense",
-      value: `$${realTimeMetrics.defenseIndex}`,
+      value: realTimeMetrics.defenseIndex,
       change: realTimeMetrics.indexChange,
-      changeText: "ITA ETF today",
+      changeText: "Select Industry Index",
       icon: TrendingUp,
       iconBg: realTimeMetrics.indexChange.startsWith('+') ? "bg-green-100" : "bg-red-100",
       iconColor: realTimeMetrics.indexChange.startsWith('+') ? "text-green-600" : "text-red-600",

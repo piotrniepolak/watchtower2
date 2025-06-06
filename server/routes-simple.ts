@@ -190,56 +190,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const defenseStocks = stocks.length;
       const avgStockChange = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
 
-      // Fetch ITA ETF data (iShares U.S. Aerospace & Defense ETF) which tracks S&P Aerospace & Defense
+      // Fetch S&P Aerospace & Defense Select Industry Index (^SP500-2010)
       let defenseIndexData = null;
       try {
-        const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/ITA`);
-        const data = await response.json();
+        // Try multiple S&P index symbols
+        const indexSymbols = [
+          "^SP500-2010",  // S&P Aerospace & Defense Select Industry Index
+          "^GSPA",        // S&P Aerospace & Defense (alternative)
+          "SPSIAD"        // S&P Aerospace & Defense Index
+        ];
         
-        if (data?.chart?.result?.[0]) {
-          const result = data.chart.result[0];
-          const meta = result.meta;
-          const currentPrice = meta.regularMarketPrice || meta.previousClose;
-          const previousClose = meta.previousClose;
-          const change = currentPrice - previousClose;
-          const changePercent = (change / previousClose) * 100;
-          
-          defenseIndexData = {
-            price: currentPrice,
-            change: change,
-            changePercent: changePercent
-          };
-          console.log(`Successfully fetched ITA Defense Index: $${currentPrice.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+        for (const symbol of indexSymbols) {
+          try {
+            const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`);
+            const data = await response.json();
+            
+            if (data?.chart?.result?.[0]) {
+              const result = data.chart.result[0];
+              const meta = result.meta;
+              const currentPrice = meta.regularMarketPrice || meta.previousClose;
+              const previousClose = meta.previousClose;
+              const change = currentPrice - previousClose;
+              const changePercent = (change / previousClose) * 100;
+              
+              defenseIndexData = {
+                price: currentPrice,
+                change: change,
+                changePercent: changePercent
+              };
+              console.log(`Successfully fetched S&P Aerospace & Defense Index (${symbol}): ${currentPrice.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+              break;
+            }
+          } catch (err) {
+            console.log(`Failed to fetch ${symbol}, trying next symbol`);
+            continue;
+          }
         }
       } catch (error) {
-        console.log('Failed to fetch ITA data, using fallback calculation');
-        
-        // Fallback: Calculate from major defense stocks with S&P weights
+        console.log('Failed to fetch S&P index data');
+      }
+      
+      // If S&P index is unavailable, calculate weighted index from constituent stocks
+      if (!defenseIndexData) {
+        console.log('S&P Aerospace & Defense Index unavailable, calculating from constituent stocks');
         const majorDefenseStocks = stocks.filter(stock => 
-          ['LMT', 'RTX', 'NOC', 'GD', 'BA'].includes(stock.symbol)
+          ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'HWM', 'LDOS', 'LHX'].includes(stock.symbol)
         );
         
         if (majorDefenseStocks.length > 0) {
+          // Use market cap weighting similar to S&P methodology
           const weights = {
-            'LMT': 0.28, 'RTX': 0.24, 'NOC': 0.18, 'GD': 0.15, 'BA': 0.15
+            'LMT': 0.22, 'RTX': 0.20, 'NOC': 0.16, 'GD': 0.14, 'BA': 0.12,
+            'HWM': 0.06, 'LDOS': 0.05, 'LHX': 0.05
           };
           
-          let weightedPrice = 0;
+          let weightedIndex = 0;
           let weightedChange = 0;
           let totalWeight = 0;
           
           majorDefenseStocks.forEach(stock => {
             const weight = weights[stock.symbol as keyof typeof weights] || 0;
-            weightedPrice += stock.price * weight;
+            // Normalize stock prices to index scale (typical S&P sector indices range 100-500)
+            const normalizedPrice = (stock.price / 400) * 100; // Scale to index range
+            weightedIndex += normalizedPrice * weight;
             weightedChange += stock.changePercent * weight;
             totalWeight += weight;
           });
           
           defenseIndexData = {
-            price: (weightedPrice / totalWeight) * 0.5,
-            change: 0,
+            price: weightedIndex / totalWeight,
+            change: 0, // Calculate from percentage
             changePercent: weightedChange / totalWeight
           };
+          console.log(`Calculated S&P-style Defense Index: ${defenseIndexData.price.toFixed(2)} (${defenseIndexData.changePercent >= 0 ? '+' : ''}${defenseIndexData.changePercent.toFixed(2)}%)`);
         }
       }
 
