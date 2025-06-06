@@ -230,57 +230,88 @@ export default function Navigation() {
                       />
                     ) : (
                       <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                        {user?.firstName?.[0] || user?.email?.[0] || 'D'}
                       </div>
                     )}
                     <span className="hidden sm:inline font-medium text-slate-900">
-                      {user?.firstName || user?.username || user?.email?.split('@')[0] || 'Account'}
+                      {user?.username === 'demo_user' ? 'Demo User' : (user?.firstName || user?.username || user?.email?.split('@')[0] || 'Account')}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64">
-                  <div className="p-3">
-                    <div className="flex items-center space-x-3">
-                      {user?.profileImageUrl ? (
-                        <img 
-                          src={user.profileImageUrl} 
-                          alt={`${user.firstName || 'User'}'s profile`}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-slate-200"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
-                          {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                  {user?.username === 'demo_user' ? (
+                    // Demo user limited menu
+                    <>
+                      <div className="p-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
+                            D
+                          </div>
+                          <div>
+                            <div className="font-medium text-slate-900">Demo User</div>
+                            <div className="text-sm text-slate-600">Limited access account</div>
+                          </div>
                         </div>
-                      )}
-                      <div>
-                        <div className="font-medium text-slate-900">
-                          {user?.firstName && user?.lastName 
-                            ? `${user.firstName} ${user.lastName}`
-                            : user?.firstName || user?.username || user?.email?.split('@')[0] || 'User'
-                          }
-                        </div>
-                        <div className="text-sm text-slate-600">{user?.email}</div>
                       </div>
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center cursor-pointer">
-                      <User className="h-4 w-4 mr-2" />
-                      My Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/watchlist" className="flex items-center cursor-pointer">
-                      <Star className="h-4 w-4 mr-2" />
-                      My Watchlists
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-red-600">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign out
-                  </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <div className="p-2">
+                        <div className="text-xs text-slate-500 mb-2">
+                          This is a demo account with limited features. Create a real account for full access.
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-red-600">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Exit Demo
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    // Regular user full menu
+                    <>
+                      <div className="p-3">
+                        <div className="flex items-center space-x-3">
+                          {user?.profileImageUrl ? (
+                            <img 
+                              src={user.profileImageUrl} 
+                              alt={`${user.firstName || 'User'}'s profile`}
+                              className="w-12 h-12 rounded-full object-cover border-2 border-slate-200"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
+                              {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                            </div>
+                          )}
+                          <div>
+                            <div className="font-medium text-slate-900">
+                              {user?.firstName && user?.lastName 
+                                ? `${user.firstName} ${user.lastName}`
+                                : user?.firstName || user?.username || user?.email?.split('@')[0] || 'User'
+                              }
+                            </div>
+                            <div className="text-sm text-slate-600">{user?.email}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="flex items-center cursor-pointer">
+                          <User className="h-4 w-4 mr-2" />
+                          My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/watchlist" className="flex items-center cursor-pointer">
+                          <Star className="h-4 w-4 mr-2" />
+                          My Watchlists
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-red-600">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (

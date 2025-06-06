@@ -42,6 +42,9 @@ export default function Profile() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
+  // Check if user is demo account
+  const isDemoUser = user?.username === 'demo_user';
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -56,6 +59,21 @@ export default function Profile() {
       return;
     }
   }, [isAuthenticated, isLoading, toast]);
+
+  // Redirect demo users to dashboard with message
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && isDemoUser) {
+      toast({
+        title: "Access Restricted",
+        description: "Demo accounts cannot access profile settings. Create a real account for full features.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, isLoading, isDemoUser, toast]);
 
   // Initialize form data when user loads
   useEffect(() => {
