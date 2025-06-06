@@ -35,6 +35,7 @@ export default function DataTables() {
 
   const getSeverityVariant = (severity: string) => {
     switch (severity.toLowerCase()) {
+      case "critical": return "destructive";
       case "high": return "destructive";
       case "medium": return "default";
       case "low": return "secondary";
