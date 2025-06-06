@@ -1,0 +1,41 @@
+# Cloudflare Page Rules Configuration
+# Configure these in your Cloudflare dashboard
+
+1. Cache Everything
+   URL Pattern: yourdomain.com/*
+   Settings:
+   - Cache Level: Cache Everything
+   - Edge Cache TTL: 2 hours
+   - Browser Cache TTL: 4 hours
+
+2. Cache Static Assets
+   URL Pattern: yourdomain.com/*.{js,css,png,jpg,jpeg,gif,ico,svg}
+   Settings:
+   - Cache Level: Cache Everything
+   - Edge Cache TTL: 1 month
+   - Browser Cache TTL: 1 month
+
+3. Cache Data Files
+   URL Pattern: yourdomain.com/data/*.json
+   Settings:
+   - Cache Level: Cache Everything
+   - Edge Cache TTL: 6 hours
+   - Browser Cache TTL: 6 hours
+
+4. Force HTTPS
+   URL Pattern: http://yourdomain.com/*
+   Settings:
+   - Always Use HTTPS: On
+
+# Security Settings (in Cloudflare Security tab):
+- Security Level: Medium
+- Challenge Passage: 30 minutes
+- Browser Integrity Check: On
+- Privacy Pass: On
+
+# SSL/TLS Settings:
+- SSL/TLS encryption mode: Full (strict)
+- Minimum TLS Version: 1.2
+- TLS 1.3: Enabled
+- Automatic HTTPS Rewrites: On
+- Certificate Transparency Monitoring: On

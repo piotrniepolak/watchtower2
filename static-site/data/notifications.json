@@ -4,7 +4,7 @@
     "type": "conflict_update",
     "title": "Ukraine Conflict Status Update",
     "message": "Recent developments in Eastern Ukraine with defense stock implications",
-    "timestamp": "2025-06-06T18:05:07.063Z",
+    "timestamp": "2025-06-06T18:14:53.439Z",
     "read": false,
     "priority": "high"
   },
@@ -13,7 +13,7 @@
     "type": "market_alert",
     "title": "Defense Sector Rally",
     "message": "LMT, RTX showing strong performance (+2.5% avg)",
-    "timestamp": "2025-06-06T16:05:07.063Z",
+    "timestamp": "2025-06-06T16:14:53.439Z",
     "read": false,
     "priority": "normal"
   },
@@ -22,7 +22,7 @@
     "type": "ai_analysis",
     "title": "Weekly Conflict Prediction Ready",
     "message": "New AI analysis available for 12 active conflicts",
-    "timestamp": "2025-06-06T14:05:07.063Z",
+    "timestamp": "2025-06-06T14:14:53.439Z",
     "read": true,
     "priority": "normal"
   }

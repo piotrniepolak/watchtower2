@@ -3,56 +3,56 @@
     "id": 1,
     "symbol": "LMT",
     "name": "Lockheed Martin Corporation",
-    "price": 479.69,
-    "change": 1.6499999999999773,
-    "changePercent": 0.3451594008869503,
-    "volume": 340714,
+    "price": 479.595,
+    "change": 1.5550000000000068,
+    "changePercent": 0.3252865868964954,
+    "volume": 345378,
     "marketCap": "$120.5B",
-    "lastUpdated": "2025-06-06T18:04:44.669Z"
+    "lastUpdated": "2025-06-06T18:12:58.987Z"
   },
   {
     "id": 2,
     "symbol": "RTX",
     "name": "RTX Corporation",
-    "price": 139,
-    "change": -0.09000000000000341,
-    "changePercent": -0.06470630526997154,
-    "volume": 2306959,
+    "price": 138.99,
+    "change": -0.09999999999999432,
+    "changePercent": -0.07189589474440601,
+    "volume": 2344819,
     "marketCap": "$142.8B",
-    "lastUpdated": "2025-06-06T18:04:45.787Z"
+    "lastUpdated": "2025-06-06T18:13:00.040Z"
   },
   {
     "id": 3,
     "symbol": "NOC",
     "name": "Northrop Grumman Corporation",
-    "price": 488.192,
-    "change": 0.03700000000003456,
-    "changePercent": 0.007579559770981463,
-    "volume": 160215,
+    "price": 488.28,
+    "change": 0.125,
+    "changePercent": 0.02560662084788643,
+    "volume": 163965,
     "marketCap": "$72.1B",
-    "lastUpdated": "2025-06-06T18:04:46.836Z"
+    "lastUpdated": "2025-06-06T18:13:01.089Z"
   },
   {
     "id": 4,
     "symbol": "GD",
     "name": "General Dynamics Corporation",
-    "price": 275.86,
-    "change": 1.3500000000000227,
-    "changePercent": 0.49178536301046333,
-    "volume": 262319,
+    "price": 275.95,
+    "change": 1.4399999999999977,
+    "changePercent": 0.5245710538778178,
+    "volume": 267731,
     "marketCap": "$79.4B",
-    "lastUpdated": "2025-06-06T18:04:47.889Z"
+    "lastUpdated": "2025-06-06T18:13:02.145Z"
   },
   {
     "id": 5,
     "symbol": "BA",
     "name": "The Boeing Company",
-    "price": 209.025,
-    "change": -0.15500000000000114,
-    "changePercent": -0.07409886222392252,
-    "volume": 2854619,
+    "price": 208.7,
+    "change": -0.4800000000000182,
+    "changePercent": -0.22946744430634775,
+    "volume": 2903465,
     "marketCap": "$122.7B",
-    "lastUpdated": "2025-06-06T18:04:48.953Z"
+    "lastUpdated": "2025-06-06T18:13:03.222Z"
   },
   {
     "id": 6,
@@ -63,7 +63,7 @@
     "changePercent": -4.994686503719448,
     "volume": 357408,
     "marketCap": "€20.8B",
-    "lastUpdated": "2025-06-06T18:04:50.052Z"
+    "lastUpdated": "2025-06-06T18:13:04.278Z"
   },
   {
     "id": 7,
@@ -74,94 +74,94 @@
     "changePercent": -2.598385469223007,
     "volume": 6972481,
     "marketCap": "£41.2B",
-    "lastUpdated": "2025-06-06T18:04:51.125Z"
+    "lastUpdated": "2025-06-06T18:13:05.333Z"
   },
   {
     "id": 8,
     "symbol": "LDOS",
     "name": "Leidos Holdings Inc",
-    "price": 147.37,
-    "change": 1.990000000000009,
-    "changePercent": 1.3688265235933479,
-    "volume": 347649,
+    "price": 147.47,
+    "change": 2.0900000000000034,
+    "changePercent": 1.4376117760352203,
+    "volume": 359805,
     "marketCap": "$19.7B",
-    "lastUpdated": "2025-06-06T18:04:52.182Z"
+    "lastUpdated": "2025-06-06T18:13:06.391Z"
   },
   {
     "id": 9,
     "symbol": "LHX",
     "name": "L3Harris Technologies Inc",
-    "price": 243.335,
-    "change": 1.2249999999999943,
-    "changePercent": 0.5059683614885773,
-    "volume": 387131,
+    "price": 243.385,
+    "change": 1.2749999999999773,
+    "changePercent": 0.5266201313452469,
+    "volume": 392344,
     "marketCap": "$40.1B",
-    "lastUpdated": "2025-06-06T18:04:53.243Z"
+    "lastUpdated": "2025-06-06T18:13:07.453Z"
   },
   {
     "id": 10,
     "symbol": "HWM",
     "name": "Howmet Aerospace Inc",
-    "price": 175.345,
-    "change": 0.16499999999999204,
-    "changePercent": 0.0941888343418153,
-    "volume": 956604,
+    "price": 175.31,
+    "change": 0.12999999999999545,
+    "changePercent": 0.07420938463294637,
+    "volume": 975642,
     "marketCap": "$36.8B",
-    "lastUpdated": "2025-06-06T18:04:54.307Z"
+    "lastUpdated": "2025-06-06T18:13:08.507Z"
   },
   {
     "id": 11,
     "symbol": "KTOS",
     "name": "Kratos Defense & Security Solutions Inc",
-    "price": 40.81,
-    "change": 0.45000000000000284,
-    "changePercent": 1.1149653121902945,
-    "volume": 965936,
+    "price": 40.76,
+    "change": 0.3999999999999986,
+    "changePercent": 0.9910802775024742,
+    "volume": 1002132,
     "marketCap": "$2.4B",
-    "lastUpdated": "2025-06-06T18:04:55.377Z"
+    "lastUpdated": "2025-06-06T18:13:09.559Z"
   },
   {
     "id": 12,
     "symbol": "AVAV",
     "name": "AeroVironment Inc",
-    "price": 193.224,
-    "change": 6.633999999999986,
-    "changePercent": 3.5553888204083743,
-    "volume": 678477,
+    "price": 192.927,
+    "change": 6.336999999999989,
+    "changePercent": 3.396216303124492,
+    "volume": 686935,
     "marketCap": "$5.2B",
-    "lastUpdated": "2025-06-06T18:04:56.469Z"
+    "lastUpdated": "2025-06-06T18:13:10.639Z"
   },
   {
     "id": 13,
     "symbol": "CW",
     "name": "Curtiss-Wright Corporation",
-    "price": 451.47,
-    "change": 2.5400000000000205,
-    "changePercent": 0.5657897667787897,
-    "volume": 161488,
+    "price": 451.1,
+    "change": 2.170000000000016,
+    "changePercent": 0.4833715724055011,
+    "volume": 162567,
     "marketCap": "$11.8B",
-    "lastUpdated": "2025-06-06T18:04:57.530Z"
+    "lastUpdated": "2025-06-06T18:13:11.701Z"
   },
   {
     "id": 14,
     "symbol": "MRCY",
     "name": "Mercury Systems Inc",
-    "price": 52.87,
-    "change": 0.8599999999999994,
-    "changePercent": 1.6535281676600642,
-    "volume": 182853,
+    "price": 52.86,
+    "change": 0.8500000000000014,
+    "changePercent": 1.6343010959430908,
+    "volume": 187449,
     "marketCap": "$2.1B",
-    "lastUpdated": "2025-06-06T18:04:59.014Z"
+    "lastUpdated": "2025-06-06T18:13:12.750Z"
   },
   {
     "id": 15,
     "symbol": "TXT",
     "name": "Textron Inc",
-    "price": 75.28,
-    "change": 0.7800000000000011,
-    "changePercent": 1.0469798657718137,
-    "volume": 282167,
+    "price": 75.26,
+    "change": 0.7600000000000051,
+    "changePercent": 1.0201342281879264,
+    "volume": 291227,
     "marketCap": "$18.9B",
-    "lastUpdated": "2025-06-06T18:05:01.718Z"
+    "lastUpdated": "2025-06-06T18:13:13.813Z"
   }
 ]

@@ -1,0 +1,33 @@
+{
+  "siteName": "Geopolitical Intelligence Platform",
+  "description": "Real-time conflict analysis and defense market intelligence",
+  "buildDirectory": "./static-site",
+  "syncInterval": "*/6 * * * *",
+  "deploymentMethods": {
+    "rsync": {
+      "enabled": false,
+      "server": "user@yourserver.com",
+      "path": "/var/www/html",
+      "options": "-avz --delete"
+    },
+    "s3": {
+      "enabled": false,
+      "bucket": "your-bucket-name",
+      "region": "us-east-1",
+      "profile": "default"
+    },
+    "scp": {
+      "enabled": false,
+      "server": "user@yourserver.com",
+      "path": "/var/www/html"
+    },
+    "netlify": {
+      "enabled": false,
+      "siteId": "your-netlify-site-id"
+    },
+    "vercel": {
+      "enabled": false,
+      "projectName": "geopolitical-intelligence"
+    }
+  }
+}
