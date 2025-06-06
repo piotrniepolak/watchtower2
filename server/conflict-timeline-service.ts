@@ -54,15 +54,15 @@ export class ConflictTimelineService {
           messages: [
             {
               role: 'system',
-              content: 'You are a geopolitical analyst providing precise, factual updates on ongoing conflicts. Return information in JSON format with timeline events. Each event should include timestamp, title, description, severity level, and source information.'
+              content: 'You are a news analyst. Provide only the most recent developments about the conflict in clear, concise sentences. Focus on events from the last 24-48 hours. Each update should be a complete, standalone sentence describing what happened.'
             },
             {
               role: 'user',
-              content: query
+              content: `Latest news and developments about ${conflict.name}. What are the most recent events, military actions, diplomatic developments, or significant changes in the last 1-2 days?`
             }
           ],
-          max_tokens: 2000,
-          temperature: 0.2,
+          max_tokens: 1000,
+          temperature: 0.1,
           top_p: 0.9,
           search_recency_filter: 'day',
           return_related_questions: false,
@@ -94,51 +94,52 @@ export class ConflictTimelineService {
   private parseTimelineEvents(content: string, conflictId: number, citations?: string[]): TimelineEvent[] {
     const events: TimelineEvent[] = [];
     
-    try {
-      // Try to parse as JSON first
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed)) {
-        return parsed.map(event => ({
-          id: `${conflictId}-${Date.now()}-${Math.random()}`,
-          conflictId,
-          timestamp: new Date(event.timestamp || new Date()),
-          title: event.title || 'Conflict Update',
-          description: event.description || '',
-          severity: event.severity || 'medium',
-          source: event.source || 'Perplexity Research',
-          url: event.url,
-          impact: event.impact || '',
-          verified: event.verified || false
-        }));
-      }
-    } catch {
-      // If not JSON, parse as text and extract key information
-      const lines = content.split('\n').filter(line => line.trim());
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        
-        // Look for bullet points, numbered items, or lines with dates
-        if (line.match(/^[\d\-\*\•]/) || line.includes('2025') || line.includes('reported') || line.includes('announced')) {
-          const event: TimelineEvent = {
-            id: `${conflictId}-${Date.now()}-${i}`,
-            conflictId,
-            timestamp: this.extractTimestamp(line) || new Date(),
-            title: this.extractTitle(line),
-            description: line.replace(/Title:\*\*\s*/g, '').replace(/\*\*Title:\*\*/g, '').replace(/Description:\*\*\s*/g, '').replace(/\*\*Description:\*\*/g, '').replace(/\*\*/g, '').replace(/:\s*-\s*/g, ': ').trim(),
-            severity: this.determineSeverity(line),
-            source: citations?.[0] || 'Perplexity Research',
-            url: citations?.[0],
-            impact: this.extractImpact(line),
-            verified: true
-          };
-          
-          events.push(event);
-        }
-      }
-    }
+    // Split content into sentences and clean each one
+    const sentences = content
+      .split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 20 && !s.includes('I don\'t have') && !s.includes('I cannot'))
+      .slice(0, 8); // Limit to 8 most relevant sentences
 
-    return events.slice(0, 10); // Limit to 10 most recent events
+    sentences.forEach((sentence, index) => {
+      const cleanSentence = sentence
+        .replace(/^[\d\-\*\•\s]+/, '')
+        .replace(/According to|Reports indicate|Sources suggest/gi, '')
+        .trim();
+
+      if (cleanSentence.length > 15) {
+        const event: TimelineEvent = {
+          id: `${conflictId}-${Date.now()}-${index}`,
+          conflictId,
+          timestamp: new Date(),
+          title: this.extractMeaningfulTitle(cleanSentence),
+          description: cleanSentence,
+          severity: this.determineSeverity(cleanSentence),
+          source: citations?.[0] || 'Perplexity Research',
+          url: citations?.[0],
+          impact: this.extractImpact(cleanSentence),
+          verified: true
+        };
+        
+        events.push(event);
+      }
+    });
+
+    return events;
+  }
+
+  private extractMeaningfulTitle(text: string): string {
+    // Extract key action words and subjects for a meaningful title
+    const actionWords = ['attacked', 'launched', 'announced', 'reported', 'signed', 'agreed', 'withdrew', 'deployed', 'captured', 'destroyed'];
+    const found = actionWords.find(word => text.toLowerCase().includes(word));
+    
+    if (found) {
+      const words = text.split(' ').slice(0, 6);
+      return words.join(' ') + (words.length === 6 ? '...' : '');
+    }
+    
+    // Fallback to first 50 characters
+    return text.length > 50 ? text.substring(0, 50) + '...' : text;
   }
 
   private extractTimestamp(text: string): Date | null {

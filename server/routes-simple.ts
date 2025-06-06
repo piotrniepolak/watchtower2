@@ -325,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const event of events) {
         const correlationEvent = {
           eventDate: event.timestamp,
-          eventDescription: `${event.title}: ${event.description}`,
+          eventDescription: event.description,
           stockMovement: 0,
           conflictId: event.conflictId,
           severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
