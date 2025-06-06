@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   TrendingUp, 
   Shield, 
@@ -14,8 +15,18 @@ import {
 } from "lucide-react";
 
 export default function Landing() {
+  const { isAuthenticated } = useAuth();
+  
   const handleLogin = () => {
     window.location.href = '/api/login';
+  };
+
+  const handleStartAnalyzing = () => {
+    if (isAuthenticated) {
+      window.location.href = '/dashboard';
+    } else {
+      window.location.href = '/register';
+    }
   };
 
   return (
@@ -71,11 +82,11 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                onClick={handleLogin}
+                onClick={handleStartAnalyzing}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
                 <Play className="mr-2 h-5 w-5" />
-                Start Analyzing
+                {isAuthenticated ? 'Start Analyzing' : 'Get Started'}
               </Button>
               <Button 
                 size="lg" 
