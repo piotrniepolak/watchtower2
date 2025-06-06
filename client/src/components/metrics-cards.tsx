@@ -133,20 +133,20 @@ export default function MetricsCards() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metricCards.map((metric, index) => (
           <Card key={index} className="shadow-sm border border-slate-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-600">{metric.title}</p>
-                  <p className="text-2xl font-bold text-slate-900">{metric.value}</p>
+            <CardContent className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-slate-600 leading-tight">{metric.title}</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metric.value}</p>
                 </div>
-                <div className={`w-12 h-12 ${metric.iconBg} rounded-lg flex items-center justify-center`}>
-                  <metric.icon className={`h-6 w-6 ${metric.iconColor}`} />
+                <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
+                  <metric.icon className={`h-5 w-5 ${metric.iconColor}`} />
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-sm">
+              <div className="flex items-center text-xs">
                 <span className={`${metric.changeColor} font-medium`}>{metric.change}</span>
                 <span className="text-slate-600 ml-1">{metric.changeText}</span>
               </div>
