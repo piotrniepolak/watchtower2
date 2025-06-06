@@ -31,24 +31,24 @@
 }
 
 .dark {
-  --background: 220 13% 18%; /* #2D3748 - Dark grey background */
-  --foreground: 0 0% 100%; /* #FFFFFF - Pure white text */
-  --muted: 220 13% 25%; /* #4A5568 - Medium grey for muted areas */
+  --background: 215 28% 17%; /* #1E293B */
+  --foreground: 210 40% 98%; /* #F8FAFC */
+  --muted: 215 28% 17%; /* #1E293B */
   --muted-foreground: 215 20% 65%; /* #94A3B8 */
-  --popover: 220 13% 15%; /* #2A2E37 - Darker grey for popovers */
-  --popover-foreground: 0 0% 100%; /* #FFFFFF - White text */
-  --card: 220 13% 22%; /* #3A4453 - Medium-dark grey for cards */
-  --card-foreground: 0 0% 100%; /* #FFFFFF - White text on cards */
-  --border: 220 13% 35%; /* #5A6B7D - Lighter grey for borders */
-  --input: 220 13% 15%; /* #2A2E37 - Dark grey for inputs */
+  --popover: 215 28% 17%; /* #1E293B */
+  --popover-foreground: 210 40% 98%; /* #F8FAFC */
+  --card: 215 28% 17%; /* #1E293B */
+  --card-foreground: 210 40% 98%; /* #F8FAFC */
+  --border: 215 28% 17%; /* #1E293B */
+  --input: 215 28% 17%; /* #1E293B */
   --primary: 199 89% 48%; /* #0EA5E9 */
-  --primary-foreground: 0 0% 100%; /* #FFFFFF - White text on primary */
-  --secondary: 220 13% 28%; /* #4A5568 - Medium grey for secondary */
-  --secondary-foreground: 0 0% 100%; /* #FFFFFF - White text */
-  --accent: 220 13% 32%; /* #5A6B7D - Slightly lighter grey for accent */
-  --accent-foreground: 0 0% 100%; /* #FFFFFF - White text */
+  --primary-foreground: 210 40% 98%; /* #F8FAFC */
+  --secondary: 215 28% 17%; /* #1E293B */
+  --secondary-foreground: 210 40% 98%; /* #F8FAFC */
+  --accent: 215 28% 17%; /* #1E293B */
+  --accent-foreground: 210 40% 98%; /* #F8FAFC */
   --destructive: 0 62% 30%; /* #991B1B */
-  --destructive-foreground: 0 0% 100%; /* #FFFFFF - White text */
+  --destructive-foreground: 210 40% 98%; /* #F8FAFC */
   --ring: 215 20% 65%; /* #94A3B8 */
   --chart-1: 199 89% 48%; /* #0EA5E9 */
   --chart-2: 142 76% 36%; /* #10B981 */

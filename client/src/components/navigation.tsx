@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown, Moon, Sun } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +10,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "@/components/auth-modal";
 import NotificationCenter from "@/components/notification-center";
-import { useTheme } from "@/components/theme-provider";
 
 import type { Conflict, Stock } from "@shared/schema";
 
@@ -22,7 +21,6 @@ export default function Navigation() {
   const searchRef = useRef<HTMLDivElement>(null);
   
   const { user, isAuthenticated } = useAuth();
-  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     window.location.href = '/api/logout';
@@ -79,7 +77,7 @@ export default function Navigation() {
   }, []);
 
   return (
-    <nav className="bg-white dark:bg-background border-b border-slate-200 dark:border-border sticky top-0 z-40">
+    <nav className="bg-white border-b border-slate-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and main navigation */}
@@ -89,8 +87,8 @@ export default function Navigation() {
                 <Search className="h-6 w-6" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">ConflictWatch</h1>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Defense & Conflict Analytics</p>
+                <h1 className="text-xl font-bold text-slate-900">ConflictWatch</h1>
+                <p className="text-xs text-slate-600">Defense & Conflict Analytics</p>
               </div>
             </Link>
 
@@ -99,8 +97,8 @@ export default function Navigation() {
               <div className="flex items-center space-x-6">
                 <Link href="/" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   isActive("/") 
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300" 
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800"
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Dashboard
                 </Link>
@@ -218,20 +216,6 @@ export default function Navigation() {
 
             {/* Notifications */}
             <NotificationCenter />
-
-            {/* Dark Mode Toggle */}
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={toggleTheme}
-              className="hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              {theme === 'dark' ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
 
             {/* Profile/Auth */}
             {isAuthenticated ? (
