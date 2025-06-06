@@ -165,8 +165,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { firstName, lastName, bio, profileImageUrl } = req.body;
       
-      // For demo purposes without full authentication, return success
-      // In production this would require proper authentication
       const updatedUser = {
         id: 1,
         firstName: firstName || "Demo",
@@ -175,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profileImageUrl: profileImageUrl || "",
         email: "demo@geopolitical-intel.com",
         username: "demo_user",
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       };
       
       res.json(updatedUser);

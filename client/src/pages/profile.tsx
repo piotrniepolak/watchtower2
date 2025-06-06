@@ -99,10 +99,23 @@ export default function Profile() {
     },
     onSuccess: (data: any) => {
       console.log('Profile update successful, data received:', data);
+      
+      // Update the form data with the new values
+      setFormData(prev => ({
+        ...prev,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        bio: data.bio,
+        profileImageUrl: data.profileImageUrl
+      }));
+      
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
+      
+      // Invalidate and refetch user data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     },
     onError: (error: any) => {
       console.error('Profile update mutation error:', error);
