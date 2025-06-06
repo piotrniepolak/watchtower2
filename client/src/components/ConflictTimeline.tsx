@@ -22,24 +22,58 @@ interface ConflictTimelineProps {
 }
 
 const cleanEventDescription = (description: string) => {
-  // Remove duplicate titles and clean up formatting
+  // Remove all formatting markers and duplicates
   let cleaned = description
     .replace(/Title:\*\*\s*/g, '')
     .replace(/\*\*Title:\*\*/g, '')
     .replace(/Description:\*\*\s*/g, '')
     .replace(/\*\*Description:\*\*/g, '')
+    .replace(/\*\*Timestamp:\*\*/g, '')
+    .replace(/Timestamp:\*\*/g, '')
     .replace(/\[Source:.*?\]/g, '')
     .replace(/\s*-\s*\*\*.*?\*\*/g, '')
     .replace(/\*\*/g, '')
+    .replace(/^[\d\-\*\•\s]+/, '')
+    .replace(/:\s*-\s*/g, ': ')
     .trim();
 
-  // Extract the main content, avoiding duplicates
-  const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 10);
-  const uniqueSentences = Array.from(new Set(sentences.map(s => s.trim())));
+  // Remove duplicate text patterns (e.g., "Title: - Title" or ". **June 6, 2025**: 1. June 6, 2025")
+  const colonIndex = cleaned.indexOf(':');
+  if (colonIndex > 0) {
+    const beforeColon = cleaned.substring(0, colonIndex).trim();
+    const afterColon = cleaned.substring(colonIndex + 1).trim();
+    
+    // If text after colon repeats the before part, clean it
+    if (afterColon.startsWith('- ') && afterColon.substring(2).trim().startsWith(beforeColon)) {
+      cleaned = afterColon.substring(2 + beforeColon.length).trim();
+    } else if (afterColon.startsWith('- ')) {
+      cleaned = afterColon.substring(2).trim();
+    } else if (afterColon.includes(beforeColon)) {
+      // Handle cases like ". **June 6, 2025**: 1. June 6, 2025"
+      const duplicateIndex = afterColon.indexOf(beforeColon);
+      if (duplicateIndex > 0) {
+        cleaned = afterColon.substring(duplicateIndex + beforeColon.length).trim();
+      } else {
+        cleaned = afterColon.trim();
+      }
+    } else {
+      cleaned = afterColon.trim();
+    }
+  }
+
+  // Clean up leading punctuation and numbers
+  cleaned = cleaned.replace(/^[.,;:\s\d]+/, '').trim();
   
-  // Return first 2 meaningful sentences, max 150 chars
-  const result = uniqueSentences.slice(0, 2).join('. ').trim();
-  return result.length > 150 ? result.substring(0, 150) + '...' : result + '.';
+  // Extract meaningful content only
+  if (cleaned.length < 10) return 'Recent development';
+  
+  // Take first sentence, max 120 chars
+  const firstSentence = cleaned.split(/[.!?]/)[0].trim();
+  if (firstSentence.length > 120) {
+    return firstSentence.substring(0, 120) + '...';
+  }
+  
+  return firstSentence + (firstSentence.endsWith('.') ? '' : '.');
 };
 
 export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineProps) {

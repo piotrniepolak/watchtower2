@@ -125,7 +125,7 @@ export class ConflictTimelineService {
             conflictId,
             timestamp: this.extractTimestamp(line) || new Date(),
             title: this.extractTitle(line),
-            description: line.replace(/Title:\*\*\s*/g, '').replace(/\*\*Title:\*\*/g, '').replace(/Description:\*\*\s*/g, '').replace(/\*\*Description:\*\*/g, '').replace(/\*\*/g, '').trim(),
+            description: line.replace(/Title:\*\*\s*/g, '').replace(/\*\*Title:\*\*/g, '').replace(/Description:\*\*\s*/g, '').replace(/\*\*Description:\*\*/g, '').replace(/\*\*/g, '').replace(/:\s*-\s*/g, ': ').trim(),
             severity: this.determineSeverity(line),
             source: citations?.[0] || 'Perplexity Research',
             url: citations?.[0],
@@ -171,8 +171,8 @@ export class ConflictTimelineService {
     return null;
   }
 
-  private cleanDescription(text: string): string {
-    // Remove duplicate titles and formatting markers
+  private cleanEventText(text: string): string {
+    // Remove all formatting markers and duplicates
     let cleaned = text
       .replace(/Title:\*\*\s*/g, '')
       .replace(/\*\*Title:\*\*/g, '')
@@ -184,15 +184,35 @@ export class ConflictTimelineService {
       .replace(/\s*-\s*\*\*.*?\*\*/g, '')
       .replace(/\*\*/g, '')
       .replace(/^[\d\-\*\•\s]+/, '')
+      .replace(/:\s*-\s*/g, ': ')
       .trim();
+
+    // Remove duplicate text patterns (e.g., "A: - A")
+    const colonIndex = cleaned.indexOf(':');
+    if (colonIndex > 0) {
+      const beforeColon = cleaned.substring(0, colonIndex).trim();
+      const afterColon = cleaned.substring(colonIndex + 1).trim();
+      
+      // If text after colon starts with dash and repeats the before part, clean it
+      if (afterColon.startsWith('- ') && afterColon.substring(2).trim().startsWith(beforeColon)) {
+        cleaned = afterColon.substring(2 + beforeColon.length).trim();
+        if (cleaned.startsWith(',') || cleaned.startsWith('.')) {
+          cleaned = cleaned.substring(1).trim();
+        }
+      } else if (afterColon.startsWith('- ')) {
+        cleaned = afterColon.substring(2).trim();
+      } else {
+        cleaned = afterColon;
+      }
+    }
 
     // Split into sentences and take the first meaningful ones
     const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 15);
     const uniqueSentences = Array.from(new Set(sentences.map(s => s.trim())));
     
-    // Return first 2 sentences, max 200 chars
+    // Return first 2 sentences, max 150 chars
     const result = uniqueSentences.slice(0, 2).join('. ').trim();
-    return result.length > 200 ? result.substring(0, 200) + '...' : result + '.';
+    return result.length > 150 ? result.substring(0, 150) + '...' : result + '.';
   }
 
   private extractTitle(text: string): string {
