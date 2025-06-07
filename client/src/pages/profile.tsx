@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import { 
@@ -20,21 +19,18 @@ import {
   Shield,
   Star,
   TrendingUp,
-  Target,
-  AlertTriangle
+  Target
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useEffect } from "react";
-import { useLocation } from "wouter";
 
 export default function Profile() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [, setLocation] = useLocation();
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -45,7 +41,8 @@ export default function Profile() {
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
 
   // Create demo user data if not authenticated
   const demoUser = {
@@ -63,14 +60,17 @@ export default function Profile() {
 
   // Initialize form data when user loads
   useEffect(() => {
-    setFormData({
-      firstName: currentUser.firstName || '',
-      lastName: currentUser.lastName || '',
-      bio: currentUser.bio || '',
-      profileImageUrl: currentUser.profileImageUrl || ''
-    });
-    setPreviewUrl(currentUser.profileImageUrl || '');
-  }, [user, currentUser]);
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        bio: user.bio || '',
+        profileImageUrl: user.profileImageUrl || ''
+      });
+      setPreviewUrl(user.profileImageUrl || '');
+      setNewUsername(user.username || '');
+    }
+  }, [user]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -132,40 +132,66 @@ export default function Profile() {
     },
   });
 
-  const deleteAccountMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/auth/account", {
-        method: "DELETE",
-        credentials: "include",
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+  const usernameUpdateMutation = useMutation({
+    mutationFn: async (username: string) => {
+      try {
+        const response = await apiRequest('PATCH', '/api/auth/username', { username });
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type:', contentType);
+        
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.log('Non-JSON response:', text);
+          throw new Error('Server returned non-JSON response');
+        }
+        
+        const data = await response.json();
+        console.log('JSON data:', data);
+        return data;
+      } catch (error) {
+        console.error('Username update error:', error);
+        throw error;
       }
-      
-      return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: "Account deleted",
-        description: "Your account has been permanently deleted.",
+        title: "Success",
+        description: "Username updated successfully",
       });
-      setLocation("/");
+      setIsEditingUsername(false);
+      setNewUsername(data.user.username);
+      // Update the user data in the cache
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: (error: any) => {
-      console.error("Delete account error:", error);
+      const message = error.message || "Failed to update username";
       toast({
-        title: "Deletion failed",
-        description: error.message || "Failed to delete account. Please try again.",
+        title: "Error",
+        description: message,
         variant: "destructive",
       });
     },
   });
 
-  const handleDeleteAccount = () => {
-    deleteAccountMutation.mutate();
-    setShowDeleteDialog(false);
+  const handleEditUsername = () => {
+    setNewUsername(currentUser?.username || "");
+    setIsEditingUsername(true);
+  };
+
+  const handleSaveUsername = () => {
+    if (newUsername.trim() && newUsername !== currentUser?.username) {
+      usernameUpdateMutation.mutate(newUsername.trim());
+    } else {
+      setIsEditingUsername(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingUsername(false);
+    setNewUsername(currentUser?.username || "");
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -363,6 +389,59 @@ export default function Profile() {
                     </div>
                   </div>
 
+                  {/* Username */}
+                  <div>
+                    <Label htmlFor="username">Username</Label>
+                    {isEditingUsername ? (
+                      <div className="flex space-x-2">
+                        <Input
+                          value={newUsername}
+                          onChange={(e) => setNewUsername(e.target.value)}
+                          placeholder="Enter username"
+                          className="flex-1"
+                          minLength={3}
+                          maxLength={20}
+                          pattern="^[a-zA-Z0-9_-]+$"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleSaveUsername}
+                          disabled={usernameUpdateMutation.isPending || !newUsername.trim()}
+                          size="sm"
+                        >
+                          {usernameUpdateMutation.isPending ? "Saving..." : "Save"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          value={currentUser?.username || ''}
+                          disabled
+                          className="bg-slate-50 flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleEditUsername}
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    )}
+                    <p className="text-xs text-slate-500 mt-1">
+                      Username must be 3-20 characters, alphanumeric with hyphens and underscores allowed
+                    </p>
+                  </div>
+
                   {/* Email (readonly) */}
                   <div>
                     <Label htmlFor="email">Email Address</Label>
@@ -402,23 +481,6 @@ export default function Profile() {
                     )}
                   </Button>
                 </form>
-
-                <Separator className="my-6" />
-
-                {/* Delete Account Section */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-red-700">Danger Zone</h3>
-                  <p className="text-sm text-slate-600">
-                    Permanently delete your account and all associated data. This action cannot be undone.
-                  </p>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="w-full"
-                  >
-                    Delete Account
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -489,38 +551,6 @@ export default function Profile() {
             </Card>
           </div>
         </div>
-
-        {/* Delete Account Dialog */}
-        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="flex items-center text-red-700">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                Delete Account
-              </DialogTitle>
-              <DialogDescription>
-                Are you absolutely sure you want to delete your account? This action cannot be undone. 
-                All your quiz scores, watchlists, and profile data will be permanently removed.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteDialog(false)}
-                disabled={deleteAccountMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDeleteAccount}
-                disabled={deleteAccountMutation.isPending}
-              >
-                {deleteAccountMutation.isPending ? "Deleting..." : "Delete Account"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

@@ -30,6 +30,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
+  updateUsername(id: string, newUsername: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Stock Watchlists
@@ -48,17 +49,6 @@ export interface IStorage {
   createDailyQuiz(quiz: InsertDailyQuiz): Promise<DailyQuiz>;
   createUserQuizResponse(response: InsertUserQuizResponse): Promise<UserQuizResponse>;
   getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined>;
-  getDailyQuizLeaderboard(date: string): Promise<Array<{
-    username: string;
-    score: number;
-    totalPoints: number;
-    timeBonus: number;
-    completionTimeSeconds: number;
-    completedAt: Date;
-  }>>;
-  
-  // User account management
-  deleteUser(id: string): Promise<void>;
   
   // Daily News
   getDailyNews(date: string): Promise<DailyNews | undefined>;
@@ -139,13 +129,30 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User | undefined> {
+  async updateUser(id: string, updateData: Partial<InsertUser>): Promise<User | undefined> {
     // Hash password if it's being updated
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
     }
     
     const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+    return user;
+  }
+
+  async updateUsername(id: string, newUsername: string): Promise<User | undefined> {
+    // Check if username is already taken
+    const existingUser = await this.getUserByUsername(newUsername);
+    if (existingUser && existingUser.id !== id) {
+      throw new Error("Username already taken");
+    }
+    
+    const [user] = await db.update(users)
+      .set({ 
+        username: newUsername,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
     return user;
   }
 
@@ -198,50 +205,16 @@ export class DatabaseStorage implements IStorage {
     return news;
   }
 
-  async getDailyQuiz(date: string): Promise<DailyQuiz | undefined> {
-    const [quiz] = await db.select().from(dailyQuizzes).where(eq(dailyQuizzes.date, date));
-    return quiz || undefined;
-  }
-
-  async getDailyQuizById(id: number): Promise<DailyQuiz | undefined> {
-    const [quiz] = await db.select().from(dailyQuizzes).where(eq(dailyQuizzes.id, id));
-    return quiz || undefined;
-  }
-
-  async createDailyQuiz(insertQuiz: InsertDailyQuiz): Promise<DailyQuiz> {
-    const [quiz] = await db.insert(dailyQuizzes).values(insertQuiz).returning();
-    return quiz;
-  }
-
-  async createUserQuizResponse(insertResponse: InsertUserQuizResponse): Promise<UserQuizResponse> {
-    const [response] = await db.insert(userQuizResponses).values(insertResponse).returning();
-    return response;
-  }
-
-  async getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined> {
-    const [response] = await db.select().from(userQuizResponses)
-      .where(and(eq(userQuizResponses.userId, userId), eq(userQuizResponses.quizId, quizId)));
-    return response || undefined;
-  }
-
-  async getDailyQuizLeaderboard(date: string): Promise<Array<{
-    username: string;
-    score: number;
-    totalPoints: number;
-    timeBonus: number;
-    completionTimeSeconds: number;
-    completedAt: Date;
-  }>> {
+  async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {
     const quiz = await this.getDailyQuiz(date);
     if (!quiz) return [];
 
     const results = await db
       .select({
         username: users.username,
-        score: userQuizResponses.score,
         totalPoints: userQuizResponses.totalPoints,
+        score: userQuizResponses.score,
         timeBonus: userQuizResponses.timeBonus,
-        completionTimeSeconds: userQuizResponses.completionTimeSeconds,
         completedAt: userQuizResponses.completedAt,
       })
       .from(userQuizResponses)
@@ -249,28 +222,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userQuizResponses.quizId, quiz.id))
       .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
 
-    return results.map(result => ({
-      username: result.username,
-      score: result.score,
-      totalPoints: result.totalPoints,
-      timeBonus: result.timeBonus,
-      completionTimeSeconds: result.completionTimeSeconds || 0,
-      completedAt: result.completedAt || new Date(),
-    }));
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    const userId = parseInt(id);
-    
-    // Delete user's quiz responses first (foreign key constraint)
-    await db.delete(userQuizResponses).where(eq(userQuizResponses.userId, userId));
-    
-    // Delete user's watchlists
-    await db.delete(stockWatchlists).where(eq(stockWatchlists.userId, userId));
-    await db.delete(conflictWatchlists).where(eq(conflictWatchlists.userId, userId));
-    
-    // Finally delete the user
-    await db.delete(users).where(eq(users.id, userId));
+    return results;
   }
 
   // Utility method for password verification
@@ -844,6 +796,35 @@ export class MemStorage implements IStorage {
       this.usersByUsername.set(updateData.username, updatedUser);
     }
 
+    return updatedUser;
+  }
+
+  async updateUsername(id: string, newUsername: string): Promise<User | undefined> {
+    // Check if username is already taken
+    const existingUser = await this.getUserByUsername(newUsername);
+    if (existingUser && existingUser.id.toString() !== id) {
+      throw new Error("Username already taken");
+    }
+    
+    const user = this.users.get(parseInt(id));
+    if (!user) {
+      return undefined;
+    }
+    
+    // Remove old username mapping
+    this.usersByUsername.delete(user.username);
+    
+    // Update user
+    const updatedUser: User = {
+      ...user,
+      username: newUsername,
+      updatedAt: new Date()
+    };
+    
+    // Update mappings
+    this.users.set(parseInt(id), updatedUser);
+    this.usersByUsername.set(newUsername, updatedUser);
+    
     return updatedUser;
   }
 

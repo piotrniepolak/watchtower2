@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, Info, ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -136,13 +136,6 @@ export default function Navigation() {
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}>
                   Learning
-                </Link>
-                <Link href="/leaderboard" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  isActive("/leaderboard") 
-                    ? "bg-blue-100 text-blue-700" 
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}>
-                  Leaderboard
                 </Link>
 
                 {isAuthenticated && (
@@ -306,6 +299,7 @@ export default function Navigation() {
                           My Profile
                         </Link>
                       </DropdownMenuItem>
+
                       <DropdownMenuItem asChild>
                         <Link href="/watchlist" className="flex items-center cursor-pointer">
                           <Star className="h-4 w-4 mr-2" />
