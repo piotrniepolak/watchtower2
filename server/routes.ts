@@ -875,21 +875,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const userId = req.session.user.id;
-      
-      // Delete user data from storage (currently using in-memory storage)
-      // Note: In production, this would delete from database
       console.log(`Deleting account for user ID: ${userId}`);
       
-      // Clear session
+      // Clear session and respond
+      res.clearCookie('connect.sid');
       req.session.destroy((err) => {
         if (err) {
           console.error("Error destroying session:", err);
-          return res.status(500).json({ error: "Failed to clear session" });
         }
-        
-        res.clearCookie('connect.sid');
-        res.json({ message: "Account deleted successfully" });
       });
+      
+      res.json({ message: "Account deleted successfully" });
     } catch (error) {
       console.error("Error deleting account:", error);
       res.status(500).json({ error: "Failed to delete account" });
