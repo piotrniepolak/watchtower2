@@ -134,9 +134,14 @@ export default function DiscussionBoard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
+      queryClient.refetchQueries({ queryKey: ["/api/discussions"] });
       if (selectedDiscussion) {
         queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion, "replies"] });
       }
+      toast({
+        title: "Success",
+        description: "Your like has been recorded!",
+      });
     },
     onError: (error) => {
       toast({
