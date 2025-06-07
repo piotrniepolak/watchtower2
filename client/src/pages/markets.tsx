@@ -357,6 +357,11 @@ export default function Markets() {
           </div>
         </div>
 
+        {/* ROI Rankings Section */}
+        <div className="mb-8">
+          <ROIRankings />
+        </div>
+
         {/* Company Profiles with Real Yahoo Finance Data */}
         <div className="space-y-8">
           {(stocks as Stock[] || []).map((stock) => {
