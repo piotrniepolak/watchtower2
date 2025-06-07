@@ -21,6 +21,9 @@ export class LobbyingService {
         return;
       }
 
+      // First ensure we have the required stocks in the database
+      await this.ensureStocksExist();
+
       // Insert realistic lobbying expenditure data based on actual defense industry spending
       const lobbyingData: InsertLobbyingExpenditure[] = [
         // Lockheed Martin - historically high lobbying spender
@@ -91,6 +94,44 @@ export class LobbyingService {
       this.isInitialized = true;
     } catch (error) {
       console.error("Error initializing lobbying data:", error);
+    }
+  }
+
+  private async ensureStocksExist() {
+    const requiredStocks = [
+      { symbol: "LMT", name: "Lockheed Martin Corporation", price: 481.69, change: 3.65, changePercent: 0.76, volume: 1200000, marketCap: "$120.5B" },
+      { symbol: "RTX", name: "Raytheon Technologies Corporation", price: 139.1, change: 0.01, changePercent: 0.01, volume: 2800000, marketCap: "$95.2B" },
+      { symbol: "NOC", name: "Northrop Grumman Corporation", price: 489.41, change: 1.27, changePercent: 0.26, volume: 800000, marketCap: "$75.8B" },
+      { symbol: "GD", name: "General Dynamics Corporation", price: 276.48, change: 1.98, changePercent: 0.72, volume: 1000000, marketCap: "$76.3B" },
+      { symbol: "BA", name: "The Boeing Company", price: 210.8, change: 1.61, changePercent: 0.77, volume: 3200000, marketCap: "$124.7B" },
+      { symbol: "LHX", name: "L3Harris Technologies Inc", price: 244.27, change: 2.15, changePercent: 0.89, volume: 950000, marketCap: "$45.2B" },
+      { symbol: "HII", name: "Huntington Ingalls Industries Inc", price: 285.75, change: 2.50, changePercent: 0.88, volume: 400000, marketCap: "$11.8B" },
+      { symbol: "LDOS", name: "Leidos Holdings Inc", price: 148.14, change: 2.76, changePercent: 1.90, volume: 800000, marketCap: "$20.1B" },
+      { symbol: "KTOS", name: "Kratos Defense & Security Solutions Inc", price: 40.47, change: 0.11, changePercent: 0.27, volume: 2100000, marketCap: "$5.2B" },
+      { symbol: "AVAV", name: "AeroVironment Inc", price: 190.89, change: 4.29, changePercent: 2.30, volume: 800000, marketCap: "$5.8B" },
+    ];
+
+    for (const stockData of requiredStocks) {
+      try {
+        // Check if stock exists
+        const existing = await db.select().from(stocks).where(eq(stocks.symbol, stockData.symbol)).limit(1);
+        
+        if (existing.length === 0) {
+          // Insert stock if it doesn't exist
+          await db.insert(stocks).values({
+            symbol: stockData.symbol,
+            name: stockData.name,
+            price: stockData.price,
+            change: stockData.change,
+            changePercent: stockData.changePercent,
+            volume: stockData.volume,
+            marketCap: stockData.marketCap,
+          });
+          console.log(`Created stock entry for ${stockData.symbol}`);
+        }
+      } catch (error) {
+        console.error(`Error ensuring stock ${stockData.symbol} exists:`, error);
+      }
     }
   }
 

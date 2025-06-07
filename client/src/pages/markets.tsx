@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff, Wifi, WifiOff } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
+import ROIRankings from "@/components/roi-rankings";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
