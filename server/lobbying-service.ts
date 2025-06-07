@@ -235,8 +235,7 @@ export class LobbyingService {
             (SELECT close_price 
              FROM stock_price_history sph 
              WHERE sph.stock_symbol = s.symbol 
-             AND sph.date <= ${cutoffDateString}
-             ORDER BY ABS(EXTRACT(EPOCH FROM (sph.date::date - ${cutoffDateString}::date)))
+             ORDER BY sph.date DESC
              LIMIT 1), 
             s.price * (1 - (${monthsBack} * 0.01))
           ) as historical_price
