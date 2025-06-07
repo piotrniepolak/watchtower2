@@ -111,9 +111,9 @@ export class DatabaseStorage implements IStorage {
     return event;
   }
 
-  // Users
+  // Users - Replit Auth compatible
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, parseInt(id)));
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
@@ -122,21 +122,27 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
-    // Hash password before storing
-    const hashedPassword = await bcrypt.hash(insertUser.password, 10);
-    const userWithHashedPassword = { ...insertUser, password: hashedPassword };
-    
-    const [user] = await db.insert(users).values(userWithHashedPassword).returning();
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async updateUser(id: string, updateData: Partial<InsertUser>): Promise<User | undefined> {
-    // Hash password if it's being updated
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
-    }
-    
     const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
     return user;
   }

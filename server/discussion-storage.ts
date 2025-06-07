@@ -23,7 +23,6 @@ export class DiscussionStorage {
         updatedAt: discussions.updatedAt,
         author: {
           id: users.id,
-          username: users.username,
           firstName: users.firstName,
           lastName: users.lastName,
           profileImageUrl: users.profileImageUrl,
@@ -59,7 +58,6 @@ export class DiscussionStorage {
         updatedAt: discussions.updatedAt,
         author: {
           id: users.id,
-          username: users.username,
           firstName: users.firstName,
           lastName: users.lastName,
           profileImageUrl: users.profileImageUrl,
@@ -72,11 +70,12 @@ export class DiscussionStorage {
     return discussion;
   }
 
-  async createDiscussion(discussionData: InsertDiscussion): Promise<Discussion> {
+  async createDiscussion(discussionData: InsertDiscussion) {
     const [discussion] = await db
       .insert(discussions)
       .values(discussionData)
       .returning();
+
     return discussion;
   }
 
@@ -84,9 +83,9 @@ export class DiscussionStorage {
     return await db
       .select({
         id: discussionReplies.id,
-        discussionId: discussionReplies.discussionId,
         content: discussionReplies.content,
         authorId: discussionReplies.authorId,
+        discussionId: discussionReplies.discussionId,
         parentReplyId: discussionReplies.parentReplyId,
         upvotes: discussionReplies.upvotes,
         downvotes: discussionReplies.downvotes,
@@ -94,7 +93,6 @@ export class DiscussionStorage {
         updatedAt: discussionReplies.updatedAt,
         author: {
           id: users.id,
-          username: users.username,
           firstName: users.firstName,
           lastName: users.lastName,
           profileImageUrl: users.profileImageUrl,
@@ -106,13 +104,13 @@ export class DiscussionStorage {
       .orderBy(discussionReplies.createdAt);
   }
 
-  async createDiscussionReply(replyData: InsertDiscussionReply): Promise<DiscussionReply> {
+  async createDiscussionReply(replyData: InsertDiscussionReply) {
     const [reply] = await db
       .insert(discussionReplies)
       .values(replyData)
       .returning();
 
-    // Update reply count and last activity time for the discussion
+    // Update discussion reply count and last activity
     await db
       .update(discussions)
       .set({
@@ -124,47 +122,29 @@ export class DiscussionStorage {
     return reply;
   }
 
-  async voteOnDiscussion(userId: number, discussionId: number, voteType: 'up' | 'down'): Promise<void> {
-    // Check if user already voted
-    const [existingVote] = await db
+  async voteOnDiscussion(userId: string, discussionId: number, voteType: 'up' | 'down') {
+    // Check if user has already voted
+    const existingVote = await db
       .select()
       .from(discussionVotes)
-      .where(and(
-        eq(discussionVotes.userId, userId),
-        eq(discussionVotes.discussionId, discussionId)
-      ));
+      .where(
+        and(
+          eq(discussionVotes.userId, userId),
+          eq(discussionVotes.discussionId, discussionId)
+        )
+      );
 
-    if (existingVote) {
-      if (existingVote.voteType === voteType) {
-        // Remove vote if same type
-        await db
-          .delete(discussionVotes)
-          .where(eq(discussionVotes.id, existingVote.id));
-
-        // Update discussion vote count
-        await db
-          .update(discussions)
-          .set({
-            upvotes: voteType === 'up' ? sql`${discussions.upvotes} - 1` : discussions.upvotes,
-            downvotes: voteType === 'down' ? sql`${discussions.downvotes} - 1` : discussions.downvotes,
-          })
-          .where(eq(discussions.id, discussionId));
-      } else {
-        // Change vote type
-        await db
-          .update(discussionVotes)
-          .set({ voteType })
-          .where(eq(discussionVotes.id, existingVote.id));
-
-        // Update discussion vote counts
-        await db
-          .update(discussions)
-          .set({
-            upvotes: voteType === 'up' ? sql`${discussions.upvotes} + 1` : sql`${discussions.upvotes} - 1`,
-            downvotes: voteType === 'down' ? sql`${discussions.downvotes} + 1` : sql`${discussions.downvotes} - 1`,
-          })
-          .where(eq(discussions.id, discussionId));
-      }
+    if (existingVote.length > 0) {
+      // Update existing vote
+      await db
+        .update(discussionVotes)
+        .set({ voteType })
+        .where(
+          and(
+            eq(discussionVotes.userId, userId),
+            eq(discussionVotes.discussionId, discussionId)
+          )
+        );
     } else {
       // Create new vote
       await db
@@ -174,59 +154,61 @@ export class DiscussionStorage {
           discussionId,
           voteType,
         });
-
-      // Update discussion vote count
-      await db
-        .update(discussions)
-        .set({
-          upvotes: voteType === 'up' ? sql`${discussions.upvotes} + 1` : discussions.upvotes,
-          downvotes: voteType === 'down' ? sql`${discussions.downvotes} + 1` : discussions.downvotes,
-        })
-        .where(eq(discussions.id, discussionId));
     }
+
+    // Update discussion vote counts
+    const upvoteCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(discussionVotes)
+      .where(
+        and(
+          eq(discussionVotes.discussionId, discussionId),
+          eq(discussionVotes.voteType, 'up')
+        )
+      );
+
+    const downvoteCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(discussionVotes)
+      .where(
+        and(
+          eq(discussionVotes.discussionId, discussionId),
+          eq(discussionVotes.voteType, 'down')
+        )
+      );
+
+    await db
+      .update(discussions)
+      .set({
+        upvotes: upvoteCount[0].count,
+        downvotes: downvoteCount[0].count,
+      })
+      .where(eq(discussions.id, discussionId));
   }
 
-  async voteOnReply(userId: number, replyId: number, voteType: 'up' | 'down'): Promise<void> {
-    // Check if user already voted
-    const [existingVote] = await db
+  async voteOnReply(userId: string, replyId: number, voteType: 'up' | 'down') {
+    // Check if user has already voted
+    const existingVote = await db
       .select()
       .from(discussionVotes)
-      .where(and(
-        eq(discussionVotes.userId, userId),
-        eq(discussionVotes.replyId, replyId)
-      ));
+      .where(
+        and(
+          eq(discussionVotes.userId, userId),
+          eq(discussionVotes.replyId, replyId)
+        )
+      );
 
-    if (existingVote) {
-      if (existingVote.voteType === voteType) {
-        // Remove vote if same type
-        await db
-          .delete(discussionVotes)
-          .where(eq(discussionVotes.id, existingVote.id));
-
-        // Update reply vote count
-        await db
-          .update(discussionReplies)
-          .set({
-            upvotes: voteType === 'up' ? sql`${discussionReplies.upvotes} - 1` : discussionReplies.upvotes,
-            downvotes: voteType === 'down' ? sql`${discussionReplies.downvotes} - 1` : discussionReplies.downvotes,
-          })
-          .where(eq(discussionReplies.id, replyId));
-      } else {
-        // Change vote type
-        await db
-          .update(discussionVotes)
-          .set({ voteType })
-          .where(eq(discussionVotes.id, existingVote.id));
-
-        // Update reply vote counts
-        await db
-          .update(discussionReplies)
-          .set({
-            upvotes: voteType === 'up' ? sql`${discussionReplies.upvotes} + 1` : sql`${discussionReplies.upvotes} - 1`,
-            downvotes: voteType === 'down' ? sql`${discussionReplies.downvotes} + 1` : sql`${discussionReplies.downvotes} - 1`,
-          })
-          .where(eq(discussionReplies.id, replyId));
-      }
+    if (existingVote.length > 0) {
+      // Update existing vote
+      await db
+        .update(discussionVotes)
+        .set({ voteType })
+        .where(
+          and(
+            eq(discussionVotes.userId, userId),
+            eq(discussionVotes.replyId, replyId)
+          )
+        );
     } else {
       // Create new vote
       await db
@@ -236,16 +218,36 @@ export class DiscussionStorage {
           replyId,
           voteType,
         });
-
-      // Update reply vote count
-      await db
-        .update(discussionReplies)
-        .set({
-          upvotes: voteType === 'up' ? sql`${discussionReplies.upvotes} + 1` : discussionReplies.upvotes,
-          downvotes: voteType === 'down' ? sql`${discussionReplies.downvotes} + 1` : discussionReplies.downvotes,
-        })
-        .where(eq(discussionReplies.id, replyId));
     }
+
+    // Update reply vote counts
+    const upvoteCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(discussionVotes)
+      .where(
+        and(
+          eq(discussionVotes.replyId, replyId),
+          eq(discussionVotes.voteType, 'up')
+        )
+      );
+
+    const downvoteCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(discussionVotes)
+      .where(
+        and(
+          eq(discussionVotes.replyId, replyId),
+          eq(discussionVotes.voteType, 'down')
+        )
+      );
+
+    await db
+      .update(discussionReplies)
+      .set({
+        upvotes: upvoteCount[0].count,
+        downvotes: downvoteCount[0].count,
+      })
+      .where(eq(discussionReplies.id, replyId));
   }
 }
 
