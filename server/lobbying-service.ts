@@ -194,8 +194,8 @@ export class LobbyingService {
   async calculateROIRankings(timeframe: string = "1Y"): Promise<ROIAnalysis[]> {
     try {
       // Use Perplexity AI to get authentic timeframe-specific data
-      const stocks = await db.select().from(stocksTable);
-      const timeframeData = await this.getTimeframeSpecificROIData(stocks, timeframe);
+      const stocksList = await db.select().from(stocks);
+      const timeframeData = await this.getTimeframeSpecificROIData(stocksList, timeframe);
       
       const roiAnalysis: ROIAnalysis[] = timeframeData.map((item, index) => {
         // Calculate ROI ratio - uncapped to show true performance
@@ -471,52 +471,6 @@ Focus on authentic financial data and lobbying reports for accurate ROI calculat
       priceGainPercent: this.generateTimeframeStockPerformance(stock.symbol, timeframe),
       lobbyingSpent: this.generateTimeframeLobbyingSpend(stock.symbol, timeframe)
     }));
-  }
-
-  // Legacy methods removed - now using Perplexity AI integration
-      
-      const roiAnalysis: ROIAnalysis[] = results.rows.map((row: any, index: number) => {
-        const currentPrice = Number(row.current_price);
-        const historicalPrice = Number(row.historical_price);
-        const priceGainPercent = ((currentPrice - historicalPrice) / historicalPrice) * 100;
-        const lobbyingSpent = Number(row.total_lobbying_2024);
-        
-        // Calculate ROI ratio - now uncapped to show true performance
-        // Base calculation: price gain % per million dollars spent
-        let roiRatio;
-        if (lobbyingSpent > 0) {
-          const baseRatio = priceGainPercent / lobbyingSpent;
-          // Enhanced scaling with baseline of 5, but allow values above 10
-          roiRatio = Math.max(0, 5 + (baseRatio * 2));
-        } else {
-          // No lobbying spending - base score on stock performance alone
-          roiRatio = Math.max(0, 5 + (priceGainPercent / 10));
-        }
-
-        return {
-          stockSymbol: row.symbol,
-          companyName: row.name,
-          timeframe,
-          priceGainPercent: Number(priceGainPercent.toFixed(2)),
-          lobbyingSpent: Number(lobbyingSpent.toFixed(1)),
-          roiRatio: Number(roiRatio.toFixed(2)),
-          rank: index + 1 // Will be updated after sorting
-        };
-      });
-
-      // Sort by ROI ratio (descending - higher is better)
-      roiAnalysis.sort((a, b) => b.roiRatio - a.roiRatio);
-      
-      // Update ranks
-      roiAnalysis.forEach((item, index) => {
-        item.rank = index + 1;
-      });
-
-      return roiAnalysis;
-    } catch (error) {
-      console.error("Error calculating ROI rankings:", error);
-      return [];
-    }
   }
 
   async getLobbyingExpenditures(stockSymbol?: string, year?: number): Promise<any[]> {
