@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
@@ -39,22 +39,31 @@ export const correlationEvents = pgTable("correlation_events", {
   severity: integer("severity").notNull(), // 1-10 scale
 });
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: varchar("username", { length: 50 }).notNull().unique(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  password: varchar("password", { length: 255 }).notNull(),
-  firstName: varchar("first_name", { length: 100 }),
-  lastName: varchar("last_name", { length: 100 }),
-  profileImageUrl: varchar("profile_image_url", { length: 500 }),
-  bio: text("bio"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const stockWatchlists = pgTable("stock_watchlists", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   stockSymbol: text("stock_symbol").references(() => stocks.symbol).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   notes: text("notes"),
@@ -62,7 +71,7 @@ export const stockWatchlists = pgTable("stock_watchlists", {
 
 export const conflictWatchlists = pgTable("conflict_watchlists", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
   conflictId: integer("conflict_id").references(() => conflicts.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   notes: text("notes"),
@@ -305,7 +314,7 @@ export const discussions = pgTable("discussions", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  authorId: integer("author_id").notNull().references(() => users.id),
+  authorId: varchar("author_id").notNull().references(() => users.id),
   category: varchar("category", { length: 100 }).notNull().default("general"),
   tags: text("tags").array(),
   upvotes: integer("upvotes").default(0),
