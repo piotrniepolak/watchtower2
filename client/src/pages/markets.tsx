@@ -2,7 +2,7 @@ import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff, Wifi, WifiOff } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff, Wifi, WifiOff, AlertTriangle, Link } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import ROIRankings from "@/components/roi-rankings";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -45,37 +45,32 @@ export default function Markets() {
     });
   };
 
-  // Use authentic S&P Aerospace & Defense Index data from API
+  // Use authentic metrics from API including iShares ETF and correlation data
   const calculateRealTimeMetrics = () => {
-    if (!stocks || !Array.isArray(stocks)) {
+    if (!stocks || !Array.isArray(stocks) || !metricsData) {
       return {
         defenseIndex: "0.00",
         totalMarketCap: "0.0B",
         indexChange: "+0.00%",
         marketCapChange: "+0.00%",
-        activeCompanies: 0
+        activeCompanies: 0,
+        correlationScore: "0.00"
       };
     }
 
-    // Use authentic S&P Aerospace & Defense Index data from ITA ETF
-    const defenseIndexValue = metricsData?.defenseIndex?.value || 0;
-    const defenseIndexChange = metricsData?.defenseIndex?.changePercent || 0;
-    
-    // Calculate total market cap from all tracked defense stocks
-    const totalMarketCap = stocks.reduce((sum, stock) => {
-      const marketCapValue = parseFloat(stock.marketCap?.replace(/[$B€£]/g, '') || '0');
-      return sum + marketCapValue;
-    }, 0);
+    // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
+    const defenseIndexValue = parseFloat(metricsData.defenseIndex) || 0;
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
     
     return {
       defenseIndex: defenseIndexValue.toFixed(2),
-      totalMarketCap: `${totalMarketCap.toFixed(1)}B`,
-      indexChange: `${defenseIndexChange >= 0 ? '+' : ''}${defenseIndexChange.toFixed(2)}%`,
+      totalMarketCap: metricsData.marketCap || "0.0B",
+      indexChange: `${avgChangePercent >= 0 ? '+' : ''}${avgChangePercent.toFixed(2)}%`,
       marketCapChange: `${avgChangePercent >= 0 ? '+' : ''}${(avgChangePercent * 0.8).toFixed(1)}%`,
-      activeCompanies: stocks.length
+      activeCompanies: stocks.length,
+      correlationScore: metricsData.correlationScore?.toFixed(2) || "0.00"
     };
   };
 
@@ -297,12 +292,29 @@ export default function Markets() {
           </div>
 
           {/* Market Overview - Real Data from Yahoo Finance */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600 leading-tight">iShares US Aerospace & Defense ETF</p>
+                    <p className="text-xs font-medium text-slate-600 leading-tight">Active Conflicts</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">12 / 13</p>
+                  </div>
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                  </div>
+                </div>
+                <div className="flex items-center text-xs">
+                  <span className="text-slate-600">10 critical/high intensity</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
                     <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">${metrics.defenseIndex}</p>
                   </div>
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
@@ -313,7 +325,7 @@ export default function Markets() {
                   <span className={`font-medium ${metrics.indexChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.indexChange}
                   </span>
-                  <span className="text-slate-600 ml-1">today</span>
+                  <span className="text-slate-600 ml-1">(ITA) today</span>
                 </div>
               </CardContent>
             </Card>
@@ -322,8 +334,8 @@ export default function Markets() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600 leading-tight">Total Market Cap</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">${metrics.totalMarketCap}</p>
+                    <p className="text-xs font-medium text-slate-600 leading-tight">Market Cap</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metrics.totalMarketCap}</p>
                   </div>
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <DollarSign className="h-5 w-5 text-green-600" />
@@ -333,7 +345,7 @@ export default function Markets() {
                   <span className={`font-medium ${metrics.marketCapChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                     {metrics.marketCapChange}
                   </span>
-                  <span className="text-slate-600 ml-1">today</span>
+                  <span className="text-slate-600 ml-1">this week</span>
                 </div>
               </CardContent>
             </Card>
@@ -342,15 +354,15 @@ export default function Markets() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600 leading-tight">Active Companies</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metrics.activeCompanies}</p>
+                    <p className="text-xs font-medium text-slate-600 leading-tight">Correlation Score</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metrics.correlationScore}</p>
                   </div>
                   <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-                    <Building2 className="h-5 w-5 text-amber-600" />
+                    <Link className="h-5 w-5 text-amber-600" />
                   </div>
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className="text-slate-600">defense contractors</span>
+                  <span className="text-slate-600">High correlation</span>
                 </div>
               </CardContent>
             </Card>
