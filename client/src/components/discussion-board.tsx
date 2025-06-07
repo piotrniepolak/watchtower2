@@ -62,9 +62,10 @@ export default function DiscussionBoard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: discussions, isLoading } = useQuery<Discussion[]>({
+  const { data: discussions, isLoading, refetch: refetchDiscussions } = useQuery<Discussion[]>({
     queryKey: ["/api/discussions"],
     refetchInterval: 5000, // Real-time updates
+    staleTime: 0, // Always consider data stale for immediate updates
   });
 
   const { data: selectedDiscussionData } = useQuery<Discussion>({
@@ -132,9 +133,10 @@ export default function DiscussionBoard() {
         : `/api/discussions/${discussionId}/like`;
       return await apiRequest("POST", endpoint);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Force immediate refresh of discussions data
+      await refetchDiscussions();
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
-      queryClient.refetchQueries({ queryKey: ["/api/discussions"] });
       if (selectedDiscussion) {
         queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion, "replies"] });
       }
@@ -208,10 +210,12 @@ export default function DiscussionBoard() {
   }) || [];
 
   const getAuthorName = (author?: Author) => {
-    if (author?.username) return author.username;
-    if (author?.firstName && author?.lastName) return `${author.firstName} ${author.lastName}`;
-    if (author?.firstName) return author.firstName;
-    return `User ${author?.id || 'Unknown'}`;
+    if (!author) return "Unknown User";
+    if (author.username) return author.username;
+    if (author.firstName || author.lastName) {
+      return `${author.firstName || ""} ${author.lastName || ""}`.trim();
+    }
+    return `User ${author.id || 'Unknown'}`;
   };
 
   if (selectedDiscussion && selectedDiscussionData) {
