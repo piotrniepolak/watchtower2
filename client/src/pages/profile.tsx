@@ -134,9 +134,17 @@ export default function Profile() {
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("/api/auth/account", {
+      const response = await fetch("/api/auth/account", {
         method: "DELETE",
+        credentials: "include",
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
