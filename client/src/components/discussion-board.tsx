@@ -81,7 +81,7 @@ export default function DiscussionBoard() {
 
   const createThreadMutation = useMutation({
     mutationFn: async (threadData: { title: string; content: string; category: string }) => {
-      return await apiRequest("/api/discussions", "POST", threadData);
+      return await apiRequest("POST", "/api/discussions", threadData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
@@ -103,7 +103,7 @@ export default function DiscussionBoard() {
 
   const createReplyMutation = useMutation({
     mutationFn: async (replyData: { discussionId: number; content: string }) => {
-      return await apiRequest(`/api/discussions/${replyData.discussionId}/replies`, "POST", { content: replyData.content });
+      return await apiRequest("POST", `/api/discussions/${replyData.discussionId}/replies`, { content: replyData.content });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
@@ -128,7 +128,7 @@ export default function DiscussionBoard() {
       const endpoint = replyId 
         ? `/api/discussions/replies/${replyId}/like` 
         : `/api/discussions/${discussionId}/like`;
-      return await apiRequest(endpoint, "POST");
+      return await apiRequest("POST", endpoint);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
