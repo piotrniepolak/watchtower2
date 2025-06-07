@@ -1007,18 +1007,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Discussion Board Routes
+  // Chat Messages Routes
+  app.get('/api/discussions/:category', async (req, res) => {
+    try {
+      const category = req.params.category;
+      const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
+      
+      const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
   app.get('/api/discussions', async (req, res) => {
     try {
-      const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
-      const offset = parseInt(req.query.offset as string) || 0;
-      const category = req.query.category as string;
+      const category = req.query.category as string || 'general';
+      const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
       
-      const discussions = await discussionStorage.getDiscussions(limit, offset, category);
-      res.json(discussions);
+      const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      res.json(messages);
     } catch (error) {
-      console.error("Error fetching discussions:", error);
-      res.status(500).json({ error: "Failed to fetch discussions" });
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
     }
   });
 

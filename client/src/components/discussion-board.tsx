@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { MessageSquare, ThumbsUp, Plus, Send, Users, TrendingUp, Globe } from "lucide-react";
+import { MessageSquare, Send, Users, TrendingUp, Globe, Lock } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Author {
   id: number;
@@ -17,39 +17,30 @@ interface Author {
   profileImageUrl: string | null;
 }
 
-interface Discussion {
+interface ChatMessage {
   id: number;
-  title: string;
   content: string;
   authorId: number;
   category: string;
-  tags: string[] | null;
-  upvotes: number;
-  downvotes: number;
-  replyCount: number;
-  lastActivityAt: string;
   createdAt: string;
-  updatedAt: string;
   author: Author;
 }
 
 export default function DiscussionBoard() {
   const [activeCategory, setActiveCategory] = useState<string>("conflicts");
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newDiscussion, setNewDiscussion] = useState({
-    title: "",
-    content: "",
-    category: "conflicts",
-  });
-
+  const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: discussions, isLoading } = useQuery<Discussion[]>({
-    queryKey: ["/api/discussions"],
+  const { data: messages, isLoading } = useQuery<ChatMessage[]>({
+    queryKey: ["/api/discussions", activeCategory],
+    refetchInterval: 5000, // Refresh every 5 seconds for chat-like experience
   });
 
-  const createDiscussionMutation = useMutation({
-    mutationFn: async (data: typeof newDiscussion) => {
+  const sendMessageMutation = useMutation({
+    mutationFn: async (data: { content: string; category: string }) => {
       const response = await fetch("/api/discussions", {
         method: "POST",
         headers: {
@@ -63,11 +54,18 @@ export default function DiscussionBoard() {
       return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
-      setNewDiscussion({ title: "", content: "", category: activeCategory });
-      setShowCreateForm(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/discussions", activeCategory] });
+      setNewMessage("");
     },
   });
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const getAuthorName = (author: Author) => {
     if (author.firstName || author.lastName) {
@@ -89,27 +87,20 @@ export default function DiscussionBoard() {
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      conflicts: "bg-red-100 text-red-800",
-      markets: "bg-green-100 text-green-800", 
-      general: "bg-blue-100 text-blue-800",
-    };
-    return colors[category] || colors.general;
-  };
-
-  const filteredDiscussions = discussions?.filter(discussion => 
-    discussion.category === activeCategory || 
-    (activeCategory === "conflicts" && discussion.category === "geopolitical") ||
-    (activeCategory === "markets" && discussion.category === "economic")
-  ) || [];
-
-  const handleCreateDiscussion = () => {
-    if (newDiscussion.title.trim() && newDiscussion.content.trim()) {
-      createDiscussionMutation.mutate({
-        ...newDiscussion,
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newMessage.trim() && isAuthenticated) {
+      sendMessageMutation.mutate({
+        content: newMessage,
         category: activeCategory
       });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
     }
   };
 
@@ -125,22 +116,20 @@ export default function DiscussionBoard() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle className="text-xl font-bold">Community Discussions</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">Join the conversation on geopolitical insights</p>
+              <CardTitle className="text-xl font-bold">Community Chat</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">Real-time discussions for registered users</p>
             </div>
-            <Button 
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Post
-            </Button>
+            {!isAuthenticated && (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Lock className="w-4 h-4" />
+                Login required
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
           {/* Category Tabs */}
-          <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
+          <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg">
             {categories.map((category) => {
               const Icon = category.icon;
               return (
@@ -160,123 +149,85 @@ export default function DiscussionBoard() {
             })}
           </div>
 
-          {/* Create Discussion Form */}
-          {showCreateForm && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold mb-3">Start a new discussion</h4>
-              <div className="space-y-3">
-                <Input
-                  placeholder="Discussion title"
-                  value={newDiscussion.title}
-                  onChange={(e) => setNewDiscussion({ ...newDiscussion, title: e.target.value })}
-                />
-                <Textarea
-                  placeholder="Share your thoughts..."
-                  value={newDiscussion.content}
-                  onChange={(e) => setNewDiscussion({ ...newDiscussion, content: e.target.value })}
-                  rows={3}
-                />
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleCreateDiscussion}
-                    disabled={createDiscussionMutation.isPending}
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <Send className="w-4 h-4" />
-                    {createDiscussionMutation.isPending ? "Posting..." : "Post"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowCreateForm(false)}
-                  >
-                    Cancel
-                  </Button>
+          {/* Chat Messages Area */}
+          <div className="border rounded-lg bg-white">
+            <div className="h-80 overflow-y-auto p-4 space-y-3">
+              {isLoading ? (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="animate-pulse bg-gray-200 h-12 rounded-lg"></div>
+                  ))}
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Discussions List */}
-          {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse bg-gray-200 h-20 rounded-lg"></div>
-              ))}
-            </div>
-          ) : filteredDiscussions.length > 0 ? (
-            <div className="space-y-3">
-              {filteredDiscussions.slice(0, 5).map((discussion) => (
-                <div
-                  key={discussion.id}
-                  className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      <Badge className={`${getCategoryColor(discussion.category)} flex items-center gap-1`}>
-                        {getCategoryIcon(discussion.category)}
-                        {discussion.category}
-                      </Badge>
+              ) : messages && messages.length > 0 ? (
+                messages.map((message) => (
+                  <div key={message.id} className="flex gap-3">
+                    <Avatar className="w-8 h-8 mt-1">
+                      <AvatarFallback className="text-xs">
+                        {getAuthorName(message.author).charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm text-gray-900">
+                          {getAuthorName(message.author)}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 break-words">
+                        {message.content}
+                      </p>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {formatDistanceToNow(new Date(discussion.createdAt), { addSuffix: true })}
-                    </span>
                   </div>
-                  
-                  <h4 className="font-semibold text-gray-900 mb-2 line-clamp-1">
-                    {discussion.title}
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {discussion.content}
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h4 className="font-semibold text-gray-700 mb-2">No messages yet</h4>
+                  <p className="text-gray-500 text-sm">
+                    Be the first to start the conversation about {activeCategory}
                   </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-xs">
-                          {getAuthorName(discussion.author).charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs text-gray-700">
-                        {getAuthorName(discussion.author)}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="w-4 h-4 text-green-600" />
-                        <span className="text-xs">{discussion.upvotes}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4 text-blue-600" />
-                        <span className="text-xs">{discussion.replyCount}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {filteredDiscussions.length > 5 && (
-                <div className="text-center pt-4">
-                  <Button variant="outline" size="sm">
-                    View All {activeCategory} Discussions
-                  </Button>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h4 className="font-semibold text-gray-700 mb-2">No discussions yet</h4>
-              <p className="text-gray-500 text-sm mb-4">
-                Be the first to start a conversation about {activeCategory}
-              </p>
-              <Button onClick={() => setShowCreateForm(true)} size="sm">
-                Start Discussion
-              </Button>
-            </div>
-          )}
+
+            {/* Message Input */}
+            {isAuthenticated ? (
+              <div className="border-t p-4">
+                <form onSubmit={handleSendMessage} className="flex gap-2">
+                  <Input
+                    placeholder={`Message #${activeCategory}...`}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={sendMessageMutation.isPending}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="submit"
+                    disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                    size="sm"
+                    className="px-3"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
+            ) : (
+              <div className="border-t p-4 text-center">
+                <p className="text-sm text-gray-500 mb-2">Join the conversation</p>
+                <Button
+                  onClick={() => window.location.href = '/api/login'}
+                  size="sm"
+                  variant="outline"
+                >
+                  Sign In to Chat
+                </Button>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

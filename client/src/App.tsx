@@ -41,7 +41,6 @@ function Router() {
       <Route path="/watchlist" component={DedicatedWatchlist} />
       <Route path="/learning" component={Learning} />
       <Route path="/quiz" component={Quiz} />
-      <Route path="/discussions" component={Discussions} />
       <Route path="/profile" component={Profile} />
       <Route path="/settings" component={Settings} />
       <Route path="/privacy" component={Privacy} />

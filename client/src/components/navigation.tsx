@@ -137,13 +137,6 @@ export default function Navigation() {
                 }`}>
                   Learning
                 </Link>
-                <Link href="/discussions" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  isActive("/discussions") 
-                    ? "bg-blue-100 text-blue-700" 
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}>
-                  Discussions
-                </Link>
 
                 {isAuthenticated && (
                   <Link href="/watchlist" className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
