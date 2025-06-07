@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { 
-  ThumbsUp, 
   MessageCircle, 
   Plus, 
   Search, 
   User, 
   Send,
-  ArrowLeft
+  ArrowLeft,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,8 +35,6 @@ interface Discussion {
   authorId: string;
   category: string;
   tags: string[];
-  upvotes: number;
-  downvotes: number;
   replyCount: number;
   lastActivityAt: string;
   createdAt: string;
@@ -50,8 +48,6 @@ interface Reply {
   content: string;
   authorId: string;
   parentReplyId: number | null;
-  upvotes: number;
-  downvotes: number;
   createdAt: string;
   updatedAt: string;
   author?: Author;
@@ -125,27 +121,7 @@ export default function DiscussionBoard() {
     },
   });
 
-  // Like discussion or reply
-  const likeMutation = useMutation({
-    mutationFn: async ({ discussionId, replyId }: { discussionId?: number; replyId?: number }) => {
-      const endpoint = replyId 
-        ? `/api/discussions/replies/${replyId}/like` 
-        : `/api/discussions/${discussionId}/like`;
-      return await apiRequest("POST", endpoint);
-    },
-    onSuccess: () => {
-      // Invalidate all related queries for instant updates
-      queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
-      if (selectedDiscussion) {
-        queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion] });
-        queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion, "replies"] });
-      }
-      toast({ title: "Success", description: "Like recorded!" });
-    },
-    onError: (error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
+
 
   const getAuthorName = (author?: Author) => {
     if (!author) return "Unknown User";
@@ -207,80 +183,77 @@ export default function DiscussionBoard() {
                     {formatSafeDate(selectedDiscussionData.createdAt)}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold mb-2">{selectedDiscussionData.title}</h2>
-                <p className="text-sm mb-3">{selectedDiscussionData.content}</p>
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => likeMutation.mutate({ discussionId: selectedDiscussion })}
-                    disabled={!isAuthenticated || likeMutation.isPending}
-                    className="flex items-center gap-1"
-                  >
-                    <ThumbsUp className="h-4 w-4" />
-                    {selectedDiscussionData.upvotes}
-                  </Button>
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <h2 className="text-xl font-bold mb-3">{selectedDiscussionData.title}</h2>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{selectedDiscussionData.content}</p>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+                  <span className="flex items-center gap-1">
                     <MessageCircle className="h-4 w-4" />
                     {replies.length} replies
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    Started {formatSafeDate(selectedDiscussionData.createdAt)}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Replies */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Replies ({replies.length})</h3>
-            {replies.map((reply) => (
-              <div key={reply.id} className="border rounded-lg p-4 ml-4">
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium">{getAuthorName(reply.author)}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatSafeDate(reply.createdAt)}
-                      </span>
+          {/* Replies Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+              Replies ({replies.length})
+            </h3>
+            <div className="space-y-3">
+              {replies.map((reply) => (
+                <div key={reply.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-9 w-9 border-2 border-gray-200 dark:border-gray-700">
+                      <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {getAuthorName(reply.author)}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatSafeDate(reply.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                        {reply.content}
+                      </p>
                     </div>
-                    <p className="text-sm mb-2">{reply.content}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => likeMutation.mutate({ replyId: reply.id })}
-                      disabled={!isAuthenticated || likeMutation.isPending}
-                      className="flex items-center gap-1"
-                    >
-                      <ThumbsUp className="h-4 w-4" />
-                      {reply.upvotes}
-                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Reply Form */}
           {isAuthenticated && (
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-3">Add a Reply</h4>
-              <div className="space-y-3">
+            <div className="border-t pt-6 mt-6">
+              <h4 className="font-medium mb-4 text-gray-900 dark:text-gray-100">Add a Reply</h4>
+              <div className="space-y-4">
                 <Textarea
-                  placeholder="Write your reply..."
+                  placeholder="Share your thoughts on this discussion..."
                   value={newReply}
                   onChange={(e) => setNewReply(e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-[120px] border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 <div className="flex justify-end">
                   <Button
                     onClick={() => replyMutation.mutate(newReply)}
                     disabled={!newReply.trim() || replyMutation.isPending}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <Send className="h-4 w-4" />
-                    Post Reply
+                    {replyMutation.isPending ? "Posting..." : "Post Reply"}
                   </Button>
                 </div>
               </div>
@@ -375,16 +348,16 @@ export default function DiscussionBoard() {
                         {formatSafeDate(discussion.createdAt)}
                       </span>
                     </div>
-                    <h3 className="font-semibold mb-1 truncate">{discussion.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{discussion.content}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">{discussion.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2 leading-relaxed">{discussion.content}</p>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <ThumbsUp className="h-4 w-4" />
-                        {discussion.upvotes}
+                        <MessageCircle className="h-3 w-3" />
+                        {discussion.replyCount} replies
                       </span>
                       <span className="flex items-center gap-1">
-                        <MessageCircle className="h-4 w-4" />
-                        {discussion.replyCount} replies
+                        <Clock className="h-3 w-3" />
+                        {formatSafeDate(discussion.lastActivityAt)}
                       </span>
                     </div>
                   </div>
