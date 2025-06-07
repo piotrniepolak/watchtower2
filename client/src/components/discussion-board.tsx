@@ -253,7 +253,7 @@ export default function DiscussionBoard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => likeMutation.mutate({ discussionId: selectedDiscussionData.id })}
+                    onClick={() => likeMutation.mutate({ discussionId: selectedDiscussion })}
                     disabled={!isAuthenticated || likeMutation.isPending}
                   >
                     <ThumbsUp className="h-4 w-4 mr-1" />
