@@ -43,26 +43,40 @@ export class DiscussionStorage {
 
   async getDiscussion(id: number) {
     try {
+      console.log("DiscussionStorage.getDiscussion called with ID:", id);
+      
       // First get the discussion
-      const [discussion] = await db
+      const discussionQuery = await db
         .select()
         .from(discussions)
         .where(eq(discussions.id, id));
 
+      console.log("Discussion query result:", discussionQuery);
+      const discussion = discussionQuery[0];
+
       if (!discussion) {
+        console.log("No discussion found with ID:", id);
         return undefined;
       }
 
+      console.log("Found discussion:", discussion);
+
       // Then get the author
-      const [author] = await db
+      const authorQuery = await db
         .select()
         .from(users)
         .where(eq(users.id, discussion.authorId));
 
-      return {
+      console.log("Author query result:", authorQuery);
+      const author = authorQuery[0];
+
+      const result = {
         ...discussion,
         author: author || null
       };
+
+      console.log("Final result:", result);
+      return result;
     } catch (error) {
       console.error("Error fetching discussion:", error);
       return undefined;

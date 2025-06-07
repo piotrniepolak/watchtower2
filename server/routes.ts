@@ -1051,6 +1051,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Individual discussion endpoint - must come before the general discussions endpoint
+  app.get('/api/discussions/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      console.log(`Fetching discussion with ID: ${id}`);
+      const discussion = await discussionStorage.getDiscussion(id);
+      
+      console.log("Discussion result:", discussion);
+      
+      if (!discussion) {
+        console.log("Discussion not found");
+        return res.status(404).json({ error: "Discussion not found" });
+      }
+      
+      res.json(discussion);
+    } catch (error) {
+      console.error("Error fetching discussion:", error);
+      res.status(500).json({ error: "Failed to fetch discussion" });
+    }
+  });
+
   app.get('/api/discussions', async (req, res) => {
     try {
       const category = req.query.category as string || 'general';
@@ -1061,22 +1082,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching chat messages:", error);
       res.status(500).json({ error: "Failed to fetch messages" });
-    }
-  });
-
-  app.get('/api/discussions/:id', async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const discussion = await discussionStorage.getDiscussion(id);
-      
-      if (!discussion) {
-        return res.status(404).json({ error: "Discussion not found" });
-      }
-      
-      res.json(discussion);
-    } catch (error) {
-      console.error("Error fetching discussion:", error);
-      res.status(500).json({ error: "Failed to fetch discussion" });
     }
   });
 
