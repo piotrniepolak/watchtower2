@@ -1050,29 +1050,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/discussions', async (req, res) => {
+  app.post('/api/discussions', isAuthenticated, async (req, res) => {
     try {
-      // For now, using a demo user ID since auth is not fully implemented
-      const userId = 1;
-      
-      const { title, content, category = "general", tags = [] } = req.body;
-      
-      if (!title || !content) {
-        return res.status(400).json({ error: "Title and content are required" });
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
       }
       
-      const discussion = await discussionStorage.createDiscussion({
-        title,
-        content,
+      const { content, category = "general" } = req.body;
+      
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: "Message content is required" });
+      }
+      
+      // Create a simple chat message (reuse discussion table with title as content)
+      const message = await discussionStorage.createDiscussion({
+        title: content.substring(0, 100), // Use first 100 chars as title
+        content: content,
         authorId: userId,
         category,
-        tags,
+        tags: [],
       });
       
-      res.status(201).json(discussion);
+      res.status(201).json(message);
     } catch (error) {
-      console.error("Error creating discussion:", error);
-      res.status(500).json({ error: "Failed to create discussion" });
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ error: "Failed to send message" });
     }
   });
 
