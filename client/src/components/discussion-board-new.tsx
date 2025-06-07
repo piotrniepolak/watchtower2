@@ -57,6 +57,7 @@ export default function DiscussionBoard() {
   const [selectedDiscussion, setSelectedDiscussion] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showAllDiscussions, setShowAllDiscussions] = useState(false);
   const [newReply, setNewReply] = useState("");
   const [newThread, setNewThread] = useState({
     title: "",
@@ -332,7 +333,7 @@ export default function DiscussionBoard() {
             </div>
           ) : (
             <>
-              {filteredDiscussions.slice(0, 3).map((discussion) => (
+              {(showAllDiscussions || searchQuery ? filteredDiscussions : filteredDiscussions.slice(0, 3)).map((discussion) => (
                 <div
                   key={discussion.id}
                   className="p-5 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all cursor-pointer group"
@@ -370,14 +371,27 @@ export default function DiscussionBoard() {
                   </div>
                 </div>
               ))}
-              {filteredDiscussions.length > 3 && (
+              {filteredDiscussions.length > 3 && !searchQuery && !showAllDiscussions && (
                 <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
                   <Button 
                     variant="outline" 
                     size="sm"
                     className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    onClick={() => setShowAllDiscussions(true)}
                   >
                     View All {filteredDiscussions.length} Discussions
+                  </Button>
+                </div>
+              )}
+              {showAllDiscussions && !searchQuery && (
+                <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    onClick={() => setShowAllDiscussions(false)}
+                  >
+                    Show Less
                   </Button>
                 </div>
               )}
