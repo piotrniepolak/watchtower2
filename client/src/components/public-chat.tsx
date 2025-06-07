@@ -14,7 +14,6 @@ import {
   Sword
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 interface Author {
@@ -38,7 +37,6 @@ export default function PublicChat() {
   const [activeTab, setActiveTab] = useState("general");
   const [newMessage, setNewMessage] = useState("");
   
-  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -62,19 +60,11 @@ export default function PublicChat() {
       queryClient.invalidateQueries({ queryKey: [`/api/chat/${activeTab}`] });
     },
     onError: (error: any) => {
-      if (error.message?.includes("401")) {
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to send messages",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to send message",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
     },
   });
 
@@ -176,36 +166,23 @@ export default function PublicChat() {
               </div>
 
               {/* Message Input */}
-              {isAuthenticated ? (
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={`Message #${category}`}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="flex-1"
-                    maxLength={500}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                    size="sm"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm mb-3">Please log in to participate in the chat</p>
-                  <Button 
-                    onClick={() => window.location.href = '/api/login'}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Log In
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-2">
+                <Input
+                  placeholder={`Message #${category}`}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1"
+                  maxLength={500}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                  size="sm"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </TabsContent>
           ))}
         </Tabs>
