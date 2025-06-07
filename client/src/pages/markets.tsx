@@ -81,6 +81,7 @@ export default function Markets() {
   };
 
   const metrics = calculateRealTimeMetrics();
+  console.log('Final metrics for UI:', metrics);
 
   const companyProfiles = {
     "LMT": {
