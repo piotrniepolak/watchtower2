@@ -1097,6 +1097,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat API routes
+  app.get('/api/chat/:category', async (req, res) => {
+    try {
+      const category = req.params.category || 'general';
+      const limit = 50;
+      
+      const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post('/api/chat', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const { content, category = "general" } = req.body;
+      
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: "Message content is required" });
+      }
+      
+      const message = await discussionStorage.createDiscussion({
+        title: "Chat Message",
+        content: content.trim(),
+        authorId: userId,
+        category,
+        tags: [],
+      });
+      
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
   app.get('/api/discussions', async (req, res) => {
     try {
       const category = req.query.category as string || 'general';
