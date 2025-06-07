@@ -1089,10 +1089,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/discussions/:id/replies', async (req, res) => {
+  app.post('/api/discussions/:id/replies', isAuthenticated, async (req, res) => {
     try {
-      // For now, using a demo user ID since auth is not fully implemented
-      const userId = 1;
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
       const discussionId = parseInt(req.params.id);
       const { content, parentReplyId } = req.body;
       
@@ -1103,7 +1106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reply = await discussionStorage.createDiscussionReply({
         discussionId,
         content,
-        authorId: userId,
+        authorId: parseInt(userId),
         parentReplyId: parentReplyId || null,
       });
       
@@ -1111,6 +1114,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating reply:", error);
       res.status(500).json({ error: "Failed to create reply" });
+    }
+  });
+
+  // Like/unlike a discussion thread
+  app.post('/api/discussions/:id/like', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const discussionId = parseInt(req.params.id);
+      await discussionStorage.voteOnDiscussion(parseInt(userId), discussionId, 'up');
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error liking discussion:", error);
+      res.status(500).json({ error: "Failed to like discussion" });
+    }
+  });
+
+  // Like/unlike a reply
+  app.post('/api/discussions/replies/:id/like', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const replyId = parseInt(req.params.id);
+      await discussionStorage.voteOnReply(parseInt(userId), replyId, 'up');
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error liking reply:", error);
+      res.status(500).json({ error: "Failed to like reply" });
     }
   });
 

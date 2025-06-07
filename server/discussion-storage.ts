@@ -185,6 +185,68 @@ export class DiscussionStorage {
         .where(eq(discussions.id, discussionId));
     }
   }
+
+  async voteOnReply(userId: number, replyId: number, voteType: 'up' | 'down'): Promise<void> {
+    // Check if user already voted
+    const [existingVote] = await db
+      .select()
+      .from(discussionVotes)
+      .where(and(
+        eq(discussionVotes.userId, userId),
+        eq(discussionVotes.replyId, replyId)
+      ));
+
+    if (existingVote) {
+      if (existingVote.voteType === voteType) {
+        // Remove vote if same type
+        await db
+          .delete(discussionVotes)
+          .where(eq(discussionVotes.id, existingVote.id));
+
+        // Update reply vote count
+        await db
+          .update(discussionReplies)
+          .set({
+            upvotes: voteType === 'up' ? sql`${discussionReplies.upvotes} - 1` : discussionReplies.upvotes,
+            downvotes: voteType === 'down' ? sql`${discussionReplies.downvotes} - 1` : discussionReplies.downvotes,
+          })
+          .where(eq(discussionReplies.id, replyId));
+      } else {
+        // Change vote type
+        await db
+          .update(discussionVotes)
+          .set({ voteType })
+          .where(eq(discussionVotes.id, existingVote.id));
+
+        // Update reply vote counts
+        await db
+          .update(discussionReplies)
+          .set({
+            upvotes: voteType === 'up' ? sql`${discussionReplies.upvotes} + 1` : sql`${discussionReplies.upvotes} - 1`,
+            downvotes: voteType === 'down' ? sql`${discussionReplies.downvotes} + 1` : sql`${discussionReplies.downvotes} - 1`,
+          })
+          .where(eq(discussionReplies.id, replyId));
+      }
+    } else {
+      // Create new vote
+      await db
+        .insert(discussionVotes)
+        .values({
+          userId,
+          replyId,
+          voteType,
+        });
+
+      // Update reply vote count
+      await db
+        .update(discussionReplies)
+        .set({
+          upvotes: voteType === 'up' ? sql`${discussionReplies.upvotes} + 1` : discussionReplies.upvotes,
+          downvotes: voteType === 'down' ? sql`${discussionReplies.downvotes} + 1` : discussionReplies.downvotes,
+        })
+        .where(eq(discussionReplies.id, replyId));
+    }
+  }
 }
 
 export const discussionStorage = new DiscussionStorage();
