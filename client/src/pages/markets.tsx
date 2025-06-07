@@ -18,7 +18,7 @@ export default function Markets() {
   const { stocks, isLoading, isConnected } = useRealTimeStocks();
   
   // Fetch authentic S&P Aerospace & Defense Index data
-  const { data: metricsData } = useQuery<{
+  const { data: metricsData, isLoading: metricsLoading } = useQuery<{
     activeConflicts: number;
     totalConflicts: number;
     defenseIndex: string;
@@ -28,6 +28,9 @@ export default function Markets() {
     queryKey: ["/api/metrics"],
     refetchInterval: 30000,
   });
+
+  console.log('Raw metricsData:', metricsData);
+  console.log('Raw stocks data:', stocks);
 
   // Generate historical data based on real Yahoo Finance current prices
   const generateStockHistory = (currentPrice: number, changePercent: number) => {
