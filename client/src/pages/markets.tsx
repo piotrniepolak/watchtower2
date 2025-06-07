@@ -329,7 +329,10 @@ export default function Markets() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
                     <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
-                      {metricsData?.defenseIndex ? `$${parseFloat(metricsData.defenseIndex).toFixed(2)}` : "$0.00"}
+                      {(() => {
+                        const itaStock = stocks?.find(stock => stock.symbol === 'ITA');
+                        return itaStock ? `$${itaStock.price.toFixed(2)}` : "$0.00";
+                      })()}
                     </p>
                   </div>
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
@@ -337,8 +340,15 @@ export default function Markets() {
                   </div>
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className={`font-medium ${avgChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {avgChangePercent >= 0 ? '+' : ''}{avgChangePercent.toFixed(2)}%
+                  <span className={`font-medium ${(() => {
+                    const itaStock = stocks?.find(stock => stock.symbol === 'ITA');
+                    return (itaStock?.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600';
+                  })()}`}>
+                    {(() => {
+                      const itaStock = stocks?.find(stock => stock.symbol === 'ITA');
+                      const changePercent = itaStock?.changePercent || 0;
+                      return `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                    })()}
                   </span>
                   <span className="text-slate-600 ml-1">(ITA) today</span>
                 </div>

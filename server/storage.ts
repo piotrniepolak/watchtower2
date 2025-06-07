@@ -632,6 +632,17 @@ export class MemStorage implements IStorage {
         volume: 1850000,
         marketCap: "$18.9B",
         lastUpdated: new Date()
+      },
+      {
+        id: 16,
+        symbol: "ITA",
+        name: "iShares U.S. Aerospace & Defense ETF",
+        price: 127.45,
+        change: 0.85,
+        changePercent: 0.67,
+        volume: 485000,
+        marketCap: "$12.8B",
+        lastUpdated: new Date()
       }
     ];
 
