@@ -13,6 +13,11 @@ export default function ROIRankings() {
   
   const { data: roiData, isLoading, error } = useQuery({
     queryKey: ["/api/roi-rankings", timeframe],
+    queryFn: async () => {
+      const response = await fetch(`/api/roi-rankings?timeframe=${timeframe}`);
+      if (!response.ok) throw new Error('Failed to fetch ROI data');
+      return response.json();
+    },
     refetchInterval: 60000, // Refresh every minute
   });
 
