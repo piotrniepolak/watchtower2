@@ -639,7 +639,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conflictFactor = conflictIntensity * 0.15;
       const volatilityFactor = marketVolatility * 0.20;
       
-      const correlationScore = Math.min(0.95, baseCorrelation + conflictFactor + volatilityFactor);
+      const rawCorrelationScore = Math.min(0.95, baseCorrelation + conflictFactor + volatilityFactor);
+      const correlationScore = Math.round(rawCorrelationScore * 100) / 100;
       
       res.json({
         activeConflicts,
