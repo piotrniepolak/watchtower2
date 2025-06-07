@@ -6,6 +6,7 @@ import { generateConflictPredictions, generateMarketAnalysis, generateConflictSt
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
+import { lobbyingService } from "./lobbying-service";
 import session from "express-session";
 
 // Simple session-based auth for now
@@ -635,6 +636,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch metrics" });
+    }
+  });
+
+  // ROI Rankings endpoint
+  app.get("/api/roi-rankings", async (req, res) => {
+    try {
+      const timeframe = req.query.timeframe as string || "1Y";
+      const rankings = await lobbyingService.calculateROIRankings(timeframe);
+      res.json(rankings);
+    } catch (error) {
+      console.error("Error fetching ROI rankings:", error);
+      res.status(500).json({ error: "Failed to fetch ROI rankings" });
+    }
+  });
+
+  // Lobbying expenditures endpoint
+  app.get("/api/lobbying", async (req, res) => {
+    try {
+      const stockSymbol = req.query.symbol as string;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      const expenditures = await lobbyingService.getLobbyingExpenditures(stockSymbol, year);
+      res.json(expenditures);
+    } catch (error) {
+      console.error("Error fetching lobbying data:", error);
+      res.status(500).json({ error: "Failed to fetch lobbying data" });
     }
   });
 

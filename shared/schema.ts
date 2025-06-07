@@ -248,3 +248,54 @@ export interface NewsStockHighlight {
   changePercent: number;
   reason: string;
 }
+
+// Lobbying expenditure tracking
+export const lobbyingExpenditures = pgTable("lobbying_expenditures", {
+  id: serial("id").primaryKey(),
+  stockSymbol: text("stock_symbol").references(() => stocks.symbol).notNull(),
+  year: integer("year").notNull(),
+  quarter: integer("quarter").notNull(), // 1-4
+  amount: real("amount").notNull(), // Amount spent in millions USD
+  reportedDate: timestamp("reported_date").notNull(),
+  source: text("source").notNull().default("OpenSecrets.org"), // Data source
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertLobbyingExpenditureSchema = createInsertSchema(lobbyingExpenditures).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLobbyingExpenditure = z.infer<typeof insertLobbyingExpenditureSchema>;
+export type LobbyingExpenditure = typeof lobbyingExpenditures.$inferSelect;
+
+// Stock price history for ROI calculations
+export const stockPriceHistory = pgTable("stock_price_history", {
+  id: serial("id").primaryKey(),
+  stockSymbol: text("stock_symbol").references(() => stocks.symbol).notNull(),
+  date: date("date").notNull(),
+  openPrice: real("open_price").notNull(),
+  closePrice: real("close_price").notNull(),
+  highPrice: real("high_price").notNull(),
+  lowPrice: real("low_price").notNull(),
+  volume: integer("volume").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertStockPriceHistorySchema = createInsertSchema(stockPriceHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertStockPriceHistory = z.infer<typeof insertStockPriceHistorySchema>;
+export type StockPriceHistory = typeof stockPriceHistory.$inferSelect;
+
+export interface ROIAnalysis {
+  stockSymbol: string;
+  companyName: string;
+  timeframe: string;
+  priceGainPercent: number;
+  lobbyingSpent: number;
+  roiRatio: number; // Price gain % / Lobbying spent (millions)
+  rank: number;
+}
