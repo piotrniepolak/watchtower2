@@ -53,6 +53,9 @@ export default function Markets() {
 
   // Use authentic metrics from API including iShares ETF and correlation data
   const calculateRealTimeMetrics = () => {
+    console.log('Metrics Data:', metricsData);
+    console.log('Stocks Data:', stocks);
+    
     if (!stocks || !Array.isArray(stocks)) {
       return {
         defenseIndex: "0.00",
@@ -66,11 +69,12 @@ export default function Markets() {
 
     // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
     const defenseIndexValue = metricsData?.defenseIndex ? parseFloat(metricsData.defenseIndex) : 0;
+    console.log('Defense Index Value:', defenseIndexValue, 'from', metricsData?.defenseIndex);
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
     
-    return {
+    const result = {
       defenseIndex: defenseIndexValue.toFixed(2),
       totalMarketCap: metricsData?.marketCap || "0.0B",
       indexChange: `${avgChangePercent >= 0 ? '+' : ''}${avgChangePercent.toFixed(2)}%`,
@@ -78,6 +82,9 @@ export default function Markets() {
       activeCompanies: stocks.length,
       correlationScore: metricsData?.correlationScore?.toFixed(2) || "0.00"
     };
+    
+    console.log('Calculated Metrics:', result);
+    return result;
   };
 
   const metrics = calculateRealTimeMetrics();
