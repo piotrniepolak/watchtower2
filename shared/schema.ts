@@ -329,7 +329,7 @@ export const discussionReplies = pgTable("discussion_replies", {
   id: serial("id").primaryKey(),
   discussionId: integer("discussion_id").notNull().references(() => discussions.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
-  authorId: integer("author_id").notNull().references(() => users.id),
+  authorId: varchar("author_id").notNull().references(() => users.id),
   parentReplyId: integer("parent_reply_id").references(() => discussionReplies.id),
   upvotes: integer("upvotes").default(0),
   downvotes: integer("downvotes").default(0),
@@ -339,7 +339,7 @@ export const discussionReplies = pgTable("discussion_replies", {
 
 export const discussionVotes = pgTable("discussion_votes", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
   discussionId: integer("discussion_id").references(() => discussions.id, { onDelete: "cascade" }),
   replyId: integer("reply_id").references(() => discussionReplies.id, { onDelete: "cascade" }),
   voteType: varchar("vote_type", { length: 10 }).notNull(), // 'up' or 'down'
