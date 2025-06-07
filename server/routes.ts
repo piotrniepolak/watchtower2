@@ -717,8 +717,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Modern lobbying analysis with Perplexity AI
   app.get("/api/lobbying/analysis", async (req, res) => {
     try {
+      const timeframe = req.query.timeframe as string || "1Y";
       const stocks = await storage.getStocks();
-      const analysis = await modernLobbyingService.getLobbyingAnalysis(stocks);
+      const analysis = await modernLobbyingService.getLobbyingAnalysis(stocks, timeframe);
       res.json(analysis);
     } catch (error) {
       console.error("Error fetching lobbying analysis:", error);
