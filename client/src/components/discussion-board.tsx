@@ -232,7 +232,7 @@ export default function DiscussionBoard() {
                   <span className="font-medium">{getAuthorName(selectedDiscussionData.author)}</span>
                   <Badge variant="outline">{selectedDiscussionData.category}</Badge>
                   <span className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(selectedDiscussionData.createdAt), { addSuffix: true })}
+                    {selectedDiscussionData.createdAt ? formatDistanceToNow(new Date(selectedDiscussionData.createdAt), { addSuffix: true }) : 'Unknown time'}
                   </span>
                 </div>
                 <p className="text-sm mb-3">{selectedDiscussionData.content}</p>
@@ -402,7 +402,7 @@ export default function DiscussionBoard() {
                           <span className="font-medium">{getAuthorName(discussion.author)}</span>
                           <Badge variant="outline">{discussion.category}</Badge>
                           <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(discussion.createdAt), { addSuffix: true })}
+                            {discussion.createdAt ? formatDistanceToNow(new Date(discussion.createdAt), { addSuffix: true }) : 'Unknown time'}
                           </span>
                         </div>
                         <h3 className="font-semibold mb-1">{discussion.title}</h3>
