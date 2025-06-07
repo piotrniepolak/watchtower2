@@ -1113,7 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chat', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }

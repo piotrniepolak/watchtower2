@@ -44,7 +44,7 @@ export default function PublicChat() {
 
   // Fetch messages for active category
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
-    queryKey: ["/api/chat", activeTab],
+    queryKey: [`/api/chat/${activeTab}`],
     refetchInterval: 2000,
     staleTime: 1000,
   });
@@ -59,7 +59,7 @@ export default function PublicChat() {
     },
     onSuccess: () => {
       setNewMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", activeTab] });
+      queryClient.invalidateQueries({ queryKey: [`/api/chat/${activeTab}`] });
     },
     onError: (error: any) => {
       if (error.message?.includes("401")) {
