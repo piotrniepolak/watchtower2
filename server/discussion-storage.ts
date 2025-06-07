@@ -7,38 +7,46 @@ import { eq, desc, sql, and } from "drizzle-orm";
 
 export class DiscussionStorage {
   async getDiscussions(limit: number = 20, offset: number = 0, category?: string) {
-    let query = db
-      .select({
-        id: discussions.id,
-        title: discussions.title,
-        content: discussions.content,
-        authorId: discussions.authorId,
-        category: discussions.category,
-        tags: discussions.tags,
-        upvotes: discussions.upvotes,
-        downvotes: discussions.downvotes,
-        replyCount: discussions.replyCount,
-        lastActivityAt: discussions.lastActivityAt,
-        createdAt: discussions.createdAt,
-        updatedAt: discussions.updatedAt,
-        author: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-        }
-      })
-      .from(discussions)
-      .innerJoin(users, eq(discussions.authorId, users.id))
-      .orderBy(desc(discussions.lastActivityAt))
-      .limit(limit)
-      .offset(offset);
+    try {
+      let query = db
+        .select({
+          id: discussions.id,
+          title: discussions.title,
+          content: discussions.content,
+          authorId: discussions.authorId,
+          category: discussions.category,
+          tags: discussions.tags,
+          upvotes: discussions.upvotes,
+          downvotes: discussions.downvotes,
+          replyCount: discussions.replyCount,
+          lastActivityAt: discussions.lastActivityAt,
+          createdAt: discussions.createdAt,
+          updatedAt: discussions.updatedAt,
+          author: {
+            id: users.id,
+            username: users.username,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            profileImageUrl: users.profileImageUrl,
+          }
+        })
+        .from(discussions)
+        .leftJoin(users, eq(discussions.authorId, users.id))
+        .orderBy(desc(discussions.lastActivityAt))
+        .limit(limit)
+        .offset(offset);
 
-    if (category) {
-      query = query.where(eq(discussions.category, category));
+      if (category) {
+        query = query.where(eq(discussions.category, category));
+      }
+
+      const result = await query;
+      console.log("DiscussionStorage.getDiscussions result:", result.length, "items");
+      return result;
+    } catch (error) {
+      console.error("Error in getDiscussions:", error);
+      return [];
     }
-
-    return await query;
   }
 
   async getDiscussion(id: number) {

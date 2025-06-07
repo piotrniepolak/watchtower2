@@ -1057,8 +1057,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Individual discussion endpoint
   app.get('/api/discussions/:id', async (req, res) => {
     const discussionId = parseInt(req.params.id);
-    
-    // Use the working getDiscussions method and filter
     const discussions = await discussionStorage.getDiscussions(100, 0);
     const discussion = discussions.find(d => d.id === discussionId);
     
