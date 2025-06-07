@@ -8,7 +8,7 @@ import { eq, desc, sql, and } from "drizzle-orm";
 export class DiscussionStorage {
   async getDiscussions(limit: number = 20, offset: number = 0, category?: string) {
     try {
-      let query = db
+      const baseQuery = db
         .select({
           id: discussions.id,
           title: discussions.title,
@@ -31,16 +31,19 @@ export class DiscussionStorage {
           }
         })
         .from(discussions)
-        .leftJoin(users, eq(discussions.authorId, users.id))
+        .leftJoin(users, eq(discussions.authorId, users.id));
+
+      let query = baseQuery;
+      
+      if (category) {
+        query = baseQuery.where(eq(discussions.category, category));
+      }
+
+      const result = await query
         .orderBy(desc(discussions.lastActivityAt))
         .limit(limit)
         .offset(offset);
-
-      if (category) {
-        query = query.where(eq(discussions.category, category));
-      }
-
-      const result = await query;
+        
       console.log("DiscussionStorage.getDiscussions result:", result.length, "items");
       return result;
     } catch (error) {

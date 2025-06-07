@@ -1040,31 +1040,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat Messages Routes
-  app.get('/api/discussions/:category', async (req, res) => {
-    try {
-      const category = req.params.category;
-      const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-      
-      const messages = await discussionStorage.getDiscussions(limit, 0, category);
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching chat messages:", error);
-      res.status(500).json({ error: "Failed to fetch messages" });
-    }
-  });
+  // This route was conflicting with individual discussion route - removed
 
-  // Individual discussion endpoint
-  app.get('/api/discussions/:id', async (req, res) => {
-    const discussionId = parseInt(req.params.id);
-    const discussions = await discussionStorage.getDiscussions(100, 0);
-    const discussion = discussions.find(d => d.id === discussionId);
-    
-    if (!discussion) {
-      return res.status(404).json({ error: "Discussion not found" });
+  // Individual discussion endpoint - CRITICAL FIX
+  app.get('/api/discussions/:id(\\d+)', async (req, res) => {
+    try {
+      const discussionId = parseInt(req.params.id);
+      console.log("DISCUSSION ENDPOINT HIT - ID:", discussionId);
+      
+      // Direct database query
+      const result = await pool.query(`
+        SELECT 
+          d.id, d.title, d.content, d.author_id, d.category, d.tags,
+          d.upvotes, d.downvotes, d.reply_count, d.last_activity_at,
+          d.created_at, d.updated_at,
+          u.id as user_id, u.username, u.first_name, u.last_name, u.profile_image_url
+        FROM discussions d
+        LEFT JOIN users u ON d.author_id = u.id
+        WHERE d.id = $1
+      `, [discussionId]);
+      
+      console.log("Database result rows:", result.rows.length);
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Discussion not found" });
+      }
+      
+      const row = result.rows[0];
+      const discussion = {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        authorId: row.author_id,
+        category: row.category,
+        tags: row.tags || [],
+        upvotes: row.upvotes,
+        downvotes: row.downvotes,
+        replyCount: row.reply_count,
+        lastActivityAt: row.last_activity_at,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        author: {
+          id: row.user_id,
+          username: row.username,
+          firstName: row.first_name,
+          lastName: row.last_name,
+          profileImageUrl: row.profile_image_url,
+        }
+      };
+      
+      console.log("Returning discussion:", discussion.title);
+      res.json(discussion);
+    } catch (error) {
+      console.error("Discussion endpoint error:", error);
+      res.status(500).json({ error: "Server error" });
     }
-    
-    res.json(discussion);
   });
 
   app.get('/api/discussions', async (req, res) => {
