@@ -168,26 +168,27 @@ export default function DiscussionBoard() {
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
           {/* Original Post */}
-          <div className="bg-muted/30 rounded-lg p-4">
-            <div className="flex items-start gap-3 mb-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+          <div className="bg-muted/30 rounded-lg p-6">
+            <div className="flex items-start gap-4">
+              <Avatar className="h-12 w-12 border-2 border-gray-200 dark:border-gray-700">
+                <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
+                  <User className="h-6 w-6" />
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-semibold">{getAuthorName(selectedDiscussionData.author)}</span>
-                  <Badge variant="outline">{selectedDiscussionData.category}</Badge>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">{getAuthorName(selectedDiscussionData.author)}</span>
                   <span className="text-sm text-muted-foreground">
                     {formatSafeDate(selectedDiscussionData.createdAt)}
                   </span>
                 </div>
-                <h2 className="text-xl font-bold mb-3">{selectedDiscussionData.title}</h2>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{selectedDiscussionData.content}</p>
+                <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">{selectedDiscussionData.title}</h2>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-5">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">{selectedDiscussionData.content}</p>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-4">
                   <span className="flex items-center gap-1">
                     <MessageCircle className="h-4 w-4" />
                     {replies.length} replies
@@ -202,21 +203,21 @@ export default function DiscussionBoard() {
           </div>
 
           {/* Replies Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          <div className="border-t pt-8">
+            <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-gray-100">
               Replies ({replies.length})
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4 mb-8">
               {replies.map((reply) => (
-                <div key={reply.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-9 w-9 border-2 border-gray-200 dark:border-gray-700">
+                <div key={reply.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-10 w-10 border-2 border-gray-200 dark:border-gray-700">
                       <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                        <User className="h-4 w-4" />
+                        <User className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-3">
                         <span className="font-medium text-gray-900 dark:text-gray-100">
                           {getAuthorName(reply.author)}
                         </span>
@@ -347,9 +348,6 @@ export default function DiscussionBoard() {
                       <span className="font-medium text-gray-900 dark:text-gray-100">
                         {getAuthorName(discussion.author)}
                       </span>
-                      <Badge variant="outline" className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700">
-                        {discussion.category}
-                      </Badge>
                     </div>
                     <h3 className="font-semibold mb-2 text-lg text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {discussion.title}
