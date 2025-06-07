@@ -833,7 +833,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quizId = parseInt(req.params.quizId);
       const { responses, completionTimeSeconds } = req.body;
-      const userId = 1; // Using default user ID for demo
+      const session = getSession();
+      const userId = session?.user?.id || 1; // Use authenticated user or demo user
 
       if (!Array.isArray(responses)) {
         return res.status(400).json({ error: "Responses must be an array" });
@@ -863,6 +864,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching quiz response:", error);
       res.status(500).json({ error: "Failed to fetch quiz response" });
+    }
+  });
+
+  // Delete account endpoint
+  app.delete("/api/auth/account", isAuthenticated, async (req, res) => {
+    try {
+      const session = getSession();
+      if (!session?.user?.id) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      await storage.deleteUser(session.user.id.toString());
+      
+      // Clear session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+        }
+      });
+
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      res.status(500).json({ error: "Failed to delete account" });
     }
   });
 

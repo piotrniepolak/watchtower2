@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/navigation";
 import { 
@@ -19,18 +20,21 @@ import {
   Shield,
   Star,
   TrendingUp,
-  Target
+  Target,
+  AlertTriangle
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 export default function Profile() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [, setLocation] = useLocation();
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -41,6 +45,7 @@ export default function Profile() {
 
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Create demo user data if not authenticated
   const demoUser = {
@@ -361,6 +366,23 @@ export default function Profile() {
                     )}
                   </Button>
                 </form>
+
+                <Separator className="my-6" />
+
+                {/* Delete Account Section */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-red-700">Danger Zone</h3>
+                  <p className="text-sm text-slate-600">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                  </p>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="w-full"
+                  >
+                    Delete Account
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
