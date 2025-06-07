@@ -154,108 +154,108 @@ export default function DiscussionBoard() {
   // Detail view for selected discussion
   if (selectedDiscussion && selectedDiscussionData) {
     return (
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardHeader className="pb-3">
+      <Card className="w-full mb-8">
+        <CardHeader>
           <div className="flex items-center gap-3">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               onClick={() => setSelectedDiscussion(null)}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Discussions
+              Back
             </Button>
+            <CardTitle>Discussion Thread</CardTitle>
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-6">
           {/* Original Post */}
-          <div className="bg-muted/30 rounded-lg p-6">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 border-2 border-gray-200 dark:border-gray-700">
+          <div className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                  <User className="h-6 w-6" />
+                  <User className="h-5 w-5" />
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">{getAuthorName(selectedDiscussionData.author)}</span>
-                  <span className="text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {getAuthorName(selectedDiscussionData.author)}
+                  </span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     {formatSafeDate(selectedDiscussionData.createdAt)}
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">{selectedDiscussionData.title}</h2>
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-5">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">{selectedDiscussionData.content}</p>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-4">
-                  <span className="flex items-center gap-1">
-                    <MessageCircle className="h-4 w-4" />
-                    {replies.length} replies
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    Started {formatSafeDate(selectedDiscussionData.createdAt)}
-                  </span>
-                </div>
+                <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100">
+                  {selectedDiscussionData.title}
+                </h2>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {selectedDiscussionData.content}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Replies Section */}
-          <div className="border-t pt-8">
-            <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-gray-100">
-              Replies ({replies.length})
-            </h3>
-            <div className="space-y-4 mb-8">
-              {replies.map((reply) => (
-                <div key={reply.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-5">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-10 w-10 border-2 border-gray-200 dark:border-gray-700">
-                      <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                        <User className="h-5 w-5" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
-                          {getAuthorName(reply.author)}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatSafeDate(reply.createdAt)}
-                        </span>
+          {replies && replies.length > 0 ? (
+            <div>
+              <h3 className="text-md font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                Replies ({replies.length})
+              </h3>
+              <div className="space-y-3">
+                {replies.map((reply) => (
+                  <div key={reply.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-gray-100 dark:bg-gray-800">
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                            {getAuthorName(reply.author)}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatSafeDate(reply.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {reply.content}
+                        </p>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {reply.content}
-                      </p>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+              <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No replies yet. Be the first to respond!</p>
+            </div>
+          )}
 
           {/* Reply Form */}
           {isAuthenticated && (
-            <div className="border-t pt-6 mt-6">
-              <h4 className="font-medium mb-4 text-gray-900 dark:text-gray-100">Add a Reply</h4>
-              <div className="space-y-4">
+            <div className="border-t pt-4">
+              <div className="space-y-3">
                 <Textarea
-                  placeholder="Share your thoughts on this discussion..."
+                  placeholder="Write your reply..."
                   value={newReply}
                   onChange={(e) => setNewReply(e.target.value)}
-                  className="min-h-[120px] border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
+                  className="min-h-[80px]"
                 />
                 <div className="flex justify-end">
                   <Button
                     onClick={() => replyMutation.mutate(newReply)}
                     disabled={!newReply.trim() || replyMutation.isPending}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                    size="sm"
                   >
-                    <Send className="h-4 w-4" />
-                    {replyMutation.isPending ? "Posting..." : "Post Reply"}
+                    <Send className="h-4 w-4 mr-2" />
+                    {replyMutation.isPending ? "Posting..." : "Reply"}
                   </Button>
                 </div>
               </div>
