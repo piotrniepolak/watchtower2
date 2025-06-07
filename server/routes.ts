@@ -28,9 +28,11 @@ const isAuthenticated = async (req: any, res: any, next: any) => {
     const user = await storage.getUser(req.session.userId.toString());
     if (user) {
       req.user = user;
+      console.log('Authentication successful for user:', { id: user.id, email: user.email });
       return next();
     }
   }
+  console.log('Authentication failed - no valid session or user');
   return res.status(401).json({ message: 'Unauthorized' });
 };
 
@@ -1052,7 +1054,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/discussions', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -1066,7 +1068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const discussion = await discussionStorage.createDiscussion({
         title,
         content,
-        authorId: parseInt(userId),
+        authorId: userId,
         category,
         tags,
       });
@@ -1091,7 +1093,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/discussions/:id/replies', isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -1106,7 +1108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reply = await discussionStorage.createDiscussionReply({
         discussionId,
         content,
-        authorId: parseInt(userId),
+        authorId: userId.toString(),
         parentReplyId: parentReplyId || null,
       });
       
