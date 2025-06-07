@@ -39,11 +39,12 @@ interface LobbyingAnalysis {
   lastUpdated: string;
 }
 
-export default function ModernLobbyingAnalysis() {
+export default function ModernLobbyingAnalysis({ timeframe = "1Y" }: { timeframe?: string }) {
   const queryClient = useQueryClient();
 
   const { data: analysis, isLoading, error } = useQuery<LobbyingAnalysis>({
-    queryKey: ["/api/lobbying/analysis"],
+    queryKey: ["/api/lobbying/analysis", timeframe],
+    queryFn: () => apiRequest(`/api/lobbying/analysis?timeframe=${timeframe}`),
     refetchInterval: 300000, // Refresh every 5 minutes
     staleTime: 180000, // Consider data stale after 3 minutes
   });
