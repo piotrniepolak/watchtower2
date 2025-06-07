@@ -189,16 +189,21 @@ export default function ROIRankings() {
         
         {roiData && roiData.length > 0 && (
           <div className="p-4 bg-slate-50 border-t border-slate-200">
-            <div className="text-xs text-slate-600">
-              <p className="mb-1">
-                <strong>ROI Ratio:</strong> Stock price gain percentage divided by lobbying expenditure (millions USD)
-              </p>
-              <p className="mb-1">
-                <strong>Higher ratios indicate better returns per lobbying dollar spent</strong>
-              </p>
-              <p>
-                Data sources: Real-time stock prices, lobbying expenditure reports from OpenSecrets.org
-              </p>
+            <div className="text-xs text-slate-600 space-y-2">
+              <div>
+                <strong className="text-slate-800">How ROI Ratio is Calculated (0-10 Scale):</strong>
+              </div>
+              <div className="pl-3 space-y-1">
+                <p>• <strong>Base Formula:</strong> (Stock Price Gain % ÷ Lobbying Spent in Millions)</p>
+                <p>• <strong>Scaling:</strong> Transformed to 0-10 range with 5 as baseline</p>
+                <p>• <strong>Result:</strong> Higher scores (closer to 10) indicate better returns per lobbying dollar</p>
+              </div>
+              <div className="pt-1">
+                <strong className="text-slate-700">Example:</strong> 15% stock gain ÷ $2M lobbying = 7.5 base ratio → ~8.0 scaled score
+              </div>
+              <div className="pt-1 border-t border-slate-200">
+                <strong>Data Sources:</strong> Real-time Yahoo Finance prices, lobbying expenditure reports
+              </div>
             </div>
           </div>
         )}
