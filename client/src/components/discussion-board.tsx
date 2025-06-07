@@ -66,6 +66,7 @@ export default function DiscussionBoard() {
     queryKey: ["/api/discussions"],
     refetchInterval: 5000, // Real-time updates
     staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 0, // Don't cache data
   });
 
   const { data: selectedDiscussionData } = useQuery<Discussion>({
@@ -135,10 +136,11 @@ export default function DiscussionBoard() {
     },
     onSuccess: async () => {
       // Force immediate refresh of discussions data
+      queryClient.removeQueries({ queryKey: ["/api/discussions"] });
       await refetchDiscussions();
-      queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
       if (selectedDiscussion) {
         queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion, "replies"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion] });
       }
       toast({
         title: "Success",
@@ -251,8 +253,8 @@ export default function DiscussionBoard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleLike(selectedDiscussionData.id)}
-                    disabled={!isAuthenticated}
+                    onClick={() => likeMutation.mutate({ discussionId: selectedDiscussionData.id })}
+                    disabled={!isAuthenticated || likeMutation.isPending}
                   >
                     <ThumbsUp className="h-4 w-4 mr-1" />
                     {selectedDiscussionData.upvotes}
