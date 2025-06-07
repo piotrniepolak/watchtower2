@@ -85,6 +85,7 @@ export default function DiscussionBoard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
+      queryClient.refetchQueries({ queryKey: ["/api/discussions"] });
       setNewThread({ title: "", content: "" });
       setShowCreateThread(false);
       toast({
@@ -108,6 +109,7 @@ export default function DiscussionBoard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
       queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion, "replies"] });
+      queryClient.refetchQueries({ queryKey: ["/api/discussions"] });
       setNewReply("");
       toast({
         title: "Reply posted",
