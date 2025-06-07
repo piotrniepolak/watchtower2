@@ -402,6 +402,11 @@ export default function Markets() {
           <ROIRankings />
         </div>
 
+        {/* Modern Lobbying Analysis with Perplexity AI */}
+        <div className="mb-8">
+          <ModernLobbyingAnalysis />
+        </div>
+
         {/* Company Profiles with Real Yahoo Finance Data */}
         <div className="space-y-8">
           {(stocks as Stock[] || []).map((stock) => {

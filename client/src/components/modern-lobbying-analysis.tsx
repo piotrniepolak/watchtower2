@@ -49,7 +49,7 @@ export default function ModernLobbyingAnalysis() {
   });
 
   const refreshMutation = useMutation({
-    mutationFn: () => apiRequest("/api/lobbying/refresh", { method: "POST" }),
+    mutationFn: () => apiRequest("/api/lobbying/refresh", "POST"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/lobbying/analysis"] });
     },
