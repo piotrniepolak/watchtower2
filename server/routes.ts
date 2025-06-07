@@ -6,6 +6,7 @@ import { discussionStorage } from "./discussion-storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
+import { pool } from "./db";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
@@ -1053,55 +1054,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Individual discussion endpoint - must come before the general discussions endpoint
+  // Individual discussion endpoint
   app.get('/api/discussions/:id', async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      
-      // Direct SQL query to bypass ORM issues
-      const result = await db.execute(sql`
-        SELECT 
-          d.id, d.title, d.content, d.author_id, d.category, d.tags,
-          d.upvotes, d.downvotes, d.reply_count, d.last_activity_at,
-          d.created_at, d.updated_at,
-          u.id as user_id, u.username, u.first_name, u.last_name, u.profile_image_url
-        FROM discussions d
-        LEFT JOIN users u ON d.author_id = u.id
-        WHERE d.id = ${id}
-      `);
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Discussion not found" });
-      }
-      
-      const row = result.rows[0] as any;
-      const discussion = {
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        authorId: row.author_id,
-        category: row.category,
-        tags: row.tags || [],
-        upvotes: row.upvotes,
-        downvotes: row.downvotes,
-        replyCount: row.reply_count,
-        lastActivityAt: row.last_activity_at,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        author: {
-          id: row.user_id,
-          username: row.username,
-          firstName: row.first_name,
-          lastName: row.last_name,
-          profileImageUrl: row.profile_image_url,
-        }
-      };
-      
-      res.json(discussion);
-    } catch (error) {
-      console.error("Error fetching discussion:", error);
-      res.status(500).json({ error: "Failed to fetch discussion" });
+    const discussionId = parseInt(req.params.id);
+    
+    // Use the working getDiscussions method and filter
+    const discussions = await discussionStorage.getDiscussions(100, 0);
+    const discussion = discussions.find(d => d.id === discussionId);
+    
+    if (!discussion) {
+      return res.status(404).json({ error: "Discussion not found" });
     }
+    
+    res.json(discussion);
   });
 
   app.get('/api/discussions', async (req, res) => {
