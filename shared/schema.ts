@@ -299,3 +299,114 @@ export interface ROIAnalysis {
   roiRatio: number; // Price gain % / Lobbying spent (millions)
   rank: number;
 }
+
+// Discussion Board Tables
+export const discussions = pgTable("discussions", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  authorId: integer("author_id").notNull().references(() => users.id),
+  category: varchar("category", { length: 100 }).notNull().default("general"),
+  tags: text("tags").array(),
+  upvotes: integer("upvotes").default(0),
+  downvotes: integer("downvotes").default(0),
+  replyCount: integer("reply_count").default(0),
+  lastActivityAt: timestamp("last_activity_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const discussionReplies = pgTable("discussion_replies", {
+  id: serial("id").primaryKey(),
+  discussionId: integer("discussion_id").notNull().references(() => discussions.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  authorId: integer("author_id").notNull().references(() => users.id),
+  parentReplyId: integer("parent_reply_id").references(() => discussionReplies.id),
+  upvotes: integer("upvotes").default(0),
+  downvotes: integer("downvotes").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const discussionVotes = pgTable("discussion_votes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  discussionId: integer("discussion_id").references(() => discussions.id, { onDelete: "cascade" }),
+  replyId: integer("reply_id").references(() => discussionReplies.id, { onDelete: "cascade" }),
+  voteType: varchar("vote_type", { length: 10 }).notNull(), // 'up' or 'down'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations
+export const discussionsRelations = relations(discussions, ({ one, many }) => ({
+  author: one(users, {
+    fields: [discussions.authorId],
+    references: [users.id],
+  }),
+  replies: many(discussionReplies),
+  votes: many(discussionVotes),
+}));
+
+export const discussionRepliesRelations = relations(discussionReplies, ({ one, many }) => ({
+  discussion: one(discussions, {
+    fields: [discussionReplies.discussionId],
+    references: [discussions.id],
+  }),
+  author: one(users, {
+    fields: [discussionReplies.authorId],
+    references: [users.id],
+  }),
+  parentReply: one(discussionReplies, {
+    fields: [discussionReplies.parentReplyId],
+    references: [discussionReplies.id],
+  }),
+  childReplies: many(discussionReplies),
+  votes: many(discussionVotes),
+}));
+
+export const discussionVotesRelations = relations(discussionVotes, ({ one }) => ({
+  user: one(users, {
+    fields: [discussionVotes.userId],
+    references: [users.id],
+  }),
+  discussion: one(discussions, {
+    fields: [discussionVotes.discussionId],
+    references: [discussions.id],
+  }),
+  reply: one(discussionReplies, {
+    fields: [discussionVotes.replyId],
+    references: [discussionReplies.id],
+  }),
+}));
+
+// Discussion Board Schemas
+export const insertDiscussionSchema = createInsertSchema(discussions).omit({
+  id: true,
+  upvotes: true,
+  downvotes: true,
+  replyCount: true,
+  lastActivityAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDiscussionReplySchema = createInsertSchema(discussionReplies).omit({
+  id: true,
+  upvotes: true,
+  downvotes: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDiscussionVoteSchema = createInsertSchema(discussionVotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Discussion Board Types
+export type Discussion = typeof discussions.$inferSelect;
+export type InsertDiscussion = z.infer<typeof insertDiscussionSchema>;
+export type DiscussionReply = typeof discussionReplies.$inferSelect;
+export type InsertDiscussionReply = z.infer<typeof insertDiscussionReplySchema>;
+export type DiscussionVote = typeof discussionVotes.$inferSelect;
+export type InsertDiscussionVote = z.infer<typeof insertDiscussionVoteSchema>;

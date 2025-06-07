@@ -27,7 +27,6 @@ export function useRealTimeStocks() {
   const { isConnected, lastMessage } = useWebSocket('/ws', {
     onMessage: (data) => {
       if (data.type === 'stocks') {
-        console.log('Stocks Data:', data.data);
         setRealTimeStocks(data.data);
         // Update the query cache with new data
         queryClient.setQueryData(['/api/stocks'], data.data);
