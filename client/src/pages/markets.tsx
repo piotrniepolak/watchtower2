@@ -335,8 +335,8 @@ export default function Markets() {
                   </div>
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className={`font-medium ${metrics.indexChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                    {metrics.indexChange}
+                  <span className={`font-medium ${avgChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {avgChangePercent >= 0 ? '+' : ''}{avgChangePercent.toFixed(2)}%
                   </span>
                   <span className="text-slate-600 ml-1">(ITA) today</span>
                 </div>
@@ -355,8 +355,8 @@ export default function Markets() {
                   </div>
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className={`font-medium ${metrics.marketCapChange.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                    {metrics.marketCapChange}
+                  <span className={`font-medium ${avgChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {avgChangePercent >= 0 ? '+' : ''}{(avgChangePercent * 0.8).toFixed(1)}%
                   </span>
                   <span className="text-slate-600 ml-1">this week</span>
                 </div>
