@@ -1111,9 +1111,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/chat', isAuthenticated, async (req, res) => {
+  app.post('/api/chat', async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      // Check session-based authentication (from register/login system)
+      const userId = req.session?.user?.id;
+      
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
@@ -1127,7 +1129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const message = await discussionStorage.createDiscussion({
         title: "Chat Message",
         content: content.trim(),
-        authorId: userId,
+        authorId: userId.toString(),
         category,
         tags: [],
       });
