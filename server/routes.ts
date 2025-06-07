@@ -47,6 +47,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/');
   });
 
+  // Quick login for existing user (development only)
+  app.post('/api/auth/quick-login', async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Create session
+      (req as any).session.userId = user.id;
+      
+      res.json({ 
+        message: "Login successful", 
+        user: { 
+          id: user.id, 
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Quick login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
