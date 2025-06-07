@@ -152,6 +152,18 @@ export default function DiscussionBoard() {
     return author.username || `${author.firstName || ""} ${author.lastName || ""}`.trim() || "Anonymous";
   };
 
+  const formatSafeDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "recently";
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return "recently";
+    }
+  };
+
   const filteredDiscussions = discussions.filter(discussion => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -192,7 +204,7 @@ export default function DiscussionBoard() {
                   <span className="font-semibold">{getAuthorName(selectedDiscussionData.author)}</span>
                   <Badge variant="outline">{selectedDiscussionData.category}</Badge>
                   <span className="text-sm text-muted-foreground">
-                    {formatDistanceToNow(new Date(selectedDiscussionData.createdAt), { addSuffix: true })}
+                    {formatSafeDate(selectedDiscussionData.createdAt)}
                   </span>
                 </div>
                 <h2 className="text-xl font-bold mb-2">{selectedDiscussionData.title}</h2>
@@ -230,7 +242,7 @@ export default function DiscussionBoard() {
                     <div className="flex items-center gap-2 mb-2">
                       <span className="font-medium">{getAuthorName(reply.author)}</span>
                       <span className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
+                        {formatSafeDate(reply.createdAt)}
                       </span>
                     </div>
                     <p className="text-sm mb-2">{reply.content}</p>
@@ -360,7 +372,7 @@ export default function DiscussionBoard() {
                       <span className="font-medium">{getAuthorName(discussion.author)}</span>
                       <Badge variant="outline" className="text-xs">{discussion.category}</Badge>
                       <span className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(discussion.createdAt), { addSuffix: true })}
+                        {formatSafeDate(discussion.createdAt)}
                       </span>
                     </div>
                     <h3 className="font-semibold mb-1 truncate">{discussion.title}</h3>

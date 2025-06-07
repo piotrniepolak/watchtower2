@@ -58,6 +58,7 @@ export class DiscussionStorage {
         updatedAt: discussions.updatedAt,
         author: {
           id: users.id,
+          username: users.username,
           firstName: users.firstName,
           lastName: users.lastName,
           profileImageUrl: users.profileImageUrl,
