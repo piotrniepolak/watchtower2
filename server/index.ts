@@ -1,5 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes-simple";
 import { setupVite, serveStatic, log } from "./vite";
 import { newsService } from "./news-service";
 import { stockService } from "./stock-service";
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const { registerRoutes } = await import('./routes.js');
+  const { registerRoutes } = await import('./routes-simple.js');
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

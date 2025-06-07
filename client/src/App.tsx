@@ -20,7 +20,6 @@ import Landing from "@/pages/landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import Quiz from "@/pages/quiz";
-import Settings from "@/pages/settings";
 import { useAuth } from "@/hooks/useAuth";
 
 import NotFound from "@/pages/not-found";
@@ -41,7 +40,6 @@ function Router() {
       <Route path="/learning" component={Learning} />
       <Route path="/quiz" component={Quiz} />
       <Route path="/profile" component={Profile} />
-      <Route path="/settings" component={Settings} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/api" component={ApiDocs} />
