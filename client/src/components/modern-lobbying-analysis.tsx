@@ -44,9 +44,17 @@ export default function ModernLobbyingAnalysis({ timeframe = "1Y" }: { timeframe
 
   const { data: analysis, isLoading, error } = useQuery<LobbyingAnalysis>({
     queryKey: ["/api/lobbying/analysis", timeframe],
-    queryFn: () => apiRequest(`/api/lobbying/analysis?timeframe=${timeframe}`),
+    queryFn: async () => {
+      const response = await fetch(`/api/lobbying/analysis?timeframe=${timeframe}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch lobbying data: ${response.status}`);
+      }
+      return response.json();
+    },
     refetchInterval: 300000, // Refresh every 5 minutes
     staleTime: 180000, // Consider data stale after 3 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const refreshMutation = useMutation({

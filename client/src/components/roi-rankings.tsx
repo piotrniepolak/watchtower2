@@ -157,10 +157,10 @@ export default function ROIRankings() {
                 {/* ROI Ratio */}
                 <div className="col-span-2 flex items-center justify-center">
                   <Badge 
-                    variant={item.roiRatio > 5 ? "default" : item.roiRatio > 2 ? "secondary" : "outline"}
+                    variant={item.roiRatio > 8 ? "default" : item.roiRatio > 5 ? "secondary" : "outline"}
                     className="font-bold"
                   >
-                    {item.roiRatio}x
+                    {item.roiRatio >= 10 ? item.roiRatio.toPrecision(2) : item.roiRatio.toFixed(1)}
                   </Badge>
                 </div>
                 
