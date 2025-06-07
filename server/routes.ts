@@ -1057,25 +1057,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "User not authenticated" });
       }
       
-      const { content, category = "general" } = req.body;
+      const { title, content, category = "general", tags = [] } = req.body;
       
-      if (!content || !content.trim()) {
-        return res.status(400).json({ error: "Message content is required" });
+      if (!title || !title.trim() || !content || !content.trim()) {
+        return res.status(400).json({ error: "Title and content are required" });
       }
       
-      // Create a simple chat message (reuse discussion table with title as content)
-      const message = await discussionStorage.createDiscussion({
-        title: content.substring(0, 100), // Use first 100 chars as title
-        content: content,
-        authorId: userId,
+      const discussion = await discussionStorage.createDiscussion({
+        title,
+        content,
+        authorId: parseInt(userId),
         category,
-        tags: [],
+        tags,
       });
       
-      res.status(201).json(message);
+      res.status(201).json(discussion);
     } catch (error) {
-      console.error("Error creating chat message:", error);
-      res.status(500).json({ error: "Failed to send message" });
+      console.error("Error creating discussion:", error);
+      res.status(500).json({ error: "Failed to create discussion" });
     }
   });
 
