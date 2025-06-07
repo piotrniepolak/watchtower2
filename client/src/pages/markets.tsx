@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, DollarSign, Users, Building2, ExternalLink, Star, StarOff, Wifi, WifiOff, AlertTriangle, Link } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import ROIRankings from "@/components/roi-rankings";
+import ModernLobbyingAnalysis from "@/components/modern-lobbying-analysis";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";

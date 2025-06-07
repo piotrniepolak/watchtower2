@@ -12,6 +12,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
+import { modernLobbyingService } from "./modern-lobbying-service";
 import session from "express-session";
 
 // Simple session-based auth for now
@@ -710,6 +711,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching lobbying data:", error);
       res.status(500).json({ error: "Failed to fetch lobbying data" });
+    }
+  });
+
+  // Modern lobbying analysis with Perplexity AI
+  app.get("/api/lobbying/analysis", async (req, res) => {
+    try {
+      const stocks = await storage.getStocks();
+      const analysis = await modernLobbyingService.getLobbyingAnalysis(stocks);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error fetching lobbying analysis:", error);
+      res.status(500).json({ error: "Failed to fetch lobbying analysis" });
+    }
+  });
+
+  // Refresh lobbying data
+  app.post("/api/lobbying/refresh", async (req, res) => {
+    try {
+      const stocks = await storage.getStocks();
+      const analysis = await modernLobbyingService.refreshLobbyingData(stocks);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error refreshing lobbying data:", error);
+      res.status(500).json({ error: "Failed to refresh lobbying data" });
     }
   });
 
