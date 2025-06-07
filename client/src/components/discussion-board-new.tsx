@@ -124,8 +124,8 @@ export default function DiscussionBoard() {
 
 
   const getAuthorName = (author?: Author) => {
-    if (!author) return "Unknown User";
-    return author.username || `${author.firstName || ""} ${author.lastName || ""}`.trim() || "Anonymous";
+    if (!author) return "Anonymous";
+    return author.username || "Anonymous";
   };
 
   const formatSafeDate = (dateString: string) => {
@@ -267,7 +267,7 @@ export default function DiscussionBoard() {
 
   // Main discussion list view
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto mb-8">
       <CardHeader>
         <CardTitle>Community Discussions</CardTitle>
         <div className="flex gap-3">
@@ -331,44 +331,57 @@ export default function DiscussionBoard() {
               <p>No discussions found. {searchQuery ? "Try a different search." : "Start the conversation!"}</p>
             </div>
           ) : (
-            filteredDiscussions.map((discussion) => (
-              <div
-                key={discussion.id}
-                className="p-5 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all cursor-pointer group"
-                onClick={() => setSelectedDiscussion(discussion.id)}
-              >
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-11 w-11 border-2 border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-600 transition-colors">
-                    <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                      <User className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {getAuthorName(discussion.author)}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold mb-2 text-lg text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {discussion.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
-                      {discussion.content}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="flex items-center gap-1.5">
-                        <MessageCircle className="h-3.5 w-3.5" />
-                        {discussion.replyCount} {discussion.replyCount === 1 ? 'reply' : 'replies'}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5" />
-                        Last activity {formatSafeDate(discussion.lastActivityAt)}
-                      </span>
+            <>
+              {filteredDiscussions.slice(0, 3).map((discussion) => (
+                <div
+                  key={discussion.id}
+                  className="p-5 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all cursor-pointer group"
+                  onClick={() => setSelectedDiscussion(discussion.id)}
+                >
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-11 w-11 border-2 border-gray-200 dark:border-gray-700 group-hover:border-blue-300 dark:group-hover:border-blue-600 transition-colors">
+                      <AvatarFallback className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {getAuthorName(discussion.author)}
+                        </span>
+                      </div>
+                      <h3 className="font-semibold mb-2 text-lg text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {discussion.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2 leading-relaxed">
+                        {discussion.content}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1.5">
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          {discussion.replyCount} {discussion.replyCount === 1 ? 'reply' : 'replies'}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5" />
+                          Last activity {formatSafeDate(discussion.lastActivityAt)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+              {filteredDiscussions.length > 3 && (
+                <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  >
+                    View All {filteredDiscussions.length} Discussions
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </CardContent>
