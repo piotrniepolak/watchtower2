@@ -80,7 +80,11 @@ export default function PublicChat() {
 
   const getAuthorName = (author?: Author) => {
     if (!author) return "Anonymous";
-    return author.username || "Anonymous";
+    if (author.username) return author.username;
+    if (author.firstName && author.lastName) {
+      return `${author.firstName} ${author.lastName}`;
+    }
+    return "User";
   };
 
   const formatTime = (dateString: string) => {
@@ -192,7 +196,14 @@ export default function PublicChat() {
                 </div>
               ) : (
                 <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm">Please log in to participate in the chat</p>
+                  <p className="text-sm mb-3">Please log in to participate in the chat</p>
+                  <Button 
+                    onClick={() => window.location.href = '/api/login'}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Log In
+                  </Button>
                 </div>
               )}
             </TabsContent>
