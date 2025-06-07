@@ -251,17 +251,17 @@ export class LobbyingService {
         const priceGainPercent = ((currentPrice - historicalPrice) / historicalPrice) * 100;
         const lobbyingSpent = Number(row.total_lobbying_2024);
         
-        // Calculate ROI ratio with enhanced boundaries to ensure meaningful scores
-        // Scale: 1-10 where higher is better
+        // Calculate ROI ratio with 0-100 scale for better granularity
+        // Scale: 0-100 where higher is better
         let roiRatio;
         if (lobbyingSpent > 0) {
           // Base ratio: price gain % per million dollars spent
           const baseRatio = priceGainPercent / lobbyingSpent;
-          // Transform to 1-10 scale with exponential scaling for better differentiation
-          roiRatio = Math.max(1, Math.min(10, 5 + (baseRatio * 2)));
+          // Transform to 0-100 scale with enhanced scaling for better differentiation
+          roiRatio = Math.max(0, Math.min(100, 50 + (baseRatio * 20)));
         } else {
           // No lobbying spending - base score on stock performance alone
-          roiRatio = Math.max(1, Math.min(10, 5 + (priceGainPercent / 10)));
+          roiRatio = Math.max(0, Math.min(100, 50 + (priceGainPercent * 2)));
         }
 
         return {
