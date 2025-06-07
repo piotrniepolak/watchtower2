@@ -17,6 +17,12 @@ export default function Markets() {
   
   const { stocks, isLoading, isConnected } = useRealTimeStocks();
   
+  // Debug logging to track data flow
+  console.log('WebSocket Connected:', isConnected);
+  console.log('Stocks Array:', stocks);
+  const itaStock = stocks?.find(stock => stock.symbol === 'ITA');
+  console.log('ITA Stock Found:', itaStock);
+  
   // Fetch authentic S&P Aerospace & Defense Index data
   const { data: metricsData, isLoading: metricsLoading } = useQuery<{
     activeConflicts: number;

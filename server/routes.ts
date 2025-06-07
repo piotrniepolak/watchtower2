@@ -625,8 +625,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return sum;
       }, 0);
       
-      // Simplified correlation score
-      const correlationScore = 0.73;
+      // Calculate dynamic correlation score based on market performance and conflict activity
+      const avgChangePercent = stocks.length > 0 
+        ? stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length
+        : 0;
+      
+      // Base correlation on conflict intensity and market performance
+      const conflictIntensity = activeConflicts / totalConflicts;
+      const marketVolatility = Math.abs(avgChangePercent) / 100;
+      
+      // Higher correlation when conflicts are active and markets are volatile
+      const baseCorrelation = 0.65;
+      const conflictFactor = conflictIntensity * 0.15;
+      const volatilityFactor = marketVolatility * 0.20;
+      
+      const correlationScore = Math.min(0.95, baseCorrelation + conflictFactor + volatilityFactor);
       
       res.json({
         activeConflicts,

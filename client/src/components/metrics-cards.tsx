@@ -29,9 +29,10 @@ export default function MetricsCards() {
       };
     }
 
-    // Use authentic S&P Aerospace & Defense Index data from ITA ETF
-    const defenseIndexValue = metrics?.defenseIndex?.value || 0;
-    const defenseIndexChange = metrics?.defenseIndex?.changePercent || 0;
+    // Get ITA ETF data directly from real-time stocks
+    const itaStock = stocks.find(stock => stock.symbol === 'ITA');
+    const defenseIndexValue = itaStock?.price || 0;
+    const defenseIndexChange = itaStock?.changePercent || 0;
     
     // Calculate total market cap from all tracked defense stocks
     const totalMarketCap = stocks.reduce((sum, stock) => {
