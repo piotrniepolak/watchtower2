@@ -18,7 +18,13 @@ export default function Markets() {
   const { stocks, isLoading, isConnected } = useRealTimeStocks();
   
   // Fetch authentic S&P Aerospace & Defense Index data
-  const { data: metricsData } = useQuery({
+  const { data: metricsData } = useQuery<{
+    activeConflicts: number;
+    totalConflicts: number;
+    defenseIndex: string;
+    marketCap: string;
+    correlationScore: number;
+  }>({
     queryKey: ["/api/metrics"],
     refetchInterval: 30000,
   });
@@ -47,7 +53,7 @@ export default function Markets() {
 
   // Use authentic metrics from API including iShares ETF and correlation data
   const calculateRealTimeMetrics = () => {
-    if (!stocks || !Array.isArray(stocks) || !metricsData) {
+    if (!stocks || !Array.isArray(stocks)) {
       return {
         defenseIndex: "0.00",
         totalMarketCap: "0.0B",
@@ -59,18 +65,18 @@ export default function Markets() {
     }
 
     // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
-    const defenseIndexValue = parseFloat(metricsData.defenseIndex) || 0;
+    const defenseIndexValue = metricsData?.defenseIndex ? parseFloat(metricsData.defenseIndex) : 0;
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
     
     return {
       defenseIndex: defenseIndexValue.toFixed(2),
-      totalMarketCap: metricsData.marketCap || "0.0B",
+      totalMarketCap: metricsData?.marketCap || "0.0B",
       indexChange: `${avgChangePercent >= 0 ? '+' : ''}${avgChangePercent.toFixed(2)}%`,
       marketCapChange: `${avgChangePercent >= 0 ? '+' : ''}${(avgChangePercent * 0.8).toFixed(1)}%`,
       activeCompanies: stocks.length,
-      correlationScore: metricsData.correlationScore?.toFixed(2) || "0.00"
+      correlationScore: metricsData?.correlationScore?.toFixed(2) || "0.00"
     };
   };
 
