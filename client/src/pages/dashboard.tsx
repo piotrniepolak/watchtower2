@@ -4,7 +4,7 @@ import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DataTables from "@/components/data-tables";
 import SimpleConflictMap from "@/components/simple-conflict-map";
 import DailyNews from "@/components/daily-news";
-import DiscussionBoard from "@/components/discussion-board";
+import DiscussionBoard from "@/components/discussion-board-new";
 import { Link } from "wouter";
 
 export default function Dashboard() {
