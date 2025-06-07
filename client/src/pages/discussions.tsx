@@ -78,10 +78,17 @@ export default function Discussions() {
   // Create discussion mutation
   const createDiscussionMutation = useMutation({
     mutationFn: async (data: typeof newDiscussion) => {
-      return await apiRequest("/api/discussions", {
+      const response = await fetch("/api/discussions", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
@@ -93,10 +100,17 @@ export default function Discussions() {
   // Create reply mutation
   const createReplyMutation = useMutation({
     mutationFn: async (data: { content: string; parentReplyId?: number }) => {
-      return await apiRequest(`/api/discussions/${selectedDiscussion}/replies`, {
+      const response = await fetch(`/api/discussions/${selectedDiscussion}/replies`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions", selectedDiscussion, "replies"] });
@@ -108,10 +122,17 @@ export default function Discussions() {
   // Vote on discussion mutation
   const voteMutation = useMutation({
     mutationFn: async ({ discussionId, voteType }: { discussionId: number; voteType: 'up' | 'down' }) => {
-      return await apiRequest(`/api/discussions/${discussionId}/vote`, {
+      const response = await fetch(`/api/discussions/${discussionId}/vote`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ voteType }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discussions"] });
