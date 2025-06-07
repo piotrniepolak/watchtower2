@@ -29,8 +29,7 @@ export default function Markets() {
     refetchInterval: 30000,
   });
 
-  console.log('Raw metricsData:', metricsData);
-  console.log('Raw stocks data:', stocks);
+
 
   // Generate historical data based on real Yahoo Finance current prices
   const generateStockHistory = (currentPrice: number, changePercent: number) => {
@@ -84,7 +83,11 @@ export default function Markets() {
   };
 
   const metrics = calculateRealTimeMetrics();
-  console.log('Final metrics for UI:', metrics);
+  
+  // Calculate average change percentage for display
+  const avgChangePercent = stocks && Array.isArray(stocks) 
+    ? stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length 
+    : 0;
 
   const companyProfiles = {
     "LMT": {
@@ -325,7 +328,7 @@ export default function Markets() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">${metrics.defenseIndex}</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">${metricsData?.defenseIndex || "0.00"}</p>
                   </div>
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <TrendingUp className="h-5 w-5 text-blue-600" />
@@ -345,7 +348,7 @@ export default function Markets() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">Market Cap</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metrics.totalMarketCap}</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metricsData?.marketCap || "$0.0B"}</p>
                   </div>
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <DollarSign className="h-5 w-5 text-green-600" />
@@ -365,7 +368,7 @@ export default function Markets() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">Correlation Score</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metrics.correlationScore}</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metricsData?.correlationScore?.toFixed(2) || "0.00"}</p>
                   </div>
                   <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <Link className="h-5 w-5 text-amber-600" />
