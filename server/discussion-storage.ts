@@ -42,33 +42,31 @@ export class DiscussionStorage {
   }
 
   async getDiscussion(id: number) {
-    const [discussion] = await db
-      .select({
-        id: discussions.id,
-        title: discussions.title,
-        content: discussions.content,
-        authorId: discussions.authorId,
-        category: discussions.category,
-        tags: discussions.tags,
-        upvotes: discussions.upvotes,
-        downvotes: discussions.downvotes,
-        replyCount: discussions.replyCount,
-        lastActivityAt: discussions.lastActivityAt,
-        createdAt: discussions.createdAt,
-        updatedAt: discussions.updatedAt,
-        author: {
-          id: users.id,
-          username: users.username,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-        }
-      })
-      .from(discussions)
-      .innerJoin(users, eq(discussions.authorId, users.id))
-      .where(eq(discussions.id, id));
+    try {
+      // First get the discussion
+      const [discussion] = await db
+        .select()
+        .from(discussions)
+        .where(eq(discussions.id, id));
 
-    return discussion;
+      if (!discussion) {
+        return undefined;
+      }
+
+      // Then get the author
+      const [author] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, discussion.authorId));
+
+      return {
+        ...discussion,
+        author: author || null
+      };
+    } catch (error) {
+      console.error("Error fetching discussion:", error);
+      return undefined;
+    }
   }
 
   async createDiscussion(discussionData: InsertDiscussion) {
