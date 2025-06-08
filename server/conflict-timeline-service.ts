@@ -291,7 +291,7 @@ export class ConflictTimelineService {
   }
 
   private cleanDescription(text: string): string {
-    // Comprehensive cleaning to extract meaningful timeline content
+    // Simple cleaning to preserve meaningful content without over-processing
     let cleaned = text
       .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '') // Remove date headers
       .replace(/- Source:.*?- Severity:.*$/gm, '') // Remove source/severity trailers
@@ -303,43 +303,30 @@ export class ConflictTimelineService {
       .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
       .replace(/\n+/g, ' ') // Replace newlines with spaces
       .replace(/\s+/g, ' ') // Normalize whitespace
-      .replace(/^[^-]*-\s*/, '') // Remove leading location prefix if it exists
       .replace(/^\s*-\s*/, '') // Remove leading dash
       .replace(/^\d+\.\s*/, '') // Remove leading numbers
       .trim();
     
-    // Extract the most meaningful sentence
-    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    // Avoid processing if text is already good
+    if (cleaned.length >= 50 && cleaned.length <= 400) {
+      return cleaned;
+    }
+    
+    // Extract the most meaningful sentence only if needed
+    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 20);
     if (sentences.length > 0) {
-      // Find sentence with most meaningful content (contains action words)
       const actionWords = ['reported', 'announced', 'launched', 'attacked', 'deployed', 'conducted', 'forces', 'military', 'officials'];
       let bestSentence = sentences[0];
       
-      for (const sentence of sentences.slice(0, 3)) {
+      for (const sentence of sentences.slice(0, 2)) {
         const hasAction = actionWords.some(word => sentence.toLowerCase().includes(word));
-        if (hasAction && sentence.length > bestSentence.length * 0.7) {
+        if (hasAction && sentence.length > 40) {
           bestSentence = sentence;
           break;
         }
       }
       
       cleaned = bestSentence.trim();
-    }
-    
-    // Final length check and truncation
-    if (cleaned.length > 85) {
-      cleaned = cleaned.substring(0, 82) + '...';
-    }
-    
-    // If still empty or too short, try extracting from location patterns
-    if (cleaned.length < 20 && text.length > 50) {
-      const locationMatch = text.match(/(?:Kyiv|Kharkiv|Donetsk|Luhansk|Gaza|Jerusalem|Tel Aviv|Rafah|Khan Younis)[\s-]*(.+?)(?:\.|$)/i);
-      if (locationMatch && locationMatch[1]) {
-        cleaned = locationMatch[1].trim();
-        if (cleaned.length > 85) {
-          cleaned = cleaned.substring(0, 82) + '...';
-        }
-      }
     }
     
     return cleaned || 'Recent conflict development reported';
