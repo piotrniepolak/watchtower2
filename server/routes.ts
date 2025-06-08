@@ -4,8 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { discussionStorage } from "./discussion-storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
-import { userQuizResponses, users, dailyQuizzes } from "@shared/schema";
-import { sql, eq, desc, asc } from "drizzle-orm";
+import { userQuizResponses, users, dailyQuizzes, discussions } from "@shared/schema";
+import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
@@ -1502,45 +1502,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const cleanUsername = tempUsername.trim();
       
-      // Check for username uniqueness in chat
-      const existingChatUsers = await db
-        .selectDistinct({
-          username: sql<string>`tags[1]`,
-          authorId: discussions.authorId
-        })
-        .from(discussions)
-        .where(and(
-          isNotNull(discussions.tags),
-          sql`array_length(tags, 1) > 0`,
-          eq(sql<string>`tags[1]`, cleanUsername)
-        ));
-
       // Use authenticated user ID if available, otherwise generate anonymous ID
       let userId: string;
       if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
         userId = req.user.claims.sub;
         console.log(`Chat from authenticated user ID: ${userId} with username: ${cleanUsername}`);
-        
-        // Check if this authenticated user can use this username
-        const conflictingUser = existingChatUsers.find(u => u.authorId !== userId);
-        if (conflictingUser) {
-          return res.status(400).json({ 
-            error: "Username already taken by another user",
-            suggestion: `Try ${cleanUsername}2 or ${cleanUsername}_${new Date().getFullYear()}`
-          });
-        }
       } else {
         // Generate anonymous user ID based on tempUsername for consistent identity
         userId = `anon_${Buffer.from(cleanUsername).toString('base64')}`;
         console.log(`Chat from anonymous user with temp username: ${cleanUsername}`);
-        
-        // For anonymous users, check if username conflicts with any other user
-        if (existingChatUsers.length > 0 && !existingChatUsers.some(u => u.authorId === userId)) {
-          return res.status(400).json({ 
-            error: "Username already taken",
-            suggestion: `Try ${cleanUsername}2 or ${cleanUsername}_new`
-          });
-        }
+      }
+
+      // Check for username uniqueness in chat using discussionStorage
+      const existingMessages = await discussionStorage.getDiscussions(100, 0, category);
+      const usernameConflict = existingMessages.find(msg => {
+        const msgUsername = msg.tags && msg.tags.length > 0 ? msg.tags[0] : null;
+        return msgUsername === cleanUsername && msg.authorId !== userId;
+      });
+
+      if (usernameConflict) {
+        return res.status(400).json({ 
+          error: "Username already taken by another user",
+          suggestion: `Try ${cleanUsername}2 or ${cleanUsername}_${new Date().getFullYear()}`
+        });
       }
       
       const message = await discussionStorage.createDiscussion({
