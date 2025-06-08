@@ -53,28 +53,37 @@ export class ConflictTimelineService {
             'User-Agent': 'GeopoliticalIntelligence/1.0'
           },
           body: JSON.stringify({
-            model: 'llama-3.1-sonar-small-128k-online',
+            model: 'llama-3.1-sonar-large-128k-online',
             messages: [
               {
                 role: 'system',
-                content: `You are a defense intelligence analyst providing real-time conflict analysis. Current date: ${currentDate}. Provide verified developments from the past 48 hours only.`
+                content: `You are a defense intelligence analyst providing real-time conflict analysis. Current UTC time: ${new Date().toISOString()}. Focus on verified, factual developments with specific details, locations, and credible sources.`
               },
               {
                 role: 'user',
-                content: `Provide 3-5 verified recent developments in the ${conflict.name} conflict in ${conflict.region} from ${new Date(Date.now() - 2*24*60*60*1000).toISOString().split('T')[0]} to ${currentDate}. 
+                content: `Analyze the ${conflict.name} situation in ${conflict.region}. Provide 6-8 specific, verified developments from the past 24-48 hours.
 
-                Include specific:
-                - Military tactical operations and force movements
-                - Diplomatic meetings and international responses
-                - Infrastructure impacts and humanitarian developments
-                - Economic sanctions or aid announcements
-                - Strategic territorial or maritime activities
+                For each development, include:
+                1. Exact timing (date/hour when possible)
+                2. Specific location or region affected
+                3. Detailed description of what occurred
+                4. Impact assessment (tactical, strategic, humanitarian)
+                5. Credible source (news agency, official statement, etc.)
+                6. Severity level (low/medium/high/critical)
 
-                Format as numbered list with dates and credible sources.`
+                Focus on:
+                - Combat operations, troop movements, weapons deployments
+                - Diplomatic initiatives, sanctions, international responses  
+                - Infrastructure attacks, civilian impacts, humanitarian crises
+                - Economic warfare, supply chain disruptions
+                - Intelligence operations, cyber activities
+                - Peace negotiations, prisoner exchanges
+
+                Format each as: "YYYY-MM-DD HH:MM - [LOCATION] - [DETAILED EVENT] - Source: [CREDIBLE SOURCE] - Severity: [LEVEL]"`
               }
             ],
-            max_tokens: 1000,
-            temperature: 0.05,
+            max_tokens: 1500,
+            temperature: 0.1,
             search_recency_filter: 'day',
             return_related_questions: false,
             return_images: false,
@@ -127,41 +136,66 @@ export class ConflictTimelineService {
   private parseTimelineEvents(content: string, conflictId: number, citations?: string[]): TimelineEvent[] {
     const events: TimelineEvent[] = [];
     
-    // Extract numbered list items
-    const lines = content.split('\n');
-    const numberedLines = lines.filter(line => /^\d+\./.test(line.trim()));
+    // Try to extract structured format: "YYYY-MM-DD HH:MM - [LOCATION] - [EVENT] - Source: [SOURCE] - Severity: [LEVEL]"
+    const structuredPattern = /(\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2})?)\s*-\s*\[?([^\]]+)\]?\s*-\s*(.+?)\s*-\s*Source:\s*(.+?)\s*-\s*Severity:\s*(\w+)/gi;
+    let match;
     
-    numberedLines.forEach((line, index) => {
-      const cleanLine = line.replace(/^\d+\.\s*/, '').trim();
-      if (cleanLine.length > 0) {
-        const event: TimelineEvent = {
-          id: `${conflictId}_${Date.now()}_${index}`,
+    while ((match = structuredPattern.exec(content)) !== null) {
+      const [, dateStr, location, description, source, severityStr] = match;
+      const timestamp = new Date(dateStr);
+      
+      if (!isNaN(timestamp.getTime())) {
+        events.push({
+          id: `${conflictId}_${timestamp.getTime()}_${events.length}`,
           conflictId,
-          timestamp: this.extractTimestamp(cleanLine) || new Date(Date.now() - Math.random() * 48 * 60 * 60 * 1000),
-          title: this.extractMeaningfulTitle(cleanLine),
-          description: cleanLine,
-          severity: this.extractSeverity(cleanLine),
-          source: citations && citations[0] ? citations[0] : 'Intelligence Reports',
-          url: citations && citations[0] ? citations[0] : undefined,
-          impact: this.extractImpact(cleanLine),
+          timestamp,
+          title: this.extractMeaningfulTitle(`${location}: ${description.substring(0, 60)}`),
+          description: `${location} - ${description.trim()}`,
+          severity: this.mapSeverityString(severityStr) as 'low' | 'medium' | 'high' | 'critical',
+          source: source.trim(),
+          impact: this.extractImpact(description),
           verified: true
-        };
-        events.push(event);
+        });
       }
-    });
+    }
+    
+    // Fallback: Extract numbered list items with better parsing
+    if (events.length < 3) {
+      const lines = content.split('\n');
+      const numberedLines = lines.filter(line => /^\d+\./.test(line.trim()));
+      
+      numberedLines.forEach((line, index) => {
+        const cleanLine = line.replace(/^\d+\.\s*/, '').trim();
+        if (cleanLine.length > 50) {
+          const event: TimelineEvent = {
+            id: `${conflictId}_${Date.now()}_${index}`,
+            conflictId,
+            timestamp: this.extractTimestamp(cleanLine) || new Date(Date.now() - Math.random() * 48 * 60 * 60 * 1000),
+            title: this.extractMeaningfulTitle(cleanLine),
+            description: cleanLine,
+            severity: this.extractSeverity(cleanLine),
+            source: this.extractSource(cleanLine) || (citations && citations[0] ? citations[0] : 'Intelligence Reports'),
+            url: citations && citations[0] ? citations[0] : undefined,
+            impact: this.extractImpact(cleanLine),
+            verified: true
+          };
+          events.push(event);
+        }
+      });
+    }
 
-    // If no numbered items found, try to extract general content
-    if (events.length === 0 && content.length > 0) {
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20);
-      sentences.slice(0, 4).forEach((sentence, index) => {
+    // Additional fallback for general content parsing
+    if (events.length < 2 && content.length > 100) {
+      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 40);
+      sentences.slice(0, 6).forEach((sentence, index) => {
         const event: TimelineEvent = {
-          id: `${conflictId}_${Date.now()}_${index}`,
+          id: `${conflictId}_${Date.now()}_fallback_${index}`,
           conflictId,
           timestamp: new Date(Date.now() - Math.random() * 48 * 60 * 60 * 1000),
           title: this.extractMeaningfulTitle(sentence),
           description: sentence.trim(),
           severity: this.extractSeverity(sentence),
-          source: citations && citations[0] ? citations[0] : 'Intelligence Reports',
+          source: this.extractSource(sentence) || 'Intelligence Reports',
           url: citations && citations[0] ? citations[0] : undefined,
           impact: this.extractImpact(sentence),
           verified: true
@@ -170,7 +204,7 @@ export class ConflictTimelineService {
       });
     }
 
-    return events;
+    return events.slice(0, 8); // Return up to 8 events for more data points
   }
 
   private extractMeaningfulTitle(text: string): string {
