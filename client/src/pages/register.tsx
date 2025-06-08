@@ -19,6 +19,8 @@ export default function Register() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: ''
   });
@@ -27,10 +29,19 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.email) {
+    if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Missing Information",
-        description: "Username and email are required.",
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
       return;
@@ -47,6 +58,7 @@ export default function Register() {
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
+          password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
         }),
@@ -177,7 +189,39 @@ export default function Register() {
                 </div>
               </div>
 
+              {/* Password */}
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="Create a password"
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
 
+              {/* Confirm Password */}
+              <div>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    placeholder="Confirm your password"
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
 
               <Button 
                 type="submit" 
