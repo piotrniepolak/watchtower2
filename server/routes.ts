@@ -1392,16 +1392,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/quiz/:quizId/response", async (req, res) => {
+  app.get("/api/quiz/:quizId/response", isAuthenticated, async (req, res) => {
     try {
       const quizId = parseInt(req.params.quizId);
-      const userId = "demo_user"; // Using default demo user for now
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
 
       const response = await quizStorage.getUserQuizResponse(userId, quizId);
       res.json(response || null);
     } catch (error) {
       console.error("Error fetching quiz response:", error);
       res.status(500).json({ error: "Failed to fetch quiz response" });
+    }
+  });
+
+  // Check if user has completed today's quiz
+  app.get("/api/quiz/today/completion-status", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+
+      const quiz = await quizService.getTodaysQuiz();
+      if (!quiz) {
+        return res.json({ completed: false, response: null });
+      }
+
+      const response = await quizStorage.getUserQuizResponse(userId, quiz.id);
+      res.json({ 
+        completed: !!response, 
+        response: response || null,
+        quizId: quiz.id
+      });
+    } catch (error) {
+      console.error("Error checking quiz completion status:", error);
+      res.status(500).json({ error: "Failed to check quiz completion status" });
     }
   });
 

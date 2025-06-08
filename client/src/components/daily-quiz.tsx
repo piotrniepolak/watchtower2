@@ -68,66 +68,111 @@ export default function DailyQuiz() {
     refetchInterval: 5000, // Poll every 5 seconds to check for new quiz
   });
 
-  const { data: quiz, isLoading: quizLoading, refetch } = quizQuery;
+  // Check quiz completion status for authenticated users
+  const completionQuery = useQuery({
+    queryKey: ['/api/quiz/today/completion-status'],
+    enabled: isAuthenticated && !authLoading,
+    retry: false,
+  });
 
-  // Load quiz state from localStorage when quiz data is available
+  const { data: quiz, isLoading: quizLoading, refetch } = quizQuery;
+  const { data: completionStatus, isLoading: completionLoading } = completionQuery;
+
+  // Clear localStorage when user changes or when completion status is loaded
   useEffect(() => {
-    if (!quiz?.id) return;
+    if (!quiz?.id || !isAuthenticated) return;
     
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
+    const currentUserId = user?.id;
+    const storedUserId = localStorage.getItem('quiz_current_user');
     
-    // Load saved state
+    // If user changed, clear all quiz localStorage data
+    if (currentUserId && storedUserId !== currentUserId) {
+      const quizKeys = Object.keys(localStorage).filter(key => key.startsWith('quiz_'));
+      quizKeys.forEach(key => localStorage.removeItem(key));
+      localStorage.setItem('quiz_current_user', currentUserId);
+      
+      // Reset state
+      setSelectedAnswers({});
+      setCurrentQuestion(0);
+      setShowResults(false);
+      setQuizStarted(false);
+      setStartTime(null);
+      setQuizResult(null);
+    }
+  }, [user?.id, quiz?.id, isAuthenticated]);
+
+  // Load completion status from database
+  useEffect(() => {
+    if (!completionStatus || completionLoading) return;
+    
+    if (completionStatus.completed && completionStatus.response) {
+      // User has already completed the quiz, show results
+      setShowResults(true);
+      setQuizResult({
+        score: completionStatus.response.score,
+        total: quiz?.questions?.length || 0,
+        totalPoints: completionStatus.response.totalPoints,
+        timeBonus: completionStatus.response.timeBonus
+      });
+      
+      // Reconstruct answers from the response
+      const answers: { [key: number]: number } = {};
+      completionStatus.response.responses.forEach((response: number, index: number) => {
+        answers[index] = response;
+      });
+      setSelectedAnswers(answers);
+    }
+  }, [completionStatus, completionLoading, quiz?.questions?.length]);
+
+  // Load quiz state from localStorage for current user (fallback for in-progress quiz)
+  useEffect(() => {
+    if (!quiz?.id || !isAuthenticated || (completionStatus && completionStatus.completed)) return;
+    
+    const currentUserId = user?.id;
+    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${currentUserId}_${suffix}`;
+    
+    // Load saved state for current user
     const savedAnswers = localStorage.getItem(getStorageKey('answers'));
     const savedCurrentQuestion = localStorage.getItem(getStorageKey('currentQuestion'));
-    const savedShowResults = localStorage.getItem(getStorageKey('showResults'));
     const savedQuizStarted = localStorage.getItem(getStorageKey('started'));
     const savedStartTime = localStorage.getItem(getStorageKey('startTime'));
-    const savedQuizResult = localStorage.getItem(getStorageKey('result'));
     
     if (savedAnswers) setSelectedAnswers(JSON.parse(savedAnswers));
     if (savedCurrentQuestion) setCurrentQuestion(parseInt(savedCurrentQuestion));
-    if (savedShowResults) setShowResults(savedShowResults === 'true');
     if (savedQuizStarted) setQuizStarted(savedQuizStarted === 'true');
     if (savedStartTime) setStartTime(parseInt(savedStartTime));
-    if (savedQuizResult) setQuizResult(JSON.parse(savedQuizResult));
-  }, [quiz?.id]);
+  }, [quiz?.id, user?.id, isAuthenticated, completionStatus]);
 
-  // Save state to localStorage whenever it changes
+  // Save state to localStorage for current user (only for in-progress quiz)
   useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
+    if (!quiz?.id || !isAuthenticated || (completionStatus && completionStatus.completed)) return;
+    const currentUserId = user?.id;
+    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${currentUserId}_${suffix}`;
     localStorage.setItem(getStorageKey('answers'), JSON.stringify(selectedAnswers));
-  }, [selectedAnswers, quiz?.id]);
+  }, [selectedAnswers, quiz?.id, user?.id, isAuthenticated, completionStatus]);
 
   useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
+    if (!quiz?.id || !isAuthenticated || (completionStatus && completionStatus.completed)) return;
+    const currentUserId = user?.id;
+    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${currentUserId}_${suffix}`;
     localStorage.setItem(getStorageKey('currentQuestion'), currentQuestion.toString());
-  }, [currentQuestion, quiz?.id]);
+  }, [currentQuestion, quiz?.id, user?.id, isAuthenticated, completionStatus]);
 
   useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('showResults'), showResults.toString());
-  }, [showResults, quiz?.id]);
-
-  useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
+    if (!quiz?.id || !isAuthenticated || (completionStatus && completionStatus.completed)) return;
+    const currentUserId = user?.id;
+    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${currentUserId}_${suffix}`;
     localStorage.setItem(getStorageKey('started'), quizStarted.toString());
-  }, [quizStarted, quiz?.id]);
+  }, [quizStarted, quiz?.id, user?.id, isAuthenticated, completionStatus]);
 
   useEffect(() => {
-    if (!quiz?.id || !startTime) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
+    if (!quiz?.id || !startTime || !isAuthenticated || (completionStatus && completionStatus.completed)) return;
+    const currentUserId = user?.id;
+    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${currentUserId}_${suffix}`;
     localStorage.setItem(getStorageKey('startTime'), startTime.toString());
-  }, [startTime, quiz?.id]);
+  }, [startTime, quiz?.id, user?.id, isAuthenticated, completionStatus]);
 
-  useEffect(() => {
-    if (!quiz?.id || !quizResult) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('result'), JSON.stringify(quizResult));
-  }, [quizResult, quiz?.id]);
+
 
   const submitMutation = useMutation({
     mutationFn: async (responses: number[]) => {
