@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { discussionStorage } from "./discussion-storage";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
@@ -774,6 +775,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching notifications:', error);
       res.status(500).json({ message: 'Failed to fetch notifications' });
+    }
+  });
+
+  // Chat API routes
+  app.get('/api/chat/:category', async (req, res) => {
+    try {
+      const category = req.params.category || 'general';
+      const limit = 50;
+      
+      // Add cache-busting headers to force fresh data delivery
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      const messages = await storage.getDiscussions(limit, 0, category);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post('/api/chat', async (req, res) => {
+    try {
+      const { content, category = "general", tempUsername } = req.body;
+      
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: "Message content is required" });
+      }
+
+      if (!tempUsername || !tempUsername.trim()) {
+        return res.status(400).json({ error: "Username is required" });
+      }
+
+      const cleanUsername = tempUsername.trim();
+      
+      // Use authenticated user ID if available, otherwise generate anonymous ID
+      let userId: string;
+      if (req.session?.userId) {
+        userId = req.session.userId.toString();
+        console.log(`Chat from authenticated user ID: ${userId} with username: ${cleanUsername}`);
+      } else {
+        // Generate anonymous user ID based on tempUsername for consistent identity
+        userId = `anon_${Buffer.from(cleanUsername).toString('base64')}`;
+        console.log(`Chat from anonymous user with temp username: ${cleanUsername}`);
+      }
+
+      // Check for username uniqueness in chat using storage
+      const existingMessages = await storage.getDiscussions(100, 0, category);
+      const usernameConflict = existingMessages.find(msg => {
+        const msgUsername = msg.tags && msg.tags.length > 0 ? msg.tags[0] : null;
+        return msgUsername === cleanUsername && msg.author?.id !== userId;
+      });
+
+      if (usernameConflict) {
+        return res.status(409).json({ 
+          error: "Username already taken in this chat session",
+          code: "USERNAME_TAKEN"
+        });
+      }
+
+      const discussionData = {
+        title: `Message from ${cleanUsername}`,
+        content: content.trim(),
+        authorId: userId,
+        category: category,
+        tags: [cleanUsername], // Store username in tags for chat display
+        upvotes: 0,
+        downvotes: 0,
+        replyCount: 0,
+        lastActivityAt: new Date(),
+      };
+
+      const discussion = await storage.createDiscussion(discussionData);
+      
+      res.status(201).json({
+        id: discussion.id,
+        content: discussion.content,
+        username: cleanUsername,
+        timestamp: discussion.createdAt,
+        category: discussion.category
+      });
+    } catch (error) {
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ error: "Failed to send message" });
     }
   });
 
