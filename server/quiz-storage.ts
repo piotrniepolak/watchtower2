@@ -129,15 +129,34 @@ export class QuizStorage {
     console.log(`Found ${results.length} leaderboard entries for quiz ${quiz.id}`);
     if (results.length > 0) {
       console.log('Sample entry:', results[0]);
+      console.log('All entries usernames:', results.map(r => ({ 
+        userId: r.userId, 
+        username: r.username, 
+        firstName: r.firstName 
+      })));
     }
 
-    return results.map(result => ({
-      username: this.generateUsernameForLeaderboard(result),
-      totalPoints: result.totalPoints,
-      score: result.score,
-      timeBonus: result.timeBonus,
-      completedAt: result.completedAt
-    }));
+    const leaderboardData = results.map(result => {
+      console.log('Raw database result:', {
+        userId: result.userId,
+        username: result.username,
+        firstName: result.firstName,
+        email: result.email
+      });
+      const generatedUsername = this.generateUsernameForLeaderboard(result);
+      console.log('Generated username:', generatedUsername);
+      
+      return {
+        username: generatedUsername,
+        totalPoints: result.totalPoints,
+        score: result.score,
+        timeBonus: result.timeBonus,
+        completedAt: result.completedAt
+      };
+    });
+    
+    console.log('Final leaderboard data:', leaderboardData);
+    return leaderboardData;
   }
 
   // Helper method to generate a username from user data
