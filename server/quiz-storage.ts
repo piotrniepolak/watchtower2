@@ -150,12 +150,7 @@ export class QuizStorage {
     lastName?: string | null; 
     email?: string | null; 
   }): string {
-    // If user exists in database, use their info
-    if (result.username) return result.username;
-    if (result.firstName) return result.firstName;
-    if (result.email) return result.email.split('@')[0];
-    
-    // For anonymous users, create a friendly anonymous username
+    // Check if this is an anonymous user first
     if (result.userId.startsWith('anon_')) {
       // Extract a short identifier from the anonymous ID
       const parts = result.userId.split('_');
@@ -165,7 +160,12 @@ export class QuizStorage {
       return `Anonymous${result.userId.slice(-4)}`;
     }
     
-    return 'Anonymous';
+    // For logged-in users, prioritize first name, then username, then email
+    if (result.firstName && result.firstName.trim()) return result.firstName.trim();
+    if (result.username && result.username.trim()) return result.username.trim();
+    if (result.email) return result.email.split('@')[0];
+    
+    return 'User';
   }
 }
 
