@@ -430,12 +430,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .replace(/^\s*-\s*/, '')
             .trim();
           
-          const finalDescription = cleanDescription.length > 85 ? 
-            cleanDescription.substring(0, 82) + '...' : cleanDescription;
-          
           const correlationEvent = {
             eventDate: event.timestamp,
-            eventDescription: finalDescription,
+            eventDescription: cleanDescription,
             stockMovement: 0,
             conflictId: event.conflictId,
             severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
