@@ -60,6 +60,7 @@ export default function ModernLobbyingAnalysis({ timeframe = "1Y" }: { timeframe
   const refreshMutation = useMutation({
     mutationFn: () => apiRequest("/api/lobbying/refresh", "POST"),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/lobbying/analysis", timeframe] });
       queryClient.invalidateQueries({ queryKey: ["/api/lobbying/analysis"] });
     },
   });

@@ -12,6 +12,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
+import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
 
 import { quizStorage } from "./quiz-storage";
@@ -887,33 +888,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Refresh lobbying data
   app.post("/api/lobbying/refresh", async (req, res) => {
     try {
-      const analysis = {
-        totalIndustrySpending: 98.3,
-        topSpenders: [
-          {
-            company: "Lockheed Martin Corporation",
-            symbol: "LMT",
-            totalSpending: 16.2,
-            recentQuarter: 4.1,
-            yearOverYearChange: 8.5,
-            keyIssues: ["defense contracts", "hypersonics", "space systems", "AI integration"],
-            governmentContracts: 2847,
-            influence: "high",
-            lastUpdated: new Date().toISOString()
-          }
-        ],
-        trends: {
-          direction: "increasing",
-          percentage: 7.2,
-          timeframe: "2024"
-        },
-        keyInsights: [
-          "Defense lobbying expenditures refreshed with latest data",
-          "Updated analysis shows continued growth in defense sector engagement"
-        ],
-        marketImpact: "Refreshed data confirms positive correlation with stock performance",
-        lastUpdated: new Date().toISOString()
-      };
+      const stocks = await storage.getStocks();
+      
+      // Force refresh the lobbying analysis with new data
+      const analysis = await modernLobbyingService.refreshLobbyingData(stocks);
       
       res.json(analysis);
     } catch (error) {
