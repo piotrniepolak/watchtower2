@@ -315,7 +315,7 @@ export const discussions = pgTable("discussions", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  authorId: varchar("author_id").notNull().references(() => users.id),
+  authorId: varchar("author_id").references(() => users.id),
   category: varchar("category", { length: 100 }).notNull().default("general"),
   tags: text("tags").array(),
   upvotes: integer("upvotes").default(0),

@@ -1213,17 +1213,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updateUser(userId, { username });
         }
       } else {
-        // Handle non-authenticated users - create anonymous user
-        const anonymousId = `anonymous_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const user = await storage.createUser({
-          id: anonymousId,
-          username: "anonymous",
-          email: `${anonymousId}@chat.local`,
-          firstName: "anonymous",
-          lastName: "",
-          profileImageUrl: null,
-        });
-        userId = user.id;
+        // Handle non-authenticated users - use null for anonymous
+        userId = null;
       }
       
       const message = await discussionStorage.createDiscussion({
