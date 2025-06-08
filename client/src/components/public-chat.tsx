@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Author {
   id: string;
@@ -42,10 +43,27 @@ export default function PublicChat() {
     const stored = localStorage.getItem('chat_username');
     return stored || '';
   });
-  const [showUsernamePrompt, setShowUsernamePrompt] = useState(!username);
+  const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuth();
+
+  // Effect to handle username when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Use authenticated user's information
+      const authenticatedUsername = (user as any).username || 
+        `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim() || 
+        (user as any).email?.split('@')[0] || 
+        'User';
+      setUsername(authenticatedUsername);
+      setShowUsernamePrompt(false);
+    } else if (!username) {
+      // Show username prompt for non-authenticated users
+      setShowUsernamePrompt(true);
+    }
+  }, [isAuthenticated, user, username]);
 
   // Fetch messages for active category
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({

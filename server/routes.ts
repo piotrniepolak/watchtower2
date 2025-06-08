@@ -1176,24 +1176,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message content is required" });
       }
       
-      // Create or get user for this username
-      let user = await storage.getUserByUsername(username);
-      if (!user) {
-        // Create a new user with this username
-        user = await storage.createUser({
-          id: `user_${username}_${Date.now()}`,
-          username: username,
-          email: `${username}@chat.local`,
-          firstName: username,
-          lastName: "",
-          profileImageUrl: null,
-        });
+      let userId: string;
+      
+      // Check if user is authenticated
+      if (req.user && (req.user as any).claims && (req.user as any).claims.sub) {
+        // Use authenticated user
+        const userClaims = (req.user as any).claims;
+        userId = userClaims.sub;
+        
+        // Ensure the authenticated user exists in our database
+        let user = await storage.getUser(userId);
+        if (!user) {
+          // Create user record for authenticated user
+          await storage.upsertUser({
+            id: userId,
+            email: userClaims.email,
+            firstName: userClaims.first_name,
+            lastName: userClaims.last_name,
+            profileImageUrl: userClaims.profile_image_url,
+          });
+        }
+      } else {
+        // Handle non-authenticated users with username
+        let user = await storage.getUserByUsername(username);
+        if (!user) {
+          // Create a new user with this username
+          user = await storage.createUser({
+            id: `user_${username}_${Date.now()}`,
+            username: username,
+            email: `${username}@chat.local`,
+            firstName: username,
+            lastName: "",
+            profileImageUrl: null,
+          });
+        }
+        userId = user.id;
       }
       
       const message = await discussionStorage.createDiscussion({
         title: "Chat Message",
         content: content.trim(),
-        authorId: user.id,
+        authorId: userId,
         category,
         tags: [],
       });
