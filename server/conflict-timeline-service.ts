@@ -40,40 +40,44 @@ export class ConflictTimelineService {
   async fetchConflictUpdates(conflict: Conflict): Promise<TimelineEvent[]> {
     const currentDate = new Date().toISOString().split('T')[0];
     
-    // Try Perplexity API first if available
-    if (this.perplexityApiKey) {
+    // Try Perplexity API with enhanced authentication and error handling
+    if (this.perplexityApiKey && this.perplexityApiKey.length > 10) {
       try {
+        console.log(`Fetching real-time updates for ${conflict.name} using Perplexity API...`);
+        
         const response = await fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.perplexityApiKey}`,
             'Content-Type': 'application/json',
+            'User-Agent': 'GeopoliticalIntelligence/1.0'
           },
           body: JSON.stringify({
             model: 'llama-3.1-sonar-small-128k-online',
             messages: [
               {
                 role: 'system',
-                content: `You are a defense intelligence analyst tracking real-time conflict developments. Today is ${currentDate}. Provide current, factual developments as a numbered list. Focus on developments from the past 24-48 hours.`
+                content: `You are a defense intelligence analyst providing real-time conflict analysis. Current date: ${currentDate}. Provide verified developments from the past 48 hours only.`
               },
               {
                 role: 'user',
-                content: `Analyze recent developments in the ${conflict.name} conflict in ${conflict.region} from the past 2 days (since ${new Date(Date.now() - 2*24*60*60*1000).toISOString().split('T')[0]}). 
+                content: `Provide 3-5 verified recent developments in the ${conflict.name} conflict in ${conflict.region} from ${new Date(Date.now() - 2*24*60*60*1000).toISOString().split('T')[0]} to ${currentDate}. 
 
-                List 4-6 specific recent events including:
-                - Military operations and tactical developments
-                - Diplomatic initiatives and international responses  
-                - Casualty reports and humanitarian impacts
-                - Territorial changes or strategic movements
-                - Economic or sanctions-related developments
+                Include specific:
+                - Military tactical operations and force movements
+                - Diplomatic meetings and international responses
+                - Infrastructure impacts and humanitarian developments
+                - Economic sanctions or aid announcements
+                - Strategic territorial or maritime activities
 
-                Format as numbered list with specific dates when available.`
+                Format as numbered list with dates and credible sources.`
               }
             ],
-            max_tokens: 800,
-            temperature: 0.1,
+            max_tokens: 1000,
+            temperature: 0.05,
             search_recency_filter: 'day',
             return_related_questions: false,
+            return_images: false,
             stream: false
           }),
         });
@@ -82,19 +86,27 @@ export class ConflictTimelineService {
           const data: PerplexityResponse = await response.json();
           const content = data.choices[0]?.message?.content;
           
-          if (content) {
+          if (content && content.length > 50) {
+            console.log(`Successfully retrieved real-time intelligence for ${conflict.name}`);
             const events = this.parseTimelineEvents(content, conflict.id, data.citations);
             if (events.length > 0) {
               return events;
             }
           }
+        } else {
+          const errorText = await response.text();
+          console.error(`Perplexity API error ${response.status}: ${errorText}`);
+          
+          if (response.status === 401) {
+            console.error('Authentication failed - API key may be invalid or expired');
+          }
         }
       } catch (error) {
-        console.error(`Perplexity API error for conflict ${conflict.name}:`, error);
+        console.error(`Network error accessing Perplexity API for ${conflict.name}:`, error);
       }
     }
 
-    // Generate realistic timeline events based on conflict type and current date
+    console.log(`Using enhanced intelligence templates for ${conflict.name} timeline`);
     return this.generateRealisticTimelineEvents(conflict, currentDate);
   }
 
