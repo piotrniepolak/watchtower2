@@ -269,13 +269,13 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaults() {
-    // Initialize with default data
+    // Initialize with comprehensive defense contractor and conflict data
     this.conflicts = [
       {
         id: 1,
         region: "Eastern Europe",
         name: "Ukraine-Russia Conflict",
-        description: "Ongoing territorial dispute between Ukraine and Russia",
+        description: "Ongoing territorial dispute and military conflict between Ukraine and Russia",
         severity: "High",
         status: "Active",
         duration: "2+ years",
@@ -284,6 +284,174 @@ export class MemStorage implements IStorage {
         latitude: 50.4501,
         longitude: 30.5234,
         parties: ["Ukraine", "Russia"]
+      },
+      {
+        id: 2,
+        region: "Middle East",
+        name: "Israel-Palestine Conflict",
+        description: "Long-standing territorial and political conflict in the Middle East",
+        severity: "High", 
+        status: "Active",
+        duration: "75+ years",
+        startDate: new Date("1948-05-15"),
+        lastUpdated: new Date(),
+        latitude: 31.7683,
+        longitude: 35.2137,
+        parties: ["Israel", "Palestine"]
+      },
+      {
+        id: 3,
+        region: "East Asia",
+        name: "Taiwan Strait Tensions",
+        description: "Escalating military tensions between China and Taiwan",
+        severity: "Medium",
+        status: "Monitoring",
+        duration: "70+ years",
+        startDate: new Date("1949-12-07"),
+        lastUpdated: new Date(),
+        latitude: 25.0330,
+        longitude: 121.5654,
+        parties: ["China", "Taiwan"]
+      },
+      {
+        id: 4,
+        region: "South Asia",
+        name: "Kashmir Dispute",
+        description: "Territorial dispute between India and Pakistan over Kashmir region",
+        severity: "Medium",
+        status: "Active",
+        duration: "75+ years", 
+        startDate: new Date("1947-10-22"),
+        lastUpdated: new Date(),
+        latitude: 34.0837,
+        longitude: 74.7973,
+        parties: ["India", "Pakistan"]
+      },
+      {
+        id: 5,
+        region: "Africa",
+        name: "Ethiopian Civil Conflict",
+        description: "Internal armed conflict in Ethiopia involving multiple regions",
+        severity: "High",
+        status: "Active",
+        duration: "3+ years",
+        startDate: new Date("2020-11-04"),
+        lastUpdated: new Date(),
+        latitude: 9.1450,
+        longitude: 40.4897,
+        parties: ["Ethiopian Government", "Regional Forces"]
+      },
+      {
+        id: 6,
+        region: "Middle East",
+        name: "Syrian Civil War",
+        description: "Multi-sided armed conflict in Syria",
+        severity: "High",
+        status: "Active", 
+        duration: "13+ years",
+        startDate: new Date("2011-03-15"),
+        lastUpdated: new Date(),
+        latitude: 34.8021,
+        longitude: 38.9968,
+        parties: ["Syrian Government", "Opposition Forces"]
+      },
+      {
+        id: 7,
+        region: "South America",
+        name: "Colombia Internal Conflict",
+        description: "Armed conflict involving government forces and illegal armed groups",
+        severity: "Medium",
+        status: "Active",
+        duration: "50+ years",
+        startDate: new Date("1964-05-27"),
+        lastUpdated: new Date(),
+        latitude: 4.7110,
+        longitude: -74.0721,
+        parties: ["Colombian Government", "Armed Groups"]
+      },
+      {
+        id: 8,
+        region: "Africa",
+        name: "Mali Conflict",
+        description: "Armed conflict in northern Mali involving government and rebel forces",
+        severity: "Medium",
+        status: "Active",
+        duration: "12+ years",
+        startDate: new Date("2012-01-16"),
+        lastUpdated: new Date(),
+        latitude: 17.5707,
+        longitude: -3.9962,
+        parties: ["Mali Government", "Rebel Groups"]
+      },
+      {
+        id: 9,
+        region: "Asia",
+        name: "Myanmar Civil Unrest",
+        description: "Political instability and armed conflict following military coup",
+        severity: "High",
+        status: "Active",
+        duration: "3+ years",
+        startDate: new Date("2021-02-01"),
+        lastUpdated: new Date(),
+        latitude: 19.7633,
+        longitude: 96.0785,
+        parties: ["Military Junta", "Opposition Forces"]
+      },
+      {
+        id: 10,
+        region: "Europe",
+        name: "Nagorno-Karabakh Dispute",
+        description: "Territorial dispute between Armenia and Azerbaijan",
+        severity: "Medium",
+        status: "Monitoring",
+        duration: "30+ years",
+        startDate: new Date("1988-02-20"),
+        lastUpdated: new Date(),
+        latitude: 39.8282,
+        longitude: 46.7633,
+        parties: ["Armenia", "Azerbaijan"]
+      },
+      {
+        id: 11,
+        region: "Africa",
+        name: "Democratic Republic of Congo Conflict",
+        description: "Armed conflicts in eastern DRC involving multiple armed groups",
+        severity: "High",
+        status: "Active",
+        duration: "25+ years",
+        startDate: new Date("1998-08-02"),
+        lastUpdated: new Date(),
+        latitude: -4.0383,
+        longitude: 21.7587,
+        parties: ["DRC Government", "Armed Groups"]
+      },
+      {
+        id: 12,
+        region: "Middle East",
+        name: "Yemen Civil War",
+        description: "Multi-sided civil war in Yemen",
+        severity: "High",
+        status: "Active",
+        duration: "9+ years",
+        startDate: new Date("2014-09-21"),
+        lastUpdated: new Date(),
+        latitude: 15.5527,
+        longitude: 48.5164,
+        parties: ["Houthis", "Saudi-backed Government"]
+      },
+      {
+        id: 13,
+        region: "Europe",
+        name: "Georgia Territorial Disputes",
+        description: "Territorial disputes involving South Ossetia and Abkhazia",
+        severity: "Low",
+        status: "Frozen",
+        duration: "30+ years",
+        startDate: new Date("1991-12-23"),
+        lastUpdated: new Date(),
+        latitude: 41.7151,
+        longitude: 44.8271,
+        parties: ["Georgia", "Russia", "Breakaway Regions"]
       }
     ];
 
@@ -298,6 +466,199 @@ export class MemStorage implements IStorage {
         volume: 1234567,
         marketCap: "$125.2B",
         lastUpdated: new Date()
+      },
+      {
+        symbol: "RTX",
+        id: 2,
+        name: "Raytheon Technologies Corporation",
+        price: 139.10,
+        change: 0.01,
+        changePercent: 0.01,
+        volume: 2345678,
+        marketCap: "$198.5B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "NOC",
+        id: 3,
+        name: "Northrop Grumman Corporation",
+        price: 489.41,
+        change: 1.27,
+        changePercent: 0.26,
+        volume: 987654,
+        marketCap: "$72.8B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "GD",
+        id: 4,
+        name: "General Dynamics Corporation",
+        price: 276.48,
+        change: 1.98,
+        changePercent: 0.72,
+        volume: 1456789,
+        marketCap: "$76.4B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "BA",
+        id: 5,
+        name: "The Boeing Company",
+        price: 210.80,
+        change: 1.61,
+        changePercent: 0.77,
+        volume: 3456789,
+        marketCap: "$124.7B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "RHM.DE",
+        id: 6,
+        name: "Rheinmetall AG",
+        price: 1788.00,
+        change: -93.78,
+        changePercent: -4.99,
+        volume: 234567,
+        marketCap: "€37.8B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "BA.L",
+        id: 7,
+        name: "BAE Systems plc",
+        price: 1930.50,
+        change: -51.50,
+        changePercent: -2.60,
+        volume: 567890,
+        marketCap: "£61.2B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "LDOS",
+        id: 8,
+        name: "Leidos Holdings Inc",
+        price: 148.14,
+        change: 2.76,
+        changePercent: 1.90,
+        volume: 789012,
+        marketCap: "$20.1B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "LHX",
+        id: 9,
+        name: "L3Harris Technologies Inc",
+        price: 244.27,
+        change: 2.15,
+        changePercent: 0.89,
+        volume: 890123,
+        marketCap: "$44.8B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "HWM",
+        id: 10,
+        name: "Howmet Aerospace Inc",
+        price: 175.37,
+        change: 0.19,
+        changePercent: 0.11,
+        volume: 456789,
+        marketCap: "$68.2B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "KTOS",
+        id: 11,
+        name: "Kratos Defense & Security Solutions Inc",
+        price: 40.47,
+        change: 0.11,
+        changePercent: 0.27,
+        volume: 345678,
+        marketCap: "$5.1B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "AVAV",
+        id: 12,
+        name: "AeroVironment Inc",
+        price: 190.89,
+        change: 4.30,
+        changePercent: 2.30,
+        volume: 234567,
+        marketCap: "$5.2B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "CW",
+        id: 13,
+        name: "Curtiss-Wright Corporation",
+        price: 452.52,
+        change: 3.59,
+        changePercent: 0.80,
+        volume: 123456,
+        marketCap: "$17.8B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "MRCY",
+        id: 14,
+        name: "Mercury Systems Inc",
+        price: 53.14,
+        change: 1.13,
+        changePercent: 2.17,
+        volume: 678901,
+        marketCap: "$3.1B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "TXT",
+        id: 15,
+        name: "Textron Inc",
+        price: 75.57,
+        change: 1.07,
+        changePercent: 1.44,
+        volume: 987654,
+        marketCap: "$15.8B",
+        lastUpdated: new Date()
+      },
+      {
+        symbol: "ITA",
+        id: 16,
+        name: "iShares U.S. Aerospace & Defense ETF",
+        price: 181.96,
+        change: 1.76,
+        changePercent: 0.98,
+        volume: 567890,
+        marketCap: "$2.8B",
+        lastUpdated: new Date()
+      }
+    ];
+
+    // Initialize correlation events
+    this.correlationEvents = [
+      {
+        id: 1,
+        conflictId: 1,
+        severity: 8,
+        eventDate: new Date(),
+        eventDescription: "Major missile strike on Ukrainian infrastructure leads to defense stock surge",
+        stockMovement: 2.3
+      },
+      {
+        id: 2,
+        conflictId: 2,
+        severity: 7,
+        eventDate: new Date(),
+        eventDescription: "Israel announces new defense contract, boosting sector confidence",
+        stockMovement: 1.8
+      },
+      {
+        id: 3,
+        conflictId: 3,
+        severity: 6,
+        eventDate: new Date(),
+        eventDescription: "Taiwan increases defense spending amid rising tensions",
+        stockMovement: 1.2
       }
     ];
   }
