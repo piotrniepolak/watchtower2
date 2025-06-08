@@ -421,7 +421,7 @@ export default function DailyQuiz() {
             const isCorrect = userAnswer === question.correctAnswer;
             
             return (
-              <div key={question.id} className="border rounded-lg p-4 space-y-3">
+              <div key={`result-${question.id}-${index}`} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <h3 className="font-medium text-slate-900 dark:text-slate-100">
                     {index + 1}. {question.question}
