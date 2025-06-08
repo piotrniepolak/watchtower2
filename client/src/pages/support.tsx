@@ -67,62 +67,59 @@ export default function Support() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Response Times
+                  <Zap className="w-5 h-5" />
+                  AI Assistant Features
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-700">Technical Issues</span>
-                  <Badge variant="outline" className="bg-red-50 text-red-700">2-4 hours</Badge>
+                  <span className="text-slate-700">Response Time</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-700">Instant</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-700">Data Questions</span>
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700">4-8 hours</Badge>
+                  <span className="text-slate-700">Platform Help</span>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700">24/7</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-700">API Support</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">1-2 hours</Badge>
+                  <span className="text-slate-700">Data Explanations</span>
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700">Available</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-700">General Inquiries</span>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">24 hours</Badge>
+                  <span className="text-slate-700">Technical Support</span>
+                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700">GPT-4 Powered</Badge>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Direct Contact</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  AI Assistant Capabilities
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-slate-600" />
+                <div className="flex items-start gap-3">
+                  <Bot className="w-4 h-4 text-blue-600 mt-1" />
                   <div>
-                    <p className="font-medium text-slate-900">General Support</p>
-                    <a href="mailto:support@conflictwatch.com" className="text-blue-600 hover:text-blue-800 text-sm">
-                      support@conflictwatch.com
-                    </a>
+                    <p className="font-medium text-slate-900">Platform Navigation</p>
+                    <p className="text-sm text-slate-600">Get help using features, understanding dashboards, and accessing data</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <FileText className="w-4 h-4 text-slate-600" />
+                <div className="flex items-start gap-3">
+                  <Database className="w-4 h-4 text-green-600 mt-1" />
                   <div>
-                    <p className="font-medium text-slate-900">API & Technical</p>
-                    <a href="mailto:api@conflictwatch.com" className="text-blue-600 hover:text-blue-800 text-sm">
-                      api@conflictwatch.com
-                    </a>
+                    <p className="font-medium text-slate-900">Data Interpretation</p>
+                    <p className="text-sm text-slate-600">Understand stock correlations, conflict analysis, and market predictions</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3">
-                  <Shield className="w-4 h-4 text-slate-600" />
+                <div className="flex items-start gap-3">
+                  <Shield className="w-4 h-4 text-purple-600 mt-1" />
                   <div>
-                    <p className="font-medium text-slate-900">Privacy & Security</p>
-                    <a href="mailto:privacy@conflictwatch.com" className="text-blue-600 hover:text-blue-800 text-sm">
-                      privacy@conflictwatch.com
-                    </a>
+                    <p className="font-medium text-slate-900">Technical Troubleshooting</p>
+                    <p className="text-sm text-slate-600">Resolve issues with loading, performance, or feature access</p>
                   </div>
                 </div>
               </CardContent>
