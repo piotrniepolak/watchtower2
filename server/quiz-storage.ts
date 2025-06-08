@@ -166,9 +166,9 @@ export class QuizStorage {
       return `Anonymous${result.userId.slice(-4)}`;
     }
     
-    // For logged-in users, prioritize first name, then username, then email
-    if (result.firstName && result.firstName.trim()) return result.firstName.trim();
+    // For registered users, prioritize username first, then first name, then email
     if (result.username && result.username.trim()) return result.username.trim();
+    if (result.firstName && result.firstName.trim()) return result.firstName.trim();
     if (result.email) return result.email.split('@')[0];
     
     return 'User';

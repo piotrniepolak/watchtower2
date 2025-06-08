@@ -443,7 +443,7 @@ export default function DailyQuiz() {
                     
                     return (
                       <div
-                        key={optionIndex}
+                        key={`q${index}-opt${optionIndex}`}
                         className={`p-2 rounded-md border ${
                           isCorrectAnswer
                             ? 'bg-green-50 border-green-300 dark:bg-green-900/20'
