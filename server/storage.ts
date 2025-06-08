@@ -270,14 +270,6 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
 
     console.log(`DatabaseStorage leaderboard: found ${results.length} entries`);
-    if (results.length > 0) {
-      console.log('Sample database result:', {
-        userId: results[0].userId,
-        username: results[0].username,
-        firstName: results[0].firstName,
-        email: results[0].email
-      });
-    }
 
     // Generate usernames for both registered and anonymous users
     return results.map(result => {
