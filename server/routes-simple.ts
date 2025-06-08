@@ -126,17 +126,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/');
   });
 
-  // Simplified login endpoint for demo purposes
+  // Login endpoint that accepts username or email
   app.post('/api/auth/login', async (req: any, res) => {
     try {
-      const { email } = req.body;
+      const { identifier, email } = req.body;
+      const loginIdentifier = identifier || email;
       
-      if (!email) {
-        return res.status(400).json({ message: 'Email is required' });
+      if (!loginIdentifier) {
+        return res.status(400).json({ message: 'Email or username is required' });
       }
 
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
+      // Find user by email first, then try username lookup via direct database query
+      let user = await storage.getUserByEmail(loginIdentifier);
+      if (!user) {
+        // Try to find by username - use a simplified approach since we don't have getUsers
+        try {
+          // Check if it looks like an email, if not assume it's a username
+          if (!loginIdentifier.includes('@')) {
+            user = await storage.getUserByUsername(loginIdentifier);
+          }
+        } catch (error) {
+          console.log('Username lookup failed, user not found');
+        }
+      }
+      
       if (!user) {
         return res.status(401).json({ message: 'User not found' });
       }

@@ -12,8 +12,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    identifier: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,11 +40,19 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
+        // Store authentication data in localStorage for frontend compatibility
+        if (data.token) {
+          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('auth_user', JSON.stringify(data.user));
+        }
+        
         toast({
           title: "Login Successful",
           description: `Welcome back, ${data.user.firstName || data.user.username}!`,
         });
-        setLocation('/');
+        
+        // Force page reload to trigger authentication state update
+        window.location.href = '/';
       } else {
         toast({
           title: "Login Failed",
@@ -82,27 +89,14 @@ export default function Login() {
             <CardContent className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="identifier">Email or Username</Label>
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
+                    id="identifier"
+                    name="identifier"
+                    type="text"
+                    value={formData.identifier}
                     onChange={handleInputChange}
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Enter your password"
+                    placeholder="Enter your email or username"
                     required
                   />
                 </div>
