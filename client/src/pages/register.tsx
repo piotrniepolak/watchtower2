@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 import { 
   User, 
   Mail, 
@@ -16,6 +18,8 @@ import { Link } from "wouter";
 
 export default function Register() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const { login, refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -55,6 +59,7 @@ export default function Register() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
@@ -67,19 +72,17 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store authentication data in localStorage for frontend compatibility
-        if (data.token) {
-          localStorage.setItem('auth_token', data.token);
-          localStorage.setItem('auth_user', JSON.stringify(data.user));
-        }
+        // Update auth context with user data
+        login(data.user);
         
         toast({
           title: "Registration Successful",
           description: "Your account has been created and you're now logged in!",
         });
         
-        // Force page reload to trigger authentication state update
-        window.location.href = '/';
+        // Refresh auth state and redirect
+        await refreshAuth();
+        setLocation('/dashboard');
       } else {
         toast({
           title: "Registration Failed",
