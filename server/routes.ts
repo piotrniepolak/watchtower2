@@ -4,7 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { discussionStorage } from "./discussion-storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
-import { sql } from "drizzle-orm";
+import { userQuizResponses, users, dailyQuizzes } from "@shared/schema";
+import { sql, eq, desc, asc } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
@@ -1264,58 +1265,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Direct database query for leaderboard
-      const leaderboardQuery = await db
-        .select({
-          userId: userQuizResponses.userId,
-          totalPoints: userQuizResponses.totalPoints,
-          score: userQuizResponses.score,
-          timeBonus: userQuizResponses.timeBonus,
-          completedAt: userQuizResponses.completedAt,
-          username: users.username,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-        })
-        .from(userQuizResponses)
-        .leftJoin(users, eq(userQuizResponses.userId, users.id))
-        .innerJoin(dailyQuizzes, eq(userQuizResponses.quizId, dailyQuizzes.id))
-        .where(eq(dailyQuizzes.date, today))
-        .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
+      // Direct SQL query for leaderboard
+      const result = await pool.query(`
+        SELECT 
+          uqr.user_id,
+          uqr.total_points,
+          uqr.score,
+          uqr.time_bonus,
+          uqr.completed_at,
+          u.username,
+          u.first_name,
+          u.last_name,
+          u.email
+        FROM user_quiz_responses uqr
+        LEFT JOIN users u ON uqr.user_id = u.id
+        INNER JOIN daily_quizzes dq ON uqr.quiz_id = dq.id
+        WHERE dq.date = $1
+        ORDER BY uqr.total_points DESC, uqr.completed_at ASC
+      `, [today]);
 
       // Generate proper usernames for leaderboard
-      const leaderboard = leaderboardQuery.map(result => {
+      const leaderboard = result.rows.map(row => {
         let username = 'Anonymous';
         
         // If user exists in database, use their info
-        if (result.username) {
-          username = result.username;
-        } else if (result.firstName) {
-          username = result.firstName;
-        } else if (result.email) {
-          username = result.email.split('@')[0];
-        } else if (result.userId.startsWith('anon_')) {
+        if (row.username) {
+          username = row.username;
+        } else if (row.first_name) {
+          username = row.first_name;
+        } else if (row.email) {
+          username = row.email.split('@')[0];
+        } else if (row.user_id.startsWith('anon_')) {
           // For anonymous users, create a friendly anonymous username
-          const parts = result.userId.split('_');
+          const parts = row.user_id.split('_');
           if (parts.length >= 3) {
             username = `Anonymous${parts[2].slice(-4)}`;
           } else {
-            username = `Anonymous${result.userId.slice(-4)}`;
+            username = `Anonymous${row.user_id.slice(-4)}`;
           }
         }
 
         return {
           username,
-          totalPoints: result.totalPoints,
-          score: result.score,
-          timeBonus: result.timeBonus,
-          completedAt: result.completedAt,
+          totalPoints: row.total_points,
+          score: row.score,
+          timeBonus: row.time_bonus,
+          completedAt: row.completed_at,
         };
       });
 
       res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching quiz leaderboard:", error);
+      console.error("Error stack:", error.stack);
       res.status(500).json({ error: "Failed to fetch quiz leaderboard" });
     }
   });
