@@ -1228,6 +1228,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = 50;
       
       const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      console.log("API returning messages count:", messages.length);
+      if (messages.length > 0) {
+        console.log("First message author data:", JSON.stringify(messages[0].author, null, 2));
+      }
       res.json(messages);
     } catch (error) {
       console.error("Error fetching chat messages:", error);

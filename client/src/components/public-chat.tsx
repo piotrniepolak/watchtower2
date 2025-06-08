@@ -68,7 +68,8 @@ export default function PublicChat() {
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
     queryKey: [`/api/chat/${activeTab}`],
     refetchInterval: 2000,
-    staleTime: 1000,
+    staleTime: 0, // Force fresh data to fix username caching issue
+    cacheTime: 0, // Don't cache responses
   });
 
   // Send message mutation
