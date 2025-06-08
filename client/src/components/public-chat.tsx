@@ -34,6 +34,7 @@ interface ChatMessage {
   category: string;
   createdAt: string;
   author?: Author;
+  tags?: string[];
 }
 
 export default function PublicChat() {
@@ -73,10 +74,17 @@ export default function PublicChat() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return await apiRequest("POST", `/api/chat`, {
+      const payload: any = {
         content,
         category: activeTab,
-      });
+      };
+      
+      // Only include username for anonymous users
+      if (!isAuthenticated && username) {
+        payload.username = username;
+      }
+      
+      return await apiRequest("POST", `/api/chat`, payload);
     },
     onSuccess: () => {
       setNewMessage("");
