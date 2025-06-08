@@ -291,7 +291,7 @@ export class ConflictTimelineService {
   }
 
   private cleanDescription(text: string): string {
-    // Remove all verbose formatting and create concise descriptions
+    // Comprehensive cleaning to extract meaningful timeline content
     let cleaned = text
       .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '') // Remove date headers
       .replace(/- Source:.*?- Severity:.*$/gm, '') // Remove source/severity trailers
@@ -299,24 +299,40 @@ export class ConflictTimelineService {
       .replace(/- Severity:.*$/gm, '') // Remove standalone severity lines
       .replace(/Source:.*$/gm, '') // Remove source without dash
       .replace(/Severity:.*$/gm, '') // Remove severity without dash
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markdown
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic markdown
       .replace(/\n+/g, ' ') // Replace newlines with spaces
       .replace(/\s+/g, ' ') // Normalize whitespace
       .replace(/^[^-]*-\s*/, '') // Remove leading location prefix if it exists
       .replace(/^\s*-\s*/, '') // Remove leading dash
+      .replace(/^\d+\.\s*/, '') // Remove leading numbers
       .trim();
     
-    // Extract core event information and limit length
-    const sentences = cleaned.split('.').filter(s => s.trim().length > 10);
+    // Extract the most meaningful sentence
+    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 15);
     if (sentences.length > 0) {
-      cleaned = sentences[0].trim();
-      if (cleaned.length > 85) {
-        cleaned = cleaned.substring(0, 82) + '...';
+      // Find sentence with most meaningful content (contains action words)
+      const actionWords = ['reported', 'announced', 'launched', 'attacked', 'deployed', 'conducted', 'forces', 'military', 'officials'];
+      let bestSentence = sentences[0];
+      
+      for (const sentence of sentences.slice(0, 3)) {
+        const hasAction = actionWords.some(word => sentence.toLowerCase().includes(word));
+        if (hasAction && sentence.length > bestSentence.length * 0.7) {
+          bestSentence = sentence;
+          break;
+        }
       }
+      
+      cleaned = bestSentence.trim();
     }
     
-    // If still empty or too short, extract meaningful content
+    // Final length check and truncation
+    if (cleaned.length > 85) {
+      cleaned = cleaned.substring(0, 82) + '...';
+    }
+    
+    // If still empty or too short, try extracting from location patterns
     if (cleaned.length < 20 && text.length > 50) {
-      // Find meaningful content after location indicators
       const locationMatch = text.match(/(?:Kyiv|Kharkiv|Donetsk|Luhansk|Gaza|Jerusalem|Tel Aviv|Rafah|Khan Younis)[\s-]*(.+?)(?:\.|$)/i);
       if (locationMatch && locationMatch[1]) {
         cleaned = locationMatch[1].trim();
@@ -326,7 +342,7 @@ export class ConflictTimelineService {
       }
     }
     
-    return cleaned;
+    return cleaned || 'Recent conflict development reported';
   }
 
   private generateRealisticTimelineEvents(conflict: Conflict, currentDate: string): TimelineEvent[] {
