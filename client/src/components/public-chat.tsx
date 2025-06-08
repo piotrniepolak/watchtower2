@@ -73,21 +73,14 @@ export default function PublicChat() {
   });
 
   const getAuthorName = (message: ChatMessage) => {
-    // Only authenticated users can chat - show their database information
+    // Only show username if it exists
     if (message.author && message.author.username) {
       return message.author.username;
     }
     
-    if (message.author && message.author.firstName) {
-      return message.author.firstName;
-    }
-    
-    if (message.author && message.author.email && message.author.email.includes('@')) {
-      return message.author.email.split('@')[0];
-    }
-    
+    // If no username, show that they need to create one
     if (message.author) {
-      return `User ${message.author.id}`;
+      return "User (needs username)";
     }
     
     // Should not happen since only authenticated users can chat
