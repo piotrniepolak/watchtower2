@@ -1187,14 +1187,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Ensure the authenticated user exists in our database
         let user = await storage.getUser(userId);
         if (!user) {
-          // Create user record for authenticated user
+          // Create user record for authenticated user with proper username
+          const username = userClaims.email ? userClaims.email.split('@')[0] : `user_${userId}`;
           await storage.upsertUser({
             id: userId,
             email: userClaims.email,
             firstName: userClaims.first_name,
             lastName: userClaims.last_name,
+            username: username,
             profileImageUrl: userClaims.profile_image_url,
           });
+        } else if (!user.username) {
+          // Update existing user with username if missing
+          const username = user.email ? user.email.split('@')[0] : `user_${userId}`;
+          await storage.updateUser(userId, { username });
         }
       } else {
         // Handle non-authenticated users with username

@@ -27,6 +27,7 @@ export class DiscussionStorage {
             username: users.username,
             firstName: users.firstName,
             lastName: users.lastName,
+            email: users.email,
             profileImageUrl: users.profileImageUrl,
           }
         })

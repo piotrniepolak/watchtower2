@@ -23,6 +23,7 @@ interface Author {
   username?: string;
   firstName?: string;
   lastName?: string;
+  email?: string;
   profileImageUrl?: string;
 }
 
@@ -95,11 +96,21 @@ export default function PublicChat() {
   });
 
   const getAuthorName = (author?: Author) => {
-    if (!author) return "Anonymous";
+    if (!author) return "anonymous";
+    
+    // Check if this is a temporary chat user (non-authenticated)
+    if (author.id && author.id.startsWith('user_') && author.email && author.email.endsWith('@chat.local')) {
+      return "anonymous";
+    }
+    
+    // For authenticated users, use their actual information
     if (author.username) return author.username;
     if (author.firstName && author.lastName) {
       return `${author.firstName} ${author.lastName}`;
     }
+    if (author.firstName) return author.firstName;
+    if (author.email) return author.email.split('@')[0];
+    
     return "User";
   };
 
