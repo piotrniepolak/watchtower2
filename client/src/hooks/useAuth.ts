@@ -1,14 +1,2 @@
-import { useQuery } from "@tanstack/react-query";
-
-export function useAuth() {
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/auth/current-user"],
-    retry: false,
-  });
-
-  return {
-    user,
-    isLoading,
-    isAuthenticated: !!user && !!user.id,
-  };
-}
+// This hook is deprecated - use useAuth from @/contexts/auth-context instead
+export { useAuth } from "@/contexts/auth-context";
