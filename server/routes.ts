@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
+import { discussionStorage } from "./discussion-storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -1259,9 +1260,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat API routes
+  app.get('/api/chat/:category', async (req, res) => {
+    try {
+      const category = req.params.category || 'general';
+      const limit = 50;
+      
+      // Add cache-busting headers to force fresh data delivery
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      console.log("API returning messages count:", messages.length);
+      if (messages.length > 0) {
+        console.log("First message author data:", JSON.stringify(messages[0].author, null, 2));
+        console.log("First message tags data:", JSON.stringify(messages[0].tags, null, 2));
+      }
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
 
+  app.post('/api/chat', isAuthenticated, async (req, res) => {
+    try {
+      const { content, category = "general" } = req.body;
+      
+      if (!content || !content.trim()) {
+        return res.status(400).json({ error: "Message content is required" });
+      }
+      
+      // Get user ID from authenticated session
+      const userId = req.user.id;
+      console.log(`Chat from authenticated user ID: ${userId}`);
+      
+      const message = await discussionStorage.createDiscussion({
+        title: "Chat Message",
+        content: content.trim(),
+        authorId: userId,
+        category,
+        tags: [], // No tags needed - authenticated users only
+      });
+      
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating chat message:", error);
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
 
+  app.get('/api/discussions', async (req, res) => {
+    try {
+      const category = req.query.category as string || 'general';
+      const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
+      
+      const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
 
+  app.post('/api/discussions', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const { title, content, category = "general", tags = [] } = req.body;
+      
+      if (!title || !title.trim() || !content || !content.trim()) {
+        return res.status(400).json({ error: "Title and content are required" });
+      }
+      
+      const discussion = await discussionStorage.createDiscussion({
+        title,
+        content,
+        authorId: userId,
+        category,
+        tags,
+      });
+      
+      res.status(201).json(discussion);
+    } catch (error) {
+      console.error("Error creating discussion:", error);
+      res.status(500).json({ error: "Failed to create discussion" });
+    }
+  });
+
+  app.get('/api/discussions/:id/replies', async (req, res) => {
+    try {
+      const discussionId = parseInt(req.params.id);
+      const replies = await discussionStorage.getDiscussionReplies(discussionId);
+      res.json(replies);
+    } catch (error) {
+      console.error("Error fetching replies:", error);
+      res.status(500).json({ error: "Failed to fetch replies" });
+    }
+  });
+
+  app.post('/api/discussions/:id/replies', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const discussionId = parseInt(req.params.id);
+      const { content, parentReplyId } = req.body;
+      
+      if (!content) {
+        return res.status(400).json({ error: "Content is required" });
+      }
+      
+      const reply = await discussionStorage.createDiscussionReply({
+        discussionId,
+        content,
+        authorId: userId.toString(),
+        parentReplyId: parentReplyId || null,
+      });
+      
+      res.status(201).json(reply);
+    } catch (error) {
+      console.error("Error creating reply:", error);
+      res.status(500).json({ error: "Failed to create reply" });
+    }
+  });
+
+  // Like/unlike a discussion thread
+  app.post('/api/discussions/:id/like', async (req, res) => {
+    try {
+      // Using session-based authentication
+      const userId = req.session?.user?.id || 2; // Default to user 2 for demo
+      
+      const discussionId = parseInt(req.params.id);
+      await discussionStorage.voteOnDiscussion(parseInt(userId), discussionId, 'up');
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error liking discussion:", error);
+      res.status(500).json({ error: "Failed to like discussion" });
+    }
+  });
+
+  // Like/unlike a reply
+  app.post('/api/discussions/replies/:id/like', async (req, res) => {
+    try {
+      // Using session-based authentication
+      const userId = req.session?.user?.id || 2; // Default to user 2 for demo
+      
+      const replyId = parseInt(req.params.id);
+      await discussionStorage.voteOnReply(parseInt(userId), replyId, 'up');
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error liking reply:", error);
+      res.status(500).json({ error: "Failed to like reply" });
+    }
+  });
+
+  app.post('/api/discussions/:id/vote', async (req, res) => {
+    try {
+      // For now, using a demo user ID since auth is not fully implemented
+      const userId = 1;
+      const discussionId = parseInt(req.params.id);
+      const { voteType } = req.body;
+      
+      if (!['up', 'down'].includes(voteType)) {
+        return res.status(400).json({ error: "Vote type must be 'up' or 'down'" });
+      }
+      
+      await discussionStorage.voteOnDiscussion(userId, discussionId, voteType);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error voting on discussion:", error);
+      res.status(500).json({ error: "Failed to vote on discussion" });
+    }
+  });
 
   // Start real-time stock price updates when server starts
   if (process.env.ALPHA_VANTAGE_API_KEY) {
