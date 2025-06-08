@@ -45,11 +45,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enable sessions
   app.use(sessionConfig);
 
-  // Simple login endpoint for demo
-  app.get('/api/login', (req: any, res) => {
-    // Create a demo user session
-    req.session.userId = 1;
+  // Login endpoint with user switching capability
+  app.get('/api/login', async (req: any, res) => {
+    try {
+      const userEmail = req.query.email;
+      if (userEmail) {
+        const user = await storage.getUserByEmail(userEmail);
+        if (user) {
+          req.session.userId = user.id;
+          console.log(`Login successful for user: ${user.username} (${user.email})`);
+          return res.redirect('/');
+        }
+      }
+      
+      // Create anonymous session
+      req.session.userId = null;
+      console.log('Anonymous session created');
+      res.redirect('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      res.redirect('/');
+    }
+  });
+
+  // Logout endpoint
+  app.get('/api/logout', (req: any, res) => {
+    req.session.userId = null;
+    console.log('User logged out');
     res.redirect('/');
+  });
+
+  // Get current user info
+  app.get('/api/auth/current-user', async (req: any, res) => {
+    try {
+      if (req.session?.userId) {
+        const user = await storage.getUser(req.session.userId.toString());
+        if (user) {
+          return res.json({ 
+            id: user.id, 
+            username: user.username, 
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          });
+        }
+      }
+      res.json({ id: null, username: null, email: null });
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      res.status(500).json({ error: 'Failed to get user info' });
+    }
   });
 
   // Quick login for existing user (development only)
@@ -1178,24 +1223,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let userId: string | null = null;
       
-      // Check if user is authenticated using the same pattern as other protected routes
-      try {
-        // Try to get authenticated user data
-        const authResponse = await fetch(`http://localhost:5000/api/auth/user`, {
-          headers: {
-            'Cookie': req.headers.cookie || ''
-          }
-        });
-        
-        if (authResponse.ok) {
-          const userData = await authResponse.json();
-          userId = userData.id;
-          console.log("Chat from authenticated user:", userData.username || userData.id);
-        } else {
-          console.log("Chat from anonymous user");
-        }
-      } catch (error) {
-        console.log("Authentication check failed, treating as anonymous");
+      // Check if user is authenticated using session data directly
+      if (req.isAuthenticated && req.isAuthenticated() && req.user && (req.user as any).claims) {
+        const userClaims = (req.user as any).claims;
+        userId = userClaims.sub;
+        console.log("Chat from authenticated user:", userId);
+      } else {
+        console.log("Chat from anonymous user - no valid session");
       }
       
       const message = await discussionStorage.createDiscussion({

@@ -46,7 +46,6 @@ export class DiscussionStorage {
         .offset(offset);
         
       console.log("DiscussionStorage.getDiscussions result:", result.length, "items");
-      console.log("Sample discussion with author:", result[0]?.author || "No author data");
       return result;
     } catch (error) {
       console.error("Error in getDiscussions:", error);
