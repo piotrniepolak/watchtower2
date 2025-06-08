@@ -1176,45 +1176,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message content is required" });
       }
       
-      let userId: string | null;
+      let userId: string | null = null;
       
-      // Debug authentication state
-      console.log("Chat request auth debug:", {
-        hasIsAuthenticated: !!req.isAuthenticated,
-        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
-        hasUser: !!req.user,
-        userClaims: req.user ? (req.user as any).claims : null
-      });
-      
-      // Check if user is authenticated and session is valid
-      const isUserAuthenticated = req.isAuthenticated && req.isAuthenticated() && req.user && (req.user as any).claims && (req.user as any).claims.sub;
-      
-      if (isUserAuthenticated) {
-        // Use authenticated user
-        const userClaims = (req.user as any).claims;
-        userId = userClaims.sub;
+      // Check if user is authenticated using the same pattern as other protected routes
+      try {
+        // Try to get authenticated user data
+        const authResponse = await fetch(`http://localhost:5000/api/auth/user`, {
+          headers: {
+            'Cookie': req.headers.cookie || ''
+          }
+        });
         
-        // Ensure the authenticated user exists in our database
-        let user = await storage.getUser(userId);
-        if (!user) {
-          // Create user record for authenticated user with proper username
-          const username = userClaims.email ? userClaims.email.split('@')[0] : `user_${userId}`;
-          await storage.upsertUser({
-            id: userId,
-            email: userClaims.email,
-            firstName: userClaims.first_name,
-            lastName: userClaims.last_name,
-            username: username,
-            profileImageUrl: userClaims.profile_image_url,
-          });
-        } else if (!user.username) {
-          // Update existing user with username if missing
-          const username = user.email ? user.email.split('@')[0] : `user_${userId}`;
-          await storage.updateUser(userId, { username });
+        if (authResponse.ok) {
+          const userData = await authResponse.json();
+          userId = userData.id;
+          console.log("Chat from authenticated user:", userData.username || userData.id);
+        } else {
+          console.log("Chat from anonymous user");
         }
-      } else {
-        // Handle non-authenticated users - use null for anonymous
-        userId = null;
+      } catch (error) {
+        console.log("Authentication check failed, treating as anonymous");
       }
       
       const message = await discussionStorage.createDiscussion({
