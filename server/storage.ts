@@ -959,16 +959,21 @@ export class MemStorage implements IStorage {
 
   // Daily Quiz methods
   async getDailyQuiz(date: string): Promise<DailyQuiz | undefined> {
-    return this.dailyQuizzes.get(date);
+    console.log(`DatabaseStorage.getDailyQuiz: Querying for date ${date}`);
+    try {
+      const results = await db.select().from(dailyQuizzes).where(eq(dailyQuizzes.date, date));
+      console.log(`DatabaseStorage.getDailyQuiz: Query returned ${results.length} results`, results);
+      const [quiz] = results;
+      return quiz || undefined;
+    } catch (error) {
+      console.error(`DatabaseStorage.getDailyQuiz: Query failed for date ${date}:`, error);
+      return undefined;
+    }
   }
 
   async getDailyQuizById(id: number): Promise<DailyQuiz | undefined> {
-    for (const quiz of this.dailyQuizzes.values()) {
-      if (quiz.id === id) {
-        return quiz;
-      }
-    }
-    return undefined;
+    const [quiz] = await db.select().from(dailyQuizzes).where(eq(dailyQuizzes.id, id));
+    return quiz || undefined;
   }
 
   async createDailyQuiz(insertQuiz: InsertDailyQuiz): Promise<DailyQuiz> {
@@ -1339,4 +1344,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
