@@ -1,0 +1,135 @@
+import { 
+  dailyQuizzes, userQuizResponses, users,
+  type DailyQuiz, type UserQuizResponse, type User,
+  type InsertDailyQuiz, type InsertUserQuizResponse
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, asc } from "drizzle-orm";
+
+export class QuizStorage {
+  // Get today's quiz
+  async getDailyQuiz(date: string): Promise<DailyQuiz | null> {
+    const [quiz] = await db.select().from(dailyQuizzes).where(eq(dailyQuizzes.date, date));
+    return quiz || null;
+  }
+
+  // Create a new daily quiz
+  async createDailyQuiz(quiz: InsertDailyQuiz): Promise<DailyQuiz> {
+    const [newQuiz] = await db.insert(dailyQuizzes).values(quiz).returning();
+    return newQuiz;
+  }
+
+  // Submit quiz response and save to database
+  async submitQuizResponse(
+    userId: string, 
+    quizId: number, 
+    responses: number[], 
+    score: number,
+    totalPoints: number,
+    timeBonus: number,
+    completionTimeSeconds?: number
+  ): Promise<{ score: number; total: number; totalPoints: number; timeBonus: number }> {
+    // Check if user already submitted for this quiz
+    const existingResponse = await db
+      .select()
+      .from(userQuizResponses)
+      .where(and(
+        eq(userQuizResponses.userId, userId),
+        eq(userQuizResponses.quizId, quizId)
+      ));
+
+    if (existingResponse.length > 0) {
+      // Return existing results
+      const existing = existingResponse[0];
+      return {
+        score: existing.score,
+        total: responses.length,
+        totalPoints: existing.totalPoints,
+        timeBonus: existing.timeBonus
+      };
+    }
+
+    // Save new response
+    const responseData: InsertUserQuizResponse = {
+      userId,
+      quizId,
+      responses,
+      score,
+      totalPoints,
+      timeBonus,
+      completionTimeSeconds
+    };
+
+    await db.insert(userQuizResponses).values(responseData);
+
+    return {
+      score,
+      total: responses.length,
+      totalPoints,
+      timeBonus
+    };
+  }
+
+  // Get user's quiz response for a specific quiz
+  async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | null> {
+    const [response] = await db
+      .select()
+      .from(userQuizResponses)
+      .where(and(
+        eq(userQuizResponses.userId, userId),
+        eq(userQuizResponses.quizId, quizId)
+      ));
+    
+    return response || null;
+  }
+
+  // Get leaderboard for a specific date
+  async getDailyQuizLeaderboard(date: string): Promise<{
+    username: string;
+    totalPoints: number;
+    score: number;
+    timeBonus: number;
+    completedAt: Date | null;
+  }[]> {
+    // Get today's quiz first
+    const quiz = await this.getDailyQuiz(date);
+    if (!quiz) {
+      return [];
+    }
+
+    // Get leaderboard with usernames
+    const results = await db
+      .select({
+        username: users.username,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        totalPoints: userQuizResponses.totalPoints,
+        score: userQuizResponses.score,
+        timeBonus: userQuizResponses.timeBonus,
+        completedAt: userQuizResponses.completedAt,
+      })
+      .from(userQuizResponses)
+      .innerJoin(users, eq(userQuizResponses.userId, users.id))
+      .where(eq(userQuizResponses.quizId, quiz.id))
+      .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
+
+    return results.map(result => ({
+      username: result.username || result.firstName || result.email?.split('@')[0] || 'Anonymous',
+      totalPoints: result.totalPoints,
+      score: result.score,
+      timeBonus: result.timeBonus,
+      completedAt: result.completedAt
+    }));
+  }
+
+  // Helper method to generate a username from user data
+  private generateUsername(user: { username?: string | null; firstName?: string | null; email?: string | null }): string {
+    if (user.username) return user.username;
+    if (user.firstName) return user.firstName;
+    if (user.email) return user.email.split('@')[0];
+    return 'Anonymous';
+  }
+}
+
+export const quizStorage = new QuizStorage();

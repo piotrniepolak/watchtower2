@@ -153,7 +153,7 @@ export const dailyQuizzes = pgTable("daily_quizzes", {
 
 export const userQuizResponses = pgTable("user_quiz_responses", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
   quizId: integer("quiz_id").notNull().references(() => dailyQuizzes.id),
   responses: jsonb("responses").notNull(), // User's answers
   score: integer("score").notNull(),

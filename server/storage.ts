@@ -36,21 +36,21 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Stock Watchlists
-  getUserStockWatchlist(userId: number): Promise<StockWatchlist[]>;
+  getUserStockWatchlist(userId: string): Promise<StockWatchlist[]>;
   addStockToWatchlist(watchlist: InsertStockWatchlist): Promise<StockWatchlist>;
-  removeStockFromWatchlist(userId: number, stockSymbol: string): Promise<void>;
+  removeStockFromWatchlist(userId: string, stockSymbol: string): Promise<void>;
   
   // Conflict Watchlists
-  getUserConflictWatchlist(userId: number): Promise<ConflictWatchlist[]>;
+  getUserConflictWatchlist(userId: string): Promise<ConflictWatchlist[]>;
   addConflictToWatchlist(watchlist: InsertConflictWatchlist): Promise<ConflictWatchlist>;
-  removeConflictFromWatchlist(userId: number, conflictId: number): Promise<void>;
+  removeConflictFromWatchlist(userId: string, conflictId: number): Promise<void>;
   
   // Daily Quizzes
   getDailyQuiz(date: string): Promise<DailyQuiz | undefined>;
   getDailyQuizById(id: number): Promise<DailyQuiz | undefined>;
   createDailyQuiz(quiz: InsertDailyQuiz): Promise<DailyQuiz>;
   createUserQuizResponse(response: InsertUserQuizResponse): Promise<UserQuizResponse>;
-  getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined>;
+  getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined>;
   
   // Daily News
   getDailyNews(date: string): Promise<DailyNews | undefined>;
