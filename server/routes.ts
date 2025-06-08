@@ -278,8 +278,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bcrypt = await import('bcrypt');
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // Create user
+      // Create user with generated ID
+      const userId = Math.random().toString(36).substring(2) + Date.now().toString(36);
       const newUser = await storage.createUser({
+        id: userId,
         username,
         email,
         password: hashedPassword,
@@ -311,13 +313,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get('/api/auth/user', async (req: any, res) => {
-    if (req.session?.userId) {
-      const user = await storage.getUser(req.session.userId.toString());
-      if (user) {
-        return res.json(user);
+    try {
+      if (req.session?.userId) {
+        const user = await storage.getUser(req.session.userId);
+        if (user) {
+          // Remove password from response for security
+          const { password, ...userWithoutPassword } = user;
+          return res.json(userWithoutPassword);
+        }
       }
+      res.status(401).json({ message: 'Not authenticated', isAuthenticated: false });
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      res.status(401).json({ message: 'Not authenticated', isAuthenticated: false });
     }
-    res.status(401).json({ message: 'Not authenticated' });
   });
 
   app.patch('/api/auth/username', isAuthenticated, async (req: any, res) => {
