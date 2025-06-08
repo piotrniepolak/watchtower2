@@ -1178,8 +1178,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let userId: string;
       
+      // Debug authentication state
+      console.log("Chat request auth debug:", {
+        hasIsAuthenticated: !!req.isAuthenticated,
+        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : false,
+        hasUser: !!req.user,
+        userClaims: req.user ? (req.user as any).claims : null
+      });
+      
       // Check if user is authenticated and session is valid
-      if (req.isAuthenticated && req.isAuthenticated() && req.user && (req.user as any).claims && (req.user as any).claims.sub) {
+      const isUserAuthenticated = req.isAuthenticated && req.isAuthenticated() && req.user && (req.user as any).claims && (req.user as any).claims.sub;
+      
+      if (isUserAuthenticated) {
         // Use authenticated user
         const userClaims = (req.user as any).claims;
         userId = userClaims.sub;
