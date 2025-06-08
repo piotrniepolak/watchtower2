@@ -96,24 +96,25 @@ export default function PublicChat() {
   });
 
   const getAuthorName = (author?: Author) => {
+    // If no author data, this is truly anonymous
     if (!author) return "anonymous";
     
-    // If no username or user data is missing, this is an anonymous user
-    if (!author.username && !author.firstName && !author.email) {
+    // If author exists but has no meaningful data, treat as anonymous
+    if (!author.id || (!author.username && !author.firstName && !author.email)) {
       return "anonymous";
     }
     
-    // Check if this is a temporary chat user (non-authenticated)
-    if (author.email && author.email.endsWith('@chat.local')) {
-      return "anonymous";
+    // ALWAYS use the username if it exists - this is the primary identifier
+    if (author.username) {
+      return author.username;
     }
     
-    // For authenticated users, use their actual information
-    if (author.username && author.username !== 'anonymous') return author.username;
-    if (author.firstName && author.lastName) {
-      return `${author.firstName} ${author.lastName}`;
+    // Fallback to firstName if no username
+    if (author.firstName) {
+      return author.firstName;
     }
-    if (author.firstName) return author.firstName;
+    
+    // Last resort: use email prefix
     if (author.email && !author.email.endsWith('@chat.local')) {
       return author.email.split('@')[0];
     }
