@@ -1149,15 +1149,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Responses must be an array" });
       }
 
-      // Check if user already submitted this quiz
-      const existingResponse = await quizStorage.getUserQuizResponse(userId, quizId);
+      // Check if user already submitted this quiz (use storage directly)
+      const existingResponse = await storage.getUserQuizResponse(userId, quizId);
       if (existingResponse) {
         return res.status(400).json({ error: "Quiz already completed" });
       }
 
-      // Get quiz to calculate score - use the quiz ID from the URL
-      const quiz = await quizStorage.getDailyQuizById(quizId);
-      if (!quiz) {
+      // Get quiz to calculate score - use the same system as the GET endpoint
+      const quiz = await quizService.getTodaysQuiz();
+      if (!quiz || quiz.id !== quizId) {
         return res.status(404).json({ error: "Quiz not found" });
       }
 
@@ -1181,15 +1181,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const totalPoints = basePoints + timeBonus;
 
-      const result = await quizStorage.submitQuizResponse(
-        userId, 
-        quizId, 
-        responses, 
+      // Save quiz response using storage directly
+      await storage.createUserQuizResponse({
+        userId,
+        quizId,
+        responses: responses as any,
         score,
         totalPoints,
         timeBonus,
-        completionTimeSeconds
-      );
+        completionTimeSeconds: completionTimeSeconds || null
+      });
+
+      const result = { score, total: responses.length, totalPoints, timeBonus };
       
       res.json(result);
     } catch (error) {
