@@ -107,9 +107,10 @@ export class QuizStorage {
       return [];
     }
 
-    // Get leaderboard with usernames
+    // Get leaderboard including anonymous users
     const results = await db
       .select({
+        userId: userQuizResponses.userId,
         username: users.username,
         firstName: users.firstName,
         lastName: users.lastName,
@@ -120,12 +121,12 @@ export class QuizStorage {
         completedAt: userQuizResponses.completedAt,
       })
       .from(userQuizResponses)
-      .innerJoin(users, eq(userQuizResponses.userId, users.id))
+      .leftJoin(users, eq(userQuizResponses.userId, users.id))
       .where(eq(userQuizResponses.quizId, quiz.id))
       .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
 
     return results.map(result => ({
-      username: result.username || result.firstName || result.email?.split('@')[0] || 'Anonymous',
+      username: this.generateUsernameForLeaderboard(result),
       totalPoints: result.totalPoints,
       score: result.score,
       timeBonus: result.timeBonus,
@@ -138,6 +139,32 @@ export class QuizStorage {
     if (user.username) return user.username;
     if (user.firstName) return user.firstName;
     if (user.email) return user.email.split('@')[0];
+    return 'Anonymous';
+  }
+
+  // Helper method to generate username for leaderboard including anonymous users
+  private generateUsernameForLeaderboard(result: { 
+    userId: string; 
+    username?: string | null; 
+    firstName?: string | null; 
+    lastName?: string | null; 
+    email?: string | null; 
+  }): string {
+    // If user exists in database, use their info
+    if (result.username) return result.username;
+    if (result.firstName) return result.firstName;
+    if (result.email) return result.email.split('@')[0];
+    
+    // For anonymous users, create a friendly anonymous username
+    if (result.userId.startsWith('anon_')) {
+      // Extract a short identifier from the anonymous ID
+      const parts = result.userId.split('_');
+      if (parts.length >= 3) {
+        return `Anonymous${parts[2].slice(-4)}`;
+      }
+      return `Anonymous${result.userId.slice(-4)}`;
+    }
+    
     return 'Anonymous';
   }
 }
