@@ -1155,8 +1155,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Quiz already completed" });
       }
 
-      // Get quiz to calculate score
-      const quiz = await quizStorage.getDailyQuiz(new Date().toISOString().split('T')[0]);
+      // Get quiz to calculate score - use the quiz ID from the URL
+      const quiz = await quizStorage.getDailyQuizById(quizId);
       if (!quiz) {
         return res.status(404).json({ error: "Quiz not found" });
       }
