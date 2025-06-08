@@ -12,6 +12,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
+import { chatCleanupService } from "./chat-cleanup-service";
 
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
@@ -1425,6 +1426,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching chat messages:", error);
       res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  // Manual chat cleanup endpoint (for testing)
+  app.post('/api/chat/cleanup', async (req, res) => {
+    try {
+      await chatCleanupService.cleanupNow();
+      res.json({ message: "Chat cleanup completed successfully" });
+    } catch (error) {
+      console.error("Manual chat cleanup failed:", error);
+      res.status(500).json({ error: "Failed to cleanup chat messages" });
     }
   });
 

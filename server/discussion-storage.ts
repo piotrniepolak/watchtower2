@@ -8,46 +8,41 @@ import { eq, desc, sql, and } from "drizzle-orm";
 export class DiscussionStorage {
   async getDiscussions(limit: number = 20, offset: number = 0, category?: string) {
     try {
-      const baseQuery = db
-        .select({
-          id: discussions.id,
-          title: discussions.title,
-          content: discussions.content,
-          authorId: discussions.authorId,
-          category: discussions.category,
-          tags: discussions.tags,
-          upvotes: discussions.upvotes,
-          downvotes: discussions.downvotes,
-          replyCount: discussions.replyCount,
-          lastActivityAt: discussions.lastActivityAt,
-          createdAt: discussions.createdAt,
-          updatedAt: discussions.updatedAt,
-          author: {
-            id: users.id,
-            username: users.username,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            email: users.email,
-            profileImageUrl: users.profileImageUrl,
-          }
-        })
-        .from(discussions)
-        .leftJoin(users, eq(discussions.authorId, users.id));
-
-      let query = baseQuery;
+      // First get discussions
+      let discussionsQuery = db.select().from(discussions);
       
       if (category) {
-        query = baseQuery.where(eq(discussions.category, category));
+        discussionsQuery = discussionsQuery.where(eq(discussions.category, category));
       }
 
-      const result = await query
+      const discussionResults = await discussionsQuery
         .orderBy(desc(discussions.lastActivityAt))
         .limit(limit)
         .offset(offset);
+
+      // Then get authors for each discussion
+      const result = [];
+      for (const discussion of discussionResults) {
+        let author = null;
+        if (discussion.authorId) {
+          const authorQuery = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, discussion.authorId))
+            .limit(1);
+          author = authorQuery[0] || null;
+        }
+
+        result.push({
+          ...discussion,
+          author
+        });
+      }
         
       console.log("DiscussionStorage.getDiscussions result:", result.length, "items");
       if (result.length > 0) {
         console.log("Sample discussion with author:", JSON.stringify(result[0], null, 2));
+        console.log("All message IDs:", result.map(r => r.id).slice(0, 10));
       }
       return result;
     } catch (error) {
