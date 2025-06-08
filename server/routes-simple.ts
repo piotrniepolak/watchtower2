@@ -94,12 +94,15 @@ async function generateRealTimeNotifications() {
 
 // Simple session-based auth
 const sessionConfig = session({
-  secret: process.env.SESSION_SECRET || 'dev-secret',
+  secret: process.env.SESSION_SECRET || 'dev-secret-key-for-session-persistence',
   resave: false,
   saveUninitialized: false,
+  name: 'sessionId',
   cookie: {
     secure: false,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: 'lax'
   }
 });
 
