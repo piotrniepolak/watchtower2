@@ -177,7 +177,7 @@ export class ConflictTimelineService {
             conflictId,
             timestamp: this.extractTimestamp(cleanLine) || new Date(Date.now() - Math.random() * 48 * 60 * 60 * 1000),
             title: this.extractMeaningfulTitle(cleanLine),
-            description: cleanLine,
+            description: this.cleanDescription(cleanLine),
             severity: this.extractSeverity(cleanLine),
             source: this.extractSource(cleanLine) || (citations && citations[0] ? citations[0] : 'Intelligence Reports'),
             url: citations && citations[0] ? citations[0] : undefined,
