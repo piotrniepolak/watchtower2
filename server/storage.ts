@@ -284,11 +284,11 @@ export class DatabaseStorage implements IStorage {
           username = `Anonymous${result.userId.slice(-4)}`;
         }
       } else {
-        // For logged-in users, prioritize first name, then username, then email
-        if (result.firstName && result.firstName.trim()) {
+        // For logged-in users, prioritize username first, then firstName, then email
+        if (result.username && result.username.trim()) {
           username = result.firstName.trim();
-        } else if (result.username && result.username.trim()) {
-          username = result.username.trim();
+        } else if (result.firstName && result.firstName.trim()) {
+          username = result.firstName.trim();
         } else if (result.email) {
           username = result.email.split('@')[0];
         } else {
@@ -1062,11 +1062,11 @@ export class MemStorage implements IStorage {
           username = `Anonymous${result.userId.slice(-4)}`;
         }
       } else {
-        // For logged-in users, prioritize first name, then username, then email
-        if (result.firstName && result.firstName.trim()) {
+        // For logged-in users, prioritize username first, then firstName, then email
+        if (result.username && result.username.trim()) {
           username = result.firstName.trim();
-        } else if (result.username && result.username.trim()) {
-          username = result.username.trim();
+        } else if (result.firstName && result.firstName.trim()) {
+          username = result.firstName.trim();
         } else if (result.email) {
           username = result.email.split('@')[0];
         } else {
