@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
 const BASE_URL = 'http://localhost:5173';
 
@@ -115,9 +115,5 @@ async function testUsernameValidation() {
   console.log('\nTesting complete!');
 }
 
-// Run the test if this script is executed directly
-if (require.main === module) {
-  testUsernameValidation().catch(console.error);
-}
-
-module.exports = { testUsernameValidation };
+// Run the test
+testUsernameValidation().catch(console.error);
