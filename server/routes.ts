@@ -1406,6 +1406,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to generate storyline' });
     }
   });
+
+  // AI Support Chat endpoint
+  app.post('/api/support/chat', async (req, res) => {
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: 'AI support chat is not available - OpenAI API key required' });
+      }
+
+      const { message } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ message: 'Message is required' });
+      }
+
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const systemPrompt = `You are an AI support assistant for ConflictWatch, a geopolitical intelligence platform. Help users with:
+
+PLATFORM FEATURES:
+- Real-time conflict tracking and analysis
+- Defense stock market correlation data
+- AI-powered predictions and market analysis
+- Daily quiz system with leaderboards
+- Community chat and discussions
+- Lobbying expenditure analysis
+- Interactive maps and data visualization
+
+DATA SOURCES:
+- Stock data from Yahoo Finance (updated every 30 seconds)
+- Conflict data from verified news sources
+- Real-time market correlations
+- Lobbying data from government sources
+
+TECHNICAL HELP:
+- Navigation and feature usage
+- Data interpretation
+- Account and settings
+- Performance and loading issues
+
+Keep responses helpful, concise, and professional. If asked about sensitive geopolitical topics, focus on explaining how the platform presents data rather than taking political positions.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      });
+
+      const aiResponse = response.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response. Please try again.';
+
+      res.json({ message: aiResponse });
+    } catch (error) {
+      console.error('Error in AI support chat:', error);
+      res.status(500).json({ message: 'I apologize for the technical issue. Please try again in a moment.' });
+    }
+  });
   
   return httpServer;
 }

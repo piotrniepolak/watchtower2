@@ -1,11 +1,8 @@
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MessageCircle, FileText, Database, TrendingUp, Shield, Clock } from "lucide-react";
+import { Bot, Database, TrendingUp, Shield, Clock, Zap, MessageSquare } from "lucide-react";
+import AISupportChat from "@/components/ai-support-chat";
 
 export default function Support() {
   return (
@@ -13,75 +10,19 @@ export default function Support() {
       <Navigation />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">Support Center</h1>
+          <div className="flex items-center gap-3 mb-4">
+            <Bot className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-slate-900">AI Support Assistant</h1>
+          </div>
           <p className="text-slate-600">
-            Get help with ConflictWatch platform, data sources, and technical issues
+            Get instant help with ConflictWatch platform questions, powered by advanced AI
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Contact Form */}
+          {/* AI Support Chat */}
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" />
-                  Contact Support
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" placeholder="John" />
-                  </div>
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Doe" />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="category">Issue Category</Label>
-                  <select 
-                    id="category" 
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a category</option>
-                    <option value="technical">Technical Issues</option>
-                    <option value="data">Data Accuracy</option>
-                    <option value="api">API Support</option>
-                    <option value="account">Account Issues</option>
-                    <option value="feature">Feature Request</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" placeholder="Brief description of your issue" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea 
-                    id="message" 
-                    rows={6}
-                    placeholder="Please provide detailed information about your issue, including any error messages and steps to reproduce the problem..."
-                  />
-                </div>
-                
-                <Button className="w-full">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send Message
-                </Button>
-              </CardContent>
-            </Card>
+            <AISupportChat />
           </div>
 
           {/* Support Information */}
