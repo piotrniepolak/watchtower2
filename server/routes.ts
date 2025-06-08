@@ -13,6 +13,7 @@ import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
+import { quizStorage } from "./quiz-storage";
 import session from "express-session";
 
 // Simple session-based auth for now
@@ -1016,7 +1017,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quiz/leaderboard", async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const leaderboard = await storage.getDailyQuizLeaderboard(today);
+      const leaderboard = await quizStorage.getDailyQuizLeaderboard(today);
       res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching quiz leaderboard:", error);
@@ -1028,19 +1029,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quizId = parseInt(req.params.quizId);
       const { responses, completionTimeSeconds } = req.body;
-      const userId = 1; // Using default user ID for demo
+      const userId = "demo_user"; // Using default demo user for now
 
       if (!Array.isArray(responses)) {
         return res.status(400).json({ error: "Responses must be an array" });
       }
 
       // Check if user already submitted this quiz
-      const existingResponse = await storage.getUserQuizResponse(userId, quizId);
+      const existingResponse = await quizStorage.getUserQuizResponse(userId, quizId);
       if (existingResponse) {
         return res.status(400).json({ error: "Quiz already completed" });
       }
 
-      const result = await quizService.submitQuizResponse(userId, quizId, responses, completionTimeSeconds);
+      // Get quiz to calculate score
+      const quiz = await quizStorage.getDailyQuiz(new Date().toISOString().split('T')[0]);
+      if (!quiz) {
+        return res.status(404).json({ error: "Quiz not found" });
+      }
+
+      const questions = quiz.questions as any[];
+      let score = 0;
+
+      responses.forEach((response, index) => {
+        if (response === questions[index]?.correctAnswer) {
+          score++;
+        }
+      });
+
+      // Calculate points: 500 points per correct answer
+      const basePoints = score * 500;
+      
+      // Calculate time bonus: Maximum 300 points for completing under 300 seconds
+      let timeBonus = 0;
+      if (completionTimeSeconds !== undefined && completionTimeSeconds <= 300) {
+        timeBonus = Math.max(0, 300 - completionTimeSeconds);
+      }
+      
+      const totalPoints = basePoints + timeBonus;
+
+      const result = await quizStorage.submitQuizResponse(
+        userId, 
+        quizId, 
+        responses, 
+        score,
+        totalPoints,
+        timeBonus,
+        completionTimeSeconds
+      );
+      
       res.json(result);
     } catch (error) {
       console.error("Error submitting quiz response:", error);
@@ -1051,9 +1087,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quiz/:quizId/response", async (req, res) => {
     try {
       const quizId = parseInt(req.params.quizId);
-      const userId = 1; // Using default user ID for demo
+      const userId = "demo_user"; // Using default demo user for now
 
-      const response = await storage.getUserQuizResponse(userId, quizId);
+      const response = await quizStorage.getUserQuizResponse(userId, quizId);
       res.json(response || null);
     } catch (error) {
       console.error("Error fetching quiz response:", error);
