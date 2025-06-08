@@ -41,14 +41,20 @@ export class ModernLobbyingService {
   private readonly cacheExpirationHours = 6; // Cache for 6 hours
 
   constructor() {
-    this.perplexityApiKey = process.env.PERPLEXITY_API_KEY!;
+    this.perplexityApiKey = process.env.PERPLEXITY_API_KEY || '';
     if (!this.perplexityApiKey) {
-      throw new Error("PERPLEXITY_API_KEY environment variable is required");
+      console.warn("PERPLEXITY_API_KEY not configured - lobbying analysis will use fallback data");
     }
   }
 
   async getLobbyingAnalysis(stocks: Stock[], timeframe: string = '1Y'): Promise<LobbyingAnalysis> {
     try {
+      // Check if API key is available for authentic data
+      if (!this.perplexityApiKey) {
+        console.log("Using fallback lobbying data - API key not configured");
+        return this.getFallbackLobbyingData(stocks);
+      }
+
       const stockSymbols = stocks.map(s => s.symbol).join(', ');
       console.log(`Fetching lobbying data for timeframe: ${timeframe}`);
       
