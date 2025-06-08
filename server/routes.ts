@@ -1247,37 +1247,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/chat', async (req, res) => {
+  app.post('/api/chat', isAuthenticated, async (req, res) => {
     try {
-      const { content, category = "general", username } = req.body;
+      const { content, category = "general" } = req.body;
       
       if (!content || !content.trim()) {
         return res.status(400).json({ error: "Message content is required" });
       }
       
-      let userId: string | null = null;
-      
-      // Check for authenticated session
-      if (req.session?.userId) {
-        userId = req.session.userId;
-        const user = await storage.getUser(userId);
-        console.log(`Chat from authenticated user: ${user?.username || 'unknown'} (ID: ${userId})`);
-      } else {
-        // For anonymous users, create a temporary fake user entry if username provided
-        if (username && username.trim()) {
-          console.log(`Chat from anonymous user with username: ${username}`);
-          // Create discussion without userId but store the anonymous username in content metadata
-        } else {
-          console.log("Chat from anonymous user - no username provided");
-        }
+      // Get authenticated user ID from claims
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ error: "Authentication required" });
       }
+      
+      console.log(`Chat from authenticated user ID: ${userId}`);
       
       const message = await discussionStorage.createDiscussion({
         title: "Chat Message",
         content: content.trim(),
         authorId: userId,
         category,
-        tags: username && !userId ? [username] : [], // Store anonymous username in tags for display
+        tags: [], // No tags needed - authenticated users only
       });
       
       res.status(201).json(message);

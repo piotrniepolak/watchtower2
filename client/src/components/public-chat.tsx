@@ -40,12 +40,7 @@ interface ChatMessage {
 export default function PublicChat() {
   const [activeTab, setActiveTab] = useState("general");
   const [newMessage, setNewMessage] = useState("");
-  const [username, setUsername] = useState(() => {
-    // Get username from localStorage or prompt for it
-    const stored = localStorage.getItem('chat_username');
-    return stored || '';
-  });
-  const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
+  // Username management removed - only authenticated users can chat
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -81,10 +76,7 @@ export default function PublicChat() {
         category: activeTab,
       };
       
-      // Only include username for anonymous users
-      if (!isAuthenticated && username) {
-        payload.username = username;
-      }
+      // Authentication-only chat - no username needed
       
       return await apiRequest("POST", `/api/chat`, payload);
     },
@@ -104,34 +96,25 @@ export default function PublicChat() {
   });
 
   const getAuthorName = (message: ChatMessage) => {
-    // If author exists, use their authentic database information
-    if (message.author && message.author.id) {
-      // Always prioritize username from database - this is the authentic user identifier
-      if (message.author.username) {
-        return message.author.username;
-      }
-      
-      // If no username but has firstName, use that
-      if (message.author.firstName) {
-        return message.author.firstName;
-      }
-      
-      // If no username or firstName, use email prefix (but only for real emails)
-      if (message.author.email && message.author.email.includes('@') && !message.author.email.endsWith('@chat.local')) {
-        return message.author.email.split('@')[0];
-      }
-      
-      // If we have an ID but no other identifying info, show as authenticated user
+    // Only authenticated users can chat - show their database information
+    if (message.author && message.author.username) {
+      return message.author.username;
+    }
+    
+    if (message.author && message.author.firstName) {
+      return message.author.firstName;
+    }
+    
+    if (message.author && message.author.email && message.author.email.includes('@')) {
+      return message.author.email.split('@')[0];
+    }
+    
+    if (message.author) {
       return `User ${message.author.id}`;
     }
     
-    // For anonymous messages, check if username is stored in tags
-    if (message.tags && message.tags.length > 0 && message.tags[0]) {
-      return message.tags[0];
-    }
-    
-    // Truly anonymous
-    return "anonymous";
+    // Should not happen since only authenticated users can chat
+    return "Unknown User";
   };
 
   const formatTime = (dateString: string) => {
@@ -238,24 +221,41 @@ export default function PublicChat() {
                 )}
               </div>
 
-              {/* Message Input */}
-              <div className="flex gap-2">
-                <Input
-                  placeholder={`Message #${category}`}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="flex-1"
-                  maxLength={500}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                  size="sm"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
+              {/* Message Input - Authentication Required */}
+              {isAuthenticated ? (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder={`Message #${category}`}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="flex-1"
+                    maxLength={500}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                    size="sm"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      Please log in to participate in chat
+                    </p>
+                    <Button 
+                      onClick={() => window.location.href = '/api/login'}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      Log In
+                    </Button>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           ))}
         </Tabs>
