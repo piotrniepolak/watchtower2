@@ -1170,20 +1170,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chat', async (req, res) => {
     try {
-      // For demo purposes, use a default user ID (user 2 which exists)
-      // In production, this would check proper authentication
-      const userId = 2;
-      
-      const { content, category = "general" } = req.body;
+      const { content, category = "general", username = "Guest" } = req.body;
       
       if (!content || !content.trim()) {
         return res.status(400).json({ error: "Message content is required" });
       }
       
+      // Create or get user for this username
+      let user = await storage.getUserByUsername(username);
+      if (!user) {
+        // Create a new user with this username
+        user = await storage.createUser({
+          id: `user_${username}_${Date.now()}`,
+          username: username,
+          email: `${username}@chat.local`,
+          firstName: username,
+          lastName: "",
+          profileImageUrl: null,
+        });
+      }
+      
       const message = await discussionStorage.createDiscussion({
         title: "Chat Message",
         content: content.trim(),
-        authorId: userId.toString(),
+        authorId: user.id,
         category,
         tags: [],
       });

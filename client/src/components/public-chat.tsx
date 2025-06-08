@@ -13,6 +13,7 @@ import {
   Globe,
   Sword
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,6 +37,12 @@ interface ChatMessage {
 export default function PublicChat() {
   const [activeTab, setActiveTab] = useState("general");
   const [newMessage, setNewMessage] = useState("");
+  const [username, setUsername] = useState(() => {
+    // Get username from localStorage or prompt for it
+    const stored = localStorage.getItem('chat_username');
+    return stored || '';
+  });
+  const [showUsernamePrompt, setShowUsernamePrompt] = useState(!username);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -53,6 +60,7 @@ export default function PublicChat() {
       return await apiRequest("POST", `/api/chat`, {
         content,
         category: activeTab,
+        username: username,
       });
     },
     onSuccess: () => {
@@ -88,6 +96,10 @@ export default function PublicChat() {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
+    if (!username) {
+      setShowUsernamePrompt(true);
+      return;
+    }
     sendMessageMutation.mutate(newMessage.trim());
   };
 
@@ -95,6 +107,15 @@ export default function PublicChat() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleSetUsername = (newUsername: string) => {
+    if (newUsername.trim()) {
+      const trimmedUsername = newUsername.trim();
+      setUsername(trimmedUsername);
+      localStorage.setItem('chat_username', trimmedUsername);
+      setShowUsernamePrompt(false);
     }
   };
 
@@ -187,6 +208,40 @@ export default function PublicChat() {
           ))}
         </Tabs>
       </CardContent>
+
+      {/* Username Prompt Dialog */}
+      <Dialog open={showUsernamePrompt} onOpenChange={setShowUsernamePrompt}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Choose Your Username</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Enter a username to identify yourself in the chat
+            </p>
+            <Input
+              placeholder="Enter your username"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSetUsername(e.currentTarget.value);
+                }
+              }}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  const input = document.querySelector('input[placeholder="Enter your username"]') as HTMLInputElement;
+                  if (input) handleSetUsername(input.value);
+                }}
+                className="flex-1"
+              >
+                Set Username
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
