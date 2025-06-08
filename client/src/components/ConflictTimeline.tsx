@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, AlertTriangle, Zap, RefreshCw, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface TimelineEvent {
   id: number;
@@ -50,6 +51,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
+  const { toast } = useToast();
 
   const toggleExpanded = (eventId: number) => {
     setExpandedEvents(prev => {
@@ -76,14 +78,32 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
           'Content-Type': 'application/json',
         },
       });
-      if (!response.ok) throw new Error('Failed to update timeline');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to update timeline' }));
+        throw new Error(errorData.error || 'Failed to update timeline');
+      }
       return response.json();
     },
     onMutate: () => {
       setIsUpdating(true);
+      toast({
+        title: "Updating Timeline",
+        description: `Fetching latest intelligence for ${conflictName}...`,
+      });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`/api/conflicts/${conflictId}/timeline`] });
+      toast({
+        title: "Timeline Updated",
+        description: `Added ${data.eventsAdded || 0} new events from intelligence sources`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Unable to fetch latest timeline data",
+        variant: "destructive",
+      });
     },
     onSettled: () => {
       setIsUpdating(false);
