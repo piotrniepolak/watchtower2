@@ -128,13 +128,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoint to clear all registered users
   app.post('/api/admin/clear-users', async (req, res) => {
     try {
-      if (storage instanceof DatabaseStorage) {
-        await storage.clearRegisteredUsers();
-      }
-      // Also clear from memory storage
-      storage = new MemStorage();
-      
-      res.json({ message: "All registered users have been cleared successfully" });
+      // This endpoint is for admin use only - implement proper auth check in production
+      res.json({ message: "User clearing not implemented in current storage setup" });
     } catch (error) {
       console.error("Error clearing users:", error);
       res.status(500).json({ message: "Failed to clear users" });
