@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { newsService } from "./news-service";
 import { stockService } from "./stock-service";
 import { conflictTimelineService } from "./conflict-timeline-service";
+import { chatCleanupService } from "./chat-cleanup-service";
 
 // Make environment variables available to Vite frontend
 process.env.VITE_GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
