@@ -154,8 +154,8 @@ export class ConflictTimelineService {
           id: `${conflictId}_${timestamp.getTime()}_${events.length}`,
           conflictId,
           timestamp,
-          title: this.extractMeaningfulTitle(`${location}: ${description.substring(0, 60)}`),
-          description: `${location} - ${description.trim()}`,
+          title: this.extractMeaningfulTitle(description),
+          description: this.cleanDescription(`${location}: ${description.trim()}`),
           severity: this.mapSeverityString(severityStr) as 'low' | 'medium' | 'high' | 'critical',
           source: source.trim(),
           impact: this.extractImpact(description),
@@ -288,6 +288,23 @@ export class ConflictTimelineService {
       }
     }
     return null;
+  }
+
+  private cleanDescription(text: string): string {
+    // Remove redundant formatting and shorten verbose descriptions
+    let cleaned = text
+      .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '') // Remove date headers
+      .replace(/- Source:.*?- Severity:.*$/gm, '') // Remove source/severity trailers
+      .replace(/\n+/g, ' ') // Replace newlines with spaces
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+    
+    // Limit to reasonable length for timeline readability
+    if (cleaned.length > 120) {
+      cleaned = cleaned.substring(0, 117) + '...';
+    }
+    
+    return cleaned;
   }
 
   private generateRealisticTimelineEvents(conflict: Conflict, currentDate: string): TimelineEvent[] {
