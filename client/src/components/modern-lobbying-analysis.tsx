@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   TrendingUp, 
@@ -12,7 +11,6 @@ import {
   CheckCircle,
   Clock
 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 
 interface LobbyingData {
   company: string;
@@ -51,19 +49,13 @@ export default function ModernLobbyingAnalysis({ timeframe = "1Y" }: { timeframe
       }
       return response.json();
     },
-    refetchInterval: 300000, // Refresh every 5 minutes
-    staleTime: 180000, // Consider data stale after 3 minutes
+    refetchInterval: 24 * 60 * 60 * 1000, // Refresh every 24 hours
+    staleTime: 23 * 60 * 60 * 1000, // Consider data stale after 23 hours
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  const refreshMutation = useMutation({
-    mutationFn: () => apiRequest("/api/lobbying/refresh", "POST"),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/lobbying/analysis", timeframe] });
-      queryClient.invalidateQueries({ queryKey: ["/api/lobbying/analysis"] });
-    },
-  });
+
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000) {
@@ -116,15 +108,7 @@ export default function ModernLobbyingAnalysis({ timeframe = "1Y" }: { timeframe
               </p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="mt-4"
-            onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/lobbying/analysis"] })}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
-          </Button>
+
         </CardContent>
       </Card>
     );
@@ -165,20 +149,9 @@ export default function ModernLobbyingAnalysis({ timeframe = "1Y" }: { timeframe
               Live Data
             </Badge>
           </CardTitle>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center text-sm text-slate-600">
-              <Clock className="h-4 w-4 mr-1" />
-              Updated {analysis ? formatTimestamp(analysis.lastUpdated) : 'recently'}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refreshMutation.mutate()}
-              disabled={refreshMutation.isPending}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshMutation.isPending ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+          <div className="flex items-center text-sm text-slate-600">
+            <Clock className="h-4 w-4 mr-1" />
+            Updated {analysis ? formatTimestamp(analysis.lastUpdated) : 'recently'}
           </div>
         </div>
       </CardHeader>
