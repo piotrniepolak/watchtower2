@@ -50,7 +50,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/login', async (req: any, res) => {
     try {
       const userEmail = req.query.email;
+      const userId = req.query.id;
+      
       if (userEmail) {
+        console.log(`Attempting login with email: ${userEmail}`);
         const user = await storage.getUserByEmail(userEmail);
         if (user) {
           req.session.userId = user.id;
@@ -59,6 +62,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.redirect('/');
         } else {
           console.log(`No user found with email: ${userEmail}`);
+        }
+      } else if (userId) {
+        console.log(`Attempting login with ID: ${userId}`);
+        const user = await storage.getUser(userId);
+        if (user) {
+          req.session.userId = user.id;
+          await new Promise((resolve) => req.session.save(resolve));
+          console.log(`Login successful for user: ${user.username} (${user.email}) - Session ID: ${user.id}`);
+          return res.redirect('/');
+        } else {
+          console.log(`No user found with ID: ${userId}`);
         }
       }
       
