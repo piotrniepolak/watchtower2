@@ -315,7 +315,7 @@ export const discussions = pgTable("discussions", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  authorId: varchar("author_id").references(() => users.id),
+  authorId: varchar("author_id").notNull().references(() => users.id),
   category: varchar("category", { length: 100 }).notNull().default("general"),
   tags: text("tags").array(),
   upvotes: integer("upvotes").default(0),
@@ -390,9 +390,7 @@ export const discussionVotesRelations = relations(discussionVotes, ({ one }) => 
 }));
 
 // Discussion Board Schemas
-export const insertDiscussionSchema = createInsertSchema(discussions, {
-  authorId: z.string().nullable().optional()
-}).omit({
+export const insertDiscussionSchema = createInsertSchema(discussions).omit({
   id: true,
   upvotes: true,
   downvotes: true,

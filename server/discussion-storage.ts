@@ -27,7 +27,6 @@ export class DiscussionStorage {
             username: users.username,
             firstName: users.firstName,
             lastName: users.lastName,
-            email: users.email,
             profileImageUrl: users.profileImageUrl,
           }
         })
@@ -46,9 +45,6 @@ export class DiscussionStorage {
         .offset(offset);
         
       console.log("DiscussionStorage.getDiscussions result:", result.length, "items");
-      if (result.length > 0) {
-        console.log("Sample discussion with author:", JSON.stringify(result[0], null, 2));
-      }
       return result;
     } catch (error) {
       console.error("Error in getDiscussions:", error);

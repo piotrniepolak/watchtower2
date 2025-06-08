@@ -22,7 +22,6 @@ import Login from "@/pages/login";
 import Quiz from "@/pages/quiz";
 import Settings from "@/pages/settings";
 import Discussions from "@/pages/discussions";
-import SetupUsername from "@/pages/setup-username";
 import { useAuth } from "@/hooks/useAuth";
 
 import NotFound from "@/pages/not-found";
@@ -44,7 +43,6 @@ function Router() {
       <Route path="/quiz" component={Quiz} />
       <Route path="/profile" component={Profile} />
       <Route path="/settings" component={Settings} />
-      <Route path="/setup-username" component={SetupUsername} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/api" component={ApiDocs} />

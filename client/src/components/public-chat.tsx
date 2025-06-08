@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   MessageCircle, 
   Send, 
@@ -14,16 +13,15 @@ import {
   Globe,
   Sword
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 
 interface Author {
   id: string;
   username?: string;
   firstName?: string;
   lastName?: string;
-  email?: string;
   profileImageUrl?: string;
 }
 
@@ -34,47 +32,40 @@ interface ChatMessage {
   category: string;
   createdAt: string;
   author?: Author;
-  tags?: string[];
-  tempUsername?: string;
 }
 
 export default function PublicChat() {
   const [activeTab, setActiveTab] = useState("general");
   const [newMessage, setNewMessage] = useState("");
-  const [chatUsername, setChatUsername] = useState("");
-  const [showUsernamePrompt, setShowUsernamePrompt] = useState(false);
+  const [username, setUsername] = useState(() => {
+    // Get username from localStorage or prompt for it
+    const stored = localStorage.getItem('chat_username');
+    return stored || '';
+  });
+  const [showUsernamePrompt, setShowUsernamePrompt] = useState(!username);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user, isAuthenticated } = useAuth();
 
-  // Check if user has a chat username in localStorage
-  useEffect(() => {
-    const storedChatUsername = localStorage.getItem('chatUsername');
-    if (storedChatUsername) {
-      setChatUsername(storedChatUsername);
-    }
-  }, []);
-
-  // Fetch messages for the active tab
-  const { data: messages = [], isLoading } = useQuery({
+  // Fetch messages for active category
+  const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
     queryKey: [`/api/chat/${activeTab}`],
-    refetchInterval: 3000,
+    refetchInterval: 2000,
+    staleTime: 1000,
   });
 
-  // Send message mutation - requires chat username
+  // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       return await apiRequest("POST", `/api/chat`, {
         content,
         category: activeTab,
-        tempUsername: chatUsername,
+        username: username,
       });
     },
     onSuccess: () => {
       setNewMessage("");
       queryClient.invalidateQueries({ queryKey: [`/api/chat/${activeTab}`] });
-      queryClient.refetchQueries({ queryKey: [`/api/chat/${activeTab}`], type: 'active' });
     },
     onError: (error: any) => {
       toast({
@@ -85,29 +76,13 @@ export default function PublicChat() {
     },
   });
 
-  const getAuthorName = (message: ChatMessage) => {
-    // Check if message has temporary username in tags (new system)
-    if (message.tags && message.tags.length > 0 && message.tags[0]) {
-      return message.tags[0];
+  const getAuthorName = (author?: Author) => {
+    if (!author) return "Anonymous";
+    if (author.username) return author.username;
+    if (author.firstName && author.lastName) {
+      return `${author.firstName} ${author.lastName}`;
     }
-    
-    // Check if message has temporary username property (backup)
-    if (message.tempUsername) {
-      return message.tempUsername;
-    }
-    
-    // Fallback to authenticated user data
-    if (message.author) {
-      if (message.author.username) {
-        return message.author.username;
-      }
-      if (message.author.firstName) {
-        return message.author.firstName;
-      }
-      return "User";
-    }
-    
-    return "Anonymous";
+    return "User";
   };
 
   const formatTime = (dateString: string) => {
@@ -115,32 +90,32 @@ export default function PublicChat() {
       const date = new Date(dateString);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch {
-      return '';
+      return "now";
     }
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    
-    // Check if user has set a chat username
-    if (!chatUsername.trim()) {
+    if (!username) {
       setShowUsernamePrompt(true);
       return;
     }
-    
-    await sendMessageMutation.mutateAsync(newMessage);
-  };
-
-  const handleUsernameSubmit = (username: string) => {
-    setChatUsername(username);
-    localStorage.setItem('chatUsername', username);
-    setShowUsernamePrompt(false);
+    sendMessageMutation.mutate(newMessage.trim());
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleSetUsername = (newUsername: string) => {
+    if (newUsername.trim()) {
+      const trimmedUsername = newUsername.trim();
+      setUsername(trimmedUsername);
+      localStorage.setItem('chat_username', trimmedUsername);
+      setShowUsernamePrompt(false);
     }
   };
 
@@ -195,7 +170,7 @@ export default function PublicChat() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                              {getAuthorName(message)}
+                              {getAuthorName(message.author)}
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {formatTime(message.createdAt)}
@@ -211,10 +186,10 @@ export default function PublicChat() {
                 )}
               </div>
 
-              {/* Message Input - Anyone can chat with username */}
+              {/* Message Input */}
               <div className="flex gap-2">
                 <Input
-                  placeholder={chatUsername ? `Message #${category} as ${chatUsername}` : `Choose username to message #${category}`}
+                  placeholder={`Message #${category}`}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -238,50 +213,35 @@ export default function PublicChat() {
       <Dialog open={showUsernamePrompt} onOpenChange={setShowUsernamePrompt}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Choose Your Chat Username</DialogTitle>
-            <DialogDescription>
-              Choose a display name for chat. This will be saved locally and used for all your messages.
-            </DialogDescription>
+            <DialogTitle>Choose Your Username</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <UsernamePrompt onSubmit={handleUsernameSubmit} />
+            <p className="text-sm text-muted-foreground">
+              Enter a username to identify yourself in the chat
+            </p>
+            <Input
+              placeholder="Enter your username"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleSetUsername(e.currentTarget.value);
+                }
+              }}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  const input = document.querySelector('input[placeholder="Enter your username"]') as HTMLInputElement;
+                  if (input) handleSetUsername(input.value);
+                }}
+                className="flex-1"
+              >
+                Set Username
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
     </Card>
-  );
-}
-
-// Username prompt component
-function UsernamePrompt({ onSubmit }: { onSubmit: (username: string) => void }) {
-  const [username, setUsername] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username.trim() && username.length >= 2) {
-      onSubmit(username.trim());
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        placeholder="Enter your username (2-20 characters)"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        maxLength={20}
-        minLength={2}
-        autoFocus
-      />
-      <div className="flex gap-2">
-        <Button 
-          type="submit" 
-          disabled={!username.trim() || username.length < 2}
-          className="flex-1"
-        >
-          Set Username
-        </Button>
-      </div>
-    </form>
   );
 }

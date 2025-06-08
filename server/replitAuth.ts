@@ -57,45 +57,11 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  const userId = claims["sub"];
-  
-  // Check if user already exists
-  const existingUser = await storage.getUser(userId);
-  
-  // Only generate username if user doesn't exist or doesn't have a username
-  let finalUsername = null;
-  if (!existingUser || !existingUser.username) {
-    let username = null;
-    
-    // First try to use email prefix
-    if (claims["email"]) {
-      const emailPrefix = claims["email"].split('@')[0];
-      // Clean up the email prefix to make it a valid username
-      username = emailPrefix.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-    }
-    
-    // If no email or email prefix is too short, use first name + random number
-    if (!username || username.length < 3) {
-      const firstName = claims["first_name"] || "user";
-      const randomNum = Math.floor(Math.random() * 1000);
-      username = `${firstName.toLowerCase()}${randomNum}`;
-    }
-    
-    // Ensure username is unique
-    finalUsername = username;
-    let counter = 1;
-    while (await storage.getUserByUsername(finalUsername)) {
-      finalUsername = `${username}${counter}`;
-      counter++;
-    }
-  }
-
   await storage.upsertUser({
-    id: userId,
+    id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
-    username: finalUsername, // Will be null if user already has username
     profileImageUrl: claims["profile_image_url"],
   });
 }

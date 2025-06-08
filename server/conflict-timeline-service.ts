@@ -31,97 +31,64 @@ export class ConflictTimelineService {
   constructor() {
     this.perplexityApiKey = process.env.PERPLEXITY_API_KEY || '';
     if (!this.perplexityApiKey) {
-      console.warn('PERPLEXITY_API_KEY not found. Timeline updates will use fallback data.');
-    } else {
-      console.log('Perplexity API initialized for real-time conflict timeline updates');
+      console.warn('PERPLEXITY_API_KEY not found. Timeline updates will be disabled.');
     }
   }
 
   async fetchConflictUpdates(conflict: Conflict): Promise<TimelineEvent[]> {
-    const currentDate = new Date().toISOString().split('T')[0];
-    
-    // Try Perplexity API with enhanced authentication and error handling
-    if (this.perplexityApiKey && this.perplexityApiKey.length > 10) {
-      try {
-        console.log(`Fetching real-time updates for ${conflict.name} using Perplexity API...`);
-        
-        const response = await fetch('https://api.perplexity.ai/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.perplexityApiKey}`,
-            'Content-Type': 'application/json',
-            'User-Agent': 'GeopoliticalIntelligence/1.0'
-          },
-          body: JSON.stringify({
-            model: 'llama-3.1-sonar-small-128k-online',
-            messages: [
-              {
-                role: 'system',
-                content: `You are a defense intelligence analyst providing real-time conflict analysis. Current date: ${currentDate}. Provide verified developments from the past 48 hours only.`
-              },
-              {
-                role: 'user',
-                content: `Provide 3-5 verified recent developments in the ${conflict.name} conflict in ${conflict.region} from ${new Date(Date.now() - 2*24*60*60*1000).toISOString().split('T')[0]} to ${currentDate}. 
-
-                Include specific:
-                - Military tactical operations and force movements
-                - Diplomatic meetings and international responses
-                - Infrastructure impacts and humanitarian developments
-                - Economic sanctions or aid announcements
-                - Strategic territorial or maritime activities
-
-                Format as numbered list with dates and credible sources.`
-              }
-            ],
-            max_tokens: 1000,
-            temperature: 0.05,
-            search_recency_filter: 'day',
-            return_related_questions: false,
-            return_images: false,
-            stream: false
-          }),
-        });
-
-        if (response.ok) {
-          const data: PerplexityResponse = await response.json();
-          const content = data.choices[0]?.message?.content;
-          
-          if (content && content.length > 200) {
-            console.log(`Retrieved Perplexity response for ${conflict.name}, validating quality...`);
-            const events = this.parseTimelineEvents(content, conflict.id, data.citations);
-            
-            // Check if Perplexity data is meaningful (not just category headers)
-            const hasQualityData = events.length > 0 && events.some(e => 
-              e.description.length > 80 && 
-              !e.description.includes('**') && 
-              !e.description.includes('Announcements:') &&
-              !e.description.includes('Developments:') &&
-              !e.description.includes('Activities:') &&
-              e.title.length > 10 &&
-              !e.title.includes('**')
-            );
-            
-            if (hasQualityData) {
-              console.log(`Using high-quality Perplexity intelligence for ${conflict.name}`);
-              return events;
-            }
-            console.log(`Perplexity data insufficient quality (generic headers), using enhanced realistic timeline for ${conflict.name}`);
-          }
-        } else {
-          const errorText = await response.text();
-          console.warn(`Perplexity API error ${response.status}: ${errorText} - falling back to realistic timeline generation`);
-          
-          if (response.status === 401) {
-            console.error('Authentication failed - API key may be invalid or expired');
-          }
-        }
-      } catch (error) {
-        console.error(`Network error accessing Perplexity API for ${conflict.name}:`, error);
-      }
+    if (!this.perplexityApiKey) {
+      return [];
     }
 
-    console.log(`Using enhanced intelligence templates for ${conflict.name} timeline`);
-    return this.generateRealisticTimelineEvents(conflict, currentDate);
+    try {
+      const query = `Recent developments in ${conflict.name} conflict in ${conflict.region}. Include latest military actions, diplomatic developments, casualties, territorial changes, and international responses from the last 24 hours. Focus on verified information from reliable news sources.`;
+
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.perplexityApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a conflict analyst. Provide recent developments as a numbered list. Each item should be one complete sentence describing a specific event. Focus on factual developments from the past 48 hours.'
+            },
+            {
+              role: 'user',
+              content: `List 6 recent developments in ${conflict.name} from the past 2 days. Format as numbered list (1. 2. 3. etc). Include military actions, diplomatic meetings, casualty reports, or territorial changes.`
+            }
+          ],
+          max_tokens: 600,
+          temperature: 0.2,
+          top_p: 0.9,
+          search_recency_filter: 'day',
+          return_related_questions: false,
+          stream: false
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Perplexity API error: ${response.status}`);
+      }
+
+      const data: PerplexityResponse = await response.json();
+      const content = data.choices[0]?.message?.content;
+
+      if (!content) {
+        return [];
+      }
+
+      // Parse the AI response to extract timeline events
+      const events = this.parseTimelineEvents(content, conflict.id, data.citations);
+      return events;
+
+    } catch (error) {
+      console.error(`Error fetching updates for conflict ${conflict.name}:`, error);
+      return [];
+    }
   }
 
   private parseTimelineEvents(content: string, conflictId: number, citations?: string[]): TimelineEvent[] {
@@ -129,82 +96,200 @@ export class ConflictTimelineService {
     
     // Extract numbered list items
     const lines = content.split('\n');
-    const numberedLines = lines.filter(line => /^\d+\./.test(line.trim()));
+    const numberedItems = [];
+    let currentItem = '';
+    let inItem = false;
     
-    numberedLines.forEach((line, index) => {
-      const cleanLine = line.replace(/^\d+\.\s*/, '').trim();
-      if (cleanLine.length > 0) {
-        const event: TimelineEvent = {
-          id: `${conflictId}_${Date.now()}_${index}`,
-          conflictId,
-          timestamp: this.extractTimestamp(cleanLine) || new Date(Date.now() - Math.random() * 48 * 60 * 60 * 1000),
-          title: this.extractMeaningfulTitle(cleanLine),
-          description: cleanLine,
-          severity: this.extractSeverity(cleanLine),
-          source: citations && citations[0] ? citations[0] : 'Intelligence Reports',
-          url: citations && citations[0] ? citations[0] : undefined,
-          impact: this.extractImpact(cleanLine),
-          verified: true
-        };
-        events.push(event);
+    for (const line of lines) {
+      if (line.match(/^\d+\./)) {
+        if (currentItem) {
+          numberedItems.push(currentItem.trim());
+        }
+        currentItem = line.replace(/^\d+\.\s*/, '');
+        inItem = true;
+      } else if (inItem && line.trim()) {
+        currentItem += ' ' + line.trim();
+      } else if (inItem && !line.trim()) {
+        if (currentItem) {
+          numberedItems.push(currentItem.trim());
+          currentItem = '';
+        }
+        inItem = false;
       }
-    });
+    }
+    if (currentItem) {
+      numberedItems.push(currentItem.trim());
+    }
+    
+    if (numberedItems.length > 0) {
+      numberedItems.forEach((item, index) => {
+        const cleanText = item
+          .replace(/\*\*/g, '')
+          .replace(/^\*/g, '')
+          .replace(/\[?\d+\]\.?$/g, '')
+          .trim();
 
-    // If no numbered items found, try to extract general content
-    if (events.length === 0 && content.length > 0) {
-      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 20);
-      sentences.slice(0, 4).forEach((sentence, index) => {
-        const event: TimelineEvent = {
-          id: `${conflictId}_${Date.now()}_${index}`,
-          conflictId,
-          timestamp: new Date(Date.now() - Math.random() * 48 * 60 * 60 * 1000),
-          title: this.extractMeaningfulTitle(sentence),
-          description: sentence.trim(),
-          severity: this.extractSeverity(sentence),
-          source: citations && citations[0] ? citations[0] : 'Intelligence Reports',
-          url: citations && citations[0] ? citations[0] : undefined,
-          impact: this.extractImpact(sentence),
-          verified: true
-        };
-        events.push(event);
+        if (cleanText.length > 30) {
+          const event: TimelineEvent = {
+            id: `${conflictId}-${Date.now()}-${index}`,
+            conflictId,
+            timestamp: new Date(Date.now() - index * 3600000),
+            title: this.extractMeaningfulTitle(cleanText),
+            description: cleanText,
+            severity: this.determineSeverity(cleanText),
+            source: citations?.[0] || 'News Sources',
+            url: citations?.[0],
+            impact: this.extractImpact(cleanText),
+            verified: true
+          };
+          
+          events.push(event);
+        }
+      });
+    } else {
+      // Fallback: look for bullet points or paragraphs
+      const lines = content
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 30 && !line.includes('Here are') && !line.includes('developments'))
+        .slice(0, 6);
+
+      lines.forEach((line, index) => {
+        const cleanLine = line
+          .replace(/^[\-\*\•]\s*/, '')
+          .replace(/\*\*/g, '')
+          .trim();
+
+        if (cleanLine.length > 30) {
+          const event: TimelineEvent = {
+            id: `${conflictId}-${Date.now()}-${index}`,
+            conflictId,
+            timestamp: new Date(Date.now() - index * 7200000),
+            title: this.extractMeaningfulTitle(cleanLine),
+            description: cleanLine,
+            severity: this.determineSeverity(cleanLine),
+            source: citations?.[0] || 'News Sources',
+            url: citations?.[0],
+            impact: this.extractImpact(cleanLine),
+            verified: true
+          };
+          
+          events.push(event);
+        }
       });
     }
 
-    return events;
+    return events.slice(0, 6);
   }
 
   private extractMeaningfulTitle(text: string): string {
-    // Extract first few meaningful words as title
-    const words = text.split(' ').filter(word => word.length > 2);
-    return words.slice(0, 6).join(' ').replace(/[^\w\s]/g, '');
+    // Extract key action words and subjects for a meaningful title
+    const actionWords = ['attacked', 'launched', 'announced', 'reported', 'signed', 'agreed', 'withdrew', 'deployed', 'captured', 'destroyed'];
+    const found = actionWords.find(word => text.toLowerCase().includes(word));
+    
+    if (found) {
+      const words = text.split(' ').slice(0, 6);
+      return words.join(' ') + (words.length === 6 ? '...' : '');
+    }
+    
+    // Fallback to first 50 characters
+    return text.length > 50 ? text.substring(0, 50) + '...' : text;
   }
 
   private extractTimestamp(text: string): Date | null {
-    // Try to extract date patterns from text
-    const today = new Date();
-    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-    
-    if (text.toLowerCase().includes('today')) {
-      return new Date(today.getTime() - Math.random() * 12 * 60 * 60 * 1000);
+    // Look for date patterns in the text
+    const datePatterns = [
+      /(\d{1,2}\/\d{1,2}\/\d{4})/,
+      /(\d{4}-\d{1,2}-\d{1,2})/,
+      /(today|yesterday|this morning|this afternoon|tonight)/i
+    ];
+
+    for (const pattern of datePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const dateStr = match[1];
+        if (dateStr.toLowerCase().includes('today')) {
+          return new Date();
+        } else if (dateStr.toLowerCase().includes('yesterday')) {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          return yesterday;
+        } else {
+          const date = new Date(dateStr);
+          if (!isNaN(date.getTime())) {
+            return date;
+          }
+        }
+      }
     }
-    if (text.toLowerCase().includes('yesterday')) {
-      return new Date(yesterday.getTime() - Math.random() * 12 * 60 * 60 * 1000);
-    }
-    
-    // Default to random time in past 48 hours
-    return new Date(today.getTime() - Math.random() * 48 * 60 * 60 * 1000);
+
+    return null;
   }
 
-  private extractSeverity(text: string): 'low' | 'medium' | 'high' | 'critical' {
+  private cleanEventText(text: string): string {
+    // Remove all formatting markers and duplicates
+    let cleaned = text
+      .replace(/Title:\*\*\s*/g, '')
+      .replace(/\*\*Title:\*\*/g, '')
+      .replace(/Description:\*\*\s*/g, '')
+      .replace(/\*\*Description:\*\*/g, '')
+      .replace(/\*\*Timestamp:\*\*/g, '')
+      .replace(/Timestamp:\*\*/g, '')
+      .replace(/\[Source:.*?\]/g, '')
+      .replace(/\s*-\s*\*\*.*?\*\*/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/^[\d\-\*\•\s]+/, '')
+      .replace(/:\s*-\s*/g, ': ')
+      .trim();
+
+    // Remove duplicate text patterns (e.g., "A: - A")
+    const colonIndex = cleaned.indexOf(':');
+    if (colonIndex > 0) {
+      const beforeColon = cleaned.substring(0, colonIndex).trim();
+      const afterColon = cleaned.substring(colonIndex + 1).trim();
+      
+      // If text after colon starts with dash and repeats the before part, clean it
+      if (afterColon.startsWith('- ') && afterColon.substring(2).trim().startsWith(beforeColon)) {
+        cleaned = afterColon.substring(2 + beforeColon.length).trim();
+        if (cleaned.startsWith(',') || cleaned.startsWith('.')) {
+          cleaned = cleaned.substring(1).trim();
+        }
+      } else if (afterColon.startsWith('- ')) {
+        cleaned = afterColon.substring(2).trim();
+      } else {
+        cleaned = afterColon;
+      }
+    }
+
+    // Split into sentences and take the first meaningful ones
+    const sentences = cleaned.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    const uniqueSentences = Array.from(new Set(sentences.map(s => s.trim())));
+    
+    // Return first 2 sentences, max 150 chars
+    const result = uniqueSentences.slice(0, 2).join('. ').trim();
+    return result.length > 150 ? result.substring(0, 150) + '...' : result + '.';
+  }
+
+  private extractTitle(text: string): string {
+    // Extract first 60 characters as title, or find the main subject
+    const title = text.substring(0, 80).trim();
+    
+    // Remove bullet points and numbering
+    return title.replace(/^[\d\-\*\•\s]+/, '').trim() || 'Conflict Update';
+  }
+
+  private determineSeverity(text: string): 'low' | 'medium' | 'high' | 'critical' {
+    const criticalWords = ['killed', 'dead', 'casualties', 'bombing', 'attack', 'invasion', 'war crimes'];
+    const highWords = ['fighting', 'battle', 'conflict', 'military', 'troops', 'weapons'];
+    const mediumWords = ['diplomatic', 'meeting', 'talks', 'sanctions', 'aid'];
+    
     const lowerText = text.toLowerCase();
     
-    if (lowerText.includes('critical') || lowerText.includes('emergency') || lowerText.includes('urgent')) {
+    if (criticalWords.some(word => lowerText.includes(word))) {
       return 'critical';
-    }
-    if (lowerText.includes('major') || lowerText.includes('significant') || lowerText.includes('heavy')) {
+    } else if (highWords.some(word => lowerText.includes(word))) {
       return 'high';
-    }
-    if (lowerText.includes('moderate') || lowerText.includes('increased') || lowerText.includes('reported')) {
+    } else if (mediumWords.some(word => lowerText.includes(word))) {
       return 'medium';
     }
     
@@ -223,175 +308,6 @@ export class ConflictTimelineService {
     }
     
     return 'Regional impact';
-  }
-
-  private generateRealisticTimelineEvents(conflict: Conflict, currentDate: string): TimelineEvent[] {
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-    
-    const templates = this.getConflictSpecificTemplates(conflict);
-    const events: TimelineEvent[] = [];
-    
-    // Generate 4-6 events from the past 48 hours with varied severity
-    const timeSlots = [
-      { start: now.getTime() - 4 * 60 * 60 * 1000, end: now.getTime(), label: 'past 4 hours' },
-      { start: now.getTime() - 12 * 60 * 60 * 1000, end: now.getTime() - 4 * 60 * 60 * 1000, label: 'earlier today' },
-      { start: yesterday.getTime() - 8 * 60 * 60 * 1000, end: yesterday.getTime(), label: 'yesterday' },
-      { start: twoDaysAgo.getTime(), end: twoDaysAgo.getTime() + 12 * 60 * 60 * 1000, label: 'two days ago' }
-    ];
-    
-    const numEvents = Math.floor(Math.random() * 3) + 4; // 4-6 events
-    const usedTemplates = new Set();
-    
-    for (let i = 0; i < numEvents && usedTemplates.size < templates.length; i++) {
-      let template;
-      let attempts = 0;
-      
-      // Ensure variety in events
-      do {
-        template = templates[Math.floor(Math.random() * templates.length)];
-        attempts++;
-      } while (usedTemplates.has(template.title) && attempts < 10);
-      
-      usedTemplates.add(template.title);
-      
-      const timeSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
-      const eventTime = new Date(timeSlot.start + Math.random() * (timeSlot.end - timeSlot.start));
-      
-      // Add more realistic time context and details
-      const timeContext = this.getTimeContext(eventTime);
-      const enrichedDescription = `${template.description}. Reported ${timeContext} by ${template.source}.`;
-      
-      events.push({
-        id: `${conflict.id}_${eventTime.getTime()}_${i}`,
-        conflictId: conflict.id,
-        timestamp: eventTime,
-        title: template.title,
-        description: enrichedDescription,
-        severity: template.severity,
-        source: template.source,
-        impact: template.impact,
-        verified: true
-      });
-    }
-    
-    return events
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 5); // Return most recent 5 events
-  }
-
-  private getTimeContext(eventTime: Date): string {
-    const now = new Date();
-    const hoursAgo = Math.floor((now.getTime() - eventTime.getTime()) / (60 * 60 * 1000));
-    
-    if (hoursAgo < 6) {
-      return `${hoursAgo} hours ago`;
-    } else if (hoursAgo < 24) {
-      return 'yesterday';
-    } else if (hoursAgo < 48) {
-      return '2 days ago';
-    } else {
-      return eventTime.toLocaleDateString();
-    }
-  }
-
-  private getConflictSpecificTemplates(conflict: Conflict) {
-    const region = conflict.region;
-    const name = conflict.name;
-    
-    // Generate context-appropriate events based on conflict region and type
-    if (region.includes('Europe') || name.includes('Ukraine')) {
-      return [
-        {
-          title: 'Front Line Artillery Activity',
-          description: `Sustained artillery exchanges reported across multiple sectors, with both sides reinforcing defensive positions amid winter conditions`,
-          severity: 'medium' as const,
-          source: 'Defense Intelligence Agency',
-          impact: 'Tactical operations'
-        },
-        {
-          title: 'NATO Equipment Delivery',
-          description: `Latest Western military aid package including advanced air defense systems delivered to Ukrainian forces`,
-          severity: 'low' as const,
-          source: 'Alliance Command',
-          impact: 'Military capability enhancement'
-        },
-        {
-          title: 'Infrastructure Strike Response',
-          description: `Critical energy infrastructure targeted in coordinated missile strikes, emergency repairs initiated`,
-          severity: 'high' as const,
-          source: 'Energy Ministry',
-          impact: 'Civilian infrastructure'
-        },
-        {
-          title: 'Diplomatic Initiative Progress',
-          description: `Multi-party diplomatic consultations continue regarding prisoner exchange and grain corridor agreements`,
-          severity: 'low' as const,
-          source: 'Foreign Ministry',
-          impact: 'Diplomatic engagement'
-        },
-        {
-          title: 'Electronic Warfare Operations',
-          description: `Increased electronic warfare activity detected, affecting communications and GPS systems in border regions`,
-          severity: 'medium' as const,
-          source: 'Cyber Command',
-          impact: 'Information warfare'
-        }
-      ];
-    } else if (region.includes('Pacific') || region.includes('Asia')) {
-      return [
-        {
-          title: 'Naval Patrol Activity Increased',
-          description: `Enhanced naval presence observed in disputed maritime zones with additional patrol vessels`,
-          severity: 'medium' as const,
-          source: 'Maritime Security',
-          impact: 'Regional tensions'
-        },
-        {
-          title: 'Diplomatic Consultation Scheduled',
-          description: `Regional powers announce emergency diplomatic consultations on territorial disputes`,
-          severity: 'low' as const,
-          source: 'Foreign Ministry',
-          impact: 'Diplomatic engagement'
-        }
-      ];
-    } else if (region.includes('Middle East') || region.includes('Africa')) {
-      return [
-        {
-          title: 'Security Operations Conducted',
-          description: `Joint security forces conducted operations targeting militant positions in border regions`,
-          severity: 'high' as const,
-          source: 'Regional Command',
-          impact: 'Counter-terrorism efforts'
-        },
-        {
-          title: 'Supply Route Disruption',
-          description: `Key supply routes temporarily disrupted due to security concerns, alternative paths activated`,
-          severity: 'medium' as const,
-          source: 'Logistics Command',
-          impact: 'Supply chain operations'
-        }
-      ];
-    }
-    
-    // Generic templates for other conflicts
-    return [
-      {
-        title: 'Situation Monitoring Continues',
-        description: `Intelligence units maintain active surveillance of potential flashpoint areas`,
-        severity: 'low' as const,
-        source: 'Intelligence Services',
-        impact: 'Situational awareness'
-      },
-      {
-        title: 'Force Posture Adjustment',
-        description: `Military units repositioned to enhance defensive capabilities in key strategic areas`,
-        severity: 'medium' as const,
-        source: 'Military Command',
-        impact: 'Strategic positioning'
-      }
-    ];
   }
 
   private mapSeverityToNumber(severity: 'low' | 'medium' | 'high' | 'critical'): number {
@@ -427,16 +343,30 @@ export class ConflictTimelineService {
               const correlationEvent: InsertCorrelationEvent = {
                 eventDate: event.timestamp,
                 eventDescription: `${event.title}: ${event.description}`,
-                stockMovement: this.mapSeverityToNumber(event.severity),
-                severity: this.mapSeverityToNumber(event.severity),
-                conflictId: event.conflictId
+                stockMovement: 0,
+                conflictId: event.conflictId,
+                severity: this.mapSeverityToNumber(event.severity)
               };
               
               await storage.createCorrelationEvent(correlationEvent);
+              console.log(`Added timeline event: ${event.title}`);
             } catch (error) {
-              console.error(`Error storing timeline event for ${conflict.name}:`, error);
+              console.error('Error storing timeline event:', error);
             }
           }
+          
+          // Update conflict's lastUpdated timestamp
+          await storage.updateConflict(conflict.id, {
+            name: conflict.name,
+            status: conflict.status,
+            region: conflict.region,
+            severity: conflict.severity,
+            duration: conflict.duration,
+            startDate: conflict.startDate
+          });
+          
+          // Add delay between requests to respect API limits
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
     } catch (error) {
@@ -452,15 +382,15 @@ export class ConflictTimelineService {
       return;
     }
 
-    // Update every 15 minutes for more frequent timeline updates
+    // Update every 30 minutes
     this.updateInterval = setInterval(() => {
       this.updateAllConflictTimelines();
-    }, 15 * 60 * 1000);
+    }, 30 * 60 * 1000);
 
-    // Run immediate initial update
+    // Run initial update
     setTimeout(() => {
       this.updateAllConflictTimelines();
-    }, 1000);
+    }, 5000);
 
     console.log('Real-time conflict timeline updates started');
   }

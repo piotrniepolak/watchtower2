@@ -59,7 +59,7 @@ export default function DailyQuiz() {
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
 
   // Check if user is demo account
-  const isDemoUser = (user as any)?.username === 'demo_user';
+  const isDemoUser = user?.username === 'demo_user';
 
   const quizQuery = useQuery<DailyQuiz>({
     queryKey: ['/api/quiz/today'],
@@ -69,65 +69,6 @@ export default function DailyQuiz() {
   });
 
   const { data: quiz, isLoading: quizLoading, refetch } = quizQuery;
-
-  // Load quiz state from localStorage when quiz data is available
-  useEffect(() => {
-    if (!quiz?.id) return;
-    
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    
-    // Load saved state
-    const savedAnswers = localStorage.getItem(getStorageKey('answers'));
-    const savedCurrentQuestion = localStorage.getItem(getStorageKey('currentQuestion'));
-    const savedShowResults = localStorage.getItem(getStorageKey('showResults'));
-    const savedQuizStarted = localStorage.getItem(getStorageKey('started'));
-    const savedStartTime = localStorage.getItem(getStorageKey('startTime'));
-    const savedQuizResult = localStorage.getItem(getStorageKey('result'));
-    
-    if (savedAnswers) setSelectedAnswers(JSON.parse(savedAnswers));
-    if (savedCurrentQuestion) setCurrentQuestion(parseInt(savedCurrentQuestion));
-    if (savedShowResults) setShowResults(savedShowResults === 'true');
-    if (savedQuizStarted) setQuizStarted(savedQuizStarted === 'true');
-    if (savedStartTime) setStartTime(parseInt(savedStartTime));
-    if (savedQuizResult) setQuizResult(JSON.parse(savedQuizResult));
-  }, [quiz?.id]);
-
-  // Save state to localStorage whenever it changes
-  useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('answers'), JSON.stringify(selectedAnswers));
-  }, [selectedAnswers, quiz?.id]);
-
-  useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('currentQuestion'), currentQuestion.toString());
-  }, [currentQuestion, quiz?.id]);
-
-  useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('showResults'), showResults.toString());
-  }, [showResults, quiz?.id]);
-
-  useEffect(() => {
-    if (!quiz?.id) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('started'), quizStarted.toString());
-  }, [quizStarted, quiz?.id]);
-
-  useEffect(() => {
-    if (!quiz?.id || !startTime) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('startTime'), startTime.toString());
-  }, [startTime, quiz?.id]);
-
-  useEffect(() => {
-    if (!quiz?.id || !quizResult) return;
-    const getStorageKey = (suffix: string) => `quiz_${quiz.id}_${suffix}`;
-    localStorage.setItem(getStorageKey('result'), JSON.stringify(quizResult));
-  }, [quizResult, quiz?.id]);
 
   const submitMutation = useMutation({
     mutationFn: async (responses: number[]) => {
