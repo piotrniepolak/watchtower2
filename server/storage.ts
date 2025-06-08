@@ -1,9 +1,7 @@
 import { 
   conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
-  discussions, discussionReplies, discussionVotes,
   type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
-  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser,
-  type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote
+  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gt } from "drizzle-orm";
@@ -1022,42 +1020,7 @@ export class MemStorage implements IStorage {
       return 0;
     });
   }
-  // Discussion Board operations
-  async getDiscussions(limit: number = 20, offset: number = 0, category?: string): Promise<(Discussion & { author: Pick<User, 'id' | 'username' | 'firstName' | 'lastName' | 'profileImageUrl'> })[]> {
-    const query = db
-      .select({
-        id: discussions.id,
-        title: discussions.title,
-        content: discussions.content,
-        authorId: discussions.authorId,
-        category: discussions.category,
-        tags: discussions.tags,
-        upvotes: discussions.upvotes,
-        downvotes: discussions.downvotes,
-        replyCount: discussions.replyCount,
-        lastActivityAt: discussions.lastActivityAt,
-        createdAt: discussions.createdAt,
-        updatedAt: discussions.updatedAt,
-        author: {
-          id: users.id,
-          username: users.username,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-        }
-      })
-      .from(discussions)
-      .innerJoin(users, eq(discussions.authorId, users.id))
-      .orderBy(discussions.lastActivityAt)
-      .limit(limit)
-      .offset(offset);
 
-    if (category) {
-      query.where(eq(discussions.category, category));
-    }
-
-    return await query;
-  }
 
   async getDiscussion(id: number): Promise<(Discussion & { author: Pick<User, 'id' | 'username' | 'firstName' | 'lastName' | 'profileImageUrl'> }) | undefined> {
     const [discussion] = await db
