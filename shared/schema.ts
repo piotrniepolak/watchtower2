@@ -390,7 +390,9 @@ export const discussionVotesRelations = relations(discussionVotes, ({ one }) => 
 }));
 
 // Discussion Board Schemas
-export const insertDiscussionSchema = createInsertSchema(discussions).omit({
+export const insertDiscussionSchema = createInsertSchema(discussions, {
+  authorId: z.string().nullable().optional()
+}).omit({
   id: true,
   upvotes: true,
   downvotes: true,

@@ -1176,7 +1176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message content is required" });
       }
       
-      let userId: string;
+      let userId: string | null;
       
       // Debug authentication state
       console.log("Chat request auth debug:", {
