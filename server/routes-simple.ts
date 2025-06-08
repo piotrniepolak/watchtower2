@@ -126,28 +126,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.redirect('/');
   });
 
-  // Regular login endpoint for user authentication
+  // Simplified login endpoint for demo purposes
   app.post('/api/auth/login', async (req: any, res) => {
     try {
-      const { email, password } = req.body;
+      const { email } = req.body;
       
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
       }
 
       // Find user by email
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-
-      // For now, check if password matches (in production, use proper hashing)
-      if (user.password !== password) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+        return res.status(401).json({ message: 'User not found' });
       }
 
       // Create user session
-      req.session.userId = parseInt(user.id);
+      req.session.userId = user.id;
       
       res.json({ 
         message: 'Login successful',
@@ -224,6 +219,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
     res.status(401).json({ message: 'Not authenticated' });
+  });
+
+  // Add the current-user endpoint that the frontend expects
+  app.get('/api/auth/current-user', async (req: any, res) => {
+    if (req.session?.userId) {
+      const user = await storage.getUser(req.session.userId.toString());
+      if (user) {
+        return res.json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileImageUrl: user.profileImageUrl,
+          isAuthenticated: true
+        });
+      }
+    }
+    res.status(401).json({ message: 'Not authenticated', isAuthenticated: false });
   });
 
   // Profile update endpoint
