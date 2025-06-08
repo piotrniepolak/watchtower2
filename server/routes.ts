@@ -1351,6 +1351,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   } else {
     console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
   }
+
+  // AI Analysis endpoints
+  app.get('/api/analysis/predictions', async (req, res) => {
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: 'OpenAI API key not configured' });
+      }
+      
+      const conflicts = await storage.getConflicts();
+      const stocks = await storage.getStocks();
+      const predictions = await generateConflictPredictions(conflicts, stocks);
+      res.json(predictions);
+    } catch (error) {
+      console.error('Error generating predictions:', error);
+      res.status(500).json({ message: 'Failed to generate predictions' });
+    }
+  });
+
+  app.get('/api/analysis/market', async (req, res) => {
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: 'OpenAI API key not configured' });
+      }
+      
+      const stocks = await storage.getStocks();
+      const conflicts = await storage.getConflicts();
+      const correlationEvents = await storage.getCorrelationEvents();
+      const analysis = await generateMarketAnalysis(stocks, conflicts, correlationEvents);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error generating market analysis:', error);
+      res.status(500).json({ message: 'Failed to generate market analysis' });
+    }
+  });
+
+  app.get('/api/analysis/storyline/:conflictId', async (req, res) => {
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: 'OpenAI API key not configured' });
+      }
+      
+      const conflictId = parseInt(req.params.conflictId);
+      const conflict = await storage.getConflict(conflictId);
+      
+      if (!conflict) {
+        return res.status(404).json({ message: 'Conflict not found' });
+      }
+      
+      const storyline = await generateConflictStoryline(conflict);
+      res.json(storyline);
+    } catch (error) {
+      console.error('Error generating storyline:', error);
+      res.status(500).json({ message: 'Failed to generate storyline' });
+    }
+  });
   
   return httpServer;
 }
