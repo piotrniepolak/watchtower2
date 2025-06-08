@@ -131,24 +131,13 @@ export class QuizStorage {
       console.log('Sample entry:', results[0]);
     }
 
-    return results.map(result => {
-      console.log('Processing leaderboard entry:', {
-        userId: result.userId,
-        username: result.username,
-        firstName: result.firstName,
-        email: result.email
-      });
-      const generatedUsername = this.generateUsernameForLeaderboard(result);
-      console.log('Generated username:', generatedUsername);
-      
-      return {
-        username: generatedUsername,
-        totalPoints: result.totalPoints,
-        score: result.score,
-        timeBonus: result.timeBonus,
-        completedAt: result.completedAt
-      };
-    });
+    return results.map(result => ({
+      username: this.generateUsernameForLeaderboard(result),
+      totalPoints: result.totalPoints,
+      score: result.score,
+      timeBonus: result.timeBonus,
+      completedAt: result.completedAt
+    }));
   }
 
   // Helper method to generate a username from user data
@@ -177,21 +166,22 @@ export class QuizStorage {
       return `Anonymous${result.userId.slice(-4)}`;
     }
     
-    // For registered users, prioritize username first
-    if (result.username && result.username.trim()) {
+    // For registered users, ALWAYS prioritize the actual username they created
+    if (result.username && result.username.trim() && result.username.trim() !== '') {
       return result.username.trim();
     }
     
-    // If no username, create one from available data
-    if (result.email) {
-      const emailPrefix = result.email.split('@')[0];
-      return emailPrefix;
+    // If user somehow doesn't have a username, generate one from name + ID to avoid duplicates
+    if (result.firstName && result.firstName.trim()) {
+      const shortId = result.userId.toString().slice(-3);
+      return `${result.firstName.trim()}${shortId}`;
     }
     
-    // Fallback to first name with user ID suffix to ensure uniqueness
-    if (result.firstName && result.firstName.trim()) {
-      const shortId = result.userId.slice(-4);
-      return `${result.firstName.trim()}${shortId}`;
+    // If no first name, use email prefix + ID
+    if (result.email) {
+      const emailPrefix = result.email.split('@')[0];
+      const shortId = result.userId.toString().slice(-3);
+      return `${emailPrefix}${shortId}`;
     }
     
     // Last resort - use user ID
