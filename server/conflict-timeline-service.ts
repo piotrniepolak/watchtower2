@@ -297,17 +297,32 @@ export class ConflictTimelineService {
       .replace(/- Source:.*?- Severity:.*$/gm, '') // Remove source/severity trailers
       .replace(/- Source:.*$/gm, '') // Remove standalone source lines
       .replace(/- Severity:.*$/gm, '') // Remove standalone severity lines
+      .replace(/Source:.*$/gm, '') // Remove source without dash
+      .replace(/Severity:.*$/gm, '') // Remove severity without dash
       .replace(/\n+/g, ' ') // Replace newlines with spaces
       .replace(/\s+/g, ' ') // Normalize whitespace
       .replace(/^[^-]*-\s*/, '') // Remove leading location prefix if it exists
+      .replace(/^\s*-\s*/, '') // Remove leading dash
       .trim();
     
     // Extract core event information and limit length
     const sentences = cleaned.split('.').filter(s => s.trim().length > 10);
     if (sentences.length > 0) {
       cleaned = sentences[0].trim();
-      if (cleaned.length > 90) {
-        cleaned = cleaned.substring(0, 87) + '...';
+      if (cleaned.length > 85) {
+        cleaned = cleaned.substring(0, 82) + '...';
+      }
+    }
+    
+    // If still empty or too short, extract meaningful content
+    if (cleaned.length < 20 && text.length > 50) {
+      // Find meaningful content after location indicators
+      const locationMatch = text.match(/(?:Kyiv|Kharkiv|Donetsk|Luhansk|Gaza|Jerusalem|Tel Aviv|Rafah|Khan Younis)[\s-]*(.+?)(?:\.|$)/i);
+      if (locationMatch && locationMatch[1]) {
+        cleaned = locationMatch[1].trim();
+        if (cleaned.length > 85) {
+          cleaned = cleaned.substring(0, 82) + '...';
+        }
       }
     }
     
@@ -515,7 +530,7 @@ export class ConflictTimelineService {
             try {
               const correlationEvent: InsertCorrelationEvent = {
                 eventDate: event.timestamp,
-                eventDescription: `${event.title}: ${event.description}`,
+                eventDescription: this.cleanDescription(event.description),
                 stockMovement: this.mapSeverityToNumber(event.severity),
                 severity: this.mapSeverityToNumber(event.severity),
                 conflictId: event.conflictId

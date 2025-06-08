@@ -405,9 +405,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const events = await conflictTimelineService.fetchConflictUpdates(conflict);
       
       for (const event of events) {
+        // Clean description to remove verbose formatting
+        const cleanDescription = event.description
+          .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '')
+          .replace(/- Source:.*?- Severity:.*$/gm, '')
+          .replace(/- Source:.*$/gm, '')
+          .replace(/- Severity:.*$/gm, '')
+          .replace(/Source:.*$/gm, '')
+          .replace(/Severity:.*$/gm, '')
+          .replace(/\n+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .replace(/^[^-]*-\s*/, '')
+          .replace(/^\s*-\s*/, '')
+          .trim();
+        
+        const finalDescription = cleanDescription.length > 85 ? 
+          cleanDescription.substring(0, 82) + '...' : cleanDescription;
+        
         const correlationEvent = {
           eventDate: event.timestamp,
-          eventDescription: event.description,
+          eventDescription: finalDescription,
           stockMovement: 0,
           conflictId: event.conflictId,
           severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
