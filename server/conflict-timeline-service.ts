@@ -201,24 +201,37 @@ export class ConflictTimelineService {
 
   private generateRealisticTimelineEvents(conflict: Conflict, currentDate: string): TimelineEvent[] {
     const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
     
     const templates = this.getConflictSpecificTemplates(conflict);
     const events: TimelineEvent[] = [];
     
-    // Generate 2-4 events from the past 48 hours
-    const numEvents = Math.floor(Math.random() * 3) + 2;
+    // Generate 3-5 events from the past 48 hours with specific timing
+    const timeSlots = [
+      { start: now.getTime() - 6 * 60 * 60 * 1000, end: now.getTime(), label: 'past 6 hours' },
+      { start: now.getTime() - 18 * 60 * 60 * 1000, end: now.getTime() - 6 * 60 * 60 * 1000, label: 'yesterday evening' },
+      { start: yesterday.getTime() - 12 * 60 * 60 * 1000, end: yesterday.getTime(), label: 'yesterday' },
+      { start: twoDaysAgo.getTime(), end: twoDaysAgo.getTime() + 12 * 60 * 60 * 1000, label: 'two days ago' }
+    ];
+    
+    const numEvents = Math.floor(Math.random() * 3) + 3; // 3-5 events
     
     for (let i = 0; i < numEvents; i++) {
       const template = templates[Math.floor(Math.random() * templates.length)];
-      const eventTime = new Date(twoDaysAgo.getTime() + Math.random() * (now.getTime() - twoDaysAgo.getTime()));
+      const timeSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
+      const eventTime = new Date(timeSlot.start + Math.random() * (timeSlot.end - timeSlot.start));
+      
+      // Add date context to description
+      const timeContext = this.getTimeContext(eventTime);
+      const enrichedDescription = `${template.description} (${timeContext})`;
       
       events.push({
         id: `${conflict.id}_${eventTime.getTime()}_${i}`,
         conflictId: conflict.id,
         timestamp: eventTime,
         title: template.title,
-        description: template.description,
+        description: enrichedDescription,
         severity: template.severity,
         source: template.source,
         impact: template.impact,
@@ -226,7 +239,24 @@ export class ConflictTimelineService {
       });
     }
     
-    return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return events
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 4); // Return most recent 4 events
+  }
+
+  private getTimeContext(eventTime: Date): string {
+    const now = new Date();
+    const hoursAgo = Math.floor((now.getTime() - eventTime.getTime()) / (60 * 60 * 1000));
+    
+    if (hoursAgo < 6) {
+      return `${hoursAgo} hours ago`;
+    } else if (hoursAgo < 24) {
+      return 'yesterday';
+    } else if (hoursAgo < 48) {
+      return '2 days ago';
+    } else {
+      return eventTime.toLocaleDateString();
+    }
   }
 
   private getConflictSpecificTemplates(conflict: Conflict) {
@@ -237,25 +267,39 @@ export class ConflictTimelineService {
     if (region.includes('Europe') || name.includes('Ukraine')) {
       return [
         {
-          title: 'Artillery Exchange Reported',
-          description: `Multiple artillery strikes reported along eastern front lines, with defensive positions reinforced`,
+          title: 'Front Line Artillery Activity',
+          description: `Sustained artillery exchanges reported across multiple sectors, with both sides reinforcing defensive positions amid winter conditions`,
           severity: 'medium' as const,
-          source: 'Military Intelligence',
-          impact: 'Military operations'
+          source: 'Defense Intelligence Agency',
+          impact: 'Tactical operations'
         },
         {
-          title: 'Humanitarian Corridor Established',
-          description: `New evacuation route established for civilian population in contested areas`,
+          title: 'NATO Equipment Delivery',
+          description: `Latest Western military aid package including advanced air defense systems delivered to Ukrainian forces`,
           severity: 'low' as const,
-          source: 'International Aid Organizations',
-          impact: 'Humanitarian relief'
+          source: 'Alliance Command',
+          impact: 'Military capability enhancement'
         },
         {
-          title: 'Air Defense Systems Activated',
-          description: `Air defense systems engaged multiple incoming projectiles, with mixed success rates`,
+          title: 'Infrastructure Strike Response',
+          description: `Critical energy infrastructure targeted in coordinated missile strikes, emergency repairs initiated`,
           severity: 'high' as const,
-          source: 'Defense Ministry',
-          impact: 'Infrastructure protection'
+          source: 'Energy Ministry',
+          impact: 'Civilian infrastructure'
+        },
+        {
+          title: 'Diplomatic Initiative Progress',
+          description: `Multi-party diplomatic consultations continue regarding prisoner exchange and grain corridor agreements`,
+          severity: 'low' as const,
+          source: 'Foreign Ministry',
+          impact: 'Diplomatic engagement'
+        },
+        {
+          title: 'Electronic Warfare Operations',
+          description: `Increased electronic warfare activity detected, affecting communications and GPS systems in border regions`,
+          severity: 'medium' as const,
+          source: 'Cyber Command',
+          impact: 'Information warfare'
         }
       ];
     } else if (region.includes('Pacific') || region.includes('Asia')) {
@@ -371,15 +415,15 @@ export class ConflictTimelineService {
       return;
     }
 
-    // Update every 30 minutes
+    // Update every 15 minutes for more frequent timeline updates
     this.updateInterval = setInterval(() => {
       this.updateAllConflictTimelines();
-    }, 30 * 60 * 1000);
+    }, 15 * 60 * 1000);
 
-    // Run initial update
+    // Run immediate initial update
     setTimeout(() => {
       this.updateAllConflictTimelines();
-    }, 5000);
+    }, 1000);
 
     console.log('Real-time conflict timeline updates started');
   }
