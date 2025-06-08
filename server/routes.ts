@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { discussionStorage } from "./discussion-storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -1260,58 +1259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat API routes
-  app.get('/api/chat/:category', async (req, res) => {
-    try {
-      const category = req.params.category || 'general';
-      const limit = 50;
-      
-      // Add cache-busting headers to force fresh data delivery
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-      
-      const messages = await discussionStorage.getDiscussions(limit, 0, category);
-      console.log("API returning messages count:", messages.length);
-      if (messages.length > 0) {
-        console.log("First message author data:", JSON.stringify(messages[0].author, null, 2));
-        console.log("First message tags data:", JSON.stringify(messages[0].tags, null, 2));
-      }
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching chat messages:", error);
-      res.status(500).json({ error: "Failed to fetch messages" });
-    }
-  });
 
-  app.post('/api/chat', isAuthenticated, async (req, res) => {
-    try {
-      const { content, category = "general" } = req.body;
-      
-      if (!content || !content.trim()) {
-        return res.status(400).json({ error: "Message content is required" });
-      }
-      
-      // Get user ID from authenticated session
-      const userId = req.user.id;
-      console.log(`Chat from authenticated user ID: ${userId}`);
-      
-      const message = await discussionStorage.createDiscussion({
-        title: "Chat Message",
-        content: content.trim(),
-        authorId: userId,
-        category,
-        tags: [], // No tags needed - authenticated users only
-      });
-      
-      res.status(201).json(message);
-    } catch (error) {
-      console.error("Error creating chat message:", error);
-      res.status(500).json({ error: "Failed to send message" });
-    }
-  });
 
   app.get('/api/discussions', async (req, res) => {
     try {
