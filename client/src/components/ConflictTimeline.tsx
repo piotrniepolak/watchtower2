@@ -36,15 +36,21 @@ const cleanEventDescription = (description: string) => {
   return cleaned;
 };
 
-const truncateText = (text: string, maxLength: number = 200) => {
+const truncateText = (text: string, maxLength: number = 100) => {
   if (text.length <= maxLength) return { text, isTruncated: false };
   
+  // Try to break at first sentence if it's reasonable length
   const sentences = text.split(/[.!?]+/);
-  if (sentences.length > 1 && sentences[0].length > 50 && sentences[0].length <= maxLength) {
+  if (sentences.length > 1 && sentences[0].length > 40 && sentences[0].length <= maxLength) {
     return { text: sentences[0].trim() + '.', isTruncated: true };
   }
   
-  return { text: text.substring(0, maxLength) + '...', isTruncated: true };
+  // Otherwise find last complete word within limit
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  const finalText = lastSpaceIndex > maxLength * 0.7 ? truncated.substring(0, lastSpaceIndex) : truncated;
+  
+  return { text: finalText + '...', isTruncated: true };
 };
 
 export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineProps) {
@@ -182,9 +188,9 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
             {/* Timeline line */}
             <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               {(timeline as TimelineEvent[]).map((event: TimelineEvent, index: number) => (
-                <div key={event.id} className="relative flex gap-3">
+                <div key={event.id} className="relative flex gap-4">
                   {/* Timeline dot */}
                   <div className={`
                     relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 flex-shrink-0
@@ -198,16 +204,16 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
                   
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <Badge variant={getSeverityColor(event.severity)} className="text-xs px-2 py-0.5">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <Badge variant={getSeverityColor(event.severity)} className="text-xs px-2 py-0.5 font-medium">
                         Level {event.severity}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground font-medium">
                         {formatTimeAgo(event.eventDate)}
                       </span>
                     </div>
                     
-                    <div className="bg-muted/30 rounded-md p-2">
+                    <div className="bg-muted/20 rounded-lg p-3 border border-border/50">
                       {(() => {
                         const cleanedDescription = cleanEventDescription(event.eventDescription);
                         const { text, isTruncated } = truncateText(cleanedDescription);
@@ -216,7 +222,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
                         
                         return (
                           <div>
-                            <p className="text-sm text-foreground/90 leading-relaxed">
+                            <p className="text-sm text-foreground leading-relaxed mb-1">
                               {displayText}
                             </p>
                             {isTruncated && (
@@ -224,7 +230,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => toggleExpanded(event.id)}
-                                className="mt-2 h-auto p-1 text-xs text-muted-foreground hover:text-foreground"
+                                className="h-auto p-0 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 font-medium"
                               >
                                 {isExpanded ? (
                                   <>
