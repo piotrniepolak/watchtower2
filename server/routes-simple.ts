@@ -144,15 +144,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create user session
       req.session.userId = user.id;
       
+      // Generate a simple token for frontend compatibility
+      const token = `session_${user.id}_${Date.now()}`;
+      
       res.json({ 
         message: 'Login successful',
         user: {
-          id: user.id,
+          id: parseInt(user.id),
           username: user.username,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName
-        }
+        },
+        token: token
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -187,15 +191,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create user session
       req.session.userId = newUser.id;
       
+      // Generate a simple token for frontend compatibility
+      const token = `session_${newUser.id}_${Date.now()}`;
+      
       res.json({ 
         message: 'Registration successful',
         user: {
-          id: newUser.id,
+          id: parseInt(newUser.id),
           username: newUser.username,
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName
-        }
+        },
+        token: token
       });
     } catch (error) {
       console.error('Registration error:', error);
