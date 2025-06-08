@@ -12,7 +12,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
-import { modernLobbyingService } from "./modern-lobbying-service";
+import { workingLobbyingService } from "./working-lobbying-service";
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -820,13 +820,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Modern lobbying analysis with Perplexity AI
   app.get("/api/lobbying/analysis", async (req, res) => {
     try {
+      console.log("Lobbying analysis endpoint called");
       const timeframe = req.query.timeframe as string || "1Y";
       const stocks = await storage.getStocks();
-      const analysis = await modernLobbyingService.getLobbyingAnalysis(stocks, timeframe);
+      console.log(`Retrieved ${stocks.length} stocks for lobbying analysis`);
+      
+      const analysis = await workingLobbyingService.getLobbyingAnalysis(stocks, timeframe);
+      console.log("Lobbying analysis completed successfully");
+      
+      res.setHeader('Content-Type', 'application/json');
       res.json(analysis);
     } catch (error) {
       console.error("Error fetching lobbying analysis:", error);
-      res.status(500).json({ error: "Failed to fetch lobbying analysis" });
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ error: "Failed to fetch lobbying analysis", details: error.message });
     }
   });
 
