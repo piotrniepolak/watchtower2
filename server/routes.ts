@@ -1237,7 +1237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chat', async (req, res) => {
     try {
-      const { content, category = "general", username = "Guest" } = req.body;
+      const { content, category = "general", username } = req.body;
       
       if (!content || !content.trim()) {
         return res.status(400).json({ error: "Message content is required" });
@@ -1251,7 +1251,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const user = await storage.getUser(userId);
         console.log(`Chat from authenticated user: ${user?.username || 'unknown'} (ID: ${userId})`);
       } else {
-        console.log("Chat from anonymous user - no session");
+        // For anonymous users, create a temporary fake user entry if username provided
+        if (username && username.trim()) {
+          console.log(`Chat from anonymous user with username: ${username}`);
+          // Create discussion without userId but store the anonymous username in content metadata
+        } else {
+          console.log("Chat from anonymous user - no username provided");
+        }
       }
       
       const message = await discussionStorage.createDiscussion({
@@ -1259,7 +1265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: content.trim(),
         authorId: userId,
         category,
-        tags: [],
+        tags: username && !userId ? [username] : [], // Store anonymous username in tags for display
       });
       
       res.status(201).json(message);

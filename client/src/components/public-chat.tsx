@@ -53,15 +53,12 @@ export default function PublicChat() {
   // Effect to handle username when user is authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Use authenticated user's information
-      const authenticatedUsername = (user as any).username || 
-        `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim() || 
-        (user as any).email?.split('@')[0] || 
-        'User';
-      setUsername(authenticatedUsername);
+      // For authenticated users, we don't need a local username
+      // The backend will use their authenticated identity
+      setUsername('authenticated_user');
       setShowUsernamePrompt(false);
     } else if (!username) {
-      // Show username prompt for non-authenticated users
+      // Show username prompt only for non-authenticated users
       setShowUsernamePrompt(true);
     }
   }, [isAuthenticated, user, username]);
@@ -79,7 +76,6 @@ export default function PublicChat() {
       return await apiRequest("POST", `/api/chat`, {
         content,
         category: activeTab,
-        username: username,
       });
     },
     onSuccess: () => {
@@ -95,29 +91,35 @@ export default function PublicChat() {
     },
   });
 
-  const getAuthorName = (author?: Author) => {
-    // If no author data, this is truly anonymous
-    if (!author || !author.id) {
-      return "anonymous";
+  const getAuthorName = (message: ChatMessage) => {
+    // If author exists, use their authentic database information
+    if (message.author && message.author.id) {
+      // Always prioritize username from database - this is the authentic user identifier
+      if (message.author.username) {
+        return message.author.username;
+      }
+      
+      // If no username but has firstName, use that
+      if (message.author.firstName) {
+        return message.author.firstName;
+      }
+      
+      // If no username or firstName, use email prefix (but only for real emails)
+      if (message.author.email && message.author.email.includes('@') && !message.author.email.endsWith('@chat.local')) {
+        return message.author.email.split('@')[0];
+      }
+      
+      // If we have an ID but no other identifying info, show as authenticated user
+      return `User ${message.author.id}`;
     }
     
-    // Always prioritize username from database - this is the authentic user identifier
-    if (author.username) {
-      return author.username;
+    // For anonymous messages, check if username is stored in tags
+    if (message.tags && message.tags.length > 0 && message.tags[0]) {
+      return message.tags[0];
     }
     
-    // If no username but has firstName, use that
-    if (author.firstName) {
-      return author.firstName;
-    }
-    
-    // If no username or firstName, use email prefix (but only for real emails)
-    if (author.email && author.email.includes('@') && !author.email.endsWith('@chat.local')) {
-      return author.email.split('@')[0];
-    }
-    
-    // If we have an ID but no other identifying info, show as authenticated user
-    return `User ${author.id}`;
+    // Truly anonymous
+    return "anonymous";
   };
 
   const formatTime = (dateString: string) => {
@@ -131,10 +133,13 @@ export default function PublicChat() {
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
-    if (!username) {
+    
+    // Only require username for anonymous (non-authenticated) users
+    if (!isAuthenticated && !username) {
       setShowUsernamePrompt(true);
       return;
     }
+    
     sendMessageMutation.mutate(newMessage.trim());
   };
 
@@ -205,7 +210,7 @@ export default function PublicChat() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                              {getAuthorName(message.author)}
+                              {getAuthorName(message)}
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {formatTime(message.createdAt)}
