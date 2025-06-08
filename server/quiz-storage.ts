@@ -166,12 +166,25 @@ export class QuizStorage {
       return `Anonymous${result.userId.slice(-4)}`;
     }
     
-    // For registered users, prioritize username first, then first name, then email
-    if (result.username && result.username.trim()) return result.username.trim();
-    if (result.firstName && result.firstName.trim()) return result.firstName.trim();
-    if (result.email) return result.email.split('@')[0];
+    // For registered users, prioritize username first
+    if (result.username && result.username.trim()) {
+      return result.username.trim();
+    }
     
-    return 'User';
+    // If no username, create one from available data
+    if (result.email) {
+      const emailPrefix = result.email.split('@')[0];
+      return emailPrefix;
+    }
+    
+    // Fallback to first name with user ID suffix to ensure uniqueness
+    if (result.firstName && result.firstName.trim()) {
+      const shortId = result.userId.slice(-4);
+      return `${result.firstName.trim()}${shortId}`;
+    }
+    
+    // Last resort - use user ID
+    return `User${result.userId.slice(-4)}`;
   }
 }
 
