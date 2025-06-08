@@ -1203,19 +1203,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updateUser(userId, { username });
         }
       } else {
-        // Handle non-authenticated users with username
-        let user = await storage.getUserByUsername(username);
-        if (!user) {
-          // Create a new user with this username
-          user = await storage.createUser({
-            id: `user_${username}_${Date.now()}`,
-            username: username,
-            email: `${username}@chat.local`,
-            firstName: username,
-            lastName: "",
-            profileImageUrl: null,
-          });
-        }
+        // Handle non-authenticated users - create anonymous user
+        const anonymousId = `anonymous_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const user = await storage.createUser({
+          id: anonymousId,
+          username: "anonymous",
+          email: `${anonymousId}@chat.local`,
+          firstName: "anonymous",
+          lastName: "",
+          profileImageUrl: null,
+        });
         userId = user.id;
       }
       
