@@ -69,7 +69,8 @@ export default function PublicChat() {
     queryKey: [`/api/chat/${activeTab}`],
     refetchInterval: 2000,
     staleTime: 0, // Force fresh data to fix username caching issue
-    cacheTime: 0, // Don't cache responses
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   // Send message mutation
@@ -89,7 +90,9 @@ export default function PublicChat() {
     },
     onSuccess: () => {
       setNewMessage("");
+      // Force complete cache refresh to fix username display issue
       queryClient.invalidateQueries({ queryKey: [`/api/chat/${activeTab}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/chat/${activeTab}`], type: 'active' });
     },
     onError: (error: any) => {
       toast({

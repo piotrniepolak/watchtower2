@@ -1227,10 +1227,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const category = req.params.category || 'general';
       const limit = 50;
       
+      // Add cache-busting headers to force fresh data delivery
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       const messages = await discussionStorage.getDiscussions(limit, 0, category);
       console.log("API returning messages count:", messages.length);
       if (messages.length > 0) {
         console.log("First message author data:", JSON.stringify(messages[0].author, null, 2));
+        console.log("First message tags data:", JSON.stringify(messages[0].tags, null, 2));
       }
       res.json(messages);
     } catch (error) {
