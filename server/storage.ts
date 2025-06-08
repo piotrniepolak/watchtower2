@@ -977,44 +977,27 @@ export class MemStorage implements IStorage {
   }
 
   async createDailyQuiz(insertQuiz: InsertDailyQuiz): Promise<DailyQuiz> {
-    const quiz: DailyQuiz = {
-      id: this.currentQuizId++,
-      date: insertQuiz.date,
-      questions: insertQuiz.questions,
-      createdAt: new Date(),
-    };
-    
-    this.dailyQuizzes.set(insertQuiz.date, quiz);
+    const [quiz] = await db.insert(dailyQuizzes).values(insertQuiz).returning();
     return quiz;
   }
 
   async createUserQuizResponse(insertResponse: InsertUserQuizResponse): Promise<UserQuizResponse> {
-    // Save to database
-    const [dbResponse] = await db
-      .insert(userQuizResponses)
-      .values({
-        userId: insertResponse.userId,
-        quizId: insertResponse.quizId,
-        responses: insertResponse.responses,
-        score: insertResponse.score,
-        totalPoints: insertResponse.totalPoints || 0,
-        timeBonus: insertResponse.timeBonus || 0,
-        completionTimeSeconds: insertResponse.completionTimeSeconds || null,
-        completedAt: new Date(),
-      })
-      .returning();
-
-    return dbResponse;
+    const [response] = await db.insert(userQuizResponses).values(insertResponse).returning();
+    return response;
   }
 
   async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined> {
-    for (const response of this.userQuizResponses.values()) {
-      if (response.userId === userId && response.quizId === quizId) {
-        return response;
-      }
-    }
-    return undefined;
+    const [response] = await db
+      .select()
+      .from(userQuizResponses)
+      .where(and(
+        eq(userQuizResponses.userId, userId),
+        eq(userQuizResponses.quizId, quizId)
+      ));
+    return response || undefined;
   }
+
+
 
   // Daily News
   async getDailyNews(date: string): Promise<DailyNews | undefined> {
@@ -1344,4 +1327,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
