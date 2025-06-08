@@ -8,16 +8,21 @@ export class NewsService {
 
   constructor() {
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY environment variable is required");
+      console.warn("OPENAI_API_KEY environment variable is missing - news generation will be limited");
     }
     if (!process.env.PERPLEXITY_API_KEY) {
-      throw new Error("PERPLEXITY_API_KEY environment variable is required");
+      console.warn("PERPLEXITY_API_KEY environment variable is missing - current events fetching will be limited");
     }
-    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'dummy-key' });
   }
 
   private async fetchCurrentEvents(): Promise<string> {
     try {
+      if (!process.env.PERPLEXITY_API_KEY) {
+        console.warn("PERPLEXITY_API_KEY not available, skipping current events fetch");
+        return "Current events data unavailable - API key not configured";
+      }
+
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {

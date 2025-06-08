@@ -15,6 +15,10 @@ import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-for-testing';
 
 // Session configuration for authentication
 const sessionConfig = session({
@@ -72,10 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Login successful for user: ${user.username} (${user.email}) - Session ID: ${user.id}`);
           return res.redirect('/');
         } else {
-          console.log(`No user found with ID: ${userId} - checking all users`);
-          // Debug: list all users
-          const allUsers = await storage.getUsers();
-          console.log(`Available users:`, allUsers.map(u => ({ id: u.id, username: u.username })));
+          console.log(`No user found with ID: ${userId}`);
         }
       }
       
