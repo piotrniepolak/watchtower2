@@ -209,7 +209,7 @@ export class ConflictTimelineService {
       });
     }
 
-    return events.slice(0, 8); // Return up to 8 events for more data points
+    return events.slice(0, 5); // Return up to 5 events for better readability
   }
 
   private extractMeaningfulTitle(text: string): string {
@@ -291,17 +291,24 @@ export class ConflictTimelineService {
   }
 
   private cleanDescription(text: string): string {
-    // Remove redundant formatting and shorten verbose descriptions
+    // Remove all verbose formatting and create concise descriptions
     let cleaned = text
       .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '') // Remove date headers
       .replace(/- Source:.*?- Severity:.*$/gm, '') // Remove source/severity trailers
+      .replace(/- Source:.*$/gm, '') // Remove standalone source lines
+      .replace(/- Severity:.*$/gm, '') // Remove standalone severity lines
       .replace(/\n+/g, ' ') // Replace newlines with spaces
       .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/^[^-]*-\s*/, '') // Remove leading location prefix if it exists
       .trim();
     
-    // Limit to reasonable length for timeline readability
-    if (cleaned.length > 120) {
-      cleaned = cleaned.substring(0, 117) + '...';
+    // Extract core event information and limit length
+    const sentences = cleaned.split('.').filter(s => s.trim().length > 10);
+    if (sentences.length > 0) {
+      cleaned = sentences[0].trim();
+      if (cleaned.length > 90) {
+        cleaned = cleaned.substring(0, 87) + '...';
+      }
     }
     
     return cleaned;
@@ -315,17 +322,15 @@ export class ConflictTimelineService {
     const templates = this.getConflictSpecificTemplates(conflict);
     const events: TimelineEvent[] = [];
     
-    // Generate 8-12 events from the past 48 hours with varied severity
+    // Generate 4-6 events from the past 48 hours with varied severity
     const timeSlots = [
-      { start: now.getTime() - 2 * 60 * 60 * 1000, end: now.getTime(), label: 'past 2 hours' },
-      { start: now.getTime() - 6 * 60 * 60 * 1000, end: now.getTime() - 2 * 60 * 60 * 1000, label: 'past 6 hours' },
-      { start: now.getTime() - 12 * 60 * 60 * 1000, end: now.getTime() - 6 * 60 * 60 * 1000, label: 'earlier today' },
-      { start: yesterday.getTime() - 4 * 60 * 60 * 1000, end: yesterday.getTime(), label: 'yesterday' },
-      { start: yesterday.getTime() - 12 * 60 * 60 * 1000, end: yesterday.getTime() - 4 * 60 * 60 * 1000, label: 'yesterday morning' },
+      { start: now.getTime() - 4 * 60 * 60 * 1000, end: now.getTime(), label: 'past 4 hours' },
+      { start: now.getTime() - 12 * 60 * 60 * 1000, end: now.getTime() - 4 * 60 * 60 * 1000, label: 'earlier today' },
+      { start: yesterday.getTime() - 6 * 60 * 60 * 1000, end: yesterday.getTime(), label: 'yesterday' },
       { start: twoDaysAgo.getTime(), end: twoDaysAgo.getTime() + 12 * 60 * 60 * 1000, label: 'two days ago' }
     ];
     
-    const numEvents = Math.floor(Math.random() * 5) + 8; // 8-12 events
+    const numEvents = Math.floor(Math.random() * 3) + 4; // 4-6 events
     const usedTemplates = new Set();
     
     for (let i = 0; i < numEvents && usedTemplates.size < templates.length; i++) {
@@ -343,16 +348,16 @@ export class ConflictTimelineService {
       const timeSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
       const eventTime = new Date(timeSlot.start + Math.random() * (timeSlot.end - timeSlot.start));
       
-      // Add more realistic time context and details
+      // Add concise time context
       const timeContext = this.getTimeContext(eventTime);
-      const enrichedDescription = `${template.description}. Reported ${timeContext} by ${template.source}.`;
+      const enrichedDescription = `${template.description}. Reported ${timeContext}.`;
       
       events.push({
         id: `${conflict.id}_${eventTime.getTime()}_${i}`,
         conflictId: conflict.id,
         timestamp: eventTime,
         title: template.title,
-        description: enrichedDescription,
+        description: this.cleanDescription(enrichedDescription),
         severity: template.severity,
         source: template.source,
         impact: template.impact,
@@ -362,7 +367,7 @@ export class ConflictTimelineService {
     
     return events
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 10); // Return most recent 10 events for more data points
+      .slice(0, 5); // Return most recent 5 events for better readability
   }
 
   private getTimeContext(eventTime: Date): string {
