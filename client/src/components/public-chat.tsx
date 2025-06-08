@@ -77,9 +77,21 @@ export default function PublicChat() {
       queryClient.refetchQueries({ queryKey: [`/api/chat/${activeTab}`], type: 'active' });
     },
     onError: (error: any) => {
+      console.error("Chat error:", error);
+      let errorMessage = "Failed to send message";
+      
+      if (error?.message?.includes("USERNAME_TAKEN") || error?.response?.data?.code === "USERNAME_TAKEN") {
+        errorMessage = "This username is already taken. Please choose a different one.";
+        // Clear the stored username so user can pick a new one
+        localStorage.removeItem('chatUsername');
+        setChatUsername("");
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: errorMessage,
         variant: "destructive",
       });
     },
