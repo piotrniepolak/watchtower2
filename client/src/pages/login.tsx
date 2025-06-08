@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 import { LogIn, UserPlus } from "lucide-react";
 import Navigation from "@/components/navigation";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { login, refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -35,25 +37,24 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Store authentication data in localStorage for frontend compatibility
-        if (data.token) {
-          localStorage.setItem('auth_token', data.token);
-          localStorage.setItem('auth_user', JSON.stringify(data.user));
-        }
+        // Update auth context with user data
+        login(data.user);
         
         toast({
           title: "Login Successful",
           description: `Welcome back, ${data.user.firstName || data.user.username}!`,
         });
         
-        // Force page reload to trigger authentication state update
-        window.location.href = '/';
+        // Refresh auth state and redirect
+        await refreshAuth();
+        setLocation('/dashboard');
       } else {
         toast({
           title: "Login Failed",

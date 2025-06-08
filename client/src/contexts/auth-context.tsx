@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   firstName: string | null;
@@ -11,61 +11,72 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
-  login: (user: User, token: string) => void;
+  login: (user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for stored authentication data on app start
-    const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('auth_user');
-    
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch (error) {
-        // Clear invalid stored data
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/current-user', {
+        credentials: 'include' // Include cookies for session auth
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.isAuthenticated && data.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setUser(null);
     }
-    
-    setIsLoading(false);
-  }, []);
-
-  const login = (userData: User, authToken: string) => {
-    setUser(userData);
-    setToken(authToken);
-    localStorage.setItem('auth_token', authToken);
-    localStorage.setItem('auth_user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  useEffect(() => {
+    checkAuthStatus().finally(() => setIsLoading(false));
+  }, []);
+
+  const login = (userData: User) => {
+    setUser(userData);
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/logout', {
+        method: 'GET',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setUser(null);
-    setToken(null);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+  };
+
+  const refreshAuth = async () => {
+    await checkAuthStatus();
   };
 
   const value = {
     user,
-    token,
     login,
     logout,
-    isAuthenticated: !!user && !!token,
-    isLoading
+    isAuthenticated: !!user,
+    isLoading,
+    refreshAuth
   };
 
   return (

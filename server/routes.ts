@@ -27,11 +27,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-for-testing';
 const sessionConfig = session({
   secret: process.env.SESSION_SECRET || 'dev-secret-key-for-testing',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
-    secure: false,
+    secure: false, // Set to false for development (HTTP)
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: 'lax' // Allow same-site requests
   }
 });
 
@@ -108,18 +109,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const user = await storage.getUser(req.session.userId.toString());
         if (user) {
           return res.json({ 
-            id: user.id, 
-            username: user.username, 
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName
+            isAuthenticated: true,
+            user: {
+              id: user.id, 
+              username: user.username, 
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName
+            }
           });
         }
       }
-      res.json({ id: null, username: null, email: null });
+      res.status(401).json({ 
+        isAuthenticated: false,
+        message: "Not authenticated",
+        user: null 
+      });
     } catch (error) {
       console.error('Error getting current user:', error);
-      res.status(500).json({ error: 'Failed to get user info' });
+      res.status(500).json({ error: 'Failed to get user info', isAuthenticated: false });
     }
   });
 
@@ -213,6 +221,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create session
       (req as any).session.userId = user.id;
+      
+      // Force session save before response
+      await new Promise((resolve) => (req as any).session.save(resolve));
 
       res.json({ 
         message: "Login successful", 
@@ -222,7 +233,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName
-        } 
+        },
+        isAuthenticated: true
       });
     } catch (error) {
       console.error("Error during login:", error);
@@ -277,6 +289,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Auto-login the user
       (req as any).session.userId = newUser.id;
+      
+      // Force session save before response
+      await new Promise((resolve) => (req as any).session.save(resolve));
 
       res.status(201).json({ 
         message: "User created successfully", 
@@ -286,7 +301,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName
-        } 
+        },
+        isAuthenticated: true
       });
     } catch (error) {
       console.error("Error creating user:", error);
