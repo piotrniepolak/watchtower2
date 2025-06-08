@@ -119,6 +119,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Username setup endpoint
+  app.post('/api/auth/setup-username', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { username } = req.body;
+
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const trimmedUsername = username.trim();
+
+      if (trimmedUsername.length < 3) {
+        return res.status(400).json({ message: "Username must be at least 3 characters long" });
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(trimmedUsername)) {
+        return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+      }
+
+      // Check if username is already taken
+      const existingUser = await storage.getUserByUsername(trimmedUsername);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+
+      // Update user with the chosen username
+      const updatedUser = await storage.updateUsername(userId, trimmedUsername);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update username" });
+      }
+
+      res.json({ message: "Username created successfully", user: updatedUser });
+    } catch (error) {
+      console.error("Error setting up username:", error);
+      res.status(500).json({ message: "Failed to setup username" });
+    }
+  });
+
   // Quick login for existing user (development only)
   app.post('/api/auth/quick-login', async (req, res) => {
     try {

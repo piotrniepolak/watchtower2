@@ -137,10 +137,12 @@ export class DatabaseStorage implements IStorage {
     const existingUser = await this.getUser(userData.id);
     
     if (existingUser) {
-      // User exists - update their data but preserve username if they already have one
+      // User exists - update their data
       const updateData = { ...userData };
-      if (existingUser.username && !userData.username) {
-        delete updateData.username; // Don't overwrite existing username
+      
+      // Only update username if we have a new one to set
+      if (!userData.username) {
+        delete updateData.username;
       }
       
       const [user] = await db
