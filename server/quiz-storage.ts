@@ -70,6 +70,16 @@ export class QuizStorage {
     };
   }
 
+  // Get daily quiz by ID
+  async getDailyQuizById(id: number): Promise<DailyQuiz | null> {
+    const [quiz] = await db
+      .select()
+      .from(dailyQuizzes)
+      .where(eq(dailyQuizzes.id, id));
+    
+    return quiz || null;
+  }
+
   // Get user's quiz response for a specific quiz
   async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | null> {
     const [response] = await db

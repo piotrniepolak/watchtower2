@@ -15,15 +15,20 @@ import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-// Simple session-based auth for now
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-for-testing';
+
+// Session configuration for authentication
 const sessionConfig = session({
-  secret: process.env.SESSION_SECRET || 'dev-secret',
+  secret: process.env.SESSION_SECRET || 'dev-secret-key-for-testing',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    secure: false,
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000
   }
 });
 
@@ -45,11 +50,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enable sessions
   app.use(sessionConfig);
 
-  // Simple login endpoint for demo
-  app.get('/api/login', (req: any, res) => {
-    // Create a demo user session
-    req.session.userId = 1;
+  // Login endpoint with user switching capability
+  app.get('/api/login', async (req: any, res) => {
+    try {
+      const userEmail = req.query.email;
+      const userId = req.query.id;
+      
+      if (userEmail) {
+        console.log(`Attempting login with email: ${userEmail}`);
+        const user = await storage.getUserByEmail(userEmail);
+        if (user) {
+          req.session.userId = user.id;
+          await new Promise((resolve) => req.session.save(resolve));
+          console.log(`Login successful for user: ${user.username} (${user.email}) - Session ID: ${user.id}`);
+          return res.redirect('/');
+        } else {
+          console.log(`No user found with email: ${userEmail}`);
+        }
+      } else if (userId) {
+        console.log(`Attempting login with ID: ${userId}`);
+        const user = await storage.getUser(userId.toString());
+        if (user) {
+          req.session.userId = user.id;
+          await new Promise((resolve) => req.session.save(resolve));
+          console.log(`Login successful for user: ${user.username} (${user.email}) - Session ID: ${user.id}`);
+          return res.redirect('/');
+        } else {
+          console.log(`No user found with ID: ${userId}`);
+        }
+      }
+      
+      // Create anonymous session
+      req.session.userId = null;
+      await new Promise((resolve) => req.session.save(resolve));
+      console.log('Anonymous session created');
+      res.redirect('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      res.redirect('/');
+    }
+  });
+
+  // Logout endpoint
+  app.get('/api/logout', (req: any, res) => {
+    req.session.userId = null;
+    console.log('User logged out');
     res.redirect('/');
+  });
+
+  // Get current user info
+  app.get('/api/auth/current-user', async (req: any, res) => {
+    try {
+      if (req.session?.userId) {
+        const user = await storage.getUser(req.session.userId.toString());
+        if (user) {
+          return res.json({ 
+            id: user.id, 
+            username: user.username, 
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          });
+        }
+      }
+      res.json({ id: null, username: null, email: null });
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      res.status(500).json({ error: 'Failed to get user info' });
+    }
+  });
+
+  // Username setup endpoint
+  app.post('/api/auth/setup-username', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { username } = req.body;
+
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ message: "Username is required" });
+      }
+
+      const trimmedUsername = username.trim();
+
+      if (trimmedUsername.length < 3) {
+        return res.status(400).json({ message: "Username must be at least 3 characters long" });
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(trimmedUsername)) {
+        return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+      }
+
+      // Check if username is already taken
+      const existingUser = await storage.getUserByUsername(trimmedUsername);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+
+      // Update user with the chosen username
+      const updatedUser = await storage.updateUsername(userId, trimmedUsername);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update username" });
+      }
+
+      res.json({ message: "Username created successfully", user: updatedUser });
+    } catch (error) {
+      console.error("Error setting up username:", error);
+      res.status(500).json({ message: "Failed to setup username" });
+    }
   });
 
   // Quick login for existing user (development only)
@@ -1017,7 +1124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quiz/leaderboard", async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const leaderboard = await quizStorage.getDailyQuizLeaderboard(today);
+      const leaderboard = await storage.getDailyQuizLeaderboard(today);
       res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching quiz leaderboard:", error);
@@ -1029,21 +1136,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quizId = parseInt(req.params.quizId);
       const { responses, completionTimeSeconds } = req.body;
-      const userId = "demo_user"; // Using default demo user for now
+      
+      // Get user ID from session or use anonymous ID
+      let userId: string;
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      } else {
+        // Generate anonymous user ID for non-authenticated users
+        userId = `anon_quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
 
       if (!Array.isArray(responses)) {
         return res.status(400).json({ error: "Responses must be an array" });
       }
 
-      // Check if user already submitted this quiz
-      const existingResponse = await quizStorage.getUserQuizResponse(userId, quizId);
+      // Check if user already submitted this quiz (use storage directly)
+      const existingResponse = await storage.getUserQuizResponse(userId, quizId);
       if (existingResponse) {
         return res.status(400).json({ error: "Quiz already completed" });
       }
 
-      // Get quiz to calculate score
-      const quiz = await quizStorage.getDailyQuiz(new Date().toISOString().split('T')[0]);
-      if (!quiz) {
+      // Get quiz to calculate score - use the same system as the GET endpoint
+      const quiz = await quizService.getTodaysQuiz();
+      if (!quiz || quiz.id !== quizId) {
         return res.status(404).json({ error: "Quiz not found" });
       }
 
@@ -1067,15 +1182,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const totalPoints = basePoints + timeBonus;
 
-      const result = await quizStorage.submitQuizResponse(
-        userId, 
-        quizId, 
-        responses, 
+      // Save quiz response using storage directly
+      await storage.createUserQuizResponse({
+        userId,
+        quizId,
+        responses: responses as any,
         score,
         totalPoints,
         timeBonus,
-        completionTimeSeconds
-      );
+        completionTimeSeconds: completionTimeSeconds || null
+      });
+
+      const result = { score, total: responses.length, totalPoints, timeBonus };
       
       res.json(result);
     } catch (error) {
@@ -1160,7 +1278,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const category = req.params.category || 'general';
       const limit = 50;
       
+      // Add cache-busting headers to force fresh data delivery
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       const messages = await discussionStorage.getDiscussions(limit, 0, category);
+      console.log("API returning messages count:", messages.length);
+      if (messages.length > 0) {
+        console.log("First message author data:", JSON.stringify(messages[0].author, null, 2));
+        console.log("First message tags data:", JSON.stringify(messages[0].tags, null, 2));
+      }
       res.json(messages);
     } catch (error) {
       console.error("Error fetching chat messages:", error);
@@ -1170,32 +1300,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chat', async (req, res) => {
     try {
-      const { content, category = "general", username = "Guest" } = req.body;
+      const { content, category = "general", tempUsername } = req.body;
       
       if (!content || !content.trim()) {
         return res.status(400).json({ error: "Message content is required" });
       }
+
+      if (!tempUsername || !tempUsername.trim()) {
+        return res.status(400).json({ error: "Username is required" });
+      }
       
-      // Create or get user for this username
-      let user = await storage.getUserByUsername(username);
-      if (!user) {
-        // Create a new user with this username
-        user = await storage.createUser({
-          id: `user_${username}_${Date.now()}`,
-          username: username,
-          email: `${username}@chat.local`,
-          firstName: username,
-          lastName: "",
-          profileImageUrl: null,
-        });
+      // Use authenticated user ID if available, otherwise generate anonymous ID
+      let userId: string;
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        console.log(`Chat from authenticated user ID: ${userId} with username: ${tempUsername}`);
+      } else {
+        // Generate anonymous user ID based on tempUsername for consistent identity
+        userId = `anon_${Buffer.from(tempUsername.trim()).toString('base64')}`;
+        console.log(`Chat from anonymous user with temp username: ${tempUsername}`);
       }
       
       const message = await discussionStorage.createDiscussion({
         title: "Chat Message",
         content: content.trim(),
-        authorId: user.id,
+        authorId: userId,
         category,
-        tags: [],
+        tags: [tempUsername.trim()], // Store temp username in tags for display
       });
       
       res.status(201).json(message);

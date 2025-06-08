@@ -30,6 +30,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
   updateUsername(id: string, newUsername: string): Promise<User | undefined>;
@@ -127,19 +128,44 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
+    // Check if user already exists
+    const existingUser = await this.getUser(userData.id);
+    
+    if (existingUser) {
+      // User exists - update their data
+      const updateData = { ...userData };
+      
+      // Only update username if we have a new one to set
+      if (!userData.username) {
+        delete updateData.username;
+      }
+      
+      const [user] = await db
+        .update(users)
+        .set({
+          ...updateData,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+        })
+        .where(eq(users.id, userData.id))
+        .returning();
+      return user;
+    } else {
+      // New user - insert with all provided data
+      const [user] = await db
+        .insert(users)
+        .values({
+          ...userData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+      return user;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -932,7 +958,7 @@ export class MemStorage implements IStorage {
     return response;
   }
 
-  async getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined> {
+  async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined> {
     for (const response of this.userQuizResponses.values()) {
       if (response.userId === userId && response.quizId === quizId) {
         return response;
