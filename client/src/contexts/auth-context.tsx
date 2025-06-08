@@ -26,17 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('/api/auth/current-user', {
+      const response = await fetch('/api/auth/user', {
         credentials: 'include' // Include cookies for session auth
       });
       
       if (response.ok) {
-        const data = await response.json();
-        if (data.isAuthenticated && data.user) {
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
+        const userData = await response.json();
+        setUser(userData);
       } else {
         setUser(null);
       }
