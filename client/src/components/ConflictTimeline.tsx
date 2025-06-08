@@ -129,9 +129,16 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
     return <Clock className="w-4 h-4" />;
   };
 
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (date: Date | string) => {
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - new Date(date).getTime()) / (1000 * 60));
+    const eventDate = new Date(date);
+    
+    // Check if date is valid
+    if (isNaN(eventDate.getTime())) {
+      return "Unknown time";
+    }
+    
+    const diffInMinutes = Math.floor((now.getTime() - eventDate.getTime()) / (1000 * 60));
     
     if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
