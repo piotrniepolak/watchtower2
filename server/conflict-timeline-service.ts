@@ -87,13 +87,25 @@ export class ConflictTimelineService {
           const content = data.choices[0]?.message?.content;
           
           if (content && content.length > 200) {
-            console.log(`Successfully retrieved real-time intelligence for ${conflict.name}`);
+            console.log(`Retrieved Perplexity response for ${conflict.name}, validating quality...`);
             const events = this.parseTimelineEvents(content, conflict.id, data.citations);
-            // Only use Perplexity data if it contains meaningful, detailed events
-            if (events.length > 0 && events.some(e => e.description.length > 50 && !e.description.includes('**'))) {
+            
+            // Check if Perplexity data is meaningful (not just category headers)
+            const hasQualityData = events.length > 0 && events.some(e => 
+              e.description.length > 80 && 
+              !e.description.includes('**') && 
+              !e.description.includes('Announcements:') &&
+              !e.description.includes('Developments:') &&
+              !e.description.includes('Activities:') &&
+              e.title.length > 10 &&
+              !e.title.includes('**')
+            );
+            
+            if (hasQualityData) {
+              console.log(`Using high-quality Perplexity intelligence for ${conflict.name}`);
               return events;
             }
-            console.log(`Perplexity data quality insufficient, using enhanced realistic timeline for ${conflict.name}`);
+            console.log(`Perplexity data insufficient quality (generic headers), using enhanced realistic timeline for ${conflict.name}`);
           }
         } else {
           const errorText = await response.text();
