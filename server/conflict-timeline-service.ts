@@ -61,30 +61,34 @@ export class ConflictTimelineService {
               },
               {
                 role: 'user',
-                content: `Analyze the ${conflict.name} situation in ${conflict.region}. Provide 6-8 specific, verified developments from the past 24-48 hours.
+                content: `Search recent news from the past 24 hours about ${conflict.name} in ${conflict.region}. Find 8-10 specific news events from Reuters, AP News, BBC, CNN, or defense publications.
 
-                For each development, include:
-                1. Exact timing (date/hour when possible)
-                2. Specific location or region affected
-                3. Detailed description of what occurred
-                4. Impact assessment (tactical, strategic, humanitarian)
-                5. Credible source (news agency, official statement, etc.)
-                6. Severity level (low/medium/high/critical)
+                For each news event found, provide:
+                - Exact date and time from the news report
+                - Specific location mentioned in the article
+                - Full details of what happened according to the news source
+                - The news organization that reported it
+                - Assessment of severity based on the reported impact
 
-                Focus on:
-                - Combat operations, troop movements, weapons deployments
-                - Diplomatic initiatives, sanctions, international responses  
-                - Infrastructure attacks, civilian impacts, humanitarian crises
-                - Economic warfare, supply chain disruptions
-                - Intelligence operations, cyber activities
-                - Peace negotiations, prisoner exchanges
+                Search for recent developments including:
+                - Military operations and battlefield updates
+                - Diplomatic announcements and peace talks
+                - Civilian casualties and humanitarian situations
+                - Economic impacts and sanctions news
+                - International military aid and weapons deliveries
+                - Official government or military statements
 
-                Format each as: "YYYY-MM-DD HH:MM - [LOCATION] - [DETAILED EVENT] - Source: [CREDIBLE SOURCE] - Severity: [LEVEL]"`
+                Format each finding as:
+                "2025-06-08 14:30 - Kharkiv Oblast - Ukrainian forces repelled Russian assault on eastern positions, 3 casualties reported - Source: Reuters - Severity: high"
+
+                Only include verified news from credible sources with specific details, dates, and locations.`
               }
             ],
-            max_tokens: 1500,
-            temperature: 0.1,
+            max_tokens: 2000,
+            temperature: 0.05,
+            top_p: 0.9,
             search_recency_filter: 'day',
+            search_domain_filter: ['reuters.com', 'apnews.com', 'bbc.com', 'cnn.com', 'defense.gov', 'nato.int'],
             return_related_questions: false,
             return_images: false,
             stream: false
@@ -99,15 +103,16 @@ export class ConflictTimelineService {
             console.log(`Retrieved Perplexity response for ${conflict.name}, validating quality...`);
             const events = this.parseTimelineEvents(content, conflict.id, data.citations);
             
-            // Check if Perplexity data is meaningful (not just category headers)
-            const hasQualityData = events.length > 0 && events.some(e => 
-              e.description.length > 80 && 
+            // Check if Perplexity data contains real news content
+            const hasQualityData = events.length >= 3 && events.some(e => 
+              e.description.length > 50 && 
               !e.description.includes('**') && 
               !e.description.includes('Announcements:') &&
               !e.description.includes('Developments:') &&
               !e.description.includes('Activities:') &&
-              e.title.length > 10 &&
-              !e.title.includes('**')
+              (e.source.includes('Reuters') || e.source.includes('AP') || e.source.includes('BBC') || 
+               e.source.includes('CNN') || e.description.includes('reported') || 
+               e.description.includes('according to') || /\d{4}-\d{2}-\d{2}/.test(e.description))
             );
             
             if (hasQualityData) {
@@ -259,6 +264,32 @@ export class ConflictTimelineService {
     return 'Regional impact';
   }
 
+  private mapSeverityString(severityStr: string): string {
+    const severity = severityStr.toLowerCase();
+    if (severity.includes('critical') || severity.includes('urgent')) return 'critical';
+    if (severity.includes('high') || severity.includes('major')) return 'high';
+    if (severity.includes('medium') || severity.includes('moderate')) return 'medium';
+    return 'low';
+  }
+
+  private extractSource(text: string): string | null {
+    // Look for source patterns in text
+    const sourcePatterns = [
+      /source:\s*([^-]+)/i,
+      /according to\s+([^,]+)/i,
+      /reported by\s+([^,]+)/i,
+      /(Reuters|AP|BBC|CNN|Associated Press|Pentagon|Defense Ministry|Military Command)/i
+    ];
+    
+    for (const pattern of sourcePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    return null;
+  }
+
   private generateRealisticTimelineEvents(conflict: Conflict, currentDate: string): TimelineEvent[] {
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -267,15 +298,17 @@ export class ConflictTimelineService {
     const templates = this.getConflictSpecificTemplates(conflict);
     const events: TimelineEvent[] = [];
     
-    // Generate 4-6 events from the past 48 hours with varied severity
+    // Generate 8-12 events from the past 48 hours with varied severity
     const timeSlots = [
-      { start: now.getTime() - 4 * 60 * 60 * 1000, end: now.getTime(), label: 'past 4 hours' },
-      { start: now.getTime() - 12 * 60 * 60 * 1000, end: now.getTime() - 4 * 60 * 60 * 1000, label: 'earlier today' },
-      { start: yesterday.getTime() - 8 * 60 * 60 * 1000, end: yesterday.getTime(), label: 'yesterday' },
+      { start: now.getTime() - 2 * 60 * 60 * 1000, end: now.getTime(), label: 'past 2 hours' },
+      { start: now.getTime() - 6 * 60 * 60 * 1000, end: now.getTime() - 2 * 60 * 60 * 1000, label: 'past 6 hours' },
+      { start: now.getTime() - 12 * 60 * 60 * 1000, end: now.getTime() - 6 * 60 * 60 * 1000, label: 'earlier today' },
+      { start: yesterday.getTime() - 4 * 60 * 60 * 1000, end: yesterday.getTime(), label: 'yesterday' },
+      { start: yesterday.getTime() - 12 * 60 * 60 * 1000, end: yesterday.getTime() - 4 * 60 * 60 * 1000, label: 'yesterday morning' },
       { start: twoDaysAgo.getTime(), end: twoDaysAgo.getTime() + 12 * 60 * 60 * 1000, label: 'two days ago' }
     ];
     
-    const numEvents = Math.floor(Math.random() * 3) + 4; // 4-6 events
+    const numEvents = Math.floor(Math.random() * 5) + 8; // 8-12 events
     const usedTemplates = new Set();
     
     for (let i = 0; i < numEvents && usedTemplates.size < templates.length; i++) {
@@ -312,7 +345,7 @@ export class ConflictTimelineService {
     
     return events
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, 5); // Return most recent 5 events
+      .slice(0, 10); // Return most recent 10 events for more data points
   }
 
   private getTimeContext(eventTime: Date): string {
