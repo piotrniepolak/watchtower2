@@ -1178,8 +1178,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let userId: string;
       
-      // Check if user is authenticated
-      if (req.user && (req.user as any).claims && (req.user as any).claims.sub) {
+      // Check if user is authenticated and session is valid
+      if (req.isAuthenticated && req.isAuthenticated() && req.user && (req.user as any).claims && (req.user as any).claims.sub) {
         // Use authenticated user
         const userClaims = (req.user as any).claims;
         userId = userClaims.sub;
