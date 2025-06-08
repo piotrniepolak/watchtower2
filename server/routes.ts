@@ -1255,12 +1255,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message content is required" });
       }
       
-      // Get authenticated user ID from claims
-      const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      
+      // Get user ID from authenticated session
+      const userId = req.user.id;
       console.log(`Chat from authenticated user ID: ${userId}`);
       
       const message = await discussionStorage.createDiscussion({
