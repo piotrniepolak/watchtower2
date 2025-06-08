@@ -246,22 +246,64 @@ export class DatabaseStorage implements IStorage {
 
   async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {
     const quiz = await this.getDailyQuiz(date);
-    if (!quiz) return [];
+    console.log(`DatabaseStorage leaderboard: date=${date}, quiz found:`, quiz?.id);
+    if (!quiz) {
+      console.log(`No quiz found for date ${date}`);
+      return [];
+    }
 
+    // Query database to include both registered and anonymous users
     const results = await db
       .select({
+        userId: userQuizResponses.userId,
         username: users.username,
+        firstName: users.firstName,
+        email: users.email,
         totalPoints: userQuizResponses.totalPoints,
         score: userQuizResponses.score,
         timeBonus: userQuizResponses.timeBonus,
         completedAt: userQuizResponses.completedAt,
       })
       .from(userQuizResponses)
-      .innerJoin(users, eq(userQuizResponses.userId, users.id))
+      .leftJoin(users, eq(userQuizResponses.userId, users.id))
       .where(eq(userQuizResponses.quizId, quiz.id))
       .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
 
-    return results;
+    console.log(`DatabaseStorage leaderboard: found ${results.length} entries`);
+
+    // Generate usernames for both registered and anonymous users
+    return results.map(result => {
+      let username = 'Anonymous';
+      
+      // Check if this is an anonymous user first
+      if (result.userId.startsWith('anon_')) {
+        const parts = result.userId.split('_');
+        if (parts.length >= 3) {
+          username = `Anonymous${parts[2].slice(-4)}`;
+        } else {
+          username = `Anonymous${result.userId.slice(-4)}`;
+        }
+      } else {
+        // For logged-in users, prioritize first name, then username, then email
+        if (result.firstName && result.firstName.trim()) {
+          username = result.firstName.trim();
+        } else if (result.username && result.username.trim()) {
+          username = result.username.trim();
+        } else if (result.email) {
+          username = result.email.split('@')[0];
+        } else {
+          username = 'User';
+        }
+      }
+
+      return {
+        username,
+        totalPoints: result.totalPoints,
+        score: result.score,
+        timeBonus: result.timeBonus,
+        completedAt: result.completedAt,
+      };
+    });
   }
 
   // Utility method for password verification
@@ -994,34 +1036,63 @@ export class MemStorage implements IStorage {
 
   async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {
     const quiz = await this.getDailyQuiz(date);
-    if (!quiz) return [];
+    console.log(`Storage leaderboard: date=${date}, quiz found:`, quiz?.id, quiz);
+    if (!quiz) {
+      console.log(`No quiz found for date ${date}`);
+      return [];
+    }
 
-    const leaderboard: { username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[] = [];
-    
-    for (const response of this.userQuizResponses.values()) {
-      if (response.quizId === quiz.id) {
-        const user = this.users.get(response.userId);
-        if (user) {
-          leaderboard.push({
-            username: user.username,
-            totalPoints: response.totalPoints,
-            score: response.score,
-            timeBonus: response.timeBonus,
-            completedAt: response.completedAt,
-          });
+    // Query database to include both registered and anonymous users
+    const results = await db
+      .select({
+        userId: userQuizResponses.userId,
+        username: users.username,
+        firstName: users.firstName,
+        email: users.email,
+        totalPoints: userQuizResponses.totalPoints,
+        score: userQuizResponses.score,
+        timeBonus: userQuizResponses.timeBonus,
+        completedAt: userQuizResponses.completedAt,
+      })
+      .from(userQuizResponses)
+      .leftJoin(users, eq(userQuizResponses.userId, users.id))
+      .where(eq(userQuizResponses.quizId, quiz.id))
+      .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
+
+    console.log(`Storage leaderboard: found ${results.length} entries`);
+
+    // Generate usernames for both registered and anonymous users
+    return results.map(result => {
+      let username = 'Anonymous';
+      
+      // Check if this is an anonymous user first
+      if (result.userId.startsWith('anon_')) {
+        const parts = result.userId.split('_');
+        if (parts.length >= 3) {
+          username = `Anonymous${parts[2].slice(-4)}`;
+        } else {
+          username = `Anonymous${result.userId.slice(-4)}`;
+        }
+      } else {
+        // For logged-in users, prioritize first name, then username, then email
+        if (result.firstName && result.firstName.trim()) {
+          username = result.firstName.trim();
+        } else if (result.username && result.username.trim()) {
+          username = result.username.trim();
+        } else if (result.email) {
+          username = result.email.split('@')[0];
+        } else {
+          username = 'User';
         }
       }
-    }
-    
-    // Sort by total points (descending), then by completion time (ascending)
-    return leaderboard.sort((a, b) => {
-      if (b.totalPoints !== a.totalPoints) {
-        return b.totalPoints - a.totalPoints;
-      }
-      if (a.completedAt && b.completedAt) {
-        return a.completedAt.getTime() - b.completedAt.getTime();
-      }
-      return 0;
+
+      return {
+        username,
+        totalPoints: result.totalPoints,
+        score: result.score,
+        timeBonus: result.timeBonus,
+        completedAt: result.completedAt,
+      };
     });
   }
   // Discussion Board operations
