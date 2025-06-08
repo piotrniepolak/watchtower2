@@ -1263,7 +1263,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quiz/leaderboard", async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const leaderboard = await storage.getDailyQuizLeaderboard(today);
+      
+      // Direct database query for leaderboard
+      const leaderboardQuery = await db
+        .select({
+          userId: userQuizResponses.userId,
+          totalPoints: userQuizResponses.totalPoints,
+          score: userQuizResponses.score,
+          timeBonus: userQuizResponses.timeBonus,
+          completedAt: userQuizResponses.completedAt,
+          username: users.username,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        })
+        .from(userQuizResponses)
+        .leftJoin(users, eq(userQuizResponses.userId, users.id))
+        .innerJoin(dailyQuizzes, eq(userQuizResponses.quizId, dailyQuizzes.id))
+        .where(eq(dailyQuizzes.date, today))
+        .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
+
+      // Generate proper usernames for leaderboard
+      const leaderboard = leaderboardQuery.map(result => {
+        let username = 'Anonymous';
+        
+        // If user exists in database, use their info
+        if (result.username) {
+          username = result.username;
+        } else if (result.firstName) {
+          username = result.firstName;
+        } else if (result.email) {
+          username = result.email.split('@')[0];
+        } else if (result.userId.startsWith('anon_')) {
+          // For anonymous users, create a friendly anonymous username
+          const parts = result.userId.split('_');
+          if (parts.length >= 3) {
+            username = `Anonymous${parts[2].slice(-4)}`;
+          } else {
+            username = `Anonymous${result.userId.slice(-4)}`;
+          }
+        }
+
+        return {
+          username,
+          totalPoints: result.totalPoints,
+          score: result.score,
+          timeBonus: result.timeBonus,
+          completedAt: result.completedAt,
+        };
+      });
+
       res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching quiz leaderboard:", error);
