@@ -303,40 +303,53 @@ Include specific dollar amounts, percentages, and quarterly data where available
       const symbolMatch = content.match(symbolRegex);
       
       if (symbolMatch) {
-        const spendingStr = symbolMatch[1].replace(/,/g, '');
-        const totalSpending = parseFloat(spendingStr); // Keep original value, likely already in millions
+        let spendingStr = symbolMatch[1].replace(/,/g, '');
+        let totalSpending = parseFloat(spendingStr);
         
-        console.log(`Found ${mapping.name} (${mapping.symbol}): $${totalSpending}M`);
+        // Convert unrealistic large numbers to millions
+        if (totalSpending > 1000000) {
+          totalSpending = totalSpending / 1000000; // Convert to millions
+        }
         
-        companies.push({
-          company: mapping.name,
-          symbol: mapping.symbol,
-          totalSpending: totalSpending,
-          recentQuarter: totalSpending * 0.25,
-          yearOverYearChange: this.extractYoYChangeFromContent(content, mapping.name),
-          keyIssues: this.extractKeyIssuesFromContent(content, mapping.name),
-          governmentContracts: this.extractContractValueFromContent(content, mapping.name),
-          influence: totalSpending > 15 ? 'high' : totalSpending > 8 ? 'medium' : 'low',
-          lastUpdated: new Date().toISOString()
-        });
+        // Only accept realistic lobbying values (1-100 million range)
+        if (totalSpending >= 1 && totalSpending <= 100) {
+          console.log(`Found ${mapping.name} (${mapping.symbol}): $${totalSpending.toFixed(1)}M`);
+          
+          companies.push({
+            company: mapping.name,
+            symbol: mapping.symbol,
+            totalSpending: Math.round(totalSpending * 10) / 10, // Round to 1 decimal
+            recentQuarter: Math.round(totalSpending * 0.25 * 10) / 10,
+            yearOverYearChange: this.extractYoYChangeFromContent(content, mapping.name),
+            keyIssues: this.extractKeyIssuesFromContent(content, mapping.name),
+            governmentContracts: this.extractContractValueFromContent(content, mapping.name),
+            influence: totalSpending > 15 ? 'high' : totalSpending > 8 ? 'medium' : 'low',
+            lastUpdated: new Date().toISOString()
+          });
+        }
       } else {
         // Fallback to simpler pattern
         const simpleRegex = new RegExp(`${mapping.name}.*?\\$([\\d,]+)`, 'i');
         const simpleMatch = content.match(simpleRegex);
         
         if (simpleMatch) {
-          const spendingStr = simpleMatch[1].replace(/,/g, '');
-          const totalSpending = parseFloat(spendingStr);
+          let spendingStr = simpleMatch[1].replace(/,/g, '');
+          let totalSpending = parseFloat(spendingStr);
           
-          // Only accept realistic lobbying values (millions range)
+          // Convert unrealistic large numbers to millions
+          if (totalSpending > 1000000) {
+            totalSpending = totalSpending / 1000000; // Convert to millions
+          }
+          
+          // Only accept realistic lobbying values (1-100 million range)
           if (totalSpending >= 1 && totalSpending <= 100) {
-            console.log(`Found ${mapping.name} via fallback: $${totalSpending}M`);
+            console.log(`Found ${mapping.name} via fallback: $${totalSpending.toFixed(1)}M`);
             
             companies.push({
               company: mapping.name,
               symbol: mapping.symbol,
-              totalSpending: totalSpending,
-              recentQuarter: totalSpending * 0.25,
+              totalSpending: Math.round(totalSpending * 10) / 10, // Round to 1 decimal
+              recentQuarter: Math.round(totalSpending * 0.25 * 10) / 10,
               yearOverYearChange: this.extractYoYChangeFromContent(content, mapping.name),
               keyIssues: this.extractKeyIssuesFromContent(content, mapping.name),
               governmentContracts: this.extractContractValueFromContent(content, mapping.name),
