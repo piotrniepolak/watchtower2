@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   MessageCircle, 
   Send, 
@@ -239,11 +239,11 @@ export default function PublicChat() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Choose Your Chat Username</DialogTitle>
+            <DialogDescription>
+              Choose a display name for chat. This will be saved locally and used for all your messages.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Choose a display name for chat. This will be saved locally and used for all your messages.
-            </p>
             <UsernamePrompt onSubmit={handleUsernameSubmit} />
           </div>
         </DialogContent>

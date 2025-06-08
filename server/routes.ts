@@ -1135,7 +1135,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const quizId = parseInt(req.params.quizId);
       const { responses, completionTimeSeconds } = req.body;
-      const userId = "demo_user"; // Using default demo user for now
+      
+      // Get user ID from session or use anonymous ID
+      let userId: string;
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      } else {
+        // Generate anonymous user ID for non-authenticated users
+        userId = `anon_quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
 
       if (!Array.isArray(responses)) {
         return res.status(400).json({ error: "Responses must be an array" });

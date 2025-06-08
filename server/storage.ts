@@ -958,7 +958,7 @@ export class MemStorage implements IStorage {
     return response;
   }
 
-  async getUserQuizResponse(userId: number, quizId: number): Promise<UserQuizResponse | undefined> {
+  async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined> {
     for (const response of this.userQuizResponses.values()) {
       if (response.userId === userId && response.quizId === quizId) {
         return response;
