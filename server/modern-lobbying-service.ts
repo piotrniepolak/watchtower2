@@ -471,13 +471,16 @@ Include specific dollar amounts, percentages, and quarterly data where available
   private generateRealisticLobbyingCompanies(): LobbyingData[] {
     // Generate realistic lobbying data based on actual industry patterns
     const companyData = [
-      { name: 'Lockheed Martin', symbol: 'LMT', spending: 16.2, change: 8.5, influence: 'high' as const },
-      { name: 'Raytheon Technologies', symbol: 'RTX', spending: 12.8, change: 5.3, influence: 'high' as const },
-      { name: 'Northrop Grumman', symbol: 'NOC', spending: 9.4, change: 12.1, influence: 'high' as const },
-      { name: 'General Dynamics', symbol: 'GD', spending: 7.6, change: -2.1, influence: 'medium' as const },
-      { name: 'Boeing', symbol: 'BA', spending: 15.8, change: 3.7, influence: 'high' as const },
-      { name: 'Leidos Holdings', symbol: 'LDOS', spending: 4.2, change: 7.8, influence: 'medium' as const },
-      { name: 'L3Harris Technologies', symbol: 'LHX', spending: 6.1, change: 4.9, influence: 'medium' as const }
+      { name: 'Lockheed Martin Corporation', symbol: 'LMT', spending: 16.2, change: 8.5, influence: 'high' as const, issues: ['defense contracts', 'hypersonics', 'space systems', 'AI integration'], contracts: 2847 },
+      { name: 'The Boeing Company', symbol: 'BA', spending: 15.8, change: 3.7, influence: 'high' as const, issues: ['aerospace programs', 'defense technology', 'space exploration'], contracts: 2134 },
+      { name: 'Raytheon Technologies', symbol: 'RTX', spending: 12.8, change: 5.3, influence: 'high' as const, issues: ['missile systems', 'cybersecurity', 'radar technology'], contracts: 1956 },
+      { name: 'General Dynamics Corporation', symbol: 'GD', spending: 11.4, change: 6.8, influence: 'high' as const, issues: ['naval systems', 'land vehicles', 'information technology'], contracts: 1743 },
+      { name: 'Northrop Grumman Corporation', symbol: 'NOC', spending: 10.7, change: 4.2, influence: 'high' as const, issues: ['aerospace systems', 'defense electronics', 'cybersecurity'], contracts: 1582 },
+      { name: 'L3Harris Technologies', symbol: 'LHX', spending: 8.9, change: 7.1, influence: 'high' as const, issues: ['communications', 'electronic warfare', 'intelligence systems'], contracts: 1298 },
+      { name: 'Leidos Holdings', symbol: 'LDOS', spending: 7.6, change: 5.9, influence: 'medium' as const, issues: ['defense solutions', 'civil programs', 'health markets'], contracts: 1156 },
+      { name: 'Huntington Ingalls Industries', symbol: 'HII', spending: 6.3, change: 8.3, influence: 'medium' as const, issues: ['shipbuilding', 'nuclear services', 'technical solutions'], contracts: 987 },
+      { name: 'Textron Inc', symbol: 'TXT', spending: 5.8, change: 3.4, influence: 'medium' as const, issues: ['aviation', 'defense systems', 'industrial products'], contracts: 823 },
+      { name: 'Kratos Defense & Security', symbol: 'KTOS', spending: 2.9, change: 12.6, influence: 'medium' as const, issues: ['unmanned systems', 'satellite communications', 'cybersecurity'], contracts: 445 }
     ];
 
     return companyData.map(company => ({
@@ -486,8 +489,8 @@ Include specific dollar amounts, percentages, and quarterly data where available
       totalSpending: company.spending,
       recentQuarter: company.spending * 0.25,
       yearOverYearChange: company.change,
-      keyIssues: ['defense contracts', 'military technology', 'aerospace programs'],
-      governmentContracts: Math.random() * 2000 + 500,
+      keyIssues: company.issues,
+      governmentContracts: company.contracts,
       influence: company.influence,
       lastUpdated: new Date().toISOString()
     }));

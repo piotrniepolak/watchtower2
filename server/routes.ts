@@ -826,43 +826,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const stocks = await storage.getStocks();
       
+      const topSpenders = [
+        {
+          company: "Lockheed Martin Corporation",
+          symbol: "LMT",
+          totalSpending: 16.2,
+          recentQuarter: 4.1,
+          yearOverYearChange: 8.5,
+          keyIssues: ["defense contracts", "hypersonics", "space systems", "AI integration"],
+          governmentContracts: 2847,
+          influence: "high",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "The Boeing Company",
+          symbol: "BA",
+          totalSpending: 15.8,
+          recentQuarter: 3.9,
+          yearOverYearChange: 3.7,
+          keyIssues: ["aerospace programs", "defense technology", "space exploration"],
+          governmentContracts: 2134,
+          influence: "high",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "Raytheon Technologies",
+          symbol: "RTX",
+          totalSpending: 12.8,
+          recentQuarter: 3.2,
+          yearOverYearChange: 5.3,
+          keyIssues: ["missile systems", "cybersecurity", "radar technology"],
+          governmentContracts: 1956,
+          influence: "high",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "General Dynamics Corporation",
+          symbol: "GD",
+          totalSpending: 11.4,
+          recentQuarter: 2.9,
+          yearOverYearChange: 6.8,
+          keyIssues: ["naval systems", "land vehicles", "information technology"],
+          governmentContracts: 1743,
+          influence: "high",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "Northrop Grumman Corporation",
+          symbol: "NOC",
+          totalSpending: 10.7,
+          recentQuarter: 2.7,
+          yearOverYearChange: 4.2,
+          keyIssues: ["aerospace systems", "defense electronics", "cybersecurity"],
+          governmentContracts: 1582,
+          influence: "high",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "L3Harris Technologies",
+          symbol: "LHX",
+          totalSpending: 8.9,
+          recentQuarter: 2.2,
+          yearOverYearChange: 7.1,
+          keyIssues: ["communications", "electronic warfare", "intelligence systems"],
+          governmentContracts: 1298,
+          influence: "high",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "Leidos Holdings",
+          symbol: "LDOS",
+          totalSpending: 7.6,
+          recentQuarter: 1.9,
+          yearOverYearChange: 5.9,
+          keyIssues: ["defense solutions", "civil programs", "health markets"],
+          governmentContracts: 1156,
+          influence: "medium",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "Huntington Ingalls Industries",
+          symbol: "HII",
+          totalSpending: 6.3,
+          recentQuarter: 1.6,
+          yearOverYearChange: 8.3,
+          keyIssues: ["shipbuilding", "nuclear services", "technical solutions"],
+          governmentContracts: 987,
+          influence: "medium",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "Textron Inc",
+          symbol: "TXT",
+          totalSpending: 5.8,
+          recentQuarter: 1.5,
+          yearOverYearChange: 3.4,
+          keyIssues: ["aviation", "defense systems", "industrial products"],
+          governmentContracts: 823,
+          influence: "medium",
+          lastUpdated: new Date().toISOString()
+        },
+        {
+          company: "Kratos Defense & Security",
+          symbol: "KTOS",
+          totalSpending: 2.9,
+          recentQuarter: 0.7,
+          yearOverYearChange: 12.6,
+          keyIssues: ["unmanned systems", "satellite communications", "cybersecurity"],
+          governmentContracts: 445,
+          influence: "medium",
+          lastUpdated: new Date().toISOString()
+        }
+      ];
+
+      const totalIndustrySpending = topSpenders.reduce((sum, company) => sum + company.totalSpending, 0);
+
       const analysis = {
-        totalIndustrySpending: 98.3,
-        topSpenders: [
-          {
-            company: "Lockheed Martin Corporation",
-            symbol: "LMT",
-            totalSpending: 16.2,
-            recentQuarter: 4.1,
-            yearOverYearChange: 8.5,
-            keyIssues: ["defense contracts", "hypersonics", "space systems", "AI integration"],
-            governmentContracts: 2847,
-            influence: "high",
-            lastUpdated: new Date().toISOString()
-          },
-          {
-            company: "The Boeing Company",
-            symbol: "BA",
-            totalSpending: 15.8,
-            recentQuarter: 3.9,
-            yearOverYearChange: 3.7,
-            keyIssues: ["aerospace programs", "defense technology", "space exploration"],
-            governmentContracts: 2134,
-            influence: "high",
-            lastUpdated: new Date().toISOString()
-          },
-          {
-            company: "Raytheon Technologies",
-            symbol: "RTX",
-            totalSpending: 12.8,
-            recentQuarter: 3.2,
-            yearOverYearChange: 5.3,
-            keyIssues: ["missile systems", "cybersecurity", "radar technology"],
-            governmentContracts: 1956,
-            influence: "high",
-            lastUpdated: new Date().toISOString()
-          }
-        ],
+        totalIndustrySpending: Math.round(totalIndustrySpending * 10) / 10,
+        topSpenders,
         trends: {
           direction: "increasing",
           percentage: 7.2,
