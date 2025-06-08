@@ -270,6 +270,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
 
     console.log(`DatabaseStorage leaderboard: found ${results.length} entries`);
+    if (results.length > 0) {
+      console.log('Sample database result:', {
+        userId: results[0].userId,
+        username: results[0].username,
+        firstName: results[0].firstName,
+        email: results[0].email
+      });
+    }
 
     // Generate usernames for both registered and anonymous users
     return results.map(result => {
@@ -286,7 +294,7 @@ export class DatabaseStorage implements IStorage {
       } else {
         // For logged-in users, prioritize username first, then firstName, then email
         if (result.username && result.username.trim()) {
-          username = result.firstName.trim();
+          username = result.username.trim();
         } else if (result.firstName && result.firstName.trim()) {
           username = result.firstName.trim();
         } else if (result.email) {
@@ -1064,7 +1072,7 @@ export class MemStorage implements IStorage {
       } else {
         // For logged-in users, prioritize username first, then firstName, then email
         if (result.username && result.username.trim()) {
-          username = result.firstName.trim();
+          username = result.username.trim();
         } else if (result.firstName && result.firstName.trim()) {
           username = result.firstName.trim();
         } else if (result.email) {
