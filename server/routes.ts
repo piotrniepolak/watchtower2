@@ -65,14 +65,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else if (userId) {
         console.log(`Attempting login with ID: ${userId}`);
-        const user = await storage.getUser(userId);
+        const user = await storage.getUser(userId.toString());
         if (user) {
           req.session.userId = user.id;
           await new Promise((resolve) => req.session.save(resolve));
           console.log(`Login successful for user: ${user.username} (${user.email}) - Session ID: ${user.id}`);
           return res.redirect('/');
         } else {
-          console.log(`No user found with ID: ${userId}`);
+          console.log(`No user found with ID: ${userId} - checking all users`);
+          // Debug: list all users
+          const allUsers = await storage.getUsers();
+          console.log(`Available users:`, allUsers.map(u => ({ id: u.id, username: u.username })));
         }
       }
       
