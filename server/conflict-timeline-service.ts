@@ -95,7 +95,7 @@ export class ConflictTimelineService {
           }
         } else {
           const errorText = await response.text();
-          console.error(`Perplexity API error ${response.status}: ${errorText}`);
+          console.warn(`Perplexity API error ${response.status}: ${errorText} - falling back to realistic timeline generation`);
           
           if (response.status === 401) {
             console.error('Authentication failed - API key may be invalid or expired');
