@@ -89,8 +89,8 @@ export default function AISupportChat() {
   }, [messages]);
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+    <Card className="h-[600px] flex flex-col overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b flex-shrink-0">
         <CardTitle className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-blue-600" />
           AI Support Assistant
@@ -100,13 +100,13 @@ export default function AISupportChat() {
         </p>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-          <div className="space-y-4">
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <ScrollArea className="flex-1 p-4 min-h-0" ref={scrollAreaRef}>
+          <div className="space-y-4 min-w-0">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-3 min-w-0 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === 'assistant' && (
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -114,12 +114,12 @@ export default function AISupportChat() {
                   </div>
                 )}
                 
-                <div className={`max-w-[80%] rounded-lg p-3 ${
+                <div className={`max-w-[75%] min-w-0 rounded-lg p-3 ${
                   message.role === 'user'
                     ? 'bg-blue-600 text-white ml-auto'
                     : 'bg-slate-100 text-slate-900'
                 }`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm leading-relaxed break-words hyphens-auto" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
                     {message.content}
                   </p>
                   <p className={`text-xs mt-2 ${
