@@ -942,20 +942,22 @@ export class MemStorage implements IStorage {
   }
 
   async createUserQuizResponse(insertResponse: InsertUserQuizResponse): Promise<UserQuizResponse> {
-    const response: UserQuizResponse = {
-      id: this.currentQuizResponseId++,
-      userId: insertResponse.userId,
-      quizId: insertResponse.quizId,
-      responses: insertResponse.responses,
-      score: insertResponse.score,
-      totalPoints: insertResponse.totalPoints || 0,
-      timeBonus: insertResponse.timeBonus || 0,
-      completionTimeSeconds: insertResponse.completionTimeSeconds || null,
-      completedAt: new Date(),
-    };
-    
-    this.userQuizResponses.set(response.id, response);
-    return response;
+    // Save to database
+    const [dbResponse] = await db
+      .insert(userQuizResponses)
+      .values({
+        userId: insertResponse.userId,
+        quizId: insertResponse.quizId,
+        responses: insertResponse.responses,
+        score: insertResponse.score,
+        totalPoints: insertResponse.totalPoints || 0,
+        timeBonus: insertResponse.timeBonus || 0,
+        completionTimeSeconds: insertResponse.completionTimeSeconds || null,
+        completedAt: new Date(),
+      })
+      .returning();
+
+    return dbResponse;
   }
 
   async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined> {
