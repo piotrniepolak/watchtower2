@@ -16,14 +16,15 @@ import { modernLobbyingService } from "./modern-lobbying-service";
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
 
-// Simple session-based auth for now
+// Session configuration for authentication
 const sessionConfig = session({
-  secret: process.env.SESSION_SECRET || 'dev-secret',
+  secret: process.env.SESSION_SECRET || 'dev-secret-key-for-testing',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
-    secure: false, // Set to true in production with HTTPS
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    secure: false,
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000
   }
 });
 
@@ -53,13 +54,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const user = await storage.getUserByEmail(userEmail);
         if (user) {
           req.session.userId = user.id;
-          console.log(`Login successful for user: ${user.username} (${user.email})`);
+          await new Promise((resolve) => req.session.save(resolve));
+          console.log(`Login successful for user: ${user.username} (${user.email}) - Session ID: ${user.id}`);
           return res.redirect('/');
+        } else {
+          console.log(`No user found with email: ${userEmail}`);
         }
       }
       
       // Create anonymous session
       req.session.userId = null;
+      await new Promise((resolve) => req.session.save(resolve));
       console.log('Anonymous session created');
       res.redirect('/');
     } catch (error) {
@@ -1223,13 +1228,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let userId: string | null = null;
       
-      // Check if user is authenticated using session data directly
-      if (req.isAuthenticated && req.isAuthenticated() && req.user && (req.user as any).claims) {
-        const userClaims = (req.user as any).claims;
-        userId = userClaims.sub;
-        console.log("Chat from authenticated user:", userId);
+      // Check for authenticated session
+      if (req.session?.userId) {
+        userId = req.session.userId;
+        const user = await storage.getUser(userId);
+        console.log(`Chat from authenticated user: ${user?.username || 'unknown'} (ID: ${userId})`);
       } else {
-        console.log("Chat from anonymous user - no valid session");
+        console.log("Chat from anonymous user - no session");
       }
       
       const message = await discussionStorage.createDiscussion({
