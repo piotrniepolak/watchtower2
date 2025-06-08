@@ -395,63 +395,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/conflicts/:id/update-timeline', async (req, res) => {
     try {
-      const conflictId = parseInt(req.params.id);
-      const conflict = await storage.getConflict(conflictId);
+      console.log(`Timeline update requested for conflict ID: ${req.params.id}`);
       
+      const conflictId = parseInt(req.params.id);
+      if (isNaN(conflictId)) {
+        console.error('Invalid conflict ID:', req.params.id);
+        return res.status(400).json({ error: 'Invalid conflict ID' });
+      }
+
+      const conflict = await storage.getConflict(conflictId);
       if (!conflict) {
+        console.error('Conflict not found:', conflictId);
         return res.status(404).json({ error: 'Conflict not found' });
       }
 
+      console.log(`Fetching updates for conflict: ${conflict.name}`);
       const events = await conflictTimelineService.fetchConflictUpdates(conflict);
+      console.log(`Found ${events.length} new events for ${conflict.name}`);
       
+      let eventsProcessed = 0;
       for (const event of events) {
-        // Clean description to remove verbose formatting
-        const cleanDescription = event.description
-          .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '')
-          .replace(/- Source:.*?- Severity:.*$/gm, '')
-          .replace(/- Source:.*$/gm, '')
-          .replace(/- Severity:.*$/gm, '')
-          .replace(/Source:.*$/gm, '')
-          .replace(/Severity:.*$/gm, '')
-          .replace(/\n+/g, ' ')
-          .replace(/\s+/g, ' ')
-          .replace(/^[^-]*-\s*/, '')
-          .replace(/^\s*-\s*/, '')
-          .trim();
-        
-        const finalDescription = cleanDescription.length > 85 ? 
-          cleanDescription.substring(0, 82) + '...' : cleanDescription;
-        
-        const correlationEvent = {
-          eventDate: event.timestamp,
-          eventDescription: finalDescription,
-          stockMovement: 0,
-          conflictId: event.conflictId,
-          severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
-        };
-        
-        await storage.createCorrelationEvent(correlationEvent);
+        try {
+          // Clean description to remove verbose formatting
+          const cleanDescription = event.description
+            .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '')
+            .replace(/- Source:.*?- Severity:.*$/gm, '')
+            .replace(/- Source:.*$/gm, '')
+            .replace(/- Severity:.*$/gm, '')
+            .replace(/Source:.*$/gm, '')
+            .replace(/Severity:.*$/gm, '')
+            .replace(/\n+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .replace(/^[^-]*-\s*/, '')
+            .replace(/^\s*-\s*/, '')
+            .trim();
+          
+          const finalDescription = cleanDescription.length > 85 ? 
+            cleanDescription.substring(0, 82) + '...' : cleanDescription;
+          
+          const correlationEvent = {
+            eventDate: event.timestamp,
+            eventDescription: finalDescription,
+            stockMovement: 0,
+            conflictId: event.conflictId,
+            severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
+          };
+          
+          await storage.createCorrelationEvent(correlationEvent);
+          eventsProcessed++;
+        } catch (eventError) {
+          console.error('Error processing event:', eventError);
+          // Continue processing other events
+        }
       }
 
-      const updatedConflict = await storage.getConflict(conflictId);
-      if (updatedConflict) {
-        await storage.updateConflict(conflictId, {
-          name: updatedConflict.name,
-          status: updatedConflict.status,
-          region: updatedConflict.region,
-          severity: updatedConflict.severity,
-          duration: updatedConflict.duration,
-          startDate: updatedConflict.startDate
-        });
-      }
+      console.log(`Successfully processed ${eventsProcessed} events for ${conflict.name}`);
 
-      res.json({ 
+      // Set proper headers
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).json({ 
         message: 'Timeline updated successfully',
-        eventsAdded: events.length 
+        eventsAdded: eventsProcessed,
+        conflictName: conflict.name
       });
     } catch (error) {
       console.error('Error updating conflict timeline:', error);
-      res.status(500).json({ error: 'Failed to update timeline' });
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).json({ 
+        error: 'Failed to update timeline',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
