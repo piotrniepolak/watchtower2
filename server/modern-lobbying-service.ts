@@ -185,7 +185,7 @@ Include specific dollar amounts, percentages, and quarterly data where available
       topSpenders: finalCompanies.sort((a, b) => b.totalSpending - a.totalSpending).slice(0, 8),
       trends: {
         direction: trendDirection,
-        percentage: Math.abs(avgYoYChange),
+        percentage: Math.round(Math.abs(avgYoYChange) * 100) / 100, // Format to two decimal places
         timeframe: this.getTimeframeLabel(timeframe)
       },
       keyInsights: insights,
