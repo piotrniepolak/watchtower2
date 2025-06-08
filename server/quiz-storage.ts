@@ -103,6 +103,7 @@ export class QuizStorage {
   }[]> {
     // Get today's quiz first
     const quiz = await this.getDailyQuiz(date);
+    console.log(`Getting leaderboard for date: ${date}, quiz found:`, quiz?.id);
     if (!quiz) {
       return [];
     }
@@ -124,6 +125,11 @@ export class QuizStorage {
       .leftJoin(users, eq(userQuizResponses.userId, users.id))
       .where(eq(userQuizResponses.quizId, quiz.id))
       .orderBy(desc(userQuizResponses.totalPoints), asc(userQuizResponses.completedAt));
+
+    console.log(`Found ${results.length} leaderboard entries for quiz ${quiz.id}`);
+    if (results.length > 0) {
+      console.log('Sample entry:', results[0]);
+    }
 
     return results.map(result => ({
       username: this.generateUsernameForLeaderboard(result),

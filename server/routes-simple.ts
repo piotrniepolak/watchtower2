@@ -567,7 +567,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/quiz/leaderboard', async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
+      console.log(`Leaderboard API called for date: ${today}`);
       const leaderboard = await storage.getDailyQuizLeaderboard(today);
+      console.log(`Leaderboard returned ${leaderboard.length} entries`);
       res.json(leaderboard);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
