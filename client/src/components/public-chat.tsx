@@ -13,7 +13,6 @@ import {
   Globe,
   Sword
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,49 +39,27 @@ interface ChatMessage {
 export default function PublicChat() {
   const [activeTab, setActiveTab] = useState("general");
   const [newMessage, setNewMessage] = useState("");
-  // Username management removed - only authenticated users can chat
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
 
-  // Effect to handle username when user is authenticated
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // For authenticated users, we don't need a local username
-      // The backend will use their authenticated identity
-      setUsername('authenticated_user');
-      setShowUsernamePrompt(false);
-    } else if (!username) {
-      // Show username prompt only for non-authenticated users
-      setShowUsernamePrompt(true);
-    }
-  }, [isAuthenticated, user, username]);
-
-  // Fetch messages for active category
-  const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
+  // Fetch messages for the active tab
+  const { data: messages = [], isLoading } = useQuery({
     queryKey: [`/api/chat/${activeTab}`],
-    refetchInterval: 2000,
-    staleTime: 0, // Force fresh data to fix username caching issue
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchInterval: 3000,
   });
 
-  // Send message mutation
+  // Send message mutation - authentication required
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      const payload: any = {
+      return await apiRequest("POST", `/api/chat`, {
         content,
         category: activeTab,
-      };
-      
-      // Authentication-only chat - no username needed
-      
-      return await apiRequest("POST", `/api/chat`, payload);
+      });
     },
     onSuccess: () => {
       setNewMessage("");
-      // Force complete cache refresh to fix username display issue
       queryClient.invalidateQueries({ queryKey: [`/api/chat/${activeTab}`] });
       queryClient.refetchQueries({ queryKey: [`/api/chat/${activeTab}`], type: 'active' });
     },
@@ -122,35 +99,30 @@ export default function PublicChat() {
       const date = new Date(dateString);
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch {
-      return "now";
+      return '';
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
     
-    // Only require username for anonymous (non-authenticated) users
-    if (!isAuthenticated && !username) {
-      setShowUsernamePrompt(true);
+    // Only authenticated users can send messages
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to send messages",
+        variant: "destructive",
+      });
       return;
     }
     
-    sendMessageMutation.mutate(newMessage.trim());
+    await sendMessageMutation.mutateAsync(newMessage);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
-    }
-  };
-
-  const handleSetUsername = (newUsername: string) => {
-    if (newUsername.trim()) {
-      const trimmedUsername = newUsername.trim();
-      setUsername(trimmedUsername);
-      localStorage.setItem('chat_username', trimmedUsername);
-      setShowUsernamePrompt(false);
     }
   };
 
@@ -260,40 +232,6 @@ export default function PublicChat() {
           ))}
         </Tabs>
       </CardContent>
-
-      {/* Username Prompt Dialog */}
-      <Dialog open={showUsernamePrompt} onOpenChange={setShowUsernamePrompt}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Choose Your Username</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Enter a username to identify yourself in the chat
-            </p>
-            <Input
-              placeholder="Enter your username"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSetUsername(e.currentTarget.value);
-                }
-              }}
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  const input = document.querySelector('input[placeholder="Enter your username"]') as HTMLInputElement;
-                  if (input) handleSetUsername(input.value);
-                }}
-                className="flex-1"
-              >
-                Set Username
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }
