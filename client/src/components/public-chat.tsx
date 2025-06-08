@@ -86,19 +86,25 @@ export default function PublicChat() {
   });
 
   const getAuthorName = (message: ChatMessage) => {
-    // Check if message has temporary username (new system)
+    // Check if message has temporary username in tags (new system)
+    if (message.tags && message.tags.length > 0 && message.tags[0]) {
+      return message.tags[0];
+    }
+    
+    // Check if message has temporary username property (backup)
     if (message.tempUsername) {
       return message.tempUsername;
     }
     
-    // Fallback to old system
-    if (message.author && message.author.username) {
-      return message.author.username;
-    }
-    
-    // Show that they need to create username
+    // Fallback to authenticated user data
     if (message.author) {
-      return "User (needs username)";
+      if (message.author.username) {
+        return message.author.username;
+      }
+      if (message.author.firstName) {
+        return message.author.firstName;
+      }
+      return "User";
     }
     
     return "Anonymous";

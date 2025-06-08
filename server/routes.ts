@@ -1286,24 +1286,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/chat', isAuthenticated, async (req, res) => {
+  app.post('/api/chat', async (req, res) => {
     try {
-      const { content, category = "general" } = req.body;
+      const { content, category = "general", tempUsername } = req.body;
       
       if (!content || !content.trim()) {
         return res.status(400).json({ error: "Message content is required" });
       }
+
+      if (!tempUsername || !tempUsername.trim()) {
+        return res.status(400).json({ error: "Username is required" });
+      }
       
-      // Get user ID from authenticated session
-      const userId = req.user.id;
-      console.log(`Chat from authenticated user ID: ${userId}`);
+      // Use authenticated user ID if available, otherwise generate anonymous ID
+      let userId: string;
+      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        console.log(`Chat from authenticated user ID: ${userId} with username: ${tempUsername}`);
+      } else {
+        // Generate anonymous user ID based on tempUsername for consistent identity
+        userId = `anon_${Buffer.from(tempUsername.trim()).toString('base64')}`;
+        console.log(`Chat from anonymous user with temp username: ${tempUsername}`);
+      }
       
       const message = await discussionStorage.createDiscussion({
         title: "Chat Message",
         content: content.trim(),
         authorId: userId,
         category,
-        tags: [], // No tags needed - authenticated users only
+        tags: [tempUsername.trim()], // Store temp username in tags for display
       });
       
       res.status(201).json(message);
