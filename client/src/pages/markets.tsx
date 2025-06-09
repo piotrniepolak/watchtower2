@@ -24,12 +24,13 @@ export default function Markets() {
   const { data: metricsData, isLoading: metricsLoading } = useQuery<{
     activeConflicts: number;
     totalConflicts: number;
-    defenseIndex: string;
-    marketCap: string;
+    defenseIndex: {
+      value: number;
+      change: number;
+      changePercent: number;
+    };
+    marketCap?: string;
     correlationScore: number;
-    itaPrice?: number;
-    itaChange?: number;
-    itaChangePercent?: number;
   }>({
     queryKey: ["/api/metrics"],
     refetchInterval: 30000,
@@ -73,7 +74,7 @@ export default function Markets() {
     }
 
     // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
-    const defenseIndexValue = metricsData?.defenseIndex ? parseFloat(metricsData.defenseIndex) : 0;
+    const defenseIndexValue = metricsData?.defenseIndex?.value || 0;
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
@@ -335,17 +336,17 @@ export default function Markets() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
                     <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
-                      ${metricsData?.itaPrice?.toFixed(2) || metricsData?.defenseIndex || "183.12"}
+                      ${metricsData?.defenseIndex?.value?.toFixed(2) || "183.12"}
                     </p>
                   </div>
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
+                  <div className={`w-10 h-10 ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
+                    <TrendingUp className={`h-5 w-5 ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
                   </div>
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className={`font-medium ${(metricsData?.itaChangePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {metricsData?.itaChangePercent !== undefined 
-                      ? `${metricsData.itaChangePercent >= 0 ? '+' : ''}${metricsData.itaChangePercent.toFixed(2)}%`
+                  <span className={`font-medium ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {metricsData?.defenseIndex?.changePercent !== undefined 
+                      ? `${metricsData.defenseIndex.changePercent >= 0 ? '+' : ''}${metricsData.defenseIndex.changePercent.toFixed(2)}%`
                       : "+0.64%"
                     }
                   </span>
