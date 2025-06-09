@@ -32,6 +32,7 @@ import ResearchIntel from "@/pages/research-intel";
 import CaseStudies from "@/pages/case-studies";
 import Trends from "@/pages/trends";
 import MarketAnalysis from "@/pages/market-analysis";
+import ConflictWatchPage from "@/pages/conflict-watch";
 
 import NotFound from "@/pages/not-found";
 
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={EnhancedMultiSectorDashboard} />
       <Route path="/conflicts" component={Conflicts} />
+      <Route path="/conflict-watch" component={ConflictWatchPage} />
       <Route path="/markets" component={Markets} />
       <Route path="/analysis" component={Analysis} />
       <Route path="/reports" component={Reports} />
