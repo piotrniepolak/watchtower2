@@ -28,13 +28,20 @@ export default function Markets() {
       value: number;
       change: number;
       changePercent: number;
-    };
+    } | string;
     marketCap?: string;
     correlationScore: number;
   }>({
     queryKey: ["/api/metrics"],
     refetchInterval: 30000,
   });
+
+  // Debug logging to see what we're actually receiving
+  if (metricsData) {
+    console.log('Metrics data received:', JSON.stringify(metricsData, null, 2));
+    console.log('DefenseIndex type:', typeof metricsData.defenseIndex);
+    console.log('DefenseIndex value:', metricsData.defenseIndex);
+  }
 
 
 
@@ -336,7 +343,11 @@ export default function Markets() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
                     <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
-                      ${metricsData?.defenseIndex?.value?.toFixed(2) || "183.12"}
+                      ${typeof metricsData?.defenseIndex === 'object' && metricsData?.defenseIndex?.value 
+                        ? metricsData.defenseIndex.value.toFixed(2) 
+                        : typeof metricsData?.defenseIndex === 'string' 
+                        ? metricsData.defenseIndex 
+                        : "183.12"}
                     </p>
                   </div>
                   <div className={`w-10 h-10 ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
