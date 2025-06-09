@@ -120,14 +120,11 @@ export default function EnhancedChartsSection() {
                       <div className="text-[10px] text-slate-600 dark:text-slate-400">{stock.symbol}</div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <div className="text-green-600 dark:text-green-400 font-semibold text-xs">
-                      {stock.symbol}
-                    </div>
-                    <div className="text-green-600 dark:text-green-400 font-bold text-xs">
+                  <div className="text-right flex-shrink-0 ml-3 min-w-[60px]">
+                    <div className="text-green-600 dark:text-green-400 font-bold text-xs leading-tight">
                       +{stock.changePercent.toFixed(2)}%
                     </div>
-                    <div className="text-[10px] text-slate-600 dark:text-slate-400">
+                    <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight">
                       ${stock.price.toFixed(2)}
                     </div>
                   </div>
@@ -159,14 +156,11 @@ export default function EnhancedChartsSection() {
                       <div className="text-[10px] text-slate-600 dark:text-slate-400">{stock.symbol}</div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <div className="text-red-600 dark:text-red-400 font-semibold text-xs">
-                      {stock.symbol}
-                    </div>
-                    <div className="text-red-600 dark:text-red-400 font-bold text-xs">
+                  <div className="text-right flex-shrink-0 ml-3 min-w-[60px]">
+                    <div className="text-red-600 dark:text-red-400 font-bold text-xs leading-tight">
                       {stock.changePercent.toFixed(2)}%
                     </div>
-                    <div className="text-[10px] text-slate-600 dark:text-slate-400">
+                    <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight">
                       ${stock.price.toFixed(2)}
                     </div>
                   </div>
