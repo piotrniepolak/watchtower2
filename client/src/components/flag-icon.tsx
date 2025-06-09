@@ -92,7 +92,6 @@ export default function FlagIcon({ countryCode, size = "sm", className = "" }: F
     // Iran-Israel Shadow War
     "Proxies": "XX", // Generic proxy forces - will show as text
     // West Africa Sahel Crisis
-    "Mali": "ML",
     "Niger": "NE", 
     "Burkina Faso": "BF",
     "Jihadist Groups": "XX" // Generic jihadist groups - will show as text

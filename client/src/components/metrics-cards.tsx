@@ -42,8 +42,8 @@ export default function MetricsCards() {
 
     stocks.forEach(stock => {
       // Handle both camelCase and snake_case property names for compatibility
-      const marketCap = stock.marketCap || stock.market_cap;
-      const changePercent = stock.changePercent !== undefined ? stock.changePercent : stock.change_percent;
+      const marketCap = stock.marketCap || (stock as any).market_cap;
+      const changePercent = stock.changePercent !== undefined ? stock.changePercent : (stock as any).change_percent;
       
       if (marketCap && typeof marketCap === 'string') {
         // Parse market cap from Yahoo Finance (e.g., "125.4B", "45.2M")
