@@ -279,21 +279,35 @@ export default function WorldHealthMapSimple() {
           countriesGroup.innerHTML = '';
 
           // Create country paths with health score coloring and interactivity
-          (countries as any).features.forEach((country: any) => {
+          (countries as any).features.forEach((country: any, index: number) => {
             const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             pathElement.setAttribute('d', path(country) || '');
             
-            // Debug country properties to find correct ISO field
-            if (Object.keys(countries.features).length < 5) {
-              console.log('Sample country properties:', Object.keys(country.properties));
+            // Debug first few countries to find correct ISO field
+            if (index < 3) {
+              console.log(`Country ${index} properties:`, country.properties);
             }
             
-            // Get ISO code from country properties - try multiple possible fields
-            const iso3 = country.properties.ISO_A3 || country.properties.ADM0_A3 || country.properties.ISO3 || country.properties.iso_a3;
-            const countryData = healthData.get(iso3);
+            // Get ISO code from country properties - try all possible field names
+            const props = country.properties || {};
+            const iso3 = props.ISO_A3 || props.ADM0_A3 || props.ISO3 || props.iso_a3 || 
+                        props.ISO_A3_EH || props.ADM0_ISO || props.SOV_A3 || props.SU_A3;
             
-            if (iso3) {
-              console.log(`Country ${iso3}: ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
+            // Try to match by name if no ISO code
+            let countryData = healthData.get(iso3);
+            if (!countryData && props.NAME) {
+              // Simple name matching fallback
+              for (const [key, data] of healthData.entries()) {
+                if (data.name.toLowerCase().includes(props.NAME.toLowerCase()) || 
+                    props.NAME.toLowerCase().includes(data.name.toLowerCase())) {
+                  countryData = data;
+                  break;
+                }
+              }
+            }
+            
+            if (index < 5) {
+              console.log(`Country ${props.NAME || 'Unknown'} (${iso3}): ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
             }
             
             // Apply health data coloring
