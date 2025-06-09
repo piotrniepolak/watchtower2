@@ -10,7 +10,7 @@ import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, Trend
 import { useQuery } from "@tanstack/react-query";
 
 // World topology data URL - using Natural Earth 50m resolution
-const WORLD_TOPOLOGY_URL = "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-50m.json";
+const WORLD_TOPOLOGY_URL = "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json";
 
 interface HealthIndicator {
   lifeExpectancy: number;
@@ -387,19 +387,35 @@ export default function WorldHealthMap() {
         <CardContent className="p-0">
           <div style={{ opacity: mapOpacity }} className="w-full h-96 md:h-[500px] transition-opacity duration-300">
             <ComposableMap
-              projection="geoNaturalEarth1"
+              projection="geoEqualEarth"
               projectionConfig={{
-                scale: 140,
+                scale: 150,
                 center: [0, 0],
               }}
               width={800}
               height={400}
               className="w-full h-full"
             >
-              <Geographies geography={WORLD_TOPOLOGY_URL}>
-                {({ geographies }: { geographies: any[] }) => {
-                  console.log('Map geographies loaded:', geographies?.length || 0);
-                  return geographies?.map((geo: any) => (
+              <Geographies 
+                geography="https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json"
+                parseGeographies={(geos) => {
+                  console.log('Parsed geographies:', geos?.length || 0);
+                  return geos;
+                }}
+              >
+                {({ geographies }) => {
+                  console.log('Rendering geographies:', geographies?.length || 0);
+                  if (!geographies || geographies.length === 0) {
+                    return (
+                      <g>
+                        <text x="400" y="200" textAnchor="middle" fill="#666" fontSize="14">
+                          Loading world map data...
+                        </text>
+                      </g>
+                    );
+                  }
+                  
+                  return geographies.map((geo) => (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
@@ -415,8 +431,7 @@ export default function WorldHealthMap() {
                             ? "#4F46E5" 
                             : getCountryFill(geo),
                           outline: "none",
-                          filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.2))",
-                          transform: "scale(1.02)",
+                          cursor: "pointer",
                         },
                         pressed: {
                           fill: "#1E40AF",
@@ -426,7 +441,6 @@ export default function WorldHealthMap() {
                       onMouseEnter={() => setHoveredCountry(geo.properties.ISO_A3)}
                       onMouseLeave={() => setHoveredCountry(null)}
                       onClick={() => handleCountryClick(geo)}
-                      className="cursor-pointer transition-all duration-200"
                     />
                   ));
                 }}
