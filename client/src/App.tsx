@@ -38,11 +38,11 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={EnhancedMultiSectorDashboard} />
+      <Route path="/" component={Dashboard} />
       <Route path="/landing" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      <Route path="/dashboard" component={EnhancedMultiSectorDashboard} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/conflicts" component={Conflicts} />
       <Route path="/markets" component={Markets} />
       <Route path="/analysis" component={Analysis} />
