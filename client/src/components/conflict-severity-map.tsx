@@ -148,44 +148,55 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
               </div>
 
               {/* Legend */}
-              <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3">Severity Legend</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
-                  <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-4 h-4 rounded-full border border-white"
-                      style={{ backgroundColor: '#8B0000' }}
-                    />
-                    <span>Critical</span>
+              <div className="mt-4 p-4 bg-white border border-slate-200 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-sm mb-4 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-slate-600" />
+                  Conflict Severity Levels
+                </h4>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: '#8B0000' }}
+                      />
+                      <span className="font-medium">Critical</span>
+                    </div>
+                    <span className="text-xs text-slate-500">Active warfare</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-4 h-4 rounded-full border border-white"
-                      style={{ backgroundColor: '#DC143C' }}
-                    />
-                    <span>High</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: '#DC143C' }}
+                      />
+                      <span className="font-medium">High</span>
+                    </div>
+                    <span className="text-xs text-slate-500">Escalating tensions</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-4 h-4 rounded-full border border-white"
-                      style={{ backgroundColor: '#FF8C00' }}
-                    />
-                    <span>Medium</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: '#FF8C00' }}
+                      />
+                      <span className="font-medium">Medium</span>
+                    </div>
+                    <span className="text-xs text-slate-500">Regional disputes</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-4 h-4 rounded-full border border-white"
-                      style={{ backgroundColor: '#FFD700' }}
-                    />
-                    <span>Low</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div 
+                        className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: '#FFD700' }}
+                      />
+                      <span className="font-medium">Low</span>
+                    </div>
+                    <span className="text-xs text-slate-500">Political unrest</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <div 
-                      className="w-4 h-4 rounded-full border border-white"
-                      style={{ backgroundColor: '#808080' }}
-                    />
-                    <span>None</span>
-                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
+                  Click markers for detailed information
                 </div>
               </div>
             </div>
