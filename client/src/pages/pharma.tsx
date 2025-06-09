@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Activity, Pill, DollarSign, BarChart3, Target, Award } from "lucide-react";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
+import WorldHealthMap from "@/components/world-health-map";
 
 export default function Pharma() {
   const [currentSector] = useState("health");
