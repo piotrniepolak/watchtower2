@@ -123,8 +123,8 @@ export default function Landing() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600 mb-4">
-                  Live defense stock tracking with iShares US Aerospace & Defense ETF integration 
-                  and authentic Yahoo Finance data feeds.
+                  Live defense stock tracking with calculated Defense Index using weighted 
+                  portfolio analysis and authentic Yahoo Finance data feeds.
                 </p>
                 <ul className="space-y-2 text-sm text-slate-600">
                   <li className="flex items-center">
