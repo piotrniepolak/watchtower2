@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import Navigation from "@/components/navigation";
+import React, { useEffect, useState } from "react";
+import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Markets() {
   const { isAuthenticated } = useAuth();
   const watchlist = useLocalWatchlist();
+  const [selectedSector, setSelectedSector] = useState<'defense' | 'healthcare' | 'energy'>('defense');
   
   const { stocks, isLoading, isConnected } = useRealTimeStocks();
   
@@ -275,7 +276,10 @@ export default function Markets() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <Navigation />
+        <MultiSectorNavigation 
+          selectedSector={selectedSector}
+          onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+        />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-slate-200 rounded w-64 mb-6"></div>
@@ -292,7 +296,10 @@ export default function Markets() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navigation />
+      <MultiSectorNavigation 
+        selectedSector={selectedSector}
+        onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+      />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
