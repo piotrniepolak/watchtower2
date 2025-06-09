@@ -28,7 +28,7 @@ export default function Markets() {
       value: number;
       change: number;
       changePercent: number;
-    } | string;
+    };
     marketCap?: string;
     correlationScore: number;
   }>({
@@ -36,12 +36,28 @@ export default function Markets() {
     refetchInterval: 30000,
   });
 
-  // Debug logging to see what we're actually receiving
-  if (metricsData) {
-    console.log('Metrics data received:', JSON.stringify(metricsData, null, 2));
-    console.log('DefenseIndex type:', typeof metricsData.defenseIndex);
-    console.log('DefenseIndex value:', metricsData.defenseIndex);
-  }
+  // Helper function to safely extract ITA price data
+  const getITAData = () => {
+    if (!metricsData?.defenseIndex) return { price: 183.12, change: 0.64 };
+    
+    // Handle object format (new API response)
+    if (typeof metricsData.defenseIndex === 'object' && 'value' in metricsData.defenseIndex) {
+      return {
+        price: metricsData.defenseIndex.value,
+        change: metricsData.defenseIndex.changePercent || 0
+      };
+    }
+    
+    // Handle string format (legacy fallback)
+    const numValue = typeof metricsData.defenseIndex === 'string' 
+      ? parseFloat(metricsData.defenseIndex) 
+      : 183.12;
+    return { price: numValue, change: 0.64 };
+  };
+
+  const itaData = getITAData();
+
+
 
 
 
@@ -81,7 +97,7 @@ export default function Markets() {
     }
 
     // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
-    const defenseIndexValue = metricsData?.defenseIndex?.value || 0;
+    const defenseIndexValue = itaData.price;
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
@@ -343,23 +359,16 @@ export default function Markets() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
                     <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
-                      ${typeof metricsData?.defenseIndex === 'object' && metricsData?.defenseIndex?.value 
-                        ? metricsData.defenseIndex.value.toFixed(2) 
-                        : typeof metricsData?.defenseIndex === 'string' 
-                        ? metricsData.defenseIndex 
-                        : "183.12"}
+                      ${itaData.price.toFixed(2)}
                     </p>
                   </div>
-                  <div className={`w-10 h-10 ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
-                    <TrendingUp className={`h-5 w-5 ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                  <div className={`w-10 h-10 ${itaData.change >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
+                    <TrendingUp className={`h-5 w-5 ${itaData.change >= 0 ? 'text-green-600' : 'text-red-600'}`} />
                   </div>
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className={`font-medium ${(metricsData?.defenseIndex?.changePercent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {metricsData?.defenseIndex?.changePercent !== undefined 
-                      ? `${metricsData.defenseIndex.changePercent >= 0 ? '+' : ''}${metricsData.defenseIndex.changePercent.toFixed(2)}%`
-                      : "+0.64%"
-                    }
+                  <span className={`font-medium ${itaData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {itaData.change >= 0 ? '+' : ''}{itaData.change.toFixed(2)}%
                   </span>
                   <span className="text-slate-600 ml-1">(ITA) today</span>
                 </div>
