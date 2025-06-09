@@ -169,6 +169,13 @@ function generateVaccineCoverage(gdpPerCapita: number, healthcareAccess: number)
 export default function WorldHealthMapSimple() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
 
+  // Get country color based on health score
+  const getCountryColor = (healthScore: number): string => {
+    if (healthScore >= 80) return '#10b981'; // Green for high health scores
+    if (healthScore >= 60) return '#f59e0b'; // Amber for medium health scores
+    return '#ef4444'; // Red for low health scores
+  };
+
   const worldBankData = useWorldBankData();
   const whoData = useWHOData();
 
@@ -238,38 +245,147 @@ export default function WorldHealthMapSimple() {
           <p className="text-sm text-gray-600">Interactive world health visualization</p>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 flex items-center justify-center">
-            <div className="text-center space-y-4 p-6">
-              <div className="text-lg font-semibold text-gray-700">
-                Interactive World Health Map
-              </div>
-              <div className="text-sm text-gray-600 max-w-md">
-                World map visualization with authentic World Bank health data. 
-                View detailed country metrics in the dashboard below.
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                {Array.from(healthData.entries())
-                  .sort(([,a], [,b]) => b.healthScore - a.healthScore)
-                  .slice(0, 4)
-                  .map(([code, data]) => {
-                    const colorClass = data.healthScore >= 80 ? 'bg-green-100 border-green-300' : 
-                                     data.healthScore >= 60 ? 'bg-yellow-100 border-yellow-300' : 
-                                     'bg-red-100 border-red-300';
-                    
-                    return (
-                      <div 
-                        key={code} 
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${colorClass}`}
-                        onClick={() => setSelectedCountry(data)}
-                      >
-                        <div className="font-medium text-sm">{data.name}</div>
-                        <div className="text-lg font-bold">{data.healthScore}/100</div>
-                        <div className="text-xs text-gray-600">Health Score</div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
+          <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 relative overflow-hidden">
+            <svg viewBox="0 0 1000 500" className="w-full h-full">
+              {/* World Map SVG with simplified country shapes */}
+              <g>
+                {/* United States */}
+                <path 
+                  d="M150 200 L300 180 L320 220 L280 250 L200 240 L120 230 Z" 
+                  fill={healthData.get('USA') ? getCountryColor(healthData.get('USA')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('USA') && setSelectedCountry(healthData.get('USA')!)}
+                />
+                
+                {/* China */}
+                <path 
+                  d="M700 180 L800 170 L820 200 L780 230 L720 220 Z" 
+                  fill={healthData.get('CHN') ? getCountryColor(healthData.get('CHN')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('CHN') && setSelectedCountry(healthData.get('CHN')!)}
+                />
+                
+                {/* Brazil */}
+                <path 
+                  d="M300 300 L380 290 L400 350 L320 380 L280 350 Z" 
+                  fill={healthData.get('BRA') ? getCountryColor(healthData.get('BRA')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('BRA') && setSelectedCountry(healthData.get('BRA')!)}
+                />
+                
+                {/* India */}
+                <path 
+                  d="M650 250 L720 240 L730 280 L680 300 L640 290 Z" 
+                  fill={healthData.get('IND') ? getCountryColor(healthData.get('IND')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('IND') && setSelectedCountry(healthData.get('IND')!)}
+                />
+                
+                {/* Russia */}
+                <path 
+                  d="M500 120 L800 100 L820 140 L780 160 L480 150 Z" 
+                  fill={healthData.get('RUS') ? getCountryColor(healthData.get('RUS')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('RUS') && setSelectedCountry(healthData.get('RUS')!)}
+                />
+                
+                {/* European Countries */}
+                <path 
+                  d="M450 160 L520 150 L530 180 L480 190 Z" 
+                  fill={healthData.get('DEU') ? getCountryColor(healthData.get('DEU')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('DEU') && setSelectedCountry(healthData.get('DEU')!)}
+                />
+                
+                <path 
+                  d="M420 170 L470 165 L480 185 L430 190 Z" 
+                  fill={healthData.get('FRA') ? getCountryColor(healthData.get('FRA')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('FRA') && setSelectedCountry(healthData.get('FRA')!)}
+                />
+                
+                <path 
+                  d="M400 150 L450 145 L460 170 L410 175 Z" 
+                  fill={healthData.get('GBR') ? getCountryColor(healthData.get('GBR')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('GBR') && setSelectedCountry(healthData.get('GBR')!)}
+                />
+                
+                {/* Japan */}
+                <path 
+                  d="M850 200 L880 190 L890 220 L860 230 Z" 
+                  fill={healthData.get('JPN') ? getCountryColor(healthData.get('JPN')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('JPN') && setSelectedCountry(healthData.get('JPN')!)}
+                />
+                
+                {/* Australia */}
+                <path 
+                  d="M750 380 L850 370 L860 400 L780 410 Z" 
+                  fill={healthData.get('AUS') ? getCountryColor(healthData.get('AUS')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('AUS') && setSelectedCountry(healthData.get('AUS')!)}
+                />
+                
+                {/* Canada */}
+                <path 
+                  d="M120 100 L350 80 L370 120 L300 140 L100 150 Z" 
+                  fill={healthData.get('CAN') ? getCountryColor(healthData.get('CAN')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('CAN') && setSelectedCountry(healthData.get('CAN')!)}
+                />
+                
+                {/* Mexico */}
+                <path 
+                  d="M150 250 L250 240 L260 280 L180 290 Z" 
+                  fill={healthData.get('MEX') ? getCountryColor(healthData.get('MEX')!.healthScore) : '#e5e7eb'}
+                  stroke="#ffffff" 
+                  strokeWidth="1"
+                  className="cursor-pointer transition-all hover:opacity-80"
+                  onClick={() => healthData.get('MEX') && setSelectedCountry(healthData.get('MEX')!)}
+                />
+              </g>
+              
+              {/* Legend */}
+              <g transform="translate(50, 420)">
+                <rect x="0" y="0" width="300" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
+                <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">Health Score Legend</text>
+                
+                <rect x="10" y="25" width="15" height="10" fill="#10b981" />
+                <text x="30" y="34" fontSize="10" fill="#374151">High (80-100)</text>
+                
+                <rect x="100" y="25" width="15" height="10" fill="#f59e0b" />
+                <text x="120" y="34" fontSize="10" fill="#374151">Medium (60-79)</text>
+                
+                <rect x="200" y="25" width="15" height="10" fill="#ef4444" />
+                <text x="220" y="34" fontSize="10" fill="#374151">Low (0-59)</text>
+                
+                <rect x="10" y="40" width="15" height="10" fill="#d1d5db" />
+                <text x="30" y="49" fontSize="10" fill="#374151">No Data</text>
+              </g>
+            </svg>
           </div>
         </CardContent>
       </Card>
