@@ -49,12 +49,11 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Pill,
     color: "from-green-600 to-teal-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/pharmawatch" },
-      { key: "conflicts", label: "Conflicts", href: "/conflicts" },
-      { key: "markets", label: "Markets", href: "/markets" },
-      { key: "analysis", label: "AI Analysis", href: "/analysis" },
-      { key: "reports", label: "Reports", href: "/reports" },
-      { key: "learning", label: "Learning", href: "/learning" }
+      { key: "dashboard", label: "Dashboard", href: "/" },
+      { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
+      { key: "pharma", label: "Pharma Markets", href: "/pharma" },
+      { key: "research", label: "Research Intel", href: "/research" },
+      { key: "studies", label: "Case Studies", href: "/case-studies" }
     ]
   },
   energy: {
@@ -64,12 +63,11 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Zap,
     color: "from-orange-600 to-red-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/energywatch" },
-      { key: "conflicts", label: "Conflicts", href: "/conflicts" },
-      { key: "markets", label: "Markets", href: "/markets" },
-      { key: "analysis", label: "AI Analysis", href: "/analysis" },
-      { key: "reports", label: "Reports", href: "/reports" },
-      { key: "learning", label: "Learning", href: "/learning" }
+      { key: "dashboard", label: "Dashboard", href: "/" },
+      { key: "regulations", label: "Regulations", href: "/regulations" },
+      { key: "commodities", label: "Commodities", href: "/commodities" },
+      { key: "analysis", label: "Market Analysis", href: "/market-analysis" },
+      { key: "trends", label: "Trends", href: "/trends" }
     ]
   }
 };
@@ -160,8 +158,8 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               </div>
             </Link>
 
-            {/* Sector Selector - Show on all dashboard routes */}
-            {(location === "/" || location === "/pharmawatch" || location === "/energywatch") && (
+            {/* Sector Selector - Only show on dashboard */}
+            {location === "/" && (
               <div className="ml-6">
                 <Select value={currentSector} onValueChange={onSectorChange}>
                   <SelectTrigger className="w-36 h-8 text-xs border-slate-300">

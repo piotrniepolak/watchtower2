@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -18,38 +17,12 @@ import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
 
-export default function EnhancedMultiSectorDashboard() {
-  const [location] = useLocation();
-  
-  // Determine sector based on current route
-  const getSectorFromRoute = (path: string) => {
-    if (path === '/pharmawatch') return 'health';
-    if (path === '/energywatch') return 'energy';
-    return 'defense';
-  };
-  
-  // Get route based on sector
-  const getRouteFromSector = (sector: string) => {
-    if (sector === 'health') return '/pharmawatch';
-    if (sector === 'energy') return '/energywatch';
-    return '/';
-  };
-  
-  const [currentSector, setCurrentSector] = useState(() => getSectorFromRoute(location));
-  
-  // Update sector when route changes
-  useEffect(() => {
-    const newSector = getSectorFromRoute(location);
-    if (newSector !== currentSector) {
-      setCurrentSector(newSector);
-    }
-  }, [location, currentSector]);
-  
-  // Handle sector change with navigation
-  const handleSectorChange = (newSector: string) => {
-    const newRoute = getRouteFromSector(newSector);
-    window.location.href = newRoute;
-  };
+interface EnhancedMultiSectorDashboardProps {
+  defaultSector?: string;
+}
+
+export default function EnhancedMultiSectorDashboard({ defaultSector = "defense" }: EnhancedMultiSectorDashboardProps) {
+  const [currentSector, setCurrentSector] = useState(defaultSector);
 
   // Fetch sector-specific data
   const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery({
@@ -360,7 +333,7 @@ export default function EnhancedMultiSectorDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <MultiSectorNavigation 
         currentSector={currentSector} 
-        onSectorChange={handleSectorChange} 
+        onSectorChange={setCurrentSector} 
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
