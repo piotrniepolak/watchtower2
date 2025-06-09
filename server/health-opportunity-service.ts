@@ -1,4 +1,4 @@
-import { calculateWHOHealthScore } from '../shared/who-data';
+import { generateAuthenticWHOData } from '../shared/who-data';
 
 interface HealthOpportunityCountry {
   name: string;
@@ -29,7 +29,21 @@ export class HealthOpportunityService {
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
     try {
       // Calculate authentic WHO health scores for all countries
-      const countryHealthScores = calculateWHOHealthScore();
+      const { countries } = generateAuthenticWHOData();
+      
+      // Calculate health scores for each country based on 36 WHO indicators
+      const countryHealthScores = countries.map((country: any) => {
+        const healthScore = this.calculateWHOHealthScore(
+          country.indicators,
+          countries.reduce((acc: any, c: any) => ({...acc, [c.iso3]: c}), {}),
+          Object.keys(country.indicators)
+        );
+        return {
+          iso3: country.iso3,
+          name: country.name,
+          healthScore
+        };
+      });
       
       console.log(`Health opportunity service calculated ${countryHealthScores.length} country health scores`);
       console.log('Sample health scores:', countryHealthScores.slice(0, 5).map(c => `${c.name}: ${c.healthScore.toFixed(1)}`));
@@ -134,6 +148,72 @@ export class HealthOpportunityService {
     const normalizedGDP = Math.min(gdpPerCapita / 50000, 1); // Normalize to 0-1 with higher ceiling
     const healthGap = (100 - healthScore) / 100; // Invert health score
     return Math.round((normalizedGDP * 0.75 + healthGap * 0.25) * 100);
+  }
+
+  private calculateWHOHealthScore(indicators: Record<string, number>, allCountries: Record<string, any>, healthIndicators: string[]): number {
+    if (Object.keys(indicators).length === 0) return 0;
+    
+    let totalScore = 0;
+    let validIndicators = 0;
+
+    // Get all indicator values across countries for normalization
+    const allIndicatorValues: Record<string, number[]> = {};
+    Object.values(allCountries).forEach((country: any) => {
+      Object.entries(country.indicators || {}).forEach(([indicator, value]) => {
+        if (!allIndicatorValues[indicator]) allIndicatorValues[indicator] = [];
+        allIndicatorValues[indicator].push(value as number);
+      });
+    });
+
+    healthIndicators.forEach(indicator => {
+      const value = indicators[indicator];
+      if (value !== undefined && value !== null && !isNaN(value)) {
+        const indicatorValues = allIndicatorValues[indicator] || [];
+        if (indicatorValues.length > 0) {
+          const isPositive = this.isPositiveDirection(indicator);
+          const normalizedScore = this.normalizeIndicator(indicatorValues, value, isPositive);
+          totalScore += normalizedScore;
+          validIndicators++;
+        }
+      }
+    });
+
+    return validIndicators > 0 ? (totalScore / validIndicators) * 100 : 0;
+  }
+
+  private isPositiveDirection(indicator: string): boolean {
+    const positiveKeywords = [
+      'coverage', 'access', 'births', 'skilled', 'immunization',
+      'vaccination', 'expectancy', 'density', 'improved', 'safe'
+    ];
+    
+    const negativeKeywords = [
+      'mortality', 'death', 'disease', 'malnutrition', 'stunting',
+      'wasting', 'underweight', 'prevalence', 'incidence', 'burden'
+    ];
+
+    const lowerIndicator = indicator.toLowerCase();
+    
+    if (negativeKeywords.some(keyword => lowerIndicator.includes(keyword))) {
+      return false;
+    }
+    
+    if (positiveKeywords.some(keyword => lowerIndicator.includes(keyword))) {
+      return true;
+    }
+    
+    // Default based on common health metrics
+    return !lowerIndicator.includes('rate') || lowerIndicator.includes('success');
+  }
+
+  private normalizeIndicator(values: number[], value: number, isPositive: boolean): number {
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    if (min === max) return 0.5; // If all values are the same
+    
+    const normalized = (value - min) / (max - min);
+    return isPositive ? normalized : 1 - normalized;
   }
 }
 
