@@ -15,29 +15,25 @@ export class HealthOpportunityService {
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
     console.log('Starting health opportunities analysis...');
     try {
-      // Get only authentic WHO data countries (no synthetic data)
-      const authenticWHOCountries = this.getAuthenticWHOCountries();
-      console.log(`Loaded authentic WHO data for ${Object.keys(authenticWHOCountries).length} countries`);
+      // Import the exact same WHO data function used by the map component
+      const { generateAuthenticWHOData } = await import('../shared/who-data');
+      const mapWHOData = generateAuthenticWHOData();
+      console.log('WHO data import successful');
+      const whoHealthData = mapWHOData.countries;
+      console.log(`Loaded WHO health data for ${Object.keys(whoHealthData).length} countries`);
       
-      if (Object.keys(authenticWHOCountries).length === 0) {
-        console.log('No authentic WHO data available, returning empty array');
+      if (Object.keys(whoHealthData).length === 0) {
+        console.log('WHO data is empty, returning empty array');
         return [];
       }
       
-      // Calculate health scores for authentic countries only
-      const countryHealthScores = Object.entries(authenticWHOCountries).map(([iso3, data]: [string, any]) => {
-        const healthScore = this.calculateWHOHealthScore(
-          data.indicators,
-          authenticWHOCountries,
-          this.getHealthIndicators()
-        );
-        return {
-          iso3,
-          name: data.name,
-          healthScore
-        };
-      });
-      console.log(`Calculated health scores for ${countryHealthScores.length} authentic WHO countries`);
+      // Use the pre-calculated health scores directly from the map data (identical to map display)
+      const countryHealthScores = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
+        iso3,
+        name: data.name,
+        healthScore: data.healthScore // Use exact score from map component
+      }));
+      console.log(`Extracted ${countryHealthScores.length} countries with health scores from map dataset`);
       
       if (countryHealthScores.length > 0) {
         console.log('Sample health scores:', countryHealthScores.slice(0, 3).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
@@ -47,7 +43,7 @@ export class HealthOpportunityService {
       const validHealthScores = countryHealthScores.filter((c: any) => c.healthScore > 0);
       console.log(`Found ${validHealthScores.length} countries with valid health scores out of ${countryHealthScores.length} total`);
 
-      // Generate opportunities from authentic data only
+      // Generate opportunities using exact same data as map
       const opportunities = this.getAuthenticHealthOpportunities(validHealthScores);
       console.log(`Generated ${opportunities.length} health opportunities`);
       
@@ -239,204 +235,84 @@ export class HealthOpportunityService {
 
   private getGDPPerCapita(iso3: string): number {
     const gdpData: Record<string, number> = {
-      'CHE': 83720,
-      'JPN': 39340,
-      'USA': 63544,
-      'AFG': 520
+      // High-income countries
+      'CHE': 83720, // Switzerland
+      'JPN': 39340, // Japan
+      'AUS': 55060, // Australia
+      'SWE': 51610, // Sweden
+      'NOR': 75420, // Norway
+      'DNK': 60170, // Denmark
+      'FIN': 48810, // Finland
+      'NLD': 52330, // Netherlands
+      'DEU': 46560, // Germany
+      'FRA': 40490, // France
+      'GBR': 42330, // United Kingdom
+      'CAN': 46230, // Canada
+      'USA': 63544, // United States
+      'SGP': 65240, // Singapore
+      'KOR': 31846, // South Korea
+      'ITA': 31770, // Italy
+      'ESP': 27180, // Spain
+      'PRT': 23252, // Portugal
+      'GRC': 17676, // Greece
+      'ISR': 43610, // Israel
+      'NZL': 42940, // New Zealand
+      'AUT': 47280, // Austria
+      'BEL': 42660, // Belgium
+      'ISL': 68320, // Iceland
+      'ARE': 43103, // United Arab Emirates
+      'QAT': 68581, // Qatar
+      'KWT': 29040, // Kuwait
+      'SAU': 23140, // Saudi Arabia
+      'BHR': 27057, // Bahrain
+      'OMN': 17135, // Oman
+      'URY': 16190, // Uruguay
+      'CHL': 15346, // Chile
+      'PAN': 15575, // Panama
+      'CRI': 12509, // Costa Rica
+      'POL': 15420, // Poland
+      'EST': 23027, // Estonia
+      'LVA': 17730, // Latvia
+      'LTU': 20260, // Lithuania
+      'HRV': 15729, // Croatia
+      
+      // Upper-middle income countries
+      'BRA': 8810, // Brazil
+      'MEX': 9290, // Mexico
+      'TUR': 9540, // Turkey
+      'THA': 7230, // Thailand
+      'MYS': 11200, // Malaysia
+      'COL': 6104, // Colombia
+      'ZAF': 6440, // South Africa
+      'CHN': 10500, // China
+      'RUS': 11260, // Russia
+      'ARG': 10040, // Argentina
+      'ROU': 12919, // Romania
+      
+      // Lower-middle income countries
+      'IND': 2100, // India
+      'IDN': 4140, // Indonesia
+      'PHL': 3550, // Philippines
+      'VNM': 3560, // Vietnam
+      'EGY': 3570, // Egypt
+      'BGD': 2460, // Bangladesh
+      'PAK': 1540, // Pakistan
+      
+      // Low-income countries
+      'AFG': 520, // Afghanistan
+      'TCD': 730, // Chad
+      'MLI': 880, // Mali
+      'BFA': 790, // Burkina Faso
+      'NER': 590, // Niger
+      'ETH': 860, // Ethiopia
+      'MWI': 630, // Malawi
+      'MOZ': 500, // Mozambique
     };
     
     return gdpData[iso3] || 5000;
   }
 
-  private getAuthenticWHOCountries() {
-    // Only authentic WHO data countries (no synthetic data) - same as map component
-    const authenticWHOData: Record<string, any> = {
-      'CHE': { // Switzerland
-        name: 'Switzerland',
-        indicators: {
-          'Life expectancy at birth (years)': 84.0,
-          'Healthy life expectancy at birth (years)': 73.1,
-          'Maternal mortality ratio (per 100,000 live births)': 5,
-          'Infant mortality rate (per 1,000 live births)': 3.9,
-          'Neonatal mortality rate (per 1,000 live births)': 2.7,
-          'Under-five mortality rate (per 1,000 live births)': 4.3,
-          'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 68,
-          'Births attended by skilled health personnel (%)': 99,
-          'Antenatal care coverage (at least 4 visits) (%)': 99,
-          'Children aged <5 years underweight (%)': 1.0,
-          'Children aged <5 years stunted (%)': 2.5,
-          'Children aged <5 years wasted (%)': 0.8,
-          'Exclusive breastfeeding rate (%)': 17,
-          'DTP3 immunization coverage among 1-year-olds (%)': 95,
-          'Measles immunization coverage among 1-year-olds (%)': 95,
-          'Polio immunization coverage among 1-year-olds (%)': 95,
-          'Hepatitis B immunization coverage among 1-year-olds (%)': 95,
-          'BCG immunization coverage among 1-year-olds (%)': 99,
-          'Vitamin A supplementation coverage among children aged 6-59 months (%)': 95,
-          'Use of insecticide-treated bed nets (%)': 0,
-          'HIV prevalence among adults aged 15-49 years (%)': 0.2,
-          'Antiretroviral therapy coverage (%)': 95,
-          'Tuberculosis incidence (per 100,000 population)': 7,
-          'Tuberculosis treatment success rate (%)': 87,
-          'Malaria incidence (per 1,000 population at risk)': 0,
-          'Population using improved drinking water sources (%)': 100,
-          'Population using improved sanitation facilities (%)': 100,
-          'Medical doctors (per 10,000 population)': 43.4,
-          'Nursing and midwifery personnel (per 10,000 population)': 178.3,
-          'Hospital beds (per 10,000 population)': 45.3,
-          'Total health expenditure as % of GDP': 10.9,
-          'Government health expenditure as % of total health expenditure': 68,
-          'Private health expenditure as % of total health expenditure': 32,
-          'Out-of-pocket health expenditure as % of total health expenditure': 26,
-          'Universal health coverage service coverage index': 86,
-          'Essential medicines availability (%)': 95
-        }
-      },
-      'JPN': { // Japan
-        name: 'Japan',
-        indicators: {
-          'Life expectancy at birth (years)': 84.8,
-          'Healthy life expectancy at birth (years)': 74.1,
-          'Maternal mortality ratio (per 100,000 live births)': 4,
-          'Infant mortality rate (per 1,000 live births)': 1.9,
-          'Neonatal mortality rate (per 1,000 live births)': 0.9,
-          'Under-five mortality rate (per 1,000 live births)': 2.5,
-          'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 65,
-          'Births attended by skilled health personnel (%)': 100,
-          'Antenatal care coverage (at least 4 visits) (%)': 99,
-          'Children aged <5 years underweight (%)': 1.4,
-          'Children aged <5 years stunted (%)': 7.0,
-          'Children aged <5 years wasted (%)': 1.9,
-          'Exclusive breastfeeding rate (%)': 8,
-          'DTP3 immunization coverage among 1-year-olds (%)': 96,
-          'Measles immunization coverage among 1-year-olds (%)': 96,
-          'Polio immunization coverage among 1-year-olds (%)': 96,
-          'Hepatitis B immunization coverage among 1-year-olds (%)': 96,
-          'BCG immunization coverage among 1-year-olds (%)': 96,
-          'Vitamin A supplementation coverage among children aged 6-59 months (%)': 0,
-          'Use of insecticide-treated bed nets (%)': 0,
-          'HIV prevalence among adults aged 15-49 years (%)': 0.1,
-          'Antiretroviral therapy coverage (%)': 95,
-          'Tuberculosis incidence (per 100,000 population)': 10,
-          'Tuberculosis treatment success rate (%)': 97,
-          'Malaria incidence (per 1,000 population at risk)': 0,
-          'Population using improved drinking water sources (%)': 99,
-          'Population using improved sanitation facilities (%)': 100,
-          'Medical doctors (per 10,000 population)': 25.9,
-          'Nursing and midwifery personnel (per 10,000 population)': 127.7,
-          'Hospital beds (per 10,000 population)': 129.5,
-          'Total health expenditure as % of GDP': 11.1,
-          'Government health expenditure as % of total health expenditure': 84,
-          'Private health expenditure as % of total health expenditure': 16,
-          'Out-of-pocket health expenditure as % of total health expenditure': 13,
-          'Universal health coverage service coverage index': 85,
-          'Essential medicines availability (%)': 98
-        }
-      },
-      'USA': { // United States
-        name: 'United States',
-        indicators: {
-          'Life expectancy at birth (years)': 76.4,
-          'Healthy life expectancy at birth (years)': 66.1,
-          'Maternal mortality ratio (per 100,000 live births)': 21,
-          'Infant mortality rate (per 1,000 live births)': 5.8,
-          'Neonatal mortality rate (per 1,000 live births)': 3.8,
-          'Under-five mortality rate (per 1,000 live births)': 6.5,
-          'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 106,
-          'Births attended by skilled health personnel (%)': 99,
-          'Antenatal care coverage (at least 4 visits) (%)': 99,
-          'Children aged <5 years underweight (%)': 1.3,
-          'Children aged <5 years stunted (%)': 2.1,
-          'Children aged <5 years wasted (%)': 0.5,
-          'Exclusive breastfeeding rate (%)': 25,
-          'DTP3 immunization coverage among 1-year-olds (%)': 94,
-          'Measles immunization coverage among 1-year-olds (%)': 91,
-          'Polio immunization coverage among 1-year-olds (%)': 93,
-          'Hepatitis B immunization coverage among 1-year-olds (%)': 91,
-          'BCG immunization coverage among 1-year-olds (%)': 0,
-          'Vitamin A supplementation coverage among children aged 6-59 months (%)': 0,
-          'Use of insecticide-treated bed nets (%)': 0,
-          'HIV prevalence among adults aged 15-49 years (%)': 0.4,
-          'Antiretroviral therapy coverage (%)': 75,
-          'Tuberculosis incidence (per 100,000 population)': 2.4,
-          'Tuberculosis treatment success rate (%)': 82,
-          'Malaria incidence (per 1,000 population at risk)': 0,
-          'Population using improved drinking water sources (%)': 99,
-          'Population using improved sanitation facilities (%)': 100,
-          'Medical doctors (per 10,000 population)': 36.5,
-          'Nursing and midwifery personnel (per 10,000 population)': 158.7,
-          'Hospital beds (per 10,000 population)': 29.4,
-          'Total health expenditure as % of GDP': 17.8,
-          'Government health expenditure as % of total health expenditure': 51,
-          'Private health expenditure as % of total health expenditure': 49,
-          'Out-of-pocket health expenditure as % of total health expenditure': 12,
-          'Universal health coverage service coverage index': 74,
-          'Essential medicines availability (%)': 88
-        }
-      },
-      'AFG': { // Afghanistan
-        name: 'Afghanistan',
-        indicators: {
-          'Life expectancy at birth (years)': 62.3,
-          'Healthy life expectancy at birth (years)': 53.2,
-          'Maternal mortality ratio (per 100,000 live births)': 620,
-          'Infant mortality rate (per 1,000 live births)': 48.9,
-          'Neonatal mortality rate (per 1,000 live births)': 35.2,
-          'Under-five mortality rate (per 1,000 live births)': 60.3,
-          'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 264,
-          'Births attended by skilled health personnel (%)': 59,
-          'Antenatal care coverage (at least 4 visits) (%)': 18,
-          'Children aged <5 years underweight (%)': 19.1,
-          'Children aged <5 years stunted (%)': 38.2,
-          'Children aged <5 years wasted (%)': 9.5,
-          'Exclusive breastfeeding rate (%)': 58,
-          'DTP3 immunization coverage among 1-year-olds (%)': 64,
-          'Measles immunization coverage among 1-year-olds (%)': 67,
-          'Polio immunization coverage among 1-year-olds (%)': 69,
-          'Hepatitis B immunization coverage among 1-year-olds (%)': 64,
-          'BCG immunization coverage among 1-year-olds (%)': 87,
-          'Vitamin A supplementation coverage among children aged 6-59 months (%)': 56,
-          'Use of insecticide-treated bed nets (%)': 8,
-          'HIV prevalence among adults aged 15-49 years (%)': 0.1,
-          'Antiretroviral therapy coverage (%)': 13,
-          'Tuberculosis incidence (per 100,000 population)': 189,
-          'Tuberculosis treatment success rate (%)': 92,
-          'Malaria incidence (per 1,000 population at risk)': 25,
-          'Population using improved drinking water sources (%)': 70,
-          'Population using improved sanitation facilities (%)': 44,
-          'Medical doctors (per 10,000 population)': 3.5,
-          'Nursing and midwifery personnel (per 10,000 population)': 4.2,
-          'Hospital beds (per 10,000 population)': 5.0,
-          'Total health expenditure as % of GDP': 15.6,
-          'Government health expenditure as % of total health expenditure': 8,
-          'Private health expenditure as % of total health expenditure': 92,
-          'Out-of-pocket health expenditure as % of total health expenditure': 78,
-          'Universal health coverage service coverage index': 37,
-          'Essential medicines availability (%)': 42
-        }
-      }
-    };
 
-    return authenticWHOData;
-  }
-
-  private getHealthIndicators() {
-    return [
-      'Life expectancy at birth (years)',
-      'Healthy life expectancy at birth (years)',
-      'Maternal mortality ratio (per 100,000 live births)',
-      'Infant mortality rate (per 1,000 live births)',
-      'Under-five mortality rate (per 1,000 live births)',
-      'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
-      'Births attended by skilled health personnel (%)',
-      'DTP3 immunization coverage among 1-year-olds (%)',
-      'Measles immunization coverage among 1-year-olds (%)',
-      'Population using improved drinking water sources (%)',
-      'Population using improved sanitation facilities (%)',
-      'Medical doctors (per 10,000 population)',
-      'Universal health coverage service coverage index'
-    ];
-  }
 }
 
 export const healthOpportunityService = new HealthOpportunityService();
