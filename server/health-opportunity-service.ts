@@ -90,7 +90,7 @@ export class HealthOpportunityService {
         const gdpPerCapita = gdpData[country.iso3];
         const factors = this.generateOpportunityFactors(country.name, country.healthScore, gdpPerCapita);
         
-        console.log(`${country.name} (${country.iso3}): WHO health score = ${country.healthScore.toFixed(1)}, GDP = $${gdpPerCapita}`);
+        console.log(`${country.name} (${country.iso3}): WHO health score = ${country.healthScore}, GDP = $${gdpPerCapita}`);
         
         return {
           name: country.name,
@@ -157,7 +157,7 @@ export class HealthOpportunityService {
     // Higher GDP with lower health score = higher opportunity
     const normalizedGDP = Math.min(gdpPerCapita / 50000, 1); // Normalize to 0-1 with higher ceiling
     const healthGap = (100 - healthScore) / 100; // Invert health score
-    return Math.round((normalizedGDP * 0.75 + healthGap * 0.25) * 100);
+    return (normalizedGDP * 0.75 + healthGap * 0.25) * 100;
   }
 
   private calculateWHOHealthScore(indicators: Record<string, number>, allCountries: Record<string, any>, healthIndicators: string[]): number {
