@@ -13,7 +13,6 @@ import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import { useRealTimeStocks, type Stock } from "@/hooks/useRealTimeStocks";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { normaliseITA, type ITAPrice } from "@/lib/normaliseITA";
 
 export default function Markets() {
   const { isAuthenticated } = useAuth();
@@ -39,17 +38,7 @@ export default function Markets() {
     refetchInterval: 30000,
   });
 
-  // Debug logging for ITA data structure
-  useEffect(() => {
-    if (metricsData?.defenseIndex) {
-      console.log('✅ ITA Raw Data:', JSON.stringify(metricsData.defenseIndex, null, 2));
-      const normalized = normaliseITA(metricsData.defenseIndex as ITAPrice);
-      console.log('✅ ITA Normalized:', normalized);
-    }
-  }, [metricsData?.defenseIndex]);
 
-  // Normalize ITA data using robust type-safe helper
-  const ita = metricsData?.defenseIndex ? normaliseITA(metricsData.defenseIndex as ITAPrice) : null;
 
 
 
@@ -352,26 +341,29 @@ export default function Markets() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
-                    {ita && !Number.isNaN(ita.price) ? (
+                    {metricsData?.defenseIndex ? (
                       <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
-                        ${ita.price.toFixed(2)}
+                        ${(typeof metricsData.defenseIndex === 'object' && 'value' in metricsData.defenseIndex 
+                          ? metricsData.defenseIndex.value 
+                          : 183.00
+                        ).toFixed(2)}
                       </p>
                     ) : (
                       <Skeleton className="h-8 w-24" />
                     )}
                   </div>
-                  {ita && !Number.isNaN(ita.change) ? (
-                    <div className={`w-10 h-10 ${ita.change >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
-                      <TrendingUp className={`h-5 w-5 ${ita.change >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                  {metricsData?.defenseIndex && typeof metricsData.defenseIndex === 'object' && 'changePercent' in metricsData.defenseIndex ? (
+                    <div className={`w-10 h-10 ${metricsData.defenseIndex.changePercent >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
+                      <TrendingUp className={`h-5 w-5 ${metricsData.defenseIndex.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`} />
                     </div>
                   ) : (
                     <Skeleton className="h-10 w-10 rounded-lg" />
                   )}
                 </div>
                 <div className="flex items-center text-xs">
-                  {ita && !Number.isNaN(ita.change) ? (
-                    <span className={`font-medium ${ita.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {ita.change >= 0 ? '+' : ''}{ita.change.toFixed(2)}%
+                  {metricsData?.defenseIndex && typeof metricsData.defenseIndex === 'object' && 'changePercent' in metricsData.defenseIndex ? (
+                    <span className={`font-medium ${metricsData.defenseIndex.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {metricsData.defenseIndex.changePercent >= 0 ? '+' : ''}{metricsData.defenseIndex.changePercent.toFixed(2)}%
                     </span>
                   ) : (
                     <Skeleton className="h-4 w-16" />
