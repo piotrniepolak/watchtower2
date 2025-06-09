@@ -43,13 +43,29 @@ class StockService {
 
     try {
       const stocks = await storage.getStocks();
-      const prioritySymbols = ["LMT", "RTX", "NOC", "GD", "BA"]; // Update major stocks first
+      const prioritySymbols = ["ITA", "LMT", "RTX", "NOC", "GD", "BA"]; // Update ITA ETF and major stocks first
       
       let successfulUpdates = 0;
 
+      // Ensure ITA ETF is in the database
+      const itaStock = stocks.find(s => s.symbol === 'ITA');
+      if (!itaStock) {
+        console.log("Adding ITA ETF to database...");
+        await storage.createStock({
+          symbol: "ITA",
+          name: "iShares U.S. Aerospace & Defense ETF",
+          price: 183.0,
+          change: 0.0,
+          changePercent: 0.0,
+          volume: 0,
+          marketCap: "$3.2B",
+          sector: "Defense"
+        });
+      }
+
       // Update priority stocks first
       for (const symbol of prioritySymbols) {
-        const stock = stocks.find(s => s.symbol === symbol);
+        const stock = stocks.find(s => s.symbol === symbol) || (symbol === 'ITA' ? { symbol: 'ITA' } : null);
         if (stock) {
           await this.updateSingleStock(stock.symbol);
           successfulUpdates++;
