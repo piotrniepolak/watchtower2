@@ -932,9 +932,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const stocks = await storage.getStocks();
+      console.log(`Total stocks in database: ${stocks.length}`);
       console.log(`Fetching stocks for sector ${req.params.sectorKey}:`);
       console.log(`Sector tickers:`, sector.dataSources.stocks.tickers);
-      console.log(`Available stocks:`, stocks.map(s => s.symbol));
+      console.log(`Available stocks by sector:`, {
+        defense: stocks.filter(s => s.sector === 'Defense').map(s => s.symbol),
+        healthcare: stocks.filter(s => s.sector === 'Healthcare').map(s => s.symbol),
+        energy: stocks.filter(s => s.sector === 'Energy').map(s => s.symbol)
+      });
       
       const sectorStocks = stocks.filter(stock => 
         sector.dataSources.stocks.tickers.includes(stock.symbol)

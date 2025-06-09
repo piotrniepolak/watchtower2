@@ -84,7 +84,9 @@ export class DatabaseStorage implements IStorage {
 
   // Stocks
   async getStocks(): Promise<Stock[]> {
-    return await db.select().from(stocks);
+    const allStocks = await db.select().from(stocks);
+    console.log(`Storage.getStocks() returned ${allStocks.length} stocks`);
+    return allStocks;
   }
 
   async getStock(symbol: string): Promise<Stock | undefined> {
