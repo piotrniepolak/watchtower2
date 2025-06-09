@@ -109,22 +109,24 @@ export default function EnhancedChartsSection() {
           <CardContent className="pt-0">
             <div className="space-y-2">
               {topPerformers.map((stock: Stock, index: number) => (
-                <div key={stock.symbol} className="flex items-center justify-between p-1.5 bg-green-50 dark:bg-green-900/20 rounded-md">
-                  <div className="flex items-center space-x-1.5 min-w-0 flex-1">
-                    <span className="text-xs font-bold text-green-700 dark:text-green-400 bg-green-200 dark:bg-green-800 rounded-full w-4 h-4 flex items-center justify-center flex-shrink-0 text-[10px]">
+                <div key={stock.symbol} className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                  <div className="flex items-center space-x-2 flex-1 overflow-hidden">
+                    <span className="text-xs font-bold text-green-700 dark:text-green-400 bg-green-200 dark:bg-green-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                       {index + 1}
                     </span>
-                    <CompanyLogo symbol={stock.symbol} name={stock.name} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900 dark:text-slate-100 text-xs leading-tight">{stock.name}</div>
-                      <div className="text-[10px] text-slate-600 dark:text-slate-400">{stock.symbol}</div>
+                    <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs font-bold">{stock.symbol.slice(0, 2)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 text-xs truncate">{stock.name}</div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400">{stock.symbol}</div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-3 min-w-[60px]">
-                    <div className="text-green-600 dark:text-green-400 font-bold text-xs leading-tight">
+                  <div className="text-right flex-shrink-0 min-w-[70px]">
+                    <div className="text-green-600 dark:text-green-400 font-bold text-xs">
                       +{stock.changePercent.toFixed(2)}%
                     </div>
-                    <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight">
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
                       ${stock.price.toFixed(2)}
                     </div>
                   </div>
@@ -145,22 +147,24 @@ export default function EnhancedChartsSection() {
           <CardContent className="pt-0">
             <div className="space-y-2">
               {worstPerformers.map((stock: Stock, index: number) => (
-                <div key={stock.symbol} className="flex items-center justify-between p-1.5 bg-red-50 dark:bg-red-900/20 rounded-md">
-                  <div className="flex items-center space-x-1.5 min-w-0 flex-1">
-                    <span className="text-xs font-bold text-red-700 dark:text-red-400 bg-red-200 dark:bg-red-800 rounded-full w-4 h-4 flex items-center justify-center flex-shrink-0 text-[10px]">
+                <div key={stock.symbol} className="flex items-center p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                  <div className="flex items-center space-x-2 flex-1 overflow-hidden">
+                    <span className="text-xs font-bold text-red-700 dark:text-red-400 bg-red-200 dark:bg-red-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                       {index + 1}
                     </span>
-                    <CompanyLogo symbol={stock.symbol} name={stock.name} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900 dark:text-slate-100 text-xs leading-tight">{stock.name}</div>
-                      <div className="text-[10px] text-slate-600 dark:text-slate-400">{stock.symbol}</div>
+                    <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-xs font-bold">{stock.symbol.slice(0, 2)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 text-xs truncate">{stock.name}</div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400">{stock.symbol}</div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-3 min-w-[60px]">
-                    <div className="text-red-600 dark:text-red-400 font-bold text-xs leading-tight">
+                  <div className="text-right flex-shrink-0 min-w-[70px]">
+                    <div className="text-red-600 dark:text-red-400 font-bold text-xs">
                       {stock.changePercent.toFixed(2)}%
                     </div>
-                    <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight">
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
                       ${stock.price.toFixed(2)}
                     </div>
                   </div>
