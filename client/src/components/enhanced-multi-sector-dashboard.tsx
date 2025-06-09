@@ -15,6 +15,7 @@ import DailyNews from "@/components/daily-news";
 import RoiRankings from "@/components/roi-rankings";
 import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
+import WorldHealthMapSimple from "@/components/world-health-map-simple";
 
 interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
@@ -110,6 +111,19 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             <p className="text-xs text-muted-foreground">Drugs in development</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Global Health Map Section */}
+      <div className="w-full mb-8">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900">
+            Global Health Map - WHO Statistical Annex Data
+          </h2>
+          <p className="text-sm text-slate-600">
+            Real-time global health monitoring with comprehensive WHO indicators and pharmaceutical market insights
+          </p>
+        </div>
+        <WorldHealthMapSimple />
       </div>
 
       {/* Health-specific content */}

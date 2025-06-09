@@ -1,6 +1,5 @@
 import Navigation from "@/components/navigation";
 import { Link } from "wouter";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Import original ConflictWatch dashboard components
 import MetricsCards from "@/components/metrics-cards";
@@ -11,7 +10,6 @@ import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DailyNews from "@/components/daily-news";
 import RoiRankings from "@/components/roi-rankings";
 import ConflictTimeline from "@/components/conflict-timeline";
-import WorldHealthMapSimple from "@/components/world-health-map-simple";
 
 export default function Dashboard() {
   return (
@@ -31,32 +29,6 @@ export default function Dashboard() {
 
           {/* Top Metrics Row */}
           <MetricsCards />
-
-          {/* Global Health Map Section */}
-          <div className="w-full mb-8">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                Global Health Intelligence
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                WHO Statistical Annex Data - Real-time global health monitoring and pharmaceutical market insights
-              </p>
-            </div>
-            <Tabs defaultValue="health-map" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="health-map">Global Health Map</TabsTrigger>
-                <TabsTrigger value="who-dashboard">WHO Statistical Dashboard</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="health-map">
-                <WorldHealthMapSimple />
-              </TabsContent>
-
-              <TabsContent value="who-dashboard">
-                <WorldHealthMapSimple />
-              </TabsContent>
-            </Tabs>
-          </div>
 
           {/* Active Conflicts Section - Priority Display */}
           <div className="w-full mb-8">
