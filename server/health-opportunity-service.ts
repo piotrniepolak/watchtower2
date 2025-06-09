@@ -36,7 +36,7 @@ export class HealthOpportunityService {
       const whoData = generateAuthenticWHOData();
       const { countries, healthIndicators } = whoData;
 
-      // Calculate health scores for all countries
+      // Calculate health scores for all countries using same method as map
       const countryHealthScores = Object.entries(countries).map(([iso3, countryData]: [string, any]) => {
         const healthScore = this.calculateWHOHealthScore(
           countryData.indicators,
@@ -46,11 +46,12 @@ export class HealthOpportunityService {
         return { iso3, name: countryData.name, healthScore };
       });
 
-      if (this.perplexityApiKey) {
-        return await this.getPerplexityHealthOpportunities(countryHealthScores);
-      } else {
-        return this.getFallbackHealthOpportunities(countryHealthScores);
-      }
+      console.log(`Health opportunity service calculated ${countryHealthScores.length} country health scores`);
+      console.log('Sample health scores:', countryHealthScores.slice(0, 5).map(c => `${c.name}: ${c.healthScore.toFixed(1)}`));
+
+      // Use fallback data with authentic WHO health scores for now
+      // Perplexity API has parsing issues, so we'll use computed WHO scores directly
+      return this.getFallbackHealthOpportunities(countryHealthScores);
     } catch (error) {
       console.error('Error analyzing health opportunities:', error);
       return this.getFallbackHealthOpportunities([]);
