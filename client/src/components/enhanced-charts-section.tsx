@@ -69,10 +69,7 @@ export default function EnhancedChartsSection() {
   }
 
   return (
-    <div className="space-y-6 mb-8">
-
-      {/* Performance Summary Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Market Overview */}
         <Card className="shadow-sm border border-slate-200 dark:border-slate-700">
           <CardHeader>
@@ -166,7 +163,6 @@ export default function EnhancedChartsSection() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

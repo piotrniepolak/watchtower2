@@ -48,16 +48,11 @@ export default function Dashboard() {
             <EnhancedChartsSection />
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-            {/* Left Column */}
-            <div className="space-y-6 lg:space-y-8">
-              <ConflictSeverityMap />
+          {/* Analytics Section */}
+          <div className="space-y-6">
+            <ConflictSeverityMap />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <CorrelationAnalysis />
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-6 lg:space-y-8">
               <DailyNews />
             </div>
           </div>
