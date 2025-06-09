@@ -39,25 +39,55 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
       {/* Top Metrics Row */}
       <MetricsCards />
 
-      {/* Main Content Grid */}
+      {/* Market Overview Section */}
+      <div className="w-full mb-8">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Defense Market Performance
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Real-time performance of defense and aerospace stocks
+          </p>
+        </div>
+        <EnhancedChartsSection />
+      </div>
+
+      {/* Top Performers and Underperformers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <RoiRankings />
+        <div className="space-y-6">
+          <CorrelationAnalysis />
+        </div>
+      </div>
+
+      {/* Active Global Conflicts Section */}
+      <div className="w-full mb-8">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Active Global Conflicts
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Real-time monitoring of global conflicts affecting defense markets
+          </p>
+        </div>
+        <ActiveConflictsList />
+      </div>
+
+      {/* Additional Analysis Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column */}
         <div className="space-y-6">
-          <ActiveConflictsList />
           <ConflictSeverityMap />
-          <CorrelationAnalysis />
         </div>
 
         {/* Right Column */}
         <div className="space-y-6">
-          <EnhancedChartsSection />
           <DailyNews />
         </div>
       </div>
 
       {/* Bottom Full Width Widgets */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <RoiRankings />
+      <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
         <ConflictTimeline />
       </div>
     </div>
