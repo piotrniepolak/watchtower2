@@ -9,8 +9,49 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-// World topology data URL - using reliable CDN source
-const WORLD_TOPOLOGY_URL = "https://unpkg.com/world-atlas@3/countries-110m.json";
+// Custom geography loader with fallback sources
+const useWorldGeography = () => {
+  const [geography, setGeography] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadGeography = async () => {
+      const sources = [
+        "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json",
+        "https://unpkg.com/world-atlas@3/countries-110m.json",
+        "https://raw.githubusercontent.com/topojson/world-atlas/master/countries-110m.json"
+      ];
+
+      for (const source of sources) {
+        try {
+          console.log(`Attempting to load geography from: ${source}`);
+          const response = await fetch(source);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          const data = await response.json();
+          console.log(`Successfully loaded geography from: ${source}`);
+          setGeography(data);
+          setLoading(false);
+          return;
+        } catch (err) {
+          console.warn(`Failed to load geography from ${source}:`, err);
+          continue;
+        }
+      }
+      
+      // If all sources fail, create a simple fallback
+      console.log("All geography sources failed, using fallback");
+      setError("Could not load world map data");
+      setLoading(false);
+    };
+
+    loadGeography();
+  }, []);
+
+  return { geography, loading, error };
+};
 
 interface HealthIndicator {
   lifeExpectancy: number;
@@ -242,6 +283,7 @@ function generateVaccineCoverage(gdpPerCapita: number, healthcareAccess: number)
 export default function WorldHealthMap() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const { geography, loading: geoLoading, error: geoError } = useWorldGeography();
 
   const worldBankData = useWorldBankData();
   const whoData = useWHOData();
@@ -399,7 +441,7 @@ export default function WorldHealthMap() {
                   height={500}
                   className="w-full h-full"
                 >
-                  <Geographies geography={WORLD_TOPOLOGY_URL}>
+                  <Geographies geography={geography || undefined}>
                     {({ geographies }) => {
                       if (!geographies || geographies.length === 0) {
                         return (
