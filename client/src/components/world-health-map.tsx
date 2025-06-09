@@ -51,37 +51,61 @@ function useWorldBankData() {
   return useQuery({
     queryKey: ['/api/world-bank/health-indicators'],
     queryFn: async () => {
-      // Fetch life expectancy data
-      const lifeExpectancyResponse = await fetch(
-        'https://api.worldbank.org/v2/country/all/indicator/SP.DYN.LE00.IN?format=json&date=2022&per_page=300'
-      );
-      
-      // Fetch infant mortality data  
-      const infantMortalityResponse = await fetch(
-        'https://api.worldbank.org/v2/country/all/indicator/SP.DYN.IMRT.IN?format=json&date=2022&per_page=300'
-      );
+      try {
+        // World Bank Open Data API - no authentication required
+        const baseUrl = 'https://api.worldbank.org/v2';
+        
+        // Fetch life expectancy data (latest available year)
+        const lifeExpectancyResponse = await fetch(
+          `${baseUrl}/country/all/indicator/SP.DYN.LE00.IN?format=json&date=2022:2023&per_page=400`
+        );
+        
+        // Fetch infant mortality data  
+        const infantMortalityResponse = await fetch(
+          `${baseUrl}/country/all/indicator/SP.DYN.IMRT.IN?format=json&date=2022:2023&per_page=400`
+        );
 
-      // Fetch GDP per capita data
-      const gdpResponse = await fetch(
-        'https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.CD?format=json&date=2022&per_page=300'
-      );
+        // Fetch GDP per capita data
+        const gdpResponse = await fetch(
+          `${baseUrl}/country/all/indicator/NY.GDP.PCAP.CD?format=json&date=2022:2023&per_page=400`
+        );
 
-      const lifeExpectancyJson = await lifeExpectancyResponse.json();
-      const infantMortalityJson = await infantMortalityResponse.json();
-      const gdpJson = await gdpResponse.json();
+        if (!lifeExpectancyResponse.ok) {
+          throw new Error(`Life expectancy API failed: ${lifeExpectancyResponse.status}`);
+        }
+        if (!infantMortalityResponse.ok) {
+          throw new Error(`Infant mortality API failed: ${infantMortalityResponse.status}`);
+        }
+        if (!gdpResponse.ok) {
+          throw new Error(`GDP API failed: ${gdpResponse.status}`);
+        }
 
-      // World Bank API returns [metadata, data] - we need the data array
-      const lifeExpectancyData = Array.isArray(lifeExpectancyJson) ? lifeExpectancyJson[1] : lifeExpectancyJson;
-      const infantMortalityData = Array.isArray(infantMortalityJson) ? infantMortalityJson[1] : infantMortalityJson;
-      const gdpData = Array.isArray(gdpJson) ? gdpJson[1] : gdpJson;
+        const lifeExpectancyJson = await lifeExpectancyResponse.json();
+        const infantMortalityJson = await infantMortalityResponse.json();
+        const gdpJson = await gdpResponse.json();
 
-      return {
-        lifeExpectancy: lifeExpectancyData,
-        infantMortality: infantMortalityData,
-        gdpPerCapita: gdpData
-      };
+        // World Bank API returns [metadata, data] - we need the data array
+        const lifeExpectancyData = Array.isArray(lifeExpectancyJson) && lifeExpectancyJson[1] ? lifeExpectancyJson[1] : [];
+        const infantMortalityData = Array.isArray(infantMortalityJson) && infantMortalityJson[1] ? infantMortalityJson[1] : [];
+        const gdpData = Array.isArray(gdpJson) && gdpJson[1] ? gdpJson[1] : [];
+
+        console.log(`Loaded ${lifeExpectancyData.length} life expectancy records`);
+        console.log(`Loaded ${infantMortalityData.length} infant mortality records`);
+        console.log(`Loaded ${gdpData.length} GDP records`);
+
+        return {
+          lifeExpectancy: lifeExpectancyData,
+          infantMortality: infantMortalityData,
+          gdpPerCapita: gdpData
+        };
+      } catch (error) {
+        console.error('World Bank API error:', error);
+        throw error;
+      }
     },
     staleTime: 1000 * 60 * 60 * 24, // Cache for 24 hours
+    retry: 1,
+    retryDelay: 2000,
   });
 }
 
@@ -118,6 +142,65 @@ function generateRealisticOutbreakData() {
   };
 
   return outbreaksByCountry;
+}
+
+// Generate realistic health data for fallback when APIs are unavailable
+function generateFallbackHealthData() {
+  // Real health data patterns for major countries
+  const healthPatterns = [
+    // High-income developed countries
+    { iso: 'USA', lifeExp: 78.9, infantMort: 5.8, gdp: 70248 },
+    { iso: 'CAN', lifeExp: 82.4, infantMort: 4.4, gdp: 51987 },
+    { iso: 'GBR', lifeExp: 81.2, infantMort: 4.3, gdp: 46344 },
+    { iso: 'FRA', lifeExp: 82.7, infantMort: 3.9, gdp: 43659 },
+    { iso: 'DEU', lifeExp: 81.3, infantMort: 3.4, gdp: 48196 },
+    { iso: 'JPN', lifeExp: 84.6, infantMort: 2.0, gdp: 39285 },
+    { iso: 'KOR', lifeExp: 83.5, infantMort: 2.7, gdp: 31846 },
+    { iso: 'AUS', lifeExp: 83.4, infantMort: 3.1, gdp: 54907 },
+    { iso: 'CHE', lifeExp: 83.8, infantMort: 3.9, gdp: 83717 },
+    { iso: 'NOR', lifeExp: 82.3, infantMort: 2.2, gdp: 75420 },
+    
+    // Middle-income countries
+    { iso: 'CHN', lifeExp: 78.2, infantMort: 6.8, gdp: 12556 },
+    { iso: 'IND', lifeExp: 70.2, infantMort: 28.3, gdp: 2277 },
+    { iso: 'BRA', lifeExp: 75.9, infantMort: 13.4, gdp: 8967 },
+    { iso: 'RUS', lifeExp: 73.3, infantMort: 5.0, gdp: 11273 },
+    { iso: 'MEX', lifeExp: 75.1, infantMort: 11.6, gdp: 9926 },
+    { iso: 'ZAF', lifeExp: 64.1, infantMort: 27.4, gdp: 6001 },
+    { iso: 'TUR', lifeExp: 77.7, infantMort: 9.1, gdp: 9121 },
+    { iso: 'ARG', lifeExp: 76.7, infantMort: 8.4, gdp: 10729 },
+    
+    // Low-income countries
+    { iso: 'AFG', lifeExp: 65.0, infantMort: 45.0, gdp: 507 },
+    { iso: 'ETH', lifeExp: 67.8, infantMort: 35.8, gdp: 925 },
+    { iso: 'COD', lifeExp: 61.6, infantMort: 58.2, gdp: 556 },
+    { iso: 'TCD', lifeExp: 54.2, infantMort: 72.1, gdp: 729 },
+    { iso: 'CAF', lifeExp: 53.3, infantMort: 84.3, gdp: 511 },
+    { iso: 'SOM', lifeExp: 57.4, infantMort: 76.2, gdp: 447 },
+    { iso: 'YEM', lifeExp: 66.1, infantMort: 45.2, gdp: 824 },
+    { iso: 'HTI', lifeExp: 64.3, infantMort: 48.2, gdp: 1815 },
+  ];
+
+  const lifeExpectancy = healthPatterns.map(country => ({
+    country: { id: country.iso, value: country.iso },
+    value: country.lifeExp.toString()
+  }));
+
+  const infantMortality = healthPatterns.map(country => ({
+    country: { id: country.iso, value: country.iso },
+    value: country.infantMort.toString()
+  }));
+
+  const gdpPerCapita = healthPatterns.map(country => ({
+    country: { id: country.iso, value: country.iso },
+    value: country.gdp.toString()
+  }));
+
+  return {
+    lifeExpectancy,
+    infantMortality,
+    gdpPerCapita
+  };
 }
 
 // Calculate comprehensive health score
@@ -261,10 +344,21 @@ export default function WorldHealthMap() {
     return (
       <Card className="w-full h-96 border-red-200">
         <CardContent className="flex items-center justify-center h-full">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <AlertTriangle className="h-8 w-8 text-red-500 mx-auto" />
-            <p className="text-red-600">Failed to load health data</p>
-            <p className="text-sm text-gray-500">Check API connectivity and try again</p>
+            <div>
+              <p className="text-red-600 font-medium">Unable to load global health data</p>
+              <p className="text-sm text-gray-600 mt-1">
+                World Bank API: {worldBankData.error ? 'Connection failed' : 'Connected'}
+              </p>
+              <p className="text-sm text-gray-600">
+                WHO API: {whoData.error ? 'Requires authentication' : 'Connected'}
+              </p>
+            </div>
+            <div className="text-xs text-gray-500 max-w-md">
+              <p>This component requires real-time health data from World Bank and WHO APIs.</p>
+              <p className="mt-1">Please ensure internet connectivity and provide any required API credentials.</p>
+            </div>
           </div>
         </CardContent>
       </Card>
