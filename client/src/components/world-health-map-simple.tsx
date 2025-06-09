@@ -322,11 +322,18 @@ export default function WorldHealthMapSimple() {
                 }
               });
               
-              // Try partial matching if no exact match
+              // Try more specific partial matching if no exact match
               if (!countryData) {
                 Array.from(healthData.entries()).forEach(([key, data]) => {
-                  if (!countryData && (data.name.toLowerCase().includes(searchName.toLowerCase()) || 
-                      searchName.toLowerCase().includes(data.name.toLowerCase()))) {
+                  // Only match if the search name is a significant part of the data name (not just a substring)
+                  const dataNameLower = data.name.toLowerCase();
+                  const searchNameLower = searchName.toLowerCase();
+                  
+                  if (!countryData && searchNameLower.length > 3 && (
+                    dataNameLower === searchNameLower ||
+                    (dataNameLower.includes(searchNameLower) && searchNameLower.length > dataNameLower.length * 0.6) ||
+                    (searchNameLower.includes(dataNameLower) && dataNameLower.length > searchNameLower.length * 0.6)
+                  )) {
                     countryData = data;
                   }
                 });
@@ -334,7 +341,7 @@ export default function WorldHealthMapSimple() {
             }
             
             if (index < 5) {
-              console.log(`Country ${countryName || 'Unknown'}: ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
+              console.log(`Country ${countryName || 'Unknown'}: ${countryData ? `Health Score ${countryData.healthScore} (${countryData.name})` : 'No data'}`);
             }
             
             // Apply health data coloring
@@ -371,6 +378,7 @@ export default function WorldHealthMapSimple() {
           });
           
           console.log(`Loaded ${countries.features.length} countries, ${healthData.size} with health data`);
+          console.log('Health data sample:', Array.from(healthData.entries()).slice(0, 3).map(([k, v]) => `${k}: ${v.name} (${v.healthScore})`));
         }
       } catch (error) {
         console.error('Failed to load world map:', error);
