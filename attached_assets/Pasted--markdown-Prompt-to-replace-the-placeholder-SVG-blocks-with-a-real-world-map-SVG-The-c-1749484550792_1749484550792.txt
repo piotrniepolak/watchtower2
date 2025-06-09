@@ -1,0 +1,62 @@
+````markdown
+**Prompt to replace the placeholder SVG “blocks” with a real world-map SVG**  
+
+> The current SVG you’re using is just a handful of generic rectangles. We need to swap it out for an authentic world map SVG that has all ~200 countries as `<path>` elements with their ISO-3166-1 alpha-3 codes. Please do the following:
+
+1. **Acquire a proper world map SVG**  
+   - Download a simplified, public-domain world map SVG (e.g. from Natural Earth via Wikimedia Commons, or the one in `world-atlas/svg/world-110m.svg`).  
+   - Place it in `client/src/data/world.svg`. Make sure each `<path>` has an attribute `id="ISO_A3_CODE"` or `data-iso="ISO_A3_CODE"`.
+
+2. **Import the SVG as a React component**  
+   ```ts
+   import { ReactComponent as WorldSVG } from "../data/world.svg";
+   import { useHealthScores }       from "../hooks/useHealthScores";
+   import { getCountryColor }       from "../utils/colorScale";
+   import { useEffect }             from "react";
+````
+
+3. **Iterate over every `<path>`**
+   In your component’s `useEffect`, query all paths and color them:
+
+   ```tsx
+   export function WorldHealthMapSimple() {
+     const scores = useHealthScores(); // { USA: { score: 85, metrics: {...} }, … }
+
+     useEffect(() => {
+       const svgEl = document.querySelector<SVGSVGElement>(".world-map-svg");
+       if (!svgEl) return;
+       svgEl.querySelectorAll<SVGPathElement>("path").forEach(path => {
+         const iso = path.getAttribute("id") || path.getAttribute("data-iso");
+         if (!iso) return; 
+         const data = scores[iso];
+         path.setAttribute("fill", data ? getCountryColor(data.score) : "#eee");
+         path.style.transition = "transform 0.2s";
+         path.style.cursor     = data ? "pointer" : "default";
+         if (data) {
+           path.addEventListener("mouseenter", () => path.setAttribute("transform", "scale(1.02)"));
+           path.addEventListener("mouseleave", () => path.removeAttribute("transform"));
+           path.addEventListener("click", () =>
+             window.dispatchEvent(new CustomEvent("showCountryDetails", { detail: { iso, ...data } }))
+           );
+         }
+       });
+     }, [scores]);
+   ```
+
+4. **Ensure full coverage**
+
+   * Confirm you see all continents: Americas, Europe, Africa, Asia, Oceania, Antarctica if present.
+   * There should be \~200 colored shapes, not 20 rectangles.
+
+5. **Maintain existing list**
+
+   * Keep your interactive list below untouched.
+
+6. **Verify the result**
+
+   * The world map at the top now shows accurate borders for every country.
+   * Countries color by real health scores, highlight on hover, and open the detail modal when clicked.
+
+---
+
+Paste this prompt into Replit and run the AI assistant. It will swap out the stub SVG blocks for a full world map SVG with proper country shapes and IDs, then iterate through all \~200 paths to color and wire up click/hover behavior.
