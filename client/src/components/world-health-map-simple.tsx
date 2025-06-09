@@ -1,4 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import { geoMercator } from "d3-geo";
+import { feature } from "topojson-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,6 +169,57 @@ function generateVaccineCoverage(gdpPerCapita: number, healthcareAccess: number)
   return Math.max(30, Math.round(baseCoverage));
 }
 
+// World atlas loader hook
+const useWorldAtlas = () => {
+  const [worldData, setWorldData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadWorldAtlas = async () => {
+      try {
+        // Try multiple TopoJSON sources for world atlas
+        const sources = [
+          "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json",
+          "https://unpkg.com/world-atlas@3/countries-110m.json",
+          "https://raw.githubusercontent.com/topojson/world-atlas/master/countries-110m.json"
+        ];
+
+        for (const source of sources) {
+          try {
+            console.log(`Loading world atlas from: ${source}`);
+            const response = await fetch(source);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const topoData = await response.json();
+            console.log(`Successfully loaded world atlas from: ${source}`);
+            console.log('TopoJSON objects:', Object.keys(topoData.objects));
+            
+            // Convert TopoJSON to GeoJSON features
+            const geoData = feature(topoData, topoData.objects.countries || topoData.objects.land);
+            setWorldData(geoData);
+            setLoading(false);
+            return;
+          } catch (err) {
+            console.warn(`Failed to load from ${source}:`, err);
+            continue;
+          }
+        }
+        
+        throw new Error('All world atlas sources failed');
+      } catch (err) {
+        console.error('World atlas loading error:', err);
+        setError('Failed to load world map data');
+        setLoading(false);
+      }
+    };
+
+    loadWorldAtlas();
+  }, []);
+
+  return { worldData, loading, error };
+};
+
 export default function WorldHealthMapSimple() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
 
@@ -178,6 +232,7 @@ export default function WorldHealthMapSimple() {
 
   const worldBankData = useWorldBankData();
   const whoData = useWHOData();
+  const { worldData, loading: atlasLoading, error: atlasError } = useWorldAtlas();
 
   // Process and combine all health data
   const healthData = useMemo(() => {
@@ -246,146 +301,100 @@ export default function WorldHealthMapSimple() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 relative overflow-hidden">
-            <svg viewBox="0 0 1000 500" className="w-full h-full">
-              {/* World Map SVG with simplified country shapes */}
-              <g>
-                {/* United States */}
-                <path 
-                  d="M150 200 L300 180 L320 220 L280 250 L200 240 L120 230 Z" 
-                  fill={healthData.get('USA') ? getCountryColor(healthData.get('USA')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('USA') && setSelectedCountry(healthData.get('USA')!)}
-                />
-                
-                {/* China */}
-                <path 
-                  d="M700 180 L800 170 L820 200 L780 230 L720 220 Z" 
-                  fill={healthData.get('CHN') ? getCountryColor(healthData.get('CHN')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('CHN') && setSelectedCountry(healthData.get('CHN')!)}
-                />
-                
-                {/* Brazil */}
-                <path 
-                  d="M300 300 L380 290 L400 350 L320 380 L280 350 Z" 
-                  fill={healthData.get('BRA') ? getCountryColor(healthData.get('BRA')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('BRA') && setSelectedCountry(healthData.get('BRA')!)}
-                />
-                
-                {/* India */}
-                <path 
-                  d="M650 250 L720 240 L730 280 L680 300 L640 290 Z" 
-                  fill={healthData.get('IND') ? getCountryColor(healthData.get('IND')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('IND') && setSelectedCountry(healthData.get('IND')!)}
-                />
-                
-                {/* Russia */}
-                <path 
-                  d="M500 120 L800 100 L820 140 L780 160 L480 150 Z" 
-                  fill={healthData.get('RUS') ? getCountryColor(healthData.get('RUS')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('RUS') && setSelectedCountry(healthData.get('RUS')!)}
-                />
-                
-                {/* European Countries */}
-                <path 
-                  d="M450 160 L520 150 L530 180 L480 190 Z" 
-                  fill={healthData.get('DEU') ? getCountryColor(healthData.get('DEU')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('DEU') && setSelectedCountry(healthData.get('DEU')!)}
-                />
-                
-                <path 
-                  d="M420 170 L470 165 L480 185 L430 190 Z" 
-                  fill={healthData.get('FRA') ? getCountryColor(healthData.get('FRA')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('FRA') && setSelectedCountry(healthData.get('FRA')!)}
-                />
-                
-                <path 
-                  d="M400 150 L450 145 L460 170 L410 175 Z" 
-                  fill={healthData.get('GBR') ? getCountryColor(healthData.get('GBR')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('GBR') && setSelectedCountry(healthData.get('GBR')!)}
-                />
-                
-                {/* Japan */}
-                <path 
-                  d="M850 200 L880 190 L890 220 L860 230 Z" 
-                  fill={healthData.get('JPN') ? getCountryColor(healthData.get('JPN')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('JPN') && setSelectedCountry(healthData.get('JPN')!)}
-                />
-                
-                {/* Australia */}
-                <path 
-                  d="M750 380 L850 370 L860 400 L780 410 Z" 
-                  fill={healthData.get('AUS') ? getCountryColor(healthData.get('AUS')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('AUS') && setSelectedCountry(healthData.get('AUS')!)}
-                />
-                
-                {/* Canada */}
-                <path 
-                  d="M120 100 L350 80 L370 120 L300 140 L100 150 Z" 
-                  fill={healthData.get('CAN') ? getCountryColor(healthData.get('CAN')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('CAN') && setSelectedCountry(healthData.get('CAN')!)}
-                />
-                
-                {/* Mexico */}
-                <path 
-                  d="M150 250 L250 240 L260 280 L180 290 Z" 
-                  fill={healthData.get('MEX') ? getCountryColor(healthData.get('MEX')!.healthScore) : '#e5e7eb'}
-                  stroke="#ffffff" 
-                  strokeWidth="1"
-                  className="cursor-pointer transition-all hover:opacity-80"
-                  onClick={() => healthData.get('MEX') && setSelectedCountry(healthData.get('MEX')!)}
-                />
-              </g>
-              
-              {/* Legend */}
-              <g transform="translate(50, 420)">
-                <rect x="0" y="0" width="300" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
-                <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">Health Score Legend</text>
-                
-                <rect x="10" y="25" width="15" height="10" fill="#10b981" />
-                <text x="30" y="34" fontSize="10" fill="#374151">High (80-100)</text>
-                
-                <rect x="100" y="25" width="15" height="10" fill="#f59e0b" />
-                <text x="120" y="34" fontSize="10" fill="#374151">Medium (60-79)</text>
-                
-                <rect x="200" y="25" width="15" height="10" fill="#ef4444" />
-                <text x="220" y="34" fontSize="10" fill="#374151">Low (0-59)</text>
-                
-                <rect x="10" y="40" width="15" height="10" fill="#d1d5db" />
-                <text x="30" y="49" fontSize="10" fill="#374151">No Data</text>
-              </g>
-            </svg>
+            {atlasLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-lg font-semibold text-gray-600">Loading world map...</div>
+              </div>
+            ) : atlasError ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center space-y-2">
+                  <div className="text-lg font-semibold text-red-600">Map loading failed</div>
+                  <div className="text-sm text-gray-600">Using fallback visualization</div>
+                </div>
+              </div>
+            ) : worldData ? (
+              <ComposableMap
+                width={1000}
+                height={500}
+                projectionConfig={{
+                  scale: 160,
+                  center: [0, 20],
+                }}
+                className="w-full h-full"
+              >
+                <Geographies geography={worldData}>
+                  {({ geographies }) =>
+                    geographies.map((geo) => {
+                      // Get country code from multiple possible properties
+                      const countryCode = geo.properties.ISO_A3 || 
+                                        geo.properties.ISO3 || 
+                                        geo.properties.ADM0_A3 ||
+                                        geo.id;
+                      
+                      const countryData = healthData.get(countryCode);
+                      const fillColor = countryData 
+                        ? getCountryColor(countryData.healthScore)
+                        : '#e5e7eb';
+
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          fill={fillColor}
+                          stroke="#ffffff"
+                          strokeWidth={0.5}
+                          style={{
+                            default: {
+                              outline: "none",
+                            },
+                            hover: {
+                              opacity: 0.8,
+                              outline: "none",
+                              cursor: "pointer",
+                            },
+                            pressed: {
+                              outline: "none",
+                            },
+                          }}
+                          onClick={() => {
+                            if (countryData) {
+                              setSelectedCountry(countryData);
+                            }
+                          }}
+                        />
+                      );
+                    })
+                  }
+                </Geographies>
+              </ComposableMap>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-lg font-semibold text-gray-600">No map data available</div>
+              </div>
+            )}
+            
+            {/* Legend overlay */}
+            <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg p-3 shadow-lg border">
+              <div className="text-sm font-semibold text-gray-800 mb-2">Health Score Legend</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-3 bg-green-500 rounded"></div>
+                  <span>High (80-100)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-3 bg-amber-500 rounded"></div>
+                  <span>Medium (60-79)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-3 bg-red-500 rounded"></div>
+                  <span>Low (0-59)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-3 bg-gray-300 rounded"></div>
+                  <span>No Data</span>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

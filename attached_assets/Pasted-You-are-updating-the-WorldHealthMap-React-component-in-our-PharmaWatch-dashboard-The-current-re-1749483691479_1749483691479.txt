@@ -1,0 +1,50 @@
+You are updating the `<WorldHealthMap>` React component in our PharmaWatch dashboard. The current render is drawing only a handful of arbitrary polygons instead of the true political shapes, and many countries are missing. Please fix it by doing the following:
+
+1. **Use an official TopoJSON/GeoJSON source**  
+   - Replace any hand-rolled or mock geometry with a proper world file such as `world-110m.json` from the `world-atlas` or Natural Earth data.  
+   - Import it via `import worldData from "../data/world-110m.json";` (or fetch it from a CDN), then convert with `topojson.feature(worldData, worldData.objects.countries)`.
+
+2. **Set up a correct projection**  
+   - Use `geoMercator()` (or another standard D3 projection) configured with a sensible `scale` and `translate([ width/2, height/2 ])` so all continents fit.  
+   - Example:  
+     ```js
+     const projection = geoMercator()
+       .scale((width / 2 / Math.PI) * 1.3)
+       .translate([width / 2, height / 2]);
+     ```
+
+3. **Render all features**  
+   - Pass the full `features` array into `<Geographies geography={geoJson}>` so you loop through every country.  
+   - Remove any `.slice()` or `.filter()` that was limiting the number of countries.
+
+4. **Bind data by ISO code**  
+   - Ensure each GeoJSON feature has an `id` matching your health‐score data keys (e.g. ISO-3166 alpha-3).  
+   - When coloring, do `const score = healthScores[feature.id]` instead of positional lookups.
+
+5. **Correct the `<Geography>` mapping**  
+   - For each `<Geography>` use  
+     ```jsx
+     <Geography
+       key={geo.properties.ISO_A3}
+       geography={geo}
+       projection={projection}
+       fill={getCountryColor(healthScores[geo.properties.ISO_A3])}
+       onMouseEnter={…}
+       onClick={…}
+     />
+     ```
+   - Make sure you reference `geo.properties` for shape data, not your own mock coordinates.
+
+6. **Verify container dimensions**  
+   - Ensure your `<ComposableMap>` has `width="100%"` and a fixed `height={400}` (or via CSS) so the projection scale works.
+
+7. **Testing**  
+   - After implementing, check that you see recognizable outlines for North/South America, Europe, Africa, Asia, Oceania.  
+   - Hover effect and click‐to‐modal should still work unchanged.
+
+Deliver the updated `<WorldHealthMap>` component (or diff) that:  
+- Imports and processes a valid TopoJSON world atlas file  
+- Configures a standard Mercator projection  
+- Renders every country with correct borders  
+- Colors countries by ISO‐matched health scores  
+- Keeps hover-lift and click-modal behavior intact 
