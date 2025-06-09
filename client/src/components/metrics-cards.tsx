@@ -41,9 +41,13 @@ export default function MetricsCards() {
     let validStocks = 0;
 
     stocks.forEach(stock => {
-      if (stock.marketCap && typeof stock.marketCap === 'string') {
+      // Handle both camelCase and snake_case property names for compatibility
+      const marketCap = stock.marketCap || stock.market_cap;
+      const changePercent = stock.changePercent !== undefined ? stock.changePercent : stock.change_percent;
+      
+      if (marketCap && typeof marketCap === 'string') {
         // Parse market cap from Yahoo Finance (e.g., "125.4B", "45.2M")
-        const marketCapStr = stock.marketCap.replace('$', '');
+        const marketCapStr = marketCap.replace('$', '');
         let marketCapValue = 0;
         
         if (marketCapStr.includes('T')) {
@@ -56,7 +60,7 @@ export default function MetricsCards() {
         
         if (marketCapValue > 0) {
           totalMarketCap += marketCapValue;
-          totalChangePercent += (stock.changePercent || 0);
+          totalChangePercent += (changePercent || 0);
           validStocks++;
         }
       }
