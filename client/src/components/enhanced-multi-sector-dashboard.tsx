@@ -23,14 +23,14 @@ export default function EnhancedMultiSectorDashboard() {
   
   // Determine sector based on current route
   const getSectorFromRoute = (path: string) => {
-    if (path === '/pharmawatch') return 'healthcare';
+    if (path === '/pharmawatch') return 'health';
     if (path === '/energywatch') return 'energy';
     return 'defense';
   };
   
   // Get route based on sector
   const getRouteFromSector = (sector: string) => {
-    if (sector === 'healthcare') return '/pharmawatch';
+    if (sector === 'health') return '/pharmawatch';
     if (sector === 'energy') return '/energywatch';
     return '/';
   };

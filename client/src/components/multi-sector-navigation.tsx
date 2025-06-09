@@ -42,8 +42,8 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "learning", label: "Learning", href: "/learning" }
     ]
   },
-  healthcare: {
-    key: "healthcare",
+  health: {
+    key: "health",
     name: "PharmaWatch",
     tagline: "Global Health & Disease Intelligence",
     icon: Pill,
@@ -174,7 +174,7 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
                         <span>Defense</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="healthcare">
+                    <SelectItem value="health">
                       <div className="flex items-center space-x-2">
                         <Pill className="h-4 w-4 text-green-600" />
                         <span>Health</span>
