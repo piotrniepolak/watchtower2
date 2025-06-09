@@ -287,6 +287,8 @@ export default function WorldHealthMapSimple() {
             const iso3 = country.properties.ISO_A3;
             const countryData = healthData.get(iso3);
             
+            console.log(`Country ${iso3}: ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
+            
             // Apply health data coloring
             if (countryData) {
               const color = getCountryColor(countryData.healthScore);
@@ -296,18 +298,22 @@ export default function WorldHealthMapSimple() {
               
               // Add interaction handlers
               pathElement.addEventListener('click', () => {
+                console.log('Country clicked:', countryData);
                 setSelectedCountry(countryData);
               });
               
               pathElement.addEventListener('mouseenter', () => {
                 pathElement.style.opacity = '0.8';
+                setHoveredCountry(iso3);
               });
               
               pathElement.addEventListener('mouseleave', () => {
                 pathElement.style.opacity = '1';
+                setHoveredCountry(null);
               });
             } else {
               pathElement.setAttribute('fill', '#e5e7eb');
+              pathElement.setAttribute('style', 'cursor: default;');
             }
             
             pathElement.setAttribute('stroke', '#ffffff');
@@ -315,6 +321,8 @@ export default function WorldHealthMapSimple() {
             
             countriesGroup.appendChild(pathElement);
           });
+          
+          console.log(`Loaded ${countries.features.length} countries, ${healthData.size} with health data`);
         }
       } catch (error) {
         console.error('Failed to load world map:', error);
@@ -326,8 +334,11 @@ export default function WorldHealthMapSimple() {
       }
     };
 
-    loadWorldMap();
-  }, [healthData, getCountryColor, setSelectedCountry]);
+    // Only load map when health data is available
+    if (healthData.size > 0) {
+      loadWorldMap();
+    }
+  }, [healthData, setSelectedCountry, setHoveredCountry]);
 
   return (
     <div className="space-y-6">
