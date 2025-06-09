@@ -932,10 +932,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const stocks = await storage.getStocks();
+      console.log(`Fetching stocks for sector ${req.params.sectorKey}:`);
+      console.log(`Sector tickers:`, sector.dataSources.stocks.tickers);
+      console.log(`Available stocks:`, stocks.map(s => s.symbol));
+      
       const sectorStocks = stocks.filter(stock => 
         sector.dataSources.stocks.tickers.includes(stock.symbol)
       );
       
+      console.log(`Filtered stocks:`, sectorStocks.map(s => s.symbol));
       res.json(sectorStocks);
     } catch (error) {
       console.error('Error fetching sector stocks:', error);
