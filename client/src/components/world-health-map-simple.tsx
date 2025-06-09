@@ -7,11 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-// Color scale utility for health scores
-const getCountryColor = (healthScore: number | undefined): string => {
+// Color scale utility for health scores based on actual ranges
+const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
   if (!healthScore) return '#E5E7EB'; // Gray for no data
-  if (healthScore >= 80) return '#10b981'; // Green for high health scores
-  if (healthScore >= 60) return '#f59e0b'; // Amber for medium health scores
+  
+  const range = scoreRange.max - scoreRange.min;
+  const highThreshold = scoreRange.min + (range * 0.67);
+  const mediumThreshold = scoreRange.min + (range * 0.33);
+  
+  if (healthScore >= highThreshold) return '#10b981'; // Green for high health scores
+  if (healthScore >= mediumThreshold) return '#f59e0b'; // Amber for medium health scores
   return '#ef4444'; // Red for low health scores
 };
 
@@ -29,6 +34,7 @@ interface CountryHealthData {
   name: string;
   healthScore: number;
   indicators: HealthIndicator;
+  allWHOIndicators: Record<string, number>;
   sources: {
     lifeExpectancy: string;
     infantMortality: string;
@@ -599,11 +605,12 @@ export default function WorldHealthMapSimple() {
   const whoStatisticalData = useWHOStatisticalData();
 
   // Process WHO Statistical Annex data
-  const healthData = useMemo(() => {
-    if (!whoStatisticalData.data) return new Map<string, CountryHealthData>();
+  const { healthData, scoreRange } = useMemo(() => {
+    if (!whoStatisticalData.data) return { healthData: new Map<string, CountryHealthData>(), scoreRange: { min: 0, max: 100 } };
 
     const { healthIndicators, countries } = whoStatisticalData.data;
     const healthMap = new Map<string, CountryHealthData>();
+    const scores: number[] = [];
 
     console.log(`Processing health data for ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
 
@@ -616,6 +623,7 @@ export default function WorldHealthMapSimple() {
         countries, 
         healthIndicators
       );
+      scores.push(healthScore);
 
       // Convert WHO indicators to our display format
       const displayIndicators: HealthIndicator = {
@@ -632,6 +640,7 @@ export default function WorldHealthMapSimple() {
         name: name,
         healthScore,
         indicators: displayIndicators,
+        allWHOIndicators: countryIndicators,
         sources: {
           lifeExpectancy: "WHO Statistical Annex",
           infantMortality: "WHO Statistical Annex", 
@@ -642,8 +651,14 @@ export default function WorldHealthMapSimple() {
       });
     });
 
+    const scoreRange = {
+      min: Math.min(...scores),
+      max: Math.max(...scores)
+    };
+
     console.log(`Processed health data for ${healthMap.size} countries`);
-    return healthMap;
+    console.log(`Health score range: ${scoreRange.min} - ${scoreRange.max}`);
+    return { healthData: healthMap, scoreRange };
   }, [whoStatisticalData.data]);
 
   // Load authentic world map and apply health data coloring
@@ -794,7 +809,7 @@ export default function WorldHealthMapSimple() {
             
             // Apply WHO health score coloring
             if (countryData) {
-              const color = getCountryColor(countryData.healthScore);
+              const color = getCountryColor(countryData.healthScore, scoreRange);
               pathElement.setAttribute('fill', color);
               pathElement.setAttribute('data-country', countryName || '');
               pathElement.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s;');
@@ -857,7 +872,7 @@ export default function WorldHealthMapSimple() {
           <p className="text-sm text-gray-600">Interactive world health visualization based on 36 WHO health indicators</p>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 relative overflow-hidden">
+          <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-900 to-blue-800 rounded-lg border border-gray-200 relative overflow-hidden">
             <svg 
               ref={svgRef}
               viewBox="0 0 960 500" 
@@ -865,19 +880,19 @@ export default function WorldHealthMapSimple() {
             >
               <g id="countries"></g>
               
-              {/* Legend */}
+              {/* Dynamic Legend based on actual score ranges */}
               <g transform="translate(50, 420)">
-                <rect x="0" y="0" width="300" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
-                <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">WHO Health Score Legend</text>
+                <rect x="0" y="0" width="350" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
+                <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">WHO Health Score (Range: {scoreRange.min}-{scoreRange.max})</text>
                 
                 <rect x="10" y="25" width="15" height="10" fill="#10b981" />
-                <text x="30" y="34" fontSize="10" fill="#374151">High (80-100)</text>
+                <text x="30" y="34" fontSize="10" fill="#374151">High ({Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67)}-{scoreRange.max})</text>
                 
-                <rect x="100" y="25" width="15" height="10" fill="#f59e0b" />
-                <text x="120" y="34" fontSize="10" fill="#374151">Medium (60-79)</text>
+                <rect x="120" y="25" width="15" height="10" fill="#f59e0b" />
+                <text x="140" y="34" fontSize="10" fill="#374151">Medium ({Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.33)}-{Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67)})</text>
                 
-                <rect x="200" y="25" width="15" height="10" fill="#ef4444" />
-                <text x="220" y="34" fontSize="10" fill="#374151">Low (0-59)</text>
+                <rect x="250" y="25" width="15" height="10" fill="#ef4444" />
+                <text x="270" y="34" fontSize="10" fill="#374151">Low ({scoreRange.min}-{Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.33)})</text>
                 
                 <rect x="10" y="40" width="15" height="10" fill="#d1d5db" />
                 <text x="30" y="49" fontSize="10" fill="#374151">No Data</text>
@@ -942,50 +957,64 @@ export default function WorldHealthMapSimple() {
           </DialogHeader>
           
           {selectedCountry && (
-            <div className="space-y-6">
+            <div className="space-y-6 max-h-96 overflow-y-auto">
               {/* Health Score */}
               <div className="text-center">
                 <div className="text-4xl font-bold mb-2" style={{
-                  color: selectedCountry.healthScore >= 80 ? '#10b981' : 
-                         selectedCountry.healthScore >= 60 ? '#f59e0b' : '#ef4444'
+                  color: getCountryColor(selectedCountry.healthScore, scoreRange)
                 }}>
                   {selectedCountry.healthScore}
                 </div>
                 <p className="text-gray-600">WHO Composite Health Score</p>
-                <Badge variant={selectedCountry.healthScore >= 80 ? "default" : 
-                               selectedCountry.healthScore >= 60 ? "secondary" : "destructive"}>
-                  {selectedCountry.healthScore >= 80 ? "High Performance" : 
-                   selectedCountry.healthScore >= 60 ? "Medium Performance" : "Needs Improvement"}
+                <Badge variant={selectedCountry.healthScore >= (scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67) ? "default" : 
+                               selectedCountry.healthScore >= (scoreRange.min + (scoreRange.max - scoreRange.min) * 0.33) ? "secondary" : "destructive"}>
+                  {selectedCountry.healthScore >= (scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67) ? "High Performance" : 
+                   selectedCountry.healthScore >= (scoreRange.min + (scoreRange.max - scoreRange.min) * 0.33) ? "Medium Performance" : "Needs Improvement"}
                 </Badge>
               </div>
 
-              {/* Key Indicators */}
+              {/* All WHO Indicators */}
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-sm text-gray-700 mb-3">All 36 WHO Statistical Annex Indicators Used in Score Calculation</h4>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  {Object.entries(selectedCountry.allWHOIndicators).map(([indicator, value]) => (
+                    <div key={indicator} className="flex justify-between items-center py-1 border-b border-blue-100">
+                      <span className="text-gray-700 flex-1 mr-2">{indicator}</span>
+                      <span className="font-semibold text-blue-700 text-right">
+                        {typeof value === 'number' ? value.toFixed(1) : value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Summary Indicators */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-700">Life Expectancy</h4>
-                  <p className="text-2xl font-bold text-green-600">{selectedCountry.indicators.lifeExpectancy.toFixed(1)} years</p>
+                  <p className="text-xl font-bold text-green-600">{selectedCountry.indicators.lifeExpectancy.toFixed(1)} years</p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-700">Infant Mortality</h4>
-                  <p className="text-2xl font-bold text-red-600">{selectedCountry.indicators.infantMortality.toFixed(1)} per 1,000</p>
+                  <p className="text-xl font-bold text-red-600">{selectedCountry.indicators.infantMortality.toFixed(1)} per 1,000</p>
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-sm text-gray-700">Vaccine Coverage</h4>
-                  <p className="text-2xl font-bold text-blue-600">{selectedCountry.indicators.vaccinesCoverage}%</p>
+                  <h4 className="font-semibold text-sm text-gray-700">DTP3 Vaccine Coverage</h4>
+                  <p className="text-xl font-bold text-blue-600">{selectedCountry.indicators.vaccinesCoverage}%</p>
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-sm text-gray-700">Healthcare Access</h4>
-                  <p className="text-2xl font-bold text-purple-600">{selectedCountry.indicators.healthcareAccess}</p>
+                  <h4 className="font-semibold text-sm text-gray-700">UHC Service Coverage</h4>
+                  <p className="text-xl font-bold text-purple-600">{selectedCountry.indicators.healthcareAccess}</p>
                 </div>
               </div>
 
               {/* Data Sources */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Data Sources</h4>
-                <p className="text-xs text-gray-600">All health indicators sourced from WHO Statistical Annex, excluding road traffic and suicide mortality as requested. Comprehensive scoring based on 36 authentic health metrics with equal weighting and proper normalization.</p>
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">Methodology</h4>
+                <p className="text-xs text-gray-600">Health score calculated from 36 authentic WHO Statistical Annex indicators with equal weighting (1/36 each). Each indicator normalized across all countries using min-max scaling with proper directional adjustment (higher values better for positive indicators like life expectancy, lower values better for negative indicators like mortality rates).</p>
               </div>
             </div>
           )}
