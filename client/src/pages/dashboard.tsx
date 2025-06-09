@@ -32,10 +32,14 @@ export default function Dashboard() {
           <MetricsCards />
 
           {/* Active Conflicts Section - Priority Display */}
-          <ActiveConflictsList />
+          <div className="w-full">
+            <ActiveConflictsList />
+          </div>
 
           {/* Market Performance Section */}
-          <EnhancedChartsSection />
+          <div className="w-full">
+            <EnhancedChartsSection />
+          </div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
