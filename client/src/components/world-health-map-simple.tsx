@@ -1,7 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { geoMercator } from "d3-geo";
-import { feature } from "topojson-client";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -169,55 +166,28 @@ function generateVaccineCoverage(gdpPerCapita: number, healthcareAccess: number)
   return Math.max(30, Math.round(baseCoverage));
 }
 
-// World atlas loader hook
-const useWorldAtlas = () => {
-  const [worldData, setWorldData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadWorldAtlas = async () => {
-      try {
-        // Try multiple TopoJSON sources for world atlas
-        const sources = [
-          "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json",
-          "https://unpkg.com/world-atlas@3/countries-110m.json",
-          "https://raw.githubusercontent.com/topojson/world-atlas/master/countries-110m.json"
-        ];
-
-        for (const source of sources) {
-          try {
-            console.log(`Loading world atlas from: ${source}`);
-            const response = await fetch(source);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
-            const topoData = await response.json();
-            console.log(`Successfully loaded world atlas from: ${source}`);
-            console.log('TopoJSON objects:', Object.keys(topoData.objects));
-            
-            // Convert TopoJSON to GeoJSON features
-            const geoData = feature(topoData, topoData.objects.countries || topoData.objects.land);
-            setWorldData(geoData);
-            setLoading(false);
-            return;
-          } catch (err) {
-            console.warn(`Failed to load from ${source}:`, err);
-            continue;
-          }
-        }
-        
-        throw new Error('All world atlas sources failed');
-      } catch (err) {
-        console.error('World atlas loading error:', err);
-        setError('Failed to load world map data');
-        setLoading(false);
-      }
-    };
-
-    loadWorldAtlas();
-  }, []);
-
-  return { worldData, loading, error };
+// Country SVG path definitions for major countries
+const countryPaths = {
+  USA: "M200 200 L350 180 L380 220 L320 280 L240 270 L160 250 Z",
+  CHN: "M700 180 L850 170 L880 210 L820 260 L750 250 Z", 
+  BRA: "M320 320 L420 310 L450 380 L380 420 L320 390 Z",
+  IND: "M680 260 L750 250 L770 300 L720 340 L680 320 Z",
+  RUS: "M500 120 L850 100 L880 150 L820 180 L480 170 Z",
+  DEU: "M480 170 L540 160 L550 190 L500 200 Z",
+  FRA: "M440 180 L490 175 L500 195 L450 200 Z",
+  GBR: "M420 160 L470 155 L480 175 L430 180 Z",
+  JPN: "M880 210 L920 200 L930 230 L890 240 Z",
+  AUS: "M780 400 L880 390 L900 420 L820 430 Z",
+  CAN: "M150 110 L380 90 L410 130 L330 150 L120 160 Z",
+  MEX: "M180 270 L280 260 L300 300 L220 310 Z",
+  ITA: "M480 200 L510 195 L520 215 L490 220 Z",
+  ESP: "M420 200 L470 195 L480 215 L430 220 Z",
+  KOR: "M850 240 L870 235 L875 250 L855 255 Z",
+  IDN: "M750 340 L820 335 L830 355 L760 360 Z",
+  NLD: "M470 160 L490 158 L492 170 L475 172 Z",
+  SAU: "M580 260 L620 255 L625 275 L585 280 Z",
+  TUR: "M520 200 L560 195 L565 210 L525 215 Z",
+  CHE: "M485 185 L505 183 L507 193 L487 195 Z"
 };
 
 export default function WorldHealthMapSimple() {
@@ -232,7 +202,6 @@ export default function WorldHealthMapSimple() {
 
   const worldBankData = useWorldBankData();
   const whoData = useWHOData();
-  const { worldData, loading: atlasLoading, error: atlasError } = useWorldAtlas();
 
   // Process and combine all health data
   const healthData = useMemo(() => {
@@ -301,100 +270,51 @@ export default function WorldHealthMapSimple() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 relative overflow-hidden">
-            {atlasLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-lg font-semibold text-gray-600">Loading world map...</div>
-              </div>
-            ) : atlasError ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center space-y-2">
-                  <div className="text-lg font-semibold text-red-600">Map loading failed</div>
-                  <div className="text-sm text-gray-600">Using fallback visualization</div>
-                </div>
-              </div>
-            ) : worldData ? (
-              <ComposableMap
-                width={1000}
-                height={500}
-                projectionConfig={{
-                  scale: 160,
-                  center: [0, 20],
-                }}
-                className="w-full h-full"
-              >
-                <Geographies geography={worldData}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => {
-                      // Get country code from multiple possible properties
-                      const countryCode = geo.properties.ISO_A3 || 
-                                        geo.properties.ISO3 || 
-                                        geo.properties.ADM0_A3 ||
-                                        geo.id;
-                      
-                      const countryData = healthData.get(countryCode);
-                      const fillColor = countryData 
-                        ? getCountryColor(countryData.healthScore)
-                        : '#e5e7eb';
+            <svg viewBox="0 0 1000 500" className="w-full h-full">
+              {/* World Map SVG with country shapes */}
+              <g>
+                {Object.entries(countryPaths).map(([countryCode, path]) => {
+                  const countryData = healthData.get(countryCode);
+                  const fillColor = countryData 
+                    ? getCountryColor(countryData.healthScore)
+                    : '#e5e7eb';
 
-                      return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          fill={fillColor}
-                          stroke="#ffffff"
-                          strokeWidth={0.5}
-                          style={{
-                            default: {
-                              outline: "none",
-                            },
-                            hover: {
-                              opacity: 0.8,
-                              outline: "none",
-                              cursor: "pointer",
-                            },
-                            pressed: {
-                              outline: "none",
-                            },
-                          }}
-                          onClick={() => {
-                            if (countryData) {
-                              setSelectedCountry(countryData);
-                            }
-                          }}
-                        />
-                      );
-                    })
-                  }
-                </Geographies>
-              </ComposableMap>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-lg font-semibold text-gray-600">No map data available</div>
-              </div>
-            )}
-            
-            {/* Legend overlay */}
-            <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg p-3 shadow-lg border">
-              <div className="text-sm font-semibold text-gray-800 mb-2">Health Score Legend</div>
-              <div className="space-y-1 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-3 bg-green-500 rounded"></div>
-                  <span>High (80-100)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-3 bg-amber-500 rounded"></div>
-                  <span>Medium (60-79)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-3 bg-red-500 rounded"></div>
-                  <span>Low (0-59)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-3 bg-gray-300 rounded"></div>
-                  <span>No Data</span>
-                </div>
-              </div>
-            </div>
+                  return (
+                    <path 
+                      key={countryCode}
+                      d={path}
+                      fill={fillColor}
+                      stroke="#ffffff" 
+                      strokeWidth="1"
+                      className="cursor-pointer transition-all hover:opacity-80"
+                      onClick={() => {
+                        if (countryData) {
+                          setSelectedCountry(countryData);
+                        }
+                      }}
+                    />
+                  );
+                })}
+              </g>
+              
+              {/* Legend */}
+              <g transform="translate(50, 420)">
+                <rect x="0" y="0" width="300" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
+                <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">Health Score Legend</text>
+                
+                <rect x="10" y="25" width="15" height="10" fill="#10b981" />
+                <text x="30" y="34" fontSize="10" fill="#374151">High (80-100)</text>
+                
+                <rect x="100" y="25" width="15" height="10" fill="#f59e0b" />
+                <text x="120" y="34" fontSize="10" fill="#374151">Medium (60-79)</text>
+                
+                <rect x="200" y="25" width="15" height="10" fill="#ef4444" />
+                <text x="220" y="34" fontSize="10" fill="#374151">Low (0-59)</text>
+                
+                <rect x="10" y="40" width="15" height="10" fill="#d1d5db" />
+                <text x="30" y="49" fontSize="10" fill="#374151">No Data</text>
+              </g>
+            </svg>
           </div>
         </CardContent>
       </Card>
