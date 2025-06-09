@@ -58,6 +58,7 @@ function Router() {
       <Route path="/api" component={ApiDocs} />
       <Route path="/support" component={Support} />
       <Route path="/discussions" component={Discussions} />
+      <Route path="/health" component={EnhancedMultiSectorDashboard} />
       <Route path="/outbreaks" component={Outbreaks} />
       <Route path="/pharma" component={Pharma} />
       <Route path="/research" component={ResearchIntel} />
