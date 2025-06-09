@@ -1,0 +1,63 @@
+````markdown
+**Prompt to restore click & color logic and adjust zoom on the authentic world map**  
+
+> You are updating the `<WorldHealthMap>` component in React. The map now renders correct country shapes, but the click handlers, coloring by health score, and hover effects were lost—and the map is slightly too zoomed out. Please implement the following fixes:
+
+1. **Re‐attach coloring & interactivity**  
+   - Import your health‐score hook and color scale at the top:
+     ```ts
+     import { useHealthScores } from "../hooks/useHealthScores";
+     import { getCountryColor } from "../utils/colorScale";
+     ```
+   - Inside your component, after you have the `geographies` array, add a `useEffect` that loops through each `<Geography>` or SVG `<path>` and:
+     - Reads its ISO code: `const iso = geo.properties.ISO_A3`
+     - Gets the score: `const data = scores[iso]`
+     - Sets `fill={getCountryColor(data?.score)}` or `path.setAttribute("fill", …)`
+     - Adds `onMouseEnter`/`onMouseLeave` handlers for the lift effect
+     - Adds `onClick={() => openCountryModal({ iso, ...data })}`
+
+2. **Adjust the projection scale & center**  
+   - If you’re using `geoMercator()`, increase the `.scale()` value by ~20% and recalculate `.translate([ width/2, height/2 ])`.  
+     ```js
+     const projection = geoMercator()
+       .scale((width / 2 / Math.PI) * 1.7)  // bump from 1.3 → 1.7
+       .center([0, 20])                      // raise center latitude if needed
+       .translate([width / 2, height / 2]);
+     ```
+   - Verify that all land masses fill more of the container and are centered vertically.
+
+3. **Ensure `Geographies` passes the updated `geographies` prop**  
+   ```jsx
+   <ComposableMap projection={projection} width={width} height={height}>
+     <Geographies geography={geographies}>
+       {({ geographies }) =>
+         geographies.map(geo => (
+           <Geography
+             key={geo.properties.ISO_A3}
+             geography={geo}
+             fill={getCountryColor(scores[geo.properties.ISO_A3]?.score)}
+             onMouseEnter={() => setHoveredCountry(geo.properties.ISO_A3)}
+             onMouseLeave={() => setHoveredCountry(null)}
+             onClick={() => openCountryModal({ iso: geo.properties.ISO_A3, data: scores[geo.properties.ISO_A3] })}
+             style={{
+               default: { outline: "none" },
+               hover:   { outline: "none", filter: "drop-shadow(0 0 5px rgba(0,0,0,0.3))" },
+               pressed: { outline: "none" },
+             }}
+           />
+         ))
+       }
+     </Geographies>
+   </ComposableMap>
+````
+
+4. **Verify behavior**
+
+   * All \~200 countries should be colored by health score (green → red).
+   * Hovering lightly “lifts” the country via CSS or `filter`.
+   * Clicking any country opens the detail modal.
+   * The map is zoomed in enough that continents occupy \~80% of the container.
+
+---
+
+Paste this prompt into Replit’s AI assistant. It will re‐inject the health coloring, event handlers, and adjust the Mercator projection to zoom and center correctly.\`\`\`

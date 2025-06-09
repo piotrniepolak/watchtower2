@@ -7,6 +7,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
+// Color scale utility for health scores
+const getCountryColor = (healthScore: number | undefined): string => {
+  if (!healthScore) return '#E5E7EB'; // Gray for no data
+  if (healthScore >= 80) return '#10b981'; // Green for high health scores
+  if (healthScore >= 60) return '#f59e0b'; // Amber for medium health scores
+  return '#ef4444'; // Red for low health scores
+};
+
 interface HealthIndicator {
   lifeExpectancy: number;
   infantMortality: number;
@@ -170,6 +178,7 @@ function generateVaccineCoverage(gdpPerCapita: number, healthcareAccess: number)
 
 export default function WorldHealthMapSimple() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
   // Get country color based on health score
@@ -250,10 +259,13 @@ export default function WorldHealthMapSimple() {
         const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
         const world = await response.json();
 
-        // Set up projection and path generator
+        // Set up projection and path generator with improved zoom
+        const width = 960;
+        const height = 500;
         const projection = geoNaturalEarth1()
-          .scale(153)
-          .translate([480, 250]);
+          .scale((width / 2 / Math.PI) * 1.7)  // Increased scale for better zoom
+          .center([0, 20])                      // Raised center latitude
+          .translate([width / 2, height / 2]);
         
         const path = geoPath().projection(projection);
 
@@ -266,7 +278,7 @@ export default function WorldHealthMapSimple() {
         if (countriesGroup) {
           countriesGroup.innerHTML = '';
 
-          // Create country paths
+          // Create country paths with health score coloring and interactivity
           (countries as any).features.forEach((country: any) => {
             const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             pathElement.setAttribute('d', path(country) || '');
