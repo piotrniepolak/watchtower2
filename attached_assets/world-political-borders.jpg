@@ -1,0 +1,149 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404 - Page not found</title><script async src="https://www.googletagmanager.com/gtag/js?id=G-ZDP3BFSX60"></script> <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "G-ZDP3BFSX60");
+</script><script src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3701697624350410" crossorigin="anonymous"></script> <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script> <link rel="preconnect" href="https://a.pub.network/" crossorigin><link rel="preconnect" href="https://b.pub.network/" crossorigin><link rel="preconnect" href="https://c.pub.network/" crossorigin><link rel="preconnect" href="https://d.pub.network/" crossorigin><link rel="preconnect" href="https://c.amazon-adsystem.com" crossorigin><link rel="preconnect" href="https://s.amazon-adsystem.com" crossorigin><link rel="preconnect" href="https://btloader.com/" crossorigin><link rel="preconnect" href="https://api.btloader.com/" crossorigin><link rel="preconnect" href="https://cdn.confiant-integrations.net" crossorigin><!-- Below is a link to a CSS file that accounts for Cumulative Layout Shift --><!-- The file is intended to eliminate the layout shifts that are seen when ads load into the page. If you don't want to use this, simply remove this file --><!-- To find out more about CLS, visit https://web.dev/vitals/ --><link rel="stylesheet" href="https://a.pub.network/worldometers-info/cls.css"><script data-cfasync="false" type="text/javascript">
+    var freestar = freestar || {};
+
+    freestar.queue = freestar.queue || [];
+
+    freestar.config = freestar.config || {};
+    freestar.config.enabled_slots = [];
+
+    freestar.initCallback = function () {
+        freestar.config.enabled_slots.length === 0
+            ? (freestar.initCallbackCalled = false)
+            : freestar.newAdSlots(freestar.config.enabled_slots);
+    };
+</script><script src="https://a.pub.network/worldometers-info/pubfig.min.js" data-cfasync="false" async></script><meta property="og:locale" content="en"><meta property="og:type" content="website"><meta property="og:url" content="http://www.worldometers.info/404/"><meta property="og:site_name" content="Worldometer"><meta property="og:title" content="404 - Page not found"><meta property="og:image" content="https://www.worldometers.info/img/worldometers-fb.jpg"><link rel="shortcut icon" href="/favicon/favicon.ico" type="image/x-icon"><link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png"><link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png"><link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png"><link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png"><link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png"><link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png"><link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png"><link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png"><link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png"><link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png"><link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png"><link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png"><link rel="manifest" href="/favicon/manifest.json"><meta name="msapplication-TileColor" content="#ffffff"><meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png"><meta name="theme-color" content="#ffffff"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"><script type="module" src="/_astro/base-layout.astro_astro_type_script_index_0_lang.Dx6cZNtg.js"></script><!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries --><!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+            <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]--><link rel="stylesheet" href="/_astro/_about_.CoKkjGQQ.css"><script type="module" src="/_astro/page.DpYsPiLh.js"></script></head> <body class="font-body text-base">  <div class="flex flex-col"> <div class="shrink-0" data-astro-transition-persist="astro-yfdmylyz-1"> <header class="border-b"> <nav class="container py-4"> <div class="flex items-center gap-16 justify-between md:justify-start"> <div class="shrink-0"> <a href="/"> <img src="/img/worldometers-logo.gif" width="200" alt="Worldometer Logo" title="Worldometer"> </a> </div> <div class="items-center gap-4 hidden md:flex"> <a class="transition-all duration-200 text-zinc-400 hover:text-zinc-800" href="/population/"><p>Population</p></a> <button type="button" class="inline-flex items-center border focus:outline-none focus:ring-4 rounded-sm cursor-pointer focus:ring-zinc-200 transition-all duration-200 text-zinc-900 bg-white border-zinc-300 hover:bg-zinc-100 px-4 py-1.5 text-sm gap-1" data-dropdown-toggle="header-nav-more" id="header-nav-more-trigger" data-dropdown-placement="bottom" data-dropdown-offset-distance="4">   <p>More</p> <svg class="size-2 text-zinc-800 mt-0.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 10"> <path d="M15.434 1.235A2 2 0 0 0 13.586 0H2.414A2 2 0 0 0 1 3.414L6.586 9a2 2 0 0 0 2.828 0L15 3.414a2 2 0 0 0 .434-2.179Z"></path> </svg>   </button> <div id="header-nav-more" class="z-10 hidden border bg-white divide-y divide-zinc-100 rounded-sm shadow-lg w-44"> <ul class="text-sm" aria-labelledby="header-nav-more-trigger">   <p><li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/co2-emissions/">CO2 emissions</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/coronavirus">Coronavirus</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/geography/countries-of-the-world/">Countries</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/energy/">Energy</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/geography/flags-of-the-world/">Flags</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/food-agriculture/">Food &#x26; Agriculture</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/gdp/gdp-by-country/">GDP by country</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/water/">Water</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/world-map/">World Map</a>  </li></p>  </ul> </div> </div> <div class="md:hidden flex items-center gap-12"> <button type="button" class="inline-flex items-center border focus:outline-none focus:ring-4 rounded-sm cursor-pointer focus:ring-zinc-200 transition-all duration-200 text-zinc-900 bg-white border-zinc-300 hover:bg-zinc-100 p-1.5 text-base" data-v2-collapse-toggle="mobile-menu" aria-controls="mobile-menu" aria-expanded="false">   <svg class="size-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14"> <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"></path> </svg>   </button> <script>
+(function() {
+  function Collapse(targetEl, triggerEl, options) {
+    options = options || {};
+    this._targetEl = targetEl;
+    this._triggerEl = triggerEl;
+    this.onCollapse = options.onCollapse || function() {};
+    this.onExpand = options.onExpand || function() {};
+    this.onToggle = options.onToggle || function() {};
+    if (this._triggerEl.hasAttribute('aria-expanded')) {
+      this._visible = this._triggerEl.getAttribute('aria-expanded') === 'true';
+    } else {
+      this._visible = !targetEl.classList.contains('hidden');
+    }
+    this._init();
+  }
+  Collapse.prototype._init = function() {
+    if (this._triggerEl && this._targetEl) {
+      this._clickHandler = this.toggle.bind(this);
+      this._triggerEl.addEventListener('click', this._clickHandler);
+    }
+  };
+  Collapse.prototype.destroy = function() {
+    if (this._triggerEl) {
+      this._triggerEl.removeEventListener('click', this._clickHandler);
+    }
+  };
+  Collapse.prototype.collapse = function() {
+    if (!this._targetEl) return;
+    this._targetEl.style.overflow = 'hidden';
+    var currentHeight = this._targetEl.scrollHeight;
+    this._targetEl.style.height = currentHeight + 'px';
+    this._targetEl.offsetHeight;
+    this._targetEl.style.transition = 'height 0.35s ease';
+    this._targetEl.style.height = '0px';
+    var self = this;
+    this._targetEl.addEventListener('transitionend', function handler() {
+      self._targetEl.classList.add('hidden');
+      self._targetEl.style.height = '';
+      self._targetEl.style.overflow = '';
+      self._targetEl.removeEventListener('transitionend', handler);
+    });
+    if (this._triggerEl) {
+      this._triggerEl.setAttribute('aria-expanded', 'false');
+    }
+    this._visible = false;
+    this.onCollapse();
+  };
+
+  Collapse.prototype.expand = function() {
+    if (!this._targetEl) return;
+    this._targetEl.classList.remove('hidden');
+    this._targetEl.style.overflow = 'hidden';
+    this._targetEl.style.height = '0px';
+    this._targetEl.offsetHeight;
+    this._targetEl.style.transition = 'height 0.35s ease';
+    var targetHeight = this._targetEl.scrollHeight;
+    this._targetEl.style.height = targetHeight + 'px';
+    var self = this;
+    this._targetEl.addEventListener('transitionend', function handler() {
+      self._targetEl.style.height = '';
+      self._targetEl.style.overflow = '';
+      self._targetEl.style.transition = '';
+      self._targetEl.removeEventListener('transitionend', handler);
+    });
+    if (this._triggerEl) {
+      this._triggerEl.setAttribute('aria-expanded', 'true');
+    }
+    this._visible = true;
+    this.onExpand();
+  };
+
+  Collapse.prototype.toggle = function() {
+    if (this._visible) {
+      this.collapse();
+    } else {
+      this.expand();
+    }
+    this.onToggle();
+  };
+
+  function initCollapses() {
+    var triggers = document.querySelectorAll('[data-v2-collapse-toggle]');
+    Array.prototype.forEach.call(triggers, function(triggerEl) {
+      var targetId = triggerEl.getAttribute('data-v2-collapse-toggle');
+      var targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        new Collapse(targetEl, triggerEl);
+      } else {
+        console.error('Target element with id "' + targetId + '" does not exist.');
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    initCollapses();
+  });
+})();
+</script> </div> </div> <ul class="hidden border-t mt-4 w-full" id="mobile-menu"> <p><li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/population/">Population</a>  </li></p> <p><li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/co2-emissions/">CO2 emissions</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/coronavirus">Coronavirus</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/geography/countries-of-the-world/">Countries</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/energy/">Energy</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/geography/flags-of-the-world/">Flags</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/food-agriculture/">Food &#x26; Agriculture</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/gdp/gdp-by-country/">GDP by country</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/water/">Water</a>  </li>
+<li class="*:block *:px-4 *:py-1 *:hover:bg-zinc-100">  <a class="transition-all duration-200" href="/world-map/">World Map</a>  </li></p> </ul> </nav> </header> </div> <div class="container py-4 grow min-h-[500px]">  <div class="lg:grid grid-cols-6 gap-1"> <div class="col-span-1 hidden lg:block">  </div> <div class="col-span-3"> <div class="prose max-w-none text-sm/5 md:text-base/6 prose-table:text-sm/5 md:prose-table:text-base/6 prose-headings:font-medium prose-headings:mt-10 prose-h1:text-4xl prose-h1:font-medium prose-h1:mb-8 prose-h2:text-3xl prose-h3:text-2xl prose-tr:border-0 prose-thead:border-0 prose-img:mb-0 prose-a:font-inherit prose-li:my-0.5"> <h1 id="404--not-found">404 – Not Found</h1><h2 id="the-requested-webpage-could-not-be-found">The requested webpage could not be found.</h2><p>We might have removed the page from our website, changed its URL, or the URL you typed in or followed from a link is incorrect.</p><p><a class="transition-all duration-200 text-lime-600 hover:text-lime-500 underline" href="/contact/">Contact us</a> for more information or go to <a class="transition-all duration-200 text-lime-600 hover:text-lime-500 underline" href="/">Worldometers home page</a></p> </div>   </div> <div class="col-span-2 hidden lg:block">  </div> </div>  </div> <div class="shrink-0 mt-10" data-astro-transition-persist="astro-zcla4v4q-2"> <!-- Tag ID: worldometers_bottom --><div data-freestar-ad="__336x280 __336x280" id="worldometers_bottom"> <script data-cfasync="false" type="text/javascript">
+        freestar.config.enabled_slots.push({
+            placementName: "worldometers_bottom",
+            slotId: "worldometers_bottom",
+        });
+    </script> </div> <footer class="text-sm"> <nav class="pt-12 pb-8 border-y flex flex-col items-center justify-center gap-4"> <a href="/"> <img src="/img/worldometers-logo.gif" width="140" alt="Worldometer Logo" title="Worldometer"> </a> <div class="flex gap-4 text-zinc-200"> <p><a class="transition-all duration-200 text-lime-600 hover:text-lime-500" href="/about/">about</a>
+|
+<a class="transition-all duration-200 text-lime-600 hover:text-lime-500" href="/faq/">faq</a>
+|
+<a class="transition-all duration-200 text-lime-600 hover:text-lime-500" href="/languages/">languages</a>
+|
+<a class="transition-all duration-200 text-lime-600 hover:text-lime-500" href="/contact/">contact</a></p> </div> </nav> <div class="bg-muted bg-zinc-100 text-zinc-300 py-4 text-center text-xs"> <p>© Copyright Worldometers.info - All rights reserved -
+<a class="transition-all duration-200 text-zinc-400 hover:text-zinc-800" href="/disclaimer/">Disclaimer &#x26; Privacy Policy</a></p> </div> </footer> </div> <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();;(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1AAX8B" prefix="r0" component-url="/_astro/sonner.B8KZifjK.js" component-export="Toaster" renderer-url="/_astro/client.BeiVTAsC.js" props="{&quot;richColors&quot;:[0,true],&quot;position&quot;:[0,&quot;top-right&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;Toaster&quot;,&quot;value&quot;:true}" await-children><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></section><!--astro:end--></astro-island> </div>  </body></html>
