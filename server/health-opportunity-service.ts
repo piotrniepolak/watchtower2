@@ -29,13 +29,20 @@ export class HealthOpportunityService {
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
     try {
       // Calculate authentic WHO health scores for all countries
-      const { countries } = generateAuthenticWHOData();
+      const whoHealthData = generateAuthenticWHOData();
+      
+      // Convert WHO data object to array format for processing
+      const countries = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
+        iso3,
+        name: data.name,
+        indicators: data.indicators
+      }));
       
       // Calculate health scores for each country based on 36 WHO indicators
       const countryHealthScores = countries.map((country: any) => {
         const healthScore = this.calculateWHOHealthScore(
           country.indicators,
-          countries.reduce((acc: any, c: any) => ({...acc, [c.iso3]: c}), {}),
+          whoHealthData,
           Object.keys(country.indicators)
         );
         return {
@@ -46,10 +53,16 @@ export class HealthOpportunityService {
       });
       
       console.log(`Health opportunity service calculated ${countryHealthScores.length} country health scores`);
-      console.log('Sample health scores:', countryHealthScores.slice(0, 5).map(c => `${c.name}: ${c.healthScore.toFixed(1)}`));
+      console.log('Sample health scores:', countryHealthScores.slice(0, 5).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
+
+      // Filter for valid health scores
+      const validHealthScores = countryHealthScores.filter((c: any) => c.healthScore > 0);
+      console.log(`Found ${validHealthScores.length} countries with valid health scores`);
 
       // Only use countries with authentic WHO health data
-      return this.getAuthenticHealthOpportunities(countryHealthScores);
+      const opportunities = this.getAuthenticHealthOpportunities(validHealthScores);
+      console.log(`Generated ${opportunities.length} health opportunities`);
+      return opportunities;
     } catch (error) {
       console.error('Error analyzing health opportunities:', error);
       return [];
