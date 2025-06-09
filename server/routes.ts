@@ -865,13 +865,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         activeConflicts,
         totalConflicts,
-        defenseIndex: defenseIndexValue.toFixed(2),
-        defenseIndexChange: `${defenseIndexChange >= 0 ? '+' : ''}${defenseIndexChange.toFixed(2)}%`,
+        defenseIndex: {
+          value: defenseIndexValue,
+          change: itaChange,
+          changePercent: itaChangePercent
+        },
         marketCap: `$${totalMarketCap.toFixed(1)}B`,
         correlationScore,
-        itaPrice,
-        itaChange,
-        itaChangePercent,
       });
     } catch (error) {
       console.error("Error in metrics endpoint:", error);
