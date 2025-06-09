@@ -909,6 +909,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Health opportunities endpoint
+  app.get('/api/health/opportunities', async (req, res) => {
+    try {
+      const { healthOpportunityService } = await import('./health-opportunity-service');
+      const opportunities = await healthOpportunityService.analyzeHealthOpportunities();
+      res.json(opportunities);
+    } catch (error) {
+      console.error('Error fetching health opportunities:', error);
+      res.status(500).json({ error: 'Failed to fetch health opportunities' });
+    }
+  });
+
   // Lobbying analysis endpoint
   app.get("/api/lobbying/analysis", async (req, res) => {
     console.log("Lobbying analysis endpoint called");
