@@ -37,6 +37,16 @@ export class HealthOpportunityService {
       
       if (countryHealthScores.length > 0) {
         console.log('Sample health scores:', countryHealthScores.slice(0, 3).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
+        
+        // Log specific countries for verification
+        const usaData = countryHealthScores.find((c: any) => c.name === 'United States');
+        const switzerlandData = countryHealthScores.find((c: any) => c.name === 'Switzerland');
+        if (usaData) console.log(`USA health score: ${usaData.healthScore.toFixed(1)}`);
+        if (switzerlandData) console.log(`Switzerland health score: ${switzerlandData.healthScore.toFixed(1)}`);
+        if (!usaData) console.log('USA not found in health data');
+        
+        // Log all country names to verify what's available
+        console.log('Available countries:', countryHealthScores.map((c: any) => c.name).sort().slice(0, 10));
       }
 
       // Filter for valid health scores
