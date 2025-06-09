@@ -35,48 +35,43 @@ export default function MetricsCards() {
       };
     }
 
-    // Calculate total market cap from all tracked companies using Yahoo Finance data
+    // Calculate total market cap from all tracked companies
     let totalMarketCap = 0;
     let totalChangePercent = 0;
     let validStocks = 0;
 
     stocks.forEach(stock => {
-      // Handle both camelCase and snake_case property names for compatibility
-      const marketCap = stock.marketCap || (stock as any).market_cap;
       const changePercent = stock.changePercent !== undefined ? stock.changePercent : (stock as any).change_percent;
-      
-      // Calculate market cap from price and shares outstanding if marketCap is null
+      const marketCap = stock.marketCap || (stock as any).market_cap;
       let marketCapValue = 0;
       
+      // First try to parse existing market cap
       if (marketCap && typeof marketCap === 'string' && marketCap !== 'null' && marketCap !== null) {
-        // Parse market cap from Yahoo Finance (e.g., "125.4B", "45.2M")
         const marketCapStr = marketCap.replace('$', '');
-        
         if (marketCapStr.includes('T')) {
-          marketCapValue = parseFloat(marketCapStr.replace('T', '')) * 1000; // Convert trillions to billions
+          marketCapValue = parseFloat(marketCapStr.replace('T', '')) * 1000;
         } else if (marketCapStr.includes('B')) {
           marketCapValue = parseFloat(marketCapStr.replace('B', ''));
         } else if (marketCapStr.includes('M')) {
-          marketCapValue = parseFloat(marketCapStr.replace('M', '')) / 1000; // Convert millions to billions
+          marketCapValue = parseFloat(marketCapStr.replace('M', '')) / 1000;
         }
-      } else if (stock.price && stock.price > 0) {
-        // Estimate market cap based on typical shares outstanding for each sector
+      }
+      
+      // If no market cap available, estimate based on price and realistic market values
+      if (marketCapValue === 0 && stock.price && stock.price > 0) {
         const price = stock.price;
-        let estimatedShares = 0;
-        
-        // Use sector-based estimates for shares outstanding (in millions)
         const sector = (stock as any).sector;
-        if (sector === 'Defense') {
-          estimatedShares = price > 200 ? 250 : 500; // Large defense companies typically have 250-500M shares
-        } else if (sector === 'Healthcare') {
-          estimatedShares = price > 100 ? 300 : 600; // Healthcare companies vary widely
-        } else if (sector === 'Energy') {
-          estimatedShares = price > 50 ? 400 : 800; // Energy companies often have more shares
-        } else {
-          estimatedShares = 500; // Default estimate
-        }
         
-        marketCapValue = (price * estimatedShares) / 1000; // Convert to billions
+        // Use realistic market cap estimates for each sector
+        if (sector === 'Defense') {
+          marketCapValue = price * 0.3; // Defense companies typically trade at reasonable multiples
+        } else if (sector === 'Healthcare') {
+          marketCapValue = price * 0.4; // Healthcare can have higher valuations
+        } else if (sector === 'Energy') {
+          marketCapValue = price * 0.25; // Energy companies often have lower multiples
+        } else {
+          marketCapValue = price * 0.3; // Default reasonable estimate
+        }
       }
       
       if (marketCapValue > 0) {
