@@ -42,7 +42,7 @@ export default function ActiveConflictsList() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {activeConflicts.map((conflict) => (
             <div
               key={conflict.id}
