@@ -75,17 +75,14 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <ActiveConflictsList />
       </div>
 
-      {/* Additional Analysis Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-6">
-          <ConflictSeverityMap />
-        </div>
+      {/* News Section */}
+      <div className="w-full mb-8">
+        <DailyNews />
+      </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
-          <DailyNews />
-        </div>
+      {/* Additional Analysis Grid */}
+      <div className="grid grid-cols-1 gap-6">
+        <ConflictSeverityMap />
       </div>
 
       {/* Bottom Full Width Widgets */}
