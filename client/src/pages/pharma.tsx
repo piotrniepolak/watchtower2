@@ -152,13 +152,18 @@ export default function Pharma() {
             </div>
           </div>
 
-          <Tabs defaultValue="stocks" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="world-map" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="world-map">Global Health Map</TabsTrigger>
               <TabsTrigger value="stocks">Stock Performance</TabsTrigger>
               <TabsTrigger value="pipeline">R&D Pipeline</TabsTrigger>
               <TabsTrigger value="analysis">Market Analysis</TabsTrigger>
               <TabsTrigger value="correlations">Event Correlations</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="world-map">
+              <WorldHealthMap />
+            </TabsContent>
 
             <TabsContent value="stocks">
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

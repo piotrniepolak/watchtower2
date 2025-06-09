@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { scaleSequential } from "d3-scale";
 import { interpolateRdYlGn } from "d3-scale-chromatic";
-import { useSpring, animated } from "react-spring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -67,9 +66,14 @@ function useWorldBankData() {
         'https://api.worldbank.org/v2/country/all/indicator/NY.GDP.PCAP.CD?format=json&date=2022&per_page=300'
       );
 
-      const [lifeExpectancyData] = await lifeExpectancyResponse.json();
-      const [infantMortalityData] = await infantMortalityResponse.json();
-      const [gdpData] = await gdpResponse.json();
+      const lifeExpectancyJson = await lifeExpectancyResponse.json();
+      const infantMortalityJson = await infantMortalityResponse.json();
+      const gdpJson = await gdpResponse.json();
+
+      // World Bank API returns [metadata, data] - we need the data array
+      const lifeExpectancyData = Array.isArray(lifeExpectancyJson) ? lifeExpectancyJson[1] : lifeExpectancyJson;
+      const infantMortalityData = Array.isArray(infantMortalityJson) ? infantMortalityJson[1] : infantMortalityJson;
+      const gdpData = Array.isArray(gdpJson) ? gdpJson[1] : gdpJson;
 
       return {
         lifeExpectancy: lifeExpectancyData,
@@ -237,11 +241,8 @@ export default function WorldHealthMap() {
     }
   };
 
-  // Animated map container
-  const mapAnimation = useSpring({
-    opacity: healthData.size > 0 ? 1 : 0.7,
-    transform: healthData.size > 0 ? 'scale(1)' : 'scale(0.98)',
-  });
+  // Map opacity based on data loading
+  const mapOpacity = healthData.size > 0 ? 1 : 0.7;
 
   if (worldBankData.isLoading || whoData.isLoading) {
     return (
@@ -290,7 +291,7 @@ export default function WorldHealthMap() {
       {/* Interactive World Map */}
       <Card className="w-full">
         <CardContent className="p-0">
-          <animated.div style={mapAnimation} className="w-full h-96 md:h-[500px]">
+          <div style={{ opacity: mapOpacity }} className="w-full h-96 md:h-[500px] transition-opacity duration-300">
             <ComposableMap
               projection="geoNaturalEarth1"
               projectionConfig={{
@@ -336,7 +337,7 @@ export default function WorldHealthMap() {
                 }
               </Geographies>
             </ComposableMap>
-          </animated.div>
+          </div>
         </CardContent>
       </Card>
 
