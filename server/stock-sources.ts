@@ -40,64 +40,46 @@ export class StockDataManager {
   }
 
   async fetchDefenseIndex(): Promise<{ price: number; change: number; changePercent: number } | null> {
-    // Try multiple S&P Aerospace & Defense index symbols
-    const indexSymbols = [
-      "^SP500-2010", // S&P Aerospace & Defense Index
-      "ITA",         // iShares U.S. Aerospace & Defense ETF
-      "PPA",         // Invesco Aerospace & Defense ETF
-      "XAR"          // SPDR S&P Aerospace & Defense ETF
-    ];
-    
-    for (const indexSymbol of indexSymbols) {
-      for (const source of this.sources) {
-        try {
-          const data = await source.fetchPrice(indexSymbol);
-          if (data) {
-            console.log(`Successfully fetched Defense Index ${indexSymbol} from ${source.name}`);
-            return {
-              price: data.price,
-              change: data.change,
-              changePercent: data.changePercent
-            };
-          }
-        } catch (error) {
-          console.log(`${source.name} failed for ${indexSymbol}:`, error instanceof Error ? error.message : 'Unknown error');
-          continue;
-        }
-      }
-    }
-    
-    // Calculate from major defense stocks weighted by market cap
-    console.log("Defense Index unavailable, calculating weighted index from major defense stocks");
-    const majorSymbols = ["LMT", "RTX", "NOC", "GD", "BA"];
+    // Calculate Defense Index from major defense stocks weighted by market cap
+    console.log("Calculating Defense Index from major defense stocks");
+    const majorSymbols = ["LMT", "RTX", "NOC", "GD", "BA", "HII", "KTOS", "LDOS", "LHX", "AVAV"];
     const stockData = [];
     
     for (const symbol of majorSymbols) {
       const data = await this.fetchStockPrice(symbol);
-      if (data) stockData.push(data);
+      if (data) stockData.push({ symbol, ...data });
     }
     
     if (stockData.length > 0) {
-      // Weight by typical market caps (approximate)
-      const weights = { LMT: 0.25, RTX: 0.22, NOC: 0.18, GD: 0.15, BA: 0.20 };
-      let weightedPrice = 0;
-      let weightedChange = 0;
-      let weightedChangePercent = 0;
+      // Weight by market cap approximation based on typical defense sector weights
+      const weights = {
+        'LMT': 0.22, 'RTX': 0.20, 'NOC': 0.16, 'GD': 0.14, 'BA': 0.12,
+        'HII': 0.06, 'KTOS': 0.03, 'LDOS': 0.03, 'LHX': 0.02, 'AVAV': 0.02
+      };
+      
+      let totalValue = 0;
+      let totalChange = 0;
       let totalWeight = 0;
       
-      stockData.forEach(stock => {
-        const weight = weights[stock.symbol as keyof typeof weights] || 0.1;
-        weightedPrice += stock.price * weight;
-        weightedChange += stock.change * weight;
-        weightedChangePercent += stock.changePercent * weight;
+      for (const stock of stockData) {
+        const weight = weights[stock.symbol as keyof typeof weights] || 0.01;
+        totalValue += stock.price * weight;
+        totalChange += stock.changePercent * weight;
         totalWeight += weight;
-      });
+      }
       
-      return {
-        price: weightedPrice / totalWeight,
-        change: weightedChange / totalWeight,
-        changePercent: weightedChangePercent / totalWeight
-      };
+      if (totalWeight > 0) {
+        const indexValue = totalValue / totalWeight;
+        const indexChangePercent = totalChange / totalWeight;
+        const indexChange = (indexValue * indexChangePercent) / 100;
+        
+        console.log(`Calculated Defense Index: $${indexValue.toFixed(2)} (${indexChangePercent >= 0 ? '+' : ''}${indexChangePercent.toFixed(2)}%)`);
+        return {
+          price: indexValue,
+          change: indexChange,
+          changePercent: indexChangePercent
+        };
+      }
     }
     
     return null;
