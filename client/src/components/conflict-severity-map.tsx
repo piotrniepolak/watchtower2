@@ -65,6 +65,24 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
     }
   };
 
+  // Get territory color based on conflicts in that country
+  const getTerritoryColor = (countryCode: string): string => {
+    const countryConflicts = activeConflicts.filter(conflict => 
+      getCountryCode(conflict.name) === countryCode
+    );
+    
+    if (countryConflicts.length === 0) return '#e2e8f0'; // Default light grey
+    
+    // Find highest severity
+    const severityOrder = ['critical', 'high', 'medium', 'low'];
+    for (const severity of severityOrder) {
+      if (countryConflicts.some(c => c.severity.toLowerCase() === severity)) {
+        return getSeverityColor(severity) + '40'; // Add transparency
+      }
+    }
+    return '#e2e8f0';
+  };
+
   const getSeveritySize = (severity: string) => {
     switch (severity.toLowerCase()) {
       case 'critical': return 16;
@@ -98,13 +116,218 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
             {/* Map Section */}
             <div className="lg:col-span-2">
               <div className="relative bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-inner" style={{ aspectRatio: '2/1' }}>
-                <img 
-                  src={worldMapPath} 
-                  alt="World Map" 
-                  className="w-full h-full object-cover opacity-90"
-                />
-                {/* Map overlay for better contrast */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-slate-100/30 pointer-events-none"></div>
+                {/* SVG World Map with Country Borders and Territory Coloring */}
+                <svg 
+                  viewBox="0 0 1000 500" 
+                  className="w-full h-full"
+                  style={{ backgroundColor: '#f8fafc' }}
+                >
+                  {/* Country territories with conflict-based coloring and borders */}
+                  <g>
+                    {/* Ukraine */}
+                    <path 
+                      d="M480,180 L520,170 L540,180 L550,200 L530,220 L500,215 L480,200 Z"
+                      fill={getTerritoryColor('UA')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'UA');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Russia */}
+                    <path 
+                      d="M520,120 L650,110 L780,120 L800,140 L780,180 L650,190 L520,170 Z"
+                      fill={getTerritoryColor('RU')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* Israel/Palestine */}
+                    <path 
+                      d="M515,240 L525,235 L530,245 L525,255 L515,250 Z"
+                      fill={getTerritoryColor('IL')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'IL');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* China */}
+                    <path 
+                      d="M650,200 L750,190 L780,210 L770,250 L720,260 L680,240 L650,220 Z"
+                      fill={getTerritoryColor('CN')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'CN');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Mali */}
+                    <path 
+                      d="M420,280 L460,275 L470,295 L455,310 L430,305 L420,290 Z"
+                      fill={getTerritoryColor('ML')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'ML');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Yemen */}
+                    <path 
+                      d="M540,280 L565,275 L570,290 L560,300 L545,295 Z"
+                      fill={getTerritoryColor('YE')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'YE');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Syria */}
+                    <path 
+                      d="M520,220 L540,215 L545,230 L535,240 L520,235 Z"
+                      fill={getTerritoryColor('SY')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'SY');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Afghanistan */}
+                    <path 
+                      d="M620,230 L650,225 L660,240 L645,250 L625,245 Z"
+                      fill={getTerritoryColor('AF')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'AF');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Ethiopia */}
+                    <path 
+                      d="M550,300 L580,295 L590,315 L575,325 L555,320 Z"
+                      fill={getTerritoryColor('ET')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'ET');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Myanmar */}
+                    <path 
+                      d="M720,270 L740,265 L750,280 L740,290 L725,285 Z"
+                      fill={getTerritoryColor('MM')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'MM');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Sudan */}
+                    <path 
+                      d="M500,300 L530,295 L540,315 L525,325 L505,320 Z"
+                      fill={getTerritoryColor('SD')}
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80 cursor-pointer"
+                      onClick={() => {
+                        const conflict = activeConflicts.find(c => getCountryCode(c.name) === 'SD');
+                        if (conflict) setSelectedConflict(conflict);
+                      }}
+                    />
+                    
+                    {/* Other major countries with default coloring */}
+                    {/* United States */}
+                    <path 
+                      d="M120,180 L280,160 L320,180 L300,220 L250,240 L180,230 L120,200 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* Canada */}
+                    <path 
+                      d="M120,100 L320,80 L350,120 L320,140 L280,135 L120,150 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* Brazil */}
+                    <path 
+                      d="M220,280 L320,270 L340,320 L320,370 L280,380 L240,360 L220,320 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* European countries */}
+                    <path 
+                      d="M400,160 L480,150 L500,170 L480,190 L450,195 L400,180 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* Africa */}
+                    <path 
+                      d="M420,240 L520,230 L560,270 L540,350 L480,370 L440,340 L420,280 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* India */}
+                    <path 
+                      d="M620,250 L680,245 L690,280 L675,300 L640,295 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                    
+                    {/* Australia */}
+                    <path 
+                      d="M700,380 L780,370 L800,390 L780,410 L720,420 L700,400 Z"
+                      fill="#e2e8f0"
+                      stroke="#475569"
+                      strokeWidth="1.5"
+                      className="hover:opacity-80"
+                    />
+                  </g>
+                </svg>
                 
                 {/* Conflict Markers */}
                 {activeConflicts.map((conflict) => {
