@@ -15,6 +15,7 @@ import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
+import { healthOpportunityService } from "./health-opportunity-service";
 
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
@@ -1830,6 +1831,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   } else {
     console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
   }
+
+  // Health opportunity analysis endpoint
+  app.get('/api/health/opportunities', async (req, res) => {
+    try {
+      const opportunities = await healthOpportunityService.analyzeHealthOpportunities();
+      res.json(opportunities);
+    } catch (error) {
+      console.error('Error fetching health opportunities:', error);
+      res.status(500).json({ error: 'Failed to analyze health opportunities' });
+    }
+  });
 
   // AI Analysis endpoints
   app.get('/api/analysis/predictions', async (req, res) => {
