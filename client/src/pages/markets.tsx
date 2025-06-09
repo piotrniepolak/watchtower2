@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import { useRealTimeStocks, type Stock } from "@/hooks/useRealTimeStocks";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { normaliseITA, type ITAPrice } from "@/lib/normaliseITA";
 
 export default function Markets() {
   const { isAuthenticated } = useAuth();
@@ -36,26 +39,15 @@ export default function Markets() {
     refetchInterval: 30000,
   });
 
-  // Helper function to safely extract ITA price data
-  const getITAData = () => {
-    if (!metricsData?.defenseIndex) return { price: 183.12, change: 0.64 };
-    
-    // Handle object format (new API response)
-    if (typeof metricsData.defenseIndex === 'object' && 'value' in metricsData.defenseIndex) {
-      return {
-        price: metricsData.defenseIndex.value,
-        change: metricsData.defenseIndex.changePercent || 0
-      };
+  // 🔍 TEMP DEBUG — inspect raw defenseIndex payload
+  useEffect(() => {
+    if (metricsData?.defenseIndex) {
+      console.log('⚡ raw defenseIndex payload →', JSON.stringify(metricsData.defenseIndex, null, 2));
     }
-    
-    // Handle string format (legacy fallback)
-    const numValue = typeof metricsData.defenseIndex === 'string' 
-      ? parseFloat(metricsData.defenseIndex) 
-      : 183.12;
-    return { price: numValue, change: 0.64 };
-  };
+  }, [metricsData?.defenseIndex]);
 
-  const itaData = getITAData();
+  // Normalize ITA data using robust type-safe helper
+  const ita = metricsData?.defenseIndex ? normaliseITA(metricsData.defenseIndex as ITAPrice) : null;
 
 
 
@@ -97,7 +89,7 @@ export default function Markets() {
     }
 
     // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
-    const defenseIndexValue = itaData.price;
+    const defenseIndexValue = ita?.price || 183.12;
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;

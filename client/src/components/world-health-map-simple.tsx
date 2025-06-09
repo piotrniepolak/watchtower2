@@ -266,9 +266,29 @@ export default function WorldHealthMapSimple() {
       
       const infantMort = infantMortalityItem?.value ? parseFloat(infantMortalityItem.value) : 50;
       
-      // Use accurate GDP data from our curated dataset
+      // Use accurate GDP data from our curated dataset with validation
       const accurateGDPData = getAccurateGDPData();
-      const gdp = gdpItem?.value ? parseFloat(gdpItem.value) : (accurateGDPData[countryCode] || 1000);
+      let gdp = gdpItem?.value ? parseFloat(gdpItem.value) : 1000;
+      
+      // Validate and correct GDP data - if we have authoritative data, use it
+      if (accurateGDPData[countryCode]) {
+        const authoritativeGDP = accurateGDPData[countryCode];
+        const apiGDP = gdp;
+        
+        // For low-income countries, if API returns suspiciously high values, use our accurate data
+        if (authoritativeGDP < 5000 && apiGDP > 10000) {
+          console.log(`⚠️ Correcting suspicious GDP for ${countryCode}: API=${apiGDP} → Accurate=${authoritativeGDP}`);
+          gdp = authoritativeGDP;
+        }
+        // For any country, if we have verified data and API data differs significantly, use verified
+        else if (Math.abs(apiGDP - authoritativeGDP) / authoritativeGDP > 0.5) {
+          console.log(`📊 Using verified GDP for ${countryCode}: API=${apiGDP} → Verified=${authoritativeGDP}`);
+          gdp = authoritativeGDP;
+        }
+      } else if (!gdpItem?.value) {
+        // No API data and no authoritative data, use default
+        gdp = 1000;
+      }
       const outbreakCount = outbreaks[countryCode] || 0;
 
       const healthcareAccess = generateHealthcareAccess(gdp, lifeExp);

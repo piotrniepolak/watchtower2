@@ -1,0 +1,97 @@
+You are acting as a senior React + TypeScript engineer with strong debugging instincts. The Markets page still shows “$[object Object]” for the iShares Aerospace & Defense ETF (ticker ITA) even after adding a helper and tightening the types. Assume the backend is confirmed to return the correct JSON.
+
+1 · Reproduce & inspect the raw payload
+ts
+Copy
+Edit
+// 🔍 TEMP DEBUG — remove after fix
+useEffect(() => {
+  console.log('⚡ raw defenseIndex payload →', JSON.stringify(defenseIndex, null, 2));
+}, [defenseIndex]);
+Verify whether defenseIndex sometimes arrives as
+
+ts
+Copy
+Edit
+{ price: number; change: number }    // ✅ current spec
+or as
+
+ts
+Copy
+Edit
+{ ITA: { price: number; change: number } } // ❌ legacy wrapper
+or even as a plain number/string. Copy–paste the console output into the chat if needed.
+
+2 · Strengthen the type system
+Create an explicit type-guard so the compiler (and runtime) never confuses the shapes:
+
+ts
+Copy
+Edit
+type ITAPrice =
+  | number
+  | string
+  | { price: number; change: number }
+  | { ITA: { price: number; change: number } }; // legacy
+
+function normaliseITA(value: ITAPrice): { price: number; change: number } | null {
+  if (typeof value === 'number') return { price: value, change: 0 };
+  if (typeof value === 'string' && !isNaN(Number(value)))
+    return { price: Number(value), change: 0 };
+
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'price' in value &&
+    'change' in value
+  )
+    return { price: value.price as number, change: value.change as number };
+
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'ITA' in value &&
+    typeof (value as any).ITA === 'object'
+  )
+    return {
+      price: (value as any).ITA.price as number,
+      change: (value as any).ITA.change as number,
+    };
+
+  return null; // unrecognised shape
+}
+3 · Wire the normaliser into the component
+tsx
+Copy
+Edit
+const ita = normaliseITA(defenseIndex);
+
+return (
+  <MarketCard
+    label="iShares Aerospace & Defense ETF (ITA)"
+    price={ita?.price ?? NaN}
+    change={ita?.change ?? NaN}
+  />
+);
+4 · Update card rendering logic
+Inside MarketCard (or equivalent), render nothing if the props are NaN, or show a spinner.
+
+tsx
+Copy
+Edit
+if (Number.isNaN(price) || Number.isNaN(change)) {
+  return <Skeleton className="h-8 w-24" />;
+}
+5 · Add unit and runtime safety nets
+Jest: feed the component every union-member shape and assert correct rendering (never “[object Object]”).
+
+Runtime: if normaliseITA returns null, log an error with console.error('⚠️ Unrecognised ITA payload', defenseIndex).
+
+6 · Acceptance criteria
+The ITA card always shows e.g. “$183.12 (+0.64 %)” or a skeleton while loading — never “[object Object]”.
+
+No TypeScript any or unknown escapes the helper.
+
+Tests pass and console logs are clean.
+
+Return only the modified client/src/pages/markets.tsx, the new helper (e.g., src/utils/normaliseITA.ts), and updated tests. Include concise inline comments that explain each critical change.
