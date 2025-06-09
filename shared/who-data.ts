@@ -124,7 +124,30 @@ function generateComprehensiveHealthData() {
     { iso3: 'AUT', name: 'Austria', lifeExp: 81.6, infantMort: 2.8, uhcIndex: 85 },
     { iso3: 'BEL', name: 'Belgium', lifeExp: 82.0, infantMort: 3.4, uhcIndex: 84 },
     { iso3: 'LUX', name: 'Luxembourg', lifeExp: 82.7, infantMort: 1.7, uhcIndex: 85 },
-    { iso3: 'ISL', name: 'Iceland', lifeExp: 83.0, infantMort: 1.6, uhcIndex: 87 }
+    { iso3: 'ISL', name: 'Iceland', lifeExp: 83.0, infantMort: 1.6, uhcIndex: 87 },
+    
+    // Gulf States and MENA region
+    { iso3: 'ARE', name: 'United Arab Emirates', lifeExp: 78.7, infantMort: 6.7, uhcIndex: 78 },
+    { iso3: 'KWT', name: 'Kuwait', lifeExp: 75.5, infantMort: 7.4, uhcIndex: 75 },
+    { iso3: 'SAU', name: 'Saudi Arabia', lifeExp: 75.1, infantMort: 6.8, uhcIndex: 73 },
+    { iso3: 'QAT', name: 'Qatar', lifeExp: 80.2, infantMort: 5.2, uhcIndex: 79 },
+    { iso3: 'BHR', name: 'Bahrain', lifeExp: 77.3, infantMort: 7.8, uhcIndex: 76 },
+    { iso3: 'OMN', name: 'Oman', lifeExp: 77.9, infantMort: 9.7, uhcIndex: 72 },
+    
+    // Latin America
+    { iso3: 'URY', name: 'Uruguay', lifeExp: 78.3, infantMort: 7.1, uhcIndex: 78 },
+    { iso3: 'PAN', name: 'Panama', lifeExp: 78.5, infantMort: 13.4, uhcIndex: 74 },
+    { iso3: 'CRI', name: 'Costa Rica', lifeExp: 80.3, infantMort: 8.2, uhcIndex: 77 },
+    { iso3: 'CHL', name: 'Chile', lifeExp: 80.2, infantMort: 6.6, uhcIndex: 81 },
+    
+    // Eastern Europe
+    { iso3: 'POL', name: 'Poland', lifeExp: 78.7, infantMort: 4.4, uhcIndex: 79 },
+    { iso3: 'ROU', name: 'Romania', lifeExp: 76.1, infantMort: 5.6, uhcIndex: 76 },
+    { iso3: 'HRV', name: 'Croatia', lifeExp: 78.3, infantMort: 4.7, uhcIndex: 78 },
+    { iso3: 'SVN', name: 'Slovenia', lifeExp: 81.3, infantMort: 1.9, uhcIndex: 83 },
+    { iso3: 'EST', name: 'Estonia', lifeExp: 78.8, infantMort: 2.7, uhcIndex: 81 },
+    { iso3: 'LVA', name: 'Latvia', lifeExp: 75.3, infantMort: 3.8, uhcIndex: 78 },
+    { iso3: 'LTU', name: 'Lithuania', lifeExp: 75.9, infantMort: 3.6, uhcIndex: 80 }
   ];
 
   // Generate comprehensive indicators for each country

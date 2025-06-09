@@ -254,7 +254,8 @@ Format response as JSON with country data including name, iso3, gdpPerCapita, op
 
     const result = opportunities.map(country => {
       const healthData = healthScores.find(h => h.iso3 === country.iso3);
-      const healthScore = healthData?.healthScore || 65;
+      const healthScore = healthData?.healthScore || 0; // Use 0 if no data, not 65
+      console.log(`${country.name} (${country.iso3}): Map health score = ${healthScore.toFixed(1)}, GDP = $${country.gdpPerCapita}`);
       return {
         ...country,
         healthScore,
