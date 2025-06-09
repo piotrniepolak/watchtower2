@@ -8,6 +8,9 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { conflictTimelineService } from "./conflict-timeline-service";
+import { healthService } from "./health-service";
+import { energyService } from "./energy-service";
+import { getSector, getActiveSectors } from "@shared/sectors";
 import session from "express-session";
 
 // Real-time notification generation based on authentic data
@@ -902,6 +905,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating chat message:", error);
       res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
+  // ====================================
+  // MULTI-SECTOR API ENDPOINTS
+  // ====================================
+
+  // Get available sectors
+  app.get('/api/sectors', async (req, res) => {
+    try {
+      const sectors = getActiveSectors();
+      res.json(sectors);
+    } catch (error) {
+      console.error('Error fetching sectors:', error);
+      res.status(500).json({ error: 'Failed to fetch sectors' });
+    }
+  });
+
+  // Get sector-specific stocks
+  app.get('/api/sectors/:sectorKey/stocks', async (req, res) => {
+    try {
+      const sector = getSector(req.params.sectorKey);
+      if (!sector) {
+        return res.status(404).json({ error: 'Sector not found' });
+      }
+
+      const stocks = await storage.getStocks();
+      const sectorStocks = stocks.filter(stock => 
+        sector.dataSources.stocks.tickers.includes(stock.symbol)
+      );
+      
+      res.json(sectorStocks);
+    } catch (error) {
+      console.error('Error fetching sector stocks:', error);
+      res.status(500).json({ error: 'Failed to fetch sector stocks' });
+    }
+  });
+
+  // Health sector endpoints
+  app.get('/api/health/events', async (req, res) => {
+    try {
+      const events = await healthService.fetchHealthEvents();
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching health events:', error);
+      res.status(500).json({ error: 'Failed to fetch health events' });
+    }
+  });
+
+  app.get('/api/health/correlations', async (req, res) => {
+    try {
+      const correlations = await healthService.calculateHealthStockCorrelations();
+      res.json(correlations);
+    } catch (error) {
+      console.error('Error calculating health correlations:', error);
+      res.status(500).json({ error: 'Failed to calculate health correlations' });
+    }
+  });
+
+  // Energy sector endpoints
+  app.get('/api/energy/regulations', async (req, res) => {
+    try {
+      const regulations = await energyService.fetchEnergyRegulations();
+      res.json(regulations);
+    } catch (error) {
+      console.error('Error fetching energy regulations:', error);
+      res.status(500).json({ error: 'Failed to fetch energy regulations' });
+    }
+  });
+
+  app.get('/api/energy/correlations', async (req, res) => {
+    try {
+      const correlations = await energyService.calculateEnergyStockCorrelations();
+      res.json(correlations);
+    } catch (error) {
+      console.error('Error calculating energy correlations:', error);
+      res.status(500).json({ error: 'Failed to calculate energy correlations' });
+    }
+  });
+
+  // Generic sector metrics endpoint
+  app.get('/api/sectors/:sectorKey/metrics', async (req, res) => {
+    try {
+      const sector = getSector(req.params.sectorKey);
+      if (!sector) {
+        return res.status(404).json({ error: 'Sector not found' });
+      }
+
+      const stocks = await storage.getStocks();
+      const sectorStocks = stocks.filter(stock => 
+        sector.dataSources.stocks.tickers.includes(stock.symbol)
+      );
+
+      const avgChange = sectorStocks.length > 0 ? 
+        sectorStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sectorStocks.length : 0;
+
+      let sectorSpecificMetrics = {};
+
+      if (req.params.sectorKey === 'defense') {
+        const conflicts = await storage.getConflicts();
+        sectorSpecificMetrics = {
+          activeConflicts: conflicts.filter(c => c.status === 'Active').length,
+          totalConflicts: conflicts.length
+        };
+      } else if (req.params.sectorKey === 'health') {
+        const healthEvents = await healthService.fetchHealthEvents();
+        sectorSpecificMetrics = {
+          activeOutbreaks: healthEvents.filter(e => e.status === 'active').length,
+          totalEvents: healthEvents.length
+        };
+      } else if (req.params.sectorKey === 'energy') {
+        const regulations = await energyService.fetchEnergyRegulations();
+        sectorSpecificMetrics = {
+          activeRegulations: regulations.filter(r => r.status === 'active').length,
+          totalRegulations: regulations.length
+        };
+      }
+
+      res.json({
+        sector: sector.label,
+        stockCount: sectorStocks.length,
+        avgStockChange: Number(avgChange.toFixed(2)),
+        ...sectorSpecificMetrics,
+        lastUpdated: new Date()
+      });
+    } catch (error) {
+      console.error('Error fetching sector metrics:', error);
+      res.status(500).json({ error: 'Failed to fetch sector metrics' });
     }
   });
 
