@@ -32,12 +32,20 @@ export default function Dashboard() {
           <MetricsCards />
 
           {/* Active Conflicts Section - Priority Display */}
-          <div className="w-full">
+          <div className="w-full mb-8">
             <ActiveConflictsList />
           </div>
 
-          {/* Market Performance Section */}
-          <div className="w-full">
+          {/* Defense Market Performance Section */}
+          <div className="w-full mb-8">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                Defense Market Performance
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Real-time performance of defense and aerospace stocks
+              </p>
+            </div>
             <EnhancedChartsSection />
           </div>
 

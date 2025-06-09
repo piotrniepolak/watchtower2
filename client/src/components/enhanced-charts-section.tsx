@@ -11,31 +11,46 @@ export default function EnhancedChartsSection() {
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
   
-  // Get top performing and worst performing stocks
-  const getStockPerformance = () => {
+  // Filter to only defense stocks for ConflictWatch
+  const getDefenseStockPerformance = () => {
     if (!stocks || !Array.isArray(stocks)) return { topPerformers: [], worstPerformers: [] };
     
-    const sorted = [...stocks].sort((a, b) => b.changePercent - a.changePercent);
+    // Filter for defense-related stocks only
+    const defenseStocks = stocks.filter(stock => 
+      stock.sector === 'Defense' || 
+      stock.hasDefense === true ||
+      ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'LDOS', 'KTOS', 'AVAV', 'HII', 'ITA'].includes(stock.symbol)
+    );
+    
+    const sorted = [...defenseStocks].sort((a, b) => b.changePercent - a.changePercent);
     return {
       topPerformers: sorted.slice(0, 3),
       worstPerformers: sorted.slice(-3).reverse()
     };
   };
 
-  const { topPerformers, worstPerformers } = getStockPerformance();
+  const { topPerformers, worstPerformers } = getDefenseStockPerformance();
 
-  // Calculate market metrics
-  const calculateMarketMetrics = () => {
+  // Calculate defense market metrics only
+  const calculateDefenseMarketMetrics = () => {
     if (!stocks || !Array.isArray(stocks)) return { totalGains: 0, totalLosses: 0, avgChange: 0 };
     
-    const gains = stocks.filter(s => s.changePercent > 0).length;
-    const losses = stocks.filter(s => s.changePercent < 0).length;
-    const avgChange = stocks.reduce((sum, s) => sum + s.changePercent, 0) / stocks.length;
+    // Filter for defense-related stocks only
+    const defenseStocks = stocks.filter(stock => 
+      stock.sector === 'Defense' || 
+      stock.hasDefense === true ||
+      ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'LDOS', 'KTOS', 'AVAV', 'HII', 'ITA'].includes(stock.symbol)
+    );
+    
+    const gains = defenseStocks.filter(s => s.changePercent > 0).length;
+    const losses = defenseStocks.filter(s => s.changePercent < 0).length;
+    const avgChange = defenseStocks.length > 0 ? 
+      defenseStocks.reduce((sum, s) => sum + s.changePercent, 0) / defenseStocks.length : 0;
     
     return { totalGains: gains, totalLosses: losses, avgChange };
   };
 
-  const marketMetrics = calculateMarketMetrics();
+  const marketMetrics = calculateDefenseMarketMetrics();
 
   if (stocksLoading) {
     return (
@@ -96,7 +111,7 @@ export default function EnhancedChartsSection() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {topPerformers.map((stock, index) => (
+              {topPerformers.map((stock: Stock, index: number) => (
                 <div key={stock.symbol} className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded-lg min-w-0">
                   <div className="flex items-center space-x-2 min-w-0 flex-1">
                     <span className="text-xs font-bold text-green-700 dark:text-green-400 bg-green-200 dark:bg-green-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -129,7 +144,7 @@ export default function EnhancedChartsSection() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {worstPerformers.map((stock, index) => (
+              {worstPerformers.map((stock: Stock, index: number) => (
                 <div key={stock.symbol} className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/20 rounded-lg min-w-0">
                   <div className="flex items-center space-x-2 min-w-0 flex-1">
                     <span className="text-xs font-bold text-red-700 dark:text-red-400 bg-red-200 dark:bg-red-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
