@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import Navigation from "@/components/navigation";
+import { useState } from "react";
+import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import CompanyLogo from "@/components/company-logo";
 import type { Stock } from "@shared/schema";
 
 export default function Reports() {
+  const [selectedSector, setSelectedSector] = useState<'defense' | 'healthcare' | 'energy'>('defense');
+  
   const { data: stocks } = useQuery({
     queryKey: ["/api/stocks"],
   });
@@ -259,7 +262,10 @@ export default function Reports() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navigation />
+      <MultiSectorNavigation 
+        currentSector={selectedSector}
+        onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+      />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
