@@ -1,0 +1,31 @@
+Let’s walk through the usual suspects and pinpoint where the render might be breaking down:
+
+Component Registration & Import
+Verify you actually imported and placed <WorldHealthMap> in your PharmaWatch dashboard JSX. A typo in the import path or component name will leave an empty space.
+Check your Replit console (or browser dev tools) for any “module not found” or “undefined component” errors.
+Data Fetching Errors
+Open your Network tab and confirm your health‐metrics APIs and topoJSON/GeoJSON file are returning 200s.
+If any request is failing (404, 500, or CORS), the map won’t have geometries or color data to draw.
+Add early .catch() handlers to log failures when calling fetch() or your data‐loading hooks.
+Geometry Parsing & Projection
+Ensure your topojson file is correctly imported and passed through topojson.feature(...) (or equivalent).
+Log the resulting GeoJSON features.length—you should see ~200 country objects.
+If that value is zero or undefined, the map canvas will be empty.
+SVG / Canvas Sizing & CSS
+Inspect the container element for zero width or height (e.g. via “Elements” panel).
+Make sure your map’s <svg> has explicit width="100%" and a nonzero height.
+Check for any parent element with display: none or collapsed dimensions.
+Color Scale & Fill Logic
+Temporarily hard‐code a fill (e.g. fill every path with blue) to confirm the polygons themselves are present.
+If you see outlines or shapes, then your color‐scale domain or accessor function for “score” is likely misconfigured, resulting in transparent fills.
+Error Boundaries & Silent Failures
+Wrap your map component in a simple error boundary or place console.log statements at key lifecycle points:
+console.log("Loaded features:", features);
+console.log("Health scores:", scores);
+If those logs never appear, you may have an early return in your render (e.g. if (!data) return null;) that’s always firing.
+Dependency Versions
+Confirm you installed the right versions of react-simple-maps, topojson-client, d3-scale, etc.
+Run npm ls react-simple-maps topojson-client d3-scale in the Replit shell to check for missing or mismatched versions.
+Build & Hot-Reload
+Sometimes Replit’s hot-reload misses new files. Try a full “Restart repl” or manually stop/start the development server.
+Look for any compilation errors in the terminal output.

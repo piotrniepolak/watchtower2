@@ -397,8 +397,9 @@ export default function WorldHealthMap() {
               className="w-full h-full"
             >
               <Geographies geography={WORLD_TOPOLOGY_URL}>
-                {({ geographies }: { geographies: any[] }) =>
-                  geographies.map((geo: any) => (
+                {({ geographies }: { geographies: any[] }) => {
+                  console.log('Map geographies loaded:', geographies?.length || 0);
+                  return geographies?.map((geo: any) => (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
@@ -427,8 +428,8 @@ export default function WorldHealthMap() {
                       onClick={() => handleCountryClick(geo)}
                       className="cursor-pointer transition-all duration-200"
                     />
-                  ))
-                }
+                  ));
+                }}
               </Geographies>
             </ComposableMap>
           </div>
