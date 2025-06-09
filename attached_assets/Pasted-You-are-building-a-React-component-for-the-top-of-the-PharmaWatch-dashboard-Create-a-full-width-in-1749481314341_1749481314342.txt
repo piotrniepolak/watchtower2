@@ -1,0 +1,36 @@
+You are building a React component for the top of the PharmaWatch dashboard. Create a full-width, interactive world map showing every country’s political borders and color-fill each country according to a “healthiness score” that you compute from:
+
+  • Life expectancy (latest data from UN or World Bank)  
+  • Infant mortality rate (latest data from WHO or UNICEF)  
+  • Number and severity of current disease outbreaks (verified sources like CDC, ECDC, WHO)  
+  • Other available health indicators (e.g. vaccination rate, healthcare access index)
+
+**Requirements:**
+
+1. **Data loading**  
+   - Fetch all country geometries (e.g. from Natural Earth or a topojson file).  
+   - Load health metrics via REST endpoints (e.g. World Bank API, WHO API).  
+   - Normalize and combine into one healthiness score per country (scale 0–100).
+
+2. **Color scale**  
+   - Use a sequential color scale from green (score ≥ 80) through yellow (score ~ 50) to red (score ≤ 20).  
+   - Apply this fill color to each country’s polygon.
+
+3. **Interactivity**  
+   - On hover: apply a slight “lift” or drop-shadow effect to highlight the country.  
+   - On click: open a modal or tooltip anchored to the country that displays:  
+     • The overall healthiness score  
+     • Each contributing metric and its raw value  
+     • Source citations with links (e.g. “Life expectancy: 82.3 years (World Bank 2024)”)
+
+4. **Responsive & performant**  
+   - Ensure the map resizes to full container width and keeps good performance with 200+ countries.  
+   - Lazy-load or cache API data to minimize repeated requests.
+
+5. **Tech stack suggestions**  
+   - Use **react-simple-maps** or **D3.geo** with **topojson-client** for map rendering.  
+   - Use **d3-scale** for color interpolation.  
+   - Use **React Spring** or CSS for hover animations.  
+   - Use **React Modal** or a custom popover for country detail display.
+
+Deliver a self-contained React component (or collection of components) named `<WorldHealthMap>` that can be imported into the PharmaWatch dashboard. Include any necessary helper modules or hooks for fetching and normalizing the data. Provide clear comments in the code explaining where to insert API keys or endpoints for each data source.
