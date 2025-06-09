@@ -53,7 +53,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
       { key: "pharma", label: "Pharma Markets", href: "/pharma" },
       { key: "research", label: "Research Intel", href: "/research" },
-      { key: "studies", label: "Case Studies", href: "/studies" }
+      { key: "studies", label: "Case Studies", href: "/case-studies" }
     ]
   },
   energy: {
