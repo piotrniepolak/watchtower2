@@ -39,10 +39,12 @@ export default function Markets() {
     refetchInterval: 30000,
   });
 
-  // 🔍 TEMP DEBUG — inspect raw defenseIndex payload
+  // Debug logging for ITA data structure
   useEffect(() => {
     if (metricsData?.defenseIndex) {
-      console.log('⚡ raw defenseIndex payload →', JSON.stringify(metricsData.defenseIndex, null, 2));
+      console.log('✅ ITA Raw Data:', JSON.stringify(metricsData.defenseIndex, null, 2));
+      const normalized = normaliseITA(metricsData.defenseIndex as ITAPrice);
+      console.log('✅ ITA Normalized:', normalized);
     }
   }, [metricsData?.defenseIndex]);
 

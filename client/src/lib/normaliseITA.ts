@@ -29,18 +29,20 @@ export function normaliseITA(value: ITAPrice): NormalizedITA | null {
   // Handle object values
   if (typeof value === 'object' && value !== null) {
     // Current API format: { value, change, changePercent }
-    if ('value' in value && 'changePercent' in value) {
+    if ('value' in value && typeof (value as any).value === 'number') {
+      const data = value as any;
       return {
-        price: (value as any).value as number,
-        change: (value as any).changePercent as number,
+        price: data.value,
+        change: data.changePercent || data.change || 0,
       };
     }
 
     // Alternative format: { price, change }
-    if ('price' in value && 'change' in value) {
+    if ('price' in value && typeof (value as any).price === 'number') {
+      const data = value as any;
       return {
-        price: (value as any).price as number,
-        change: (value as any).change as number,
+        price: data.price,
+        change: data.changePercent || data.change || 0,
       };
     }
 
@@ -50,12 +52,12 @@ export function normaliseITA(value: ITAPrice): NormalizedITA | null {
       if (itaData && typeof itaData.price === 'number') {
         return {
           price: itaData.price,
-          change: itaData.change || 0,
+          change: itaData.changePercent || itaData.change || 0,
         };
       }
     }
   }
 
-  console.error('⚠️ Unrecognised ITA payload', value);
+  console.error('⚠️ Unrecognised ITA payload structure:', JSON.stringify(value, null, 2));
   return null; // unrecognised shape
 }
