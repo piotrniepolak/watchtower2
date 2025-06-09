@@ -1,0 +1,85 @@
+````markdown
+**Prompt to add a reliable SVG‐based world map fallback**  
+
+> You are updating the `<WorldHealthMap>` component to remove all dynamic TopoJSON loads and instead use a bundled, static SVG world map file that will work reliably under the Replit CORS/network restrictions.  
+
+1. **Add a local SVG file**  
+   - Place a simplified world map SVG (with each country as a `<path>` and an `id` or `data-iso` attribute set to its ISO-3166-1 alpha-3 code) into `client/src/data/world.svg`.  
+
+2. **Import the SVG as a React component**  
+   ```js
+   // At the top of world-health-map-simple.tsx
+   import { ReactComponent as WorldSVG } from "../data/world.svg";
+   import { healthScoresByIso } from "../hooks/useHealthScores"; // your existing data hook
+   import { getCountryColor } from "../utils/colorScale";      // your existing color function
+````
+
+3. **Render and color the SVG paths**
+
+   ```jsx
+   export function WorldHealthMapSimple() {
+     const scores = healthScoresByIso(); // { USA: 85, FRA: 78, ... }
+
+     return (
+       <div className="world-map-container">
+         <WorldSVG className="world-map-svg" />
+         <style jsx>{`
+           .world-map-svg path {
+             transition: transform 0.2s, fill 0.2s;
+             cursor: pointer;
+           }
+           .world-map-svg path:hover {
+             transform: translateY(-2px) scale(1.02);
+           }
+         `}</style>
+         <script dangerouslySetInnerHTML={{
+           __html: `
+             document.querySelectorAll('.world-map-svg path').forEach(path => {
+               const iso = path.getAttribute('data-iso');
+               const score = scores[iso];
+               path.setAttribute(
+                 'fill',
+                 score != null ? '${getCountryColor(0)}' /* placeholder */ : '#eee'
+               );
+               if (score != null) {
+                 path.addEventListener('click', () => {
+                   window.dispatchEvent(new CustomEvent('showCountryDetails', {
+                     detail: { iso, score, metrics: scores[iso + '_metrics'] }
+                   }));
+                 });
+               }
+             });
+           `
+         }} />
+       </div>
+     );
+   }
+   ```
+
+   * Replace the `/* placeholder */` in `getCountryColor(0)` with a small wrapper that reads `score` from the loop.
+   * You may move this JS into a `useEffect` hook instead of `dangerouslySetInnerHTML` if preferred.
+
+4. **Hook up click events to your modal**
+
+   ```js
+   useEffect(() => {
+     const handler = e => openCountryModal(e.detail);
+     window.addEventListener('showCountryDetails', handler);
+     return () => window.removeEventListener('showCountryDetails', handler);
+   }, []);
+   ```
+
+5. **Styling & container**
+
+   * Ensure `.world-map-container` has a fixed height (e.g. `400px`) and full width.
+   * The SVG should fill its container (`width: 100%; height: 100%;`).
+
+6. **Verify**
+
+   * You should now see a proper world map at the top of your dashboard, with every country’s shape rendered from the static SVG.
+   * Countries are color‐filled by your real health scores, highlight on hover, and open the detail modal on click.
+   * No more network fetches for geometry and no abstract polygons.
+
+---
+
+Paste this entire prompt into your Replit AI assistant to implement the static‐SVG fallback for the global health map.

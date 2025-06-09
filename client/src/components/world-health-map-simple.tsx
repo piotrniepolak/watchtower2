@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -192,6 +192,7 @@ const countryPaths = {
 
 export default function WorldHealthMapSimple() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // Get country color based on health score
   const getCountryColor = (healthScore: number): string => {
@@ -257,6 +258,51 @@ export default function WorldHealthMapSimple() {
     return healthMap;
   }, [worldBankData.data, whoData.data]);
 
+  // Update SVG colors when health data changes
+  useEffect(() => {
+    if (!svgRef.current || healthData.size === 0) return;
+
+    const svgElement = svgRef.current;
+    const paths = svgElement.querySelectorAll('path[data-iso]');
+    
+    paths.forEach((path) => {
+      const iso = path.getAttribute('data-iso');
+      const countryData = healthData.get(iso || '');
+      
+      if (countryData) {
+        const color = getCountryColor(countryData.healthScore);
+        path.setAttribute('fill', color);
+        path.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s;');
+        
+        // Add click handler
+        const handleClick = () => {
+          setSelectedCountry(countryData);
+        };
+        
+        const handleMouseEnter = () => {
+          path.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s; opacity: 0.8;');
+        };
+        
+        const handleMouseLeave = () => {
+          path.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s; opacity: 1;');
+        };
+        
+        path.addEventListener('click', handleClick);
+        path.addEventListener('mouseenter', handleMouseEnter);
+        path.addEventListener('mouseleave', handleMouseLeave);
+        
+        // Cleanup function
+        return () => {
+          path.removeEventListener('click', handleClick);
+          path.removeEventListener('mouseenter', handleMouseEnter);
+          path.removeEventListener('mouseleave', handleMouseLeave);
+        };
+      } else {
+        path.setAttribute('fill', '#e5e7eb');
+      }
+    });
+  }, [healthData, getCountryColor]);
+
   return (
     <div className="space-y-6">
       {/* World Map Placeholder */}
@@ -270,31 +316,72 @@ export default function WorldHealthMapSimple() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 relative overflow-hidden">
-            <svg viewBox="0 0 1000 500" className="w-full h-full">
+            <svg 
+              ref={svgRef}
+              viewBox="0 0 1000 500" 
+              className="w-full h-full"
+            >
               {/* World Map SVG with country shapes */}
               <g>
-                {Object.entries(countryPaths).map(([countryCode, path]) => {
-                  const countryData = healthData.get(countryCode);
-                  const fillColor = countryData 
-                    ? getCountryColor(countryData.healthScore)
-                    : '#e5e7eb';
-
-                  return (
-                    <path 
-                      key={countryCode}
-                      d={path}
-                      fill={fillColor}
-                      stroke="#ffffff" 
-                      strokeWidth="1"
-                      className="cursor-pointer transition-all hover:opacity-80"
-                      onClick={() => {
-                        if (countryData) {
-                          setSelectedCountry(countryData);
-                        }
-                      }}
-                    />
-                  );
-                })}
+                {/* United States */}
+                <path d="M200 200 L350 180 L380 220 L320 280 L240 270 L160 250 Z" data-iso="USA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* China */}
+                <path d="M700 180 L850 170 L880 210 L820 260 L750 250 Z" data-iso="CHN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Brazil */}
+                <path d="M320 320 L420 310 L450 380 L380 420 L320 390 Z" data-iso="BRA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* India */}
+                <path d="M680 260 L750 250 L770 300 L720 340 L680 320 Z" data-iso="IND" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Russia */}
+                <path d="M500 120 L850 100 L880 150 L820 180 L480 170 Z" data-iso="RUS" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Germany */}
+                <path d="M480 170 L540 160 L550 190 L500 200 Z" data-iso="DEU" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* France */}
+                <path d="M440 180 L490 175 L500 195 L450 200 Z" data-iso="FRA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* United Kingdom */}
+                <path d="M420 160 L470 155 L480 175 L430 180 Z" data-iso="GBR" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Japan */}
+                <path d="M880 210 L920 200 L930 230 L890 240 Z" data-iso="JPN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Australia */}
+                <path d="M780 400 L880 390 L900 420 L820 430 Z" data-iso="AUS" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Canada */}
+                <path d="M150 110 L380 90 L410 130 L330 150 L120 160 Z" data-iso="CAN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Mexico */}
+                <path d="M180 270 L280 260 L300 300 L220 310 Z" data-iso="MEX" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Italy */}
+                <path d="M480 200 L510 195 L520 215 L490 220 Z" data-iso="ITA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Spain */}
+                <path d="M420 200 L470 195 L480 215 L430 220 Z" data-iso="ESP" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* South Korea */}
+                <path d="M850 240 L870 235 L875 250 L855 255 Z" data-iso="KOR" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Indonesia */}
+                <path d="M750 340 L820 335 L830 355 L760 360 Z" data-iso="IDN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Netherlands */}
+                <path d="M470 160 L490 158 L492 170 L475 172 Z" data-iso="NLD" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Saudi Arabia */}
+                <path d="M580 260 L620 255 L625 275 L585 280 Z" data-iso="SAU" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Turkey */}
+                <path d="M520 200 L560 195 L565 210 L525 215 Z" data-iso="TUR" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
+                
+                {/* Switzerland */}
+                <path d="M485 185 L505 183 L507 193 L487 195 Z" data-iso="CHE" fill="#e5e7eb" stroke="#ffffff" strokeWidth="1"/>
               </g>
               
               {/* Legend */}
