@@ -188,7 +188,7 @@ function calculateWHOHealthScore(
   
   // Scale to 0-100 and adjust for missing indicators
   const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
-  const rawScore = Math.round(totalScore * 100 * adjustmentFactor);
+  const rawScore = totalScore * 100 * adjustmentFactor;
   
   // Calibrate score to 0-100 range where original min=28 maps to 0 and max=69 maps to 100
   const originalMin = 28;
@@ -196,7 +196,7 @@ function calculateWHOHealthScore(
   const originalRange = originalMax - originalMin;
   
   // Apply linear transformation: newScore = ((rawScore - originalMin) / originalRange) * 100
-  const calibratedScore = Math.max(0, Math.min(100, Math.round(((rawScore - originalMin) / originalRange) * 100)));
+  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - originalMin) / originalRange) * 100));
   
   return calibratedScore;
 }
@@ -1209,7 +1209,7 @@ export default function WorldHealthMapSimple() {
                 <div className="text-4xl font-bold mb-2" style={{
                   color: getCountryColor(selectedCountry.healthScore, scoreRange)
                 }}>
-                  {selectedCountry.healthScore}
+                  {selectedCountry.healthScore.toFixed(1)}
                 </div>
                 <p className="text-gray-600">WHO Composite Health Score</p>
                 <Badge variant={selectedCountry.healthScore >= (scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67) ? "default" : 
