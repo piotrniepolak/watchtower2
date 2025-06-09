@@ -8,7 +8,7 @@ import { Activity, TrendingUp, AlertTriangle, Shield, Users, Globe, BarChart3, T
 // Import all original dashboard widgets
 import MetricsCards from "@/components/metrics-cards";
 import ActiveConflictsList from "@/components/active-conflicts-list";
-import ConflictHeatMap from "@/components/conflict-heat-map";
+import ConflictSeverityMap from "@/components/conflict-severity-map";
 import CorrelationAnalysis from "@/components/correlation-analysis";
 import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DailyNews from "@/components/daily-news";
@@ -43,7 +43,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         {/* Left Column */}
         <div className="space-y-6">
           <ActiveConflictsList />
-          <ConflictHeatMap />
+          <ConflictSeverityMap />
           <CorrelationAnalysis />
         </div>
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Info, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
+import FlagIcon from "@/components/flag-icon";
 import type { Conflict } from "@shared/schema";
 import worldMapPath from "@assets/world-map-306338_1280.png";
 
@@ -32,6 +33,26 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
     "Syria Conflict": { x: 52, y: 45, region: "Middle East" },
     "Afghanistan Instability": { x: 62, y: 45, region: "Central Asia" },
     "Ethiopia Tigray": { x: 55, y: 60, region: "East Africa" }
+  };
+
+  // Country code mapping for flag display
+  const getCountryCode = (conflictName: string): string => {
+    const mapping: { [key: string]: string } = {
+      "Ukraine-Russia Conflict": "UA",
+      "Israel-Gaza Conflict": "IL", 
+      "South China Sea Dispute": "CN",
+      "Mali Crisis": "ML",
+      "Yemen Civil War": "YE",
+      "Syria Conflict": "SY",
+      "Afghanistan Instability": "AF",
+      "Ethiopia Tigray Conflict": "ET",
+      "Myanmar Civil War": "MM",
+      "Sudan Crisis": "SD",
+      "Haiti Gang Violence": "HT",
+      "Kashmir Dispute": "IN",
+      "Taiwan Strait Tensions": "TW"
+    };
+    return mapping[conflictName] || "XX";
   };
 
   const getSeverityColor = (severity: string) => {
@@ -172,7 +193,10 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                       onClick={() => setSelectedConflict(conflict)}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm">{conflict.name}</span>
+                        <div className="flex items-center gap-2">
+                          <FlagIcon countryCode={getCountryCode(conflict.name)} size="sm" />
+                          <span className="font-medium text-sm">{conflict.name}</span>
+                        </div>
                         <Badge 
                           variant={
                             conflict.severity === 'Critical' || conflict.severity === 'High'
@@ -197,7 +221,10 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center justify-between">
-                      <span>{selectedConflict.name}</span>
+                      <div className="flex items-center gap-2">
+                        <FlagIcon countryCode={getCountryCode(selectedConflict.name)} size="md" />
+                        <span>{selectedConflict.name}</span>
+                      </div>
                       {isAuthenticated && (
                         <Button
                           variant={watchlist.isConflictWatched(selectedConflict.id) ? "default" : "outline"}
