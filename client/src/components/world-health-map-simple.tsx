@@ -259,12 +259,12 @@ export default function WorldHealthMapSimple() {
         const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
         const world = await response.json();
 
-        // Set up projection and path generator with improved zoom
+        // Set up projection and path generator with better initial view
         const width = 960;
         const height = 500;
         const projection = geoNaturalEarth1()
-          .scale((width / 2 / Math.PI) * 1.7)  // Increased scale for better zoom
-          .center([0, 20])                      // Raised center latitude
+          .scale(140)  // Reduced scale to show all countries
+          .center([0, 10])  // Slightly raised center
           .translate([width / 2, height / 2]);
         
         const path = geoPath().projection(projection);
@@ -277,6 +277,83 @@ export default function WorldHealthMapSimple() {
         const countriesGroup = svgElement?.querySelector('#countries');
         if (countriesGroup) {
           countriesGroup.innerHTML = '';
+          
+          // Add interactive zoom and pan functionality
+          let currentScale = 1;
+          let currentTranslateX = 0;
+          let currentTranslateY = 0;
+          let isDragging = false;
+          let lastMouseX = 0;
+          let lastMouseY = 0;
+          
+          const handleWheel = (event: WheelEvent) => {
+            event.preventDefault();
+            
+            const rect = svgElement.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            
+            // Calculate zoom factor (smoother zooming)
+            const zoomFactor = event.deltaY > 0 ? 0.95 : 1.05;
+            const newScale = Math.max(0.5, Math.min(10, currentScale * zoomFactor));
+            
+            // Calculate new translation to zoom towards mouse position
+            const scaleChange = newScale / currentScale;
+            const newTranslateX = mouseX - (mouseX - currentTranslateX) * scaleChange;
+            const newTranslateY = mouseY - (mouseY - currentTranslateY) * scaleChange;
+            
+            currentScale = newScale;
+            currentTranslateX = newTranslateX;
+            currentTranslateY = newTranslateY;
+            
+            // Apply transform to the countries group
+            countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+            countriesGroup.style.transformOrigin = '0 0';
+          };
+          
+          const handleMouseDown = (event: MouseEvent) => {
+            isDragging = true;
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+            svgElement.style.cursor = 'grabbing';
+          };
+          
+          const handleMouseMove = (event: MouseEvent) => {
+            if (!isDragging) return;
+            
+            const deltaX = event.clientX - lastMouseX;
+            const deltaY = event.clientY - lastMouseY;
+            
+            currentTranslateX += deltaX;
+            currentTranslateY += deltaY;
+            
+            countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+            
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+          };
+          
+          const handleMouseUp = () => {
+            isDragging = false;
+            svgElement.style.cursor = 'grab';
+          };
+          
+          // Add event listeners
+          svgElement.addEventListener('wheel', handleWheel, { passive: false });
+          svgElement.addEventListener('mousedown', handleMouseDown);
+          svgElement.addEventListener('mousemove', handleMouseMove);
+          svgElement.addEventListener('mouseup', handleMouseUp);
+          svgElement.addEventListener('mouseleave', handleMouseUp);
+          svgElement.style.cursor = 'grab';
+          
+          // Store cleanup function for later removal
+          (svgElement as any).zoomCleanup = () => {
+            svgElement.removeEventListener('wheel', handleWheel);
+            svgElement.removeEventListener('mousedown', handleMouseDown);
+            svgElement.removeEventListener('mousemove', handleMouseMove);
+            svgElement.removeEventListener('mouseup', handleMouseUp);
+            svgElement.removeEventListener('mouseleave', handleMouseUp);
+          };
 
           // Create country paths with health score coloring and interactivity
           (countries as any).features.forEach((country: any, index: number) => {
@@ -405,6 +482,14 @@ export default function WorldHealthMapSimple() {
     if (healthData.size > 0) {
       loadWorldMap();
     }
+    
+    // Cleanup function for event listeners
+    return () => {
+      const svgElement = svgRef.current;
+      if (svgElement && (svgElement as any).zoomCleanup) {
+        (svgElement as any).zoomCleanup();
+      }
+    };
   }, [healthData, setSelectedCountry, setHoveredCountry]);
 
   return (
