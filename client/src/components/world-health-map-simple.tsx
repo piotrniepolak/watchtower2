@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import WhoHealthOpportunityAnalysis from "./who-health-opportunity-analysis";
 
 // Color scale utility for health scores with 5 categories (20-point ranges)
 const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
@@ -1148,49 +1149,8 @@ export default function WorldHealthMapSimple() {
         </CardContent>
       </Card>
 
-      {/* Health Metrics Summary */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-600" />
-            WHO Statistical Annex Dashboard
-          </CardTitle>
-          <p className="text-sm text-gray-600">Comprehensive health metrics from 36 WHO indicators</p>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Countries Analyzed</p>
-                  <p className="text-2xl font-bold text-blue-600">{healthData.size}</p>
-                </div>
-                <Activity className="h-8 w-8 text-blue-500" />
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Health Indicators</p>
-                  <p className="text-2xl font-bold text-green-600">36</p>
-                </div>
-                <Shield className="h-8 w-8 text-green-500" />
-              </div>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Data Source</p>
-                  <p className="text-sm font-bold text-purple-600">WHO Statistical Annex</p>
-                </div>
-                <Heart className="h-8 w-8 text-purple-500" />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Health Opportunity Analysis */}
+      <WhoHealthOpportunityAnalysis />
 
       {/* Country Detail Modal */}
       <Dialog open={!!selectedCountry} onOpenChange={() => setSelectedCountry(null)}>
