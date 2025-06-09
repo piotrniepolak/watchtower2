@@ -9,10 +9,8 @@ import { Activity, TrendingUp, AlertTriangle, Shield, Users, Globe, BarChart3, T
 import MetricsCards from "@/components/metrics-cards";
 import ActiveConflictsList from "@/components/active-conflicts-list";
 import ConflictSeverityMap from "@/components/conflict-severity-map";
-import CorrelationAnalysis from "@/components/correlation-analysis";
 import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DailyNews from "@/components/daily-news";
-import RoiRankings from "@/components/roi-rankings";
 import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
@@ -21,11 +19,21 @@ interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
 }
 
+interface StockData {
+  id: number;
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  sector: string;
+}
+
 export default function EnhancedMultiSectorDashboard({ defaultSector = "defense" }: EnhancedMultiSectorDashboardProps) {
   const [currentSector, setCurrentSector] = useState(defaultSector);
 
   // Fetch sector-specific data
-  const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery({
+  const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery<StockData[]>({
     queryKey: [`/api/sectors/${currentSector}/stocks`],
   });
 
@@ -52,13 +60,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <EnhancedChartsSection />
       </div>
 
-      {/* Top Performers and Underperformers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <RoiRankings />
-        <div className="space-y-6">
-          <CorrelationAnalysis />
-        </div>
-      </div>
+
 
       {/* Active Global Conflicts Section */}
       <div className="w-full mb-8">
