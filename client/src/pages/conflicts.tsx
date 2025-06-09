@@ -4,15 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink, Globe, Users, Calendar, AlertTriangle, Star, StarOff } from "lucide-react";
-import Navigation from "@/components/navigation";
+import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocalWatchlist } from "@/hooks/useLocalWatchlist";
 import { ConflictTimeline } from "@/components/ConflictTimeline";
 import type { Conflict } from "@shared/schema";
+import { useState } from "react";
 
 export default function Conflicts() {
   const { isAuthenticated } = useAuth();
   const watchlist = useLocalWatchlist();
+  const [selectedSector, setSelectedSector] = useState<'defense' | 'healthcare' | 'energy'>('defense');
   
   const { data: conflicts, isLoading } = useQuery({
     queryKey: ["/api/conflicts"],
@@ -371,7 +373,10 @@ export default function Conflicts() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <Navigation />
+        <MultiSectorNavigation 
+          currentSector={selectedSector}
+          onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+        />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-slate-200 rounded w-64 mb-6"></div>
@@ -388,7 +393,10 @@ export default function Conflicts() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navigation />
+      <MultiSectorNavigation 
+        currentSector={selectedSector}
+        onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+      />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Global Conflicts Analysis</h1>

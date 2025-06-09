@@ -277,7 +277,7 @@ export default function Markets() {
     return (
       <div className="min-h-screen bg-slate-50">
         <MultiSectorNavigation 
-          selectedSector={selectedSector}
+          currentSector={selectedSector}
           onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
         />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -297,7 +297,7 @@ export default function Markets() {
   return (
     <div className="min-h-screen bg-slate-50">
       <MultiSectorNavigation 
-        selectedSector={selectedSector}
+        currentSector={selectedSector}
         onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
