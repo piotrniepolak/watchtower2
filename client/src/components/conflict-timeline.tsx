@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, MapPin, Users, AlertTriangle, TrendingUp, Filter } from "lucide-react";
 import { useState } from "react";
 import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
-import FlagIcon from "@/components/flag-icon";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ExternalLink, Globe, TrendingUp as TrendingUpIcon } from "lucide-react";
 import type { Conflict } from "@shared/schema";
@@ -654,19 +654,7 @@ export default function ConflictTimeline() {
                             <span>{event.region}</span>
                           </div>
                           
-                          {event.parties.length > 0 && (
-                            <div className="flex items-center gap-2">
-                              <Users className="h-3 w-3" />
-                              <div className="flex items-center gap-1">
-                                {event.parties.slice(0, 3).map(party => (
-                                  <FlagIcon key={party} countryCode={party} size="sm" />
-                                ))}
-                                {event.parties.length > 3 && (
-                                  <span className="text-xs text-slate-500">+{event.parties.length - 3}</span>
-                                )}
-                              </div>
-                            </div>
-                          )}
+
                           
                           <p className="text-sm">{event.description}</p>
                           
@@ -804,8 +792,7 @@ export default function ConflictTimeline() {
                       <span className="font-medium block mb-2">Involved Parties:</span>
                       <div className="flex flex-wrap gap-2">
                         {detailsEvent.parties.map(party => (
-                          <div key={party} className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                            <FlagIcon countryCode={party} size="sm" />
+                          <div key={party} className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                             <span className="text-xs">{party}</span>
                           </div>
                         ))}
