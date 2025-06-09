@@ -236,50 +236,86 @@ export default function WorldHealthMapSimple() {
     return healthMap;
   }, [worldBankData.data, whoData.data]);
 
-  // Update SVG colors when health data changes
+  // Load authentic world map and apply health data coloring
   useEffect(() => {
-    if (!svgRef.current || healthData.size === 0) return;
+    if (!svgRef.current) return;
 
-    const svgElement = svgRef.current;
-    const paths = svgElement.querySelectorAll('path[data-iso]');
-    
-    paths.forEach((path) => {
-      const iso = path.getAttribute('data-iso');
-      const countryData = healthData.get(iso || '');
-      
-      if (countryData) {
-        const color = getCountryColor(countryData.healthScore);
-        path.setAttribute('fill', color);
-        path.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s;');
+    const loadWorldMap = async () => {
+      try {
+        // Import the geographic libraries
+        const { feature } = await import('topojson-client');
+        const { geoPath, geoNaturalEarth1 } = await import('d3-geo');
         
-        // Add click handler
-        const handleClick = () => {
-          setSelectedCountry(countryData);
-        };
+        // Load world atlas data from CDN
+        const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+        const world = await response.json();
+
+        // Set up projection and path generator
+        const projection = geoNaturalEarth1()
+          .scale(153)
+          .translate([480, 250]);
         
-        const handleMouseEnter = () => {
-          path.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s; opacity: 0.8;');
-        };
-        
-        const handleMouseLeave = () => {
-          path.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s; opacity: 1;');
-        };
-        
-        path.addEventListener('click', handleClick);
-        path.addEventListener('mouseenter', handleMouseEnter);
-        path.addEventListener('mouseleave', handleMouseLeave);
-        
-        // Cleanup function
-        return () => {
-          path.removeEventListener('click', handleClick);
-          path.removeEventListener('mouseenter', handleMouseEnter);
-          path.removeEventListener('mouseleave', handleMouseLeave);
-        };
-      } else {
-        path.setAttribute('fill', '#e5e7eb');
+        const path = geoPath().projection(projection);
+
+        // Convert TopoJSON to GeoJSON
+        const countries = feature(countries110m, countries110m.objects.countries);
+
+        // Clear existing content
+        const svgElement = svgRef.current;
+        const countriesGroup = svgElement?.querySelector('#countries');
+        if (countriesGroup) {
+          countriesGroup.innerHTML = '';
+
+          // Create country paths
+          countries.features.forEach((country: any) => {
+            const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElement.setAttribute('d', path(country) || '');
+            
+            // Get ISO code from country properties
+            const iso3 = country.properties.ISO_A3;
+            const countryData = healthData.get(iso3);
+            
+            // Apply health data coloring
+            if (countryData) {
+              const color = getCountryColor(countryData.healthScore);
+              pathElement.setAttribute('fill', color);
+              pathElement.setAttribute('data-iso', iso3);
+              pathElement.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s;');
+              
+              // Add interaction handlers
+              pathElement.addEventListener('click', () => {
+                setSelectedCountry(countryData);
+              });
+              
+              pathElement.addEventListener('mouseenter', () => {
+                pathElement.style.opacity = '0.8';
+              });
+              
+              pathElement.addEventListener('mouseleave', () => {
+                pathElement.style.opacity = '1';
+              });
+            } else {
+              pathElement.setAttribute('fill', '#e5e7eb');
+            }
+            
+            pathElement.setAttribute('stroke', '#ffffff');
+            pathElement.setAttribute('stroke-width', '0.5');
+            
+            countriesGroup.appendChild(pathElement);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load world map:', error);
+        // Fallback display
+        const countriesGroup = svgRef.current?.querySelector('#countries');
+        if (countriesGroup) {
+          countriesGroup.innerHTML = '<text x="480" y="250" text-anchor="middle" fill="#666">Loading authentic world map...</text>';
+        }
       }
-    });
-  }, [healthData, getCountryColor]);
+    };
+
+    loadWorldMap();
+  }, [healthData, getCountryColor, setSelectedCountry]);
 
   return (
     <div className="space-y-6">
@@ -296,74 +332,11 @@ export default function WorldHealthMapSimple() {
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200 relative overflow-hidden">
             <svg 
               ref={svgRef}
-              viewBox="0 0 1000 500" 
+              viewBox="0 0 960 500" 
               className="w-full h-full"
             >
-              {/* North America */}
-              
-              {/* United States */}
-              <path d="M158 230 L180 228 L200 225 L220 220 L240 218 L260 215 L280 210 L300 208 L320 205 L340 200 L340 220 L338 240 L335 260 L330 280 L325 300 L320 320 L310 335 L300 340 L280 345 L260 348 L240 350 L220 348 L200 345 L180 340 L165 335 L155 325 L150 310 L148 295 L150 280 L152 265 L155 250 L158 235 Z" data-iso="USA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Canada */}
-              <path d="M158 130 L180 128 L200 125 L220 120 L240 118 L260 115 L280 110 L300 108 L320 105 L340 100 L360 102 L380 105 L400 108 L420 110 L440 112 L460 115 L480 118 L500 120 L520 118 L540 115 L560 112 L580 110 L600 112 L620 115 L640 118 L660 120 L680 122 L700 125 L720 128 L740 130 L760 132 L780 135 L800 138 L820 140 L840 142 L860 145 L880 148 L900 150 L920 152 L940 155 L960 158 L980 160 L985 165 L988 170 L990 175 L988 180 L985 185 L980 190 L960 188 L940 185 L920 182 L900 180 L880 178 L860 175 L840 172 L820 170 L800 168 L780 165 L760 162 L740 160 L720 158 L700 155 L680 152 L660 150 L640 148 L620 145 L600 142 L580 140 L560 142 L540 145 L520 148 L500 150 L480 148 L460 145 L440 142 L420 140 L400 138 L380 135 L360 132 L340 130 L320 135 L300 138 L280 140 L260 142 L240 145 L220 148 L200 150 L180 148 L160 145 L155 140 L150 135 L148 130 L150 125 L155 120 L158 125 Z" data-iso="CAN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Mexico */}
-              <path d="M158 350 L180 352 L200 355 L220 358 L240 360 L260 362 L280 365 L300 368 L320 370 L340 372 L360 375 L380 378 L400 380 L420 378 L440 375 L460 372 L480 370 L500 368 L520 365 L540 362 L560 360 L580 358 L600 355 L620 352 L640 350 L660 348 L680 345 L700 342 L720 340 L740 338 L760 335 L780 332 L800 330 L780 340 L760 345 L740 348 L720 350 L700 352 L680 355 L660 358 L640 360 L620 362 L600 365 L580 368 L560 370 L540 372 L520 375 L500 378 L480 380 L460 378 L440 375 L420 372 L400 370 L380 368 L360 365 L340 362 L320 360 L300 358 L280 355 L260 352 L240 350 L220 348 L200 345 L180 342 L160 340 L155 345 L150 350 L148 355 L150 360 L155 365 L158 360 Z" data-iso="MEX" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* South America */}
-              
-              {/* Brazil */}
-              <path d="M320 380 L340 382 L360 385 L380 388 L400 390 L420 392 L440 395 L460 398 L480 400 L500 398 L520 395 L540 392 L560 390 L580 388 L600 385 L620 382 L640 380 L660 378 L680 375 L700 372 L720 370 L740 368 L760 365 L780 362 L800 360 L820 358 L840 355 L860 352 L880 350 L900 348 L920 345 L940 342 L960 340 L980 338 L985 343 L988 348 L990 353 L988 358 L985 363 L980 368 L960 370 L940 372 L920 375 L900 378 L880 380 L860 382 L840 385 L820 388 L800 390 L780 392 L760 395 L740 398 L720 400 L700 402 L680 405 L660 408 L640 410 L620 412 L600 415 L580 418 L560 420 L540 422 L520 425 L500 428 L480 430 L460 428 L440 425 L420 422 L400 420 L380 418 L360 415 L340 412 L320 410 L315 405 L310 400 L308 395 L310 390 L315 385 L320 380 Z" data-iso="BRA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Argentina */}
-              <path d="M280 420 L300 422 L320 425 L340 428 L360 430 L380 432 L400 435 L420 438 L440 440 L460 438 L480 435 L500 432 L520 430 L540 428 L560 425 L580 422 L600 420 L620 418 L640 415 L660 412 L680 410 L700 408 L720 405 L740 402 L760 400 L780 398 L800 395 L820 392 L840 390 L860 388 L880 385 L900 382 L920 380 L940 378 L960 375 L980 372 L985 377 L988 382 L990 387 L988 392 L985 397 L980 402 L960 404 L940 406 L920 408 L900 410 L880 412 L860 415 L840 418 L820 420 L800 422 L780 425 L760 428 L740 430 L720 432 L700 435 L680 438 L660 440 L640 442 L620 445 L600 448 L580 450 L560 452 L540 455 L520 458 L500 460 L480 462 L460 465 L440 468 L420 470 L400 468 L380 465 L360 462 L340 460 L320 458 L300 455 L280 452 L275 447 L270 442 L268 437 L270 432 L275 427 L280 422 Z" data-iso="ARG" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Europe */}
-              
-              {/* United Kingdom */}
-              <path d="M450 150 L470 152 L490 155 L465 175 L445 165 Z" data-iso="GBR" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* France */}
-              <path d="M480 180 L500 182 L520 185 L540 188 L520 200 L500 195 L480 190 Z" data-iso="FRA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Germany */}
-              <path d="M500 160 L520 162 L540 165 L560 168 L540 180 L520 175 L500 170 Z" data-iso="DEU" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Italy */}
-              <path d="M520 200 L540 202 L560 205 L580 208 L560 220 L540 215 L520 210 Z" data-iso="ITA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Spain */}
-              <path d="M440 220 L460 222 L480 225 L500 228 L480 240 L460 235 L440 230 Z" data-iso="ESP" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Asia */}
-              
-              {/* Russia */}
-              <path d="M600 80 L620 82 L800 85 L980 90 L985 135 L780 130 L600 125 Z" data-iso="RUS" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* China */}
-              <path d="M620 180 L640 182 L780 185 L800 200 L760 210 L640 205 L620 195 Z" data-iso="CHN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* India */}
-              <path d="M600 220 L620 222 L700 225 L720 240 L680 250 L620 245 L600 235 Z" data-iso="IND" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Japan */}
-              <path d="M880 200 L900 202 L920 205 L900 220 L880 215 Z" data-iso="JPN" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Oceania */}
-              
-              {/* Australia */}
-              <path d="M780 380 L800 382 L900 385 L920 400 L800 405 L780 395 Z" data-iso="AUS" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Africa */}
-              
-              {/* South Africa */}
-              <path d="M480 380 L500 382 L600 385 L620 400 L500 405 L480 395 Z" data-iso="ZAF" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Nigeria */}
-              <path d="M460 300 L480 302 L580 305 L600 320 L480 325 L460 315 Z" data-iso="NGA" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
-              
-              {/* Egypt */}
-              <path d="M520 280 L540 282 L600 285 L620 300 L540 305 L520 295 Z" data-iso="EGY" fill="#e5e7eb" stroke="#ffffff" strokeWidth="0.5"/>
+              {/* Authentic world map will be loaded here */}
+              <g id="countries"></g>
               
               {/* Legend */}
               <g transform="translate(50, 420)">
