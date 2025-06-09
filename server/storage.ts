@@ -86,7 +86,13 @@ export class DatabaseStorage implements IStorage {
   async getStocks(): Promise<Stock[]> {
     const allStocks = await db.select().from(stocks);
     console.log(`Storage.getStocks() returned ${allStocks.length} stocks from database`);
-    console.log(`Stock sectors:`, allStocks.map(s => ({ symbol: s.symbol, sector: (s as any).sector })));
+    console.log(`First few stocks with sectors:`, allStocks.slice(0, 3).map(s => ({ 
+      symbol: s.symbol, 
+      sector: s.sector,
+      hasDefense: s.sector === 'Defense',
+      hasHealthcare: s.sector === 'Healthcare',
+      hasEnergy: s.sector === 'Energy'
+    })));
     return allStocks;
   }
 
@@ -1331,4 +1337,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
