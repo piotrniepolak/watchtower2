@@ -52,9 +52,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "dashboard", label: "Dashboard", href: "/" },
       { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
       { key: "pharma", label: "Pharma Markets", href: "/pharma" },
-      { key: "research", label: "Research Intel", href: "/research" },
-      { key: "reports", label: "Health Reports", href: "/studies" },
-      { key: "studies", label: "Case Studies", href: "/studies" }
+      { key: "research", label: "Research Intel", href: "/research" }
     ]
   },
   energy: {
@@ -67,9 +65,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "dashboard", label: "Dashboard", href: "/" },
       { key: "regulations", label: "Regulations", href: "/regulations" },
       { key: "commodities", label: "Commodities", href: "/commodities" },
-      { key: "analysis", label: "Market Analysis", href: "/market-analysis" },
-      { key: "reports", label: "Energy Reports", href: "/trends" },
-      { key: "trends", label: "Trends", href: "/trends" }
+      { key: "analysis", label: "Market Analysis", href: "/market-analysis" }
     ]
   }
 };
@@ -160,34 +156,36 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               </div>
             </Link>
 
-            {/* Sector Selector */}
-            <div className="ml-6">
-              <Select value={currentSector} onValueChange={onSectorChange}>
-                <SelectTrigger className="w-36 h-8 text-xs border-slate-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="defense">
-                    <div className="flex items-center space-x-2">
-                      <Shield className="h-4 w-4 text-blue-600" />
-                      <span>Defense</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="health">
-                    <div className="flex items-center space-x-2">
-                      <Pill className="h-4 w-4 text-green-600" />
-                      <span>Health</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="energy">
-                    <div className="flex items-center space-x-2">
-                      <Zap className="h-4 w-4 text-orange-600" />
-                      <span>Energy</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Sector Selector - Only show on dashboard */}
+            {location === "/" && (
+              <div className="ml-6">
+                <Select value={currentSector} onValueChange={onSectorChange}>
+                  <SelectTrigger className="w-36 h-8 text-xs border-slate-300">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="defense">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="h-4 w-4 text-blue-600" />
+                        <span>Defense</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="health">
+                      <div className="flex items-center space-x-2">
+                        <Pill className="h-4 w-4 text-green-600" />
+                        <span>Health</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="energy">
+                      <div className="flex items-center space-x-2">
+                        <Zap className="h-4 w-4 text-orange-600" />
+                        <span>Energy</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Navigation links */}
             <div className="hidden md:block ml-8">
