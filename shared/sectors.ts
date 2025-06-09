@@ -67,7 +67,7 @@ export const sectors: Record<string, SectorConfig> = {
       stocks: {
         name: 'Pharmaceutical Companies',
         description: 'Major pharmaceutical and biotech companies',
-        tickers: ['PFE', 'JNJ', 'MRK', 'ABBV', 'NVS', 'RHHBY', 'AZN', 'GSK', 'SNY', 'NVO', 'GILD', 'REGN', 'VRTX', 'BIIB', 'MRNA']
+        tickers: ['PFE', 'JNJ', 'MRNA', 'NVAX', 'GILD', 'REGN', 'AMGN', 'BIIB', 'VRTX', 'BMY']
       }
     },
     correlationParams: {
@@ -93,7 +93,7 @@ export const sectors: Record<string, SectorConfig> = {
       stocks: {
         name: 'Energy Companies',
         description: 'Major oil, gas, and energy companies',
-        tickers: ['XOM', 'CVX', 'COP', 'EOG', 'SLB', 'MPC', 'VLO', 'PSX', 'HES', 'DVN', 'FANG', 'OXY', 'BKR', 'HAL', 'BP', 'SHEL']
+        tickers: ['XOM', 'CVX', 'COP', 'EOG', 'SLB', 'HAL', 'BKR', 'MPC', 'VLO', 'PSX', 'KMI', 'OKE', 'NEE', 'SO']
       }
     },
     correlationParams: {
