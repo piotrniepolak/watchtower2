@@ -42,45 +42,49 @@ export default function ActiveConflictsList() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           {activeConflicts.map((conflict) => (
             <div
               key={conflict.id}
-              className="border rounded-lg p-4 hover:bg-slate-50 transition-colors"
+              className="border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-w-0"
             >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  {getSeverityIcon(conflict.severity)}
-                  <h3 className="font-semibold text-sm">{conflict.name}</h3>
+              <div className="flex items-start justify-between mb-3 gap-2">
+                <div className="flex items-start gap-2 min-w-0 flex-1">
+                  <div className="flex-shrink-0 mt-0.5">
+                    {getSeverityIcon(conflict.severity)}
+                  </div>
+                  <h3 className="font-semibold text-sm leading-tight break-words min-w-0">
+                    {conflict.name}
+                  </h3>
                 </div>
                 <Badge 
                   variant={getSeverityColor(conflict.severity) as any}
-                  className={conflict.severity.toLowerCase() === 'critical' ? 'critical-severity-badge' : ''}
+                  className={`flex-shrink-0 text-xs ${conflict.severity.toLowerCase() === 'critical' ? 'critical-severity-badge' : ''}`}
                 >
                   {conflict.severity}
                 </Badge>
               </div>
               
-              <div className="space-y-2 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3" />
-                  <span>{conflict.region}</span>
+              <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                  <span className="break-words min-w-0">{conflict.region}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <Clock className="h-3 w-3" />
-                  <span>{conflict.duration}</span>
+                  <Clock className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{conflict.duration}</span>
                 </div>
                 
                 {conflict.parties && conflict.parties.length > 0 && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-medium">Parties:</span>
-                    <div className="flex gap-1">
+                  <div className="flex items-start gap-2 mt-2">
+                    <span className="text-xs font-medium flex-shrink-0">Parties:</span>
+                    <div className="flex flex-wrap gap-1 min-w-0">
                       {conflict.parties.slice(0, 3).map((party, index) => (
                         <FlagIcon key={index} countryCode={party} size="sm" />
                       ))}
                       {conflict.parties.length > 3 && (
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-slate-500 whitespace-nowrap">
                           +{conflict.parties.length - 3} more
                         </span>
                       )}
@@ -88,7 +92,7 @@ export default function ActiveConflictsList() {
                   </div>
                 )}
                 
-                <p className="text-xs text-slate-500 mt-2 line-clamp-2">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
                   {conflict.description}
                 </p>
               </div>

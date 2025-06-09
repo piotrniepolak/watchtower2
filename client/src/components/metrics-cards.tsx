@@ -74,7 +74,7 @@ export default function MetricsCards() {
   const metricCards = [
     {
       title: "Active Conflicts",
-      value: `${metrics?.activeConflicts || 0} / ${metrics?.totalConflicts || 0}`,
+      value: `${(metrics as any)?.activeConflicts || 0} / ${(metrics as any)?.totalConflicts || 0}`,
       change: criticalHighConflicts.toString(),
       changeText: "critical/high intensity",
       icon: AlertTriangle,
@@ -104,7 +104,7 @@ export default function MetricsCards() {
     },
     {
       title: "Correlation Score",
-      value: metrics?.correlationScore || "0.00",
+      value: (metrics as any)?.correlationScore || "0.00",
       change: "High",
       changeText: "correlation",
       icon: Link,
@@ -134,22 +134,30 @@ export default function MetricsCards() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metricCards.map((metric, index) => (
-          <Card key={index} className="shadow-sm border border-slate-200">
+          <Card key={index} className="shadow-sm border border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex items-start justify-between mb-3 gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-slate-600 leading-tight">{metric.title}</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metric.value}</p>
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight break-words">
+                    {metric.title}
+                  </p>
+                  <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-1 leading-tight break-all">
+                    {metric.value}
+                  </p>
                 </div>
-                <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
+                <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
                   <metric.icon className={`h-5 w-5 ${metric.iconColor}`} />
                 </div>
               </div>
-              <div className="flex items-center text-xs">
-                <span className={`${metric.changeColor} font-medium`}>{metric.change}</span>
-                <span className="text-slate-600 ml-1">{metric.changeText}</span>
+              <div className="flex items-start text-xs gap-1">
+                <span className={`${metric.changeColor} font-medium break-words`}>
+                  {metric.change}
+                </span>
+                <span className="text-slate-600 dark:text-slate-400 break-words">
+                  {metric.changeText}
+                </span>
               </div>
             </CardContent>
           </Card>
