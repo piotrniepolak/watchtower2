@@ -1,5 +1,3 @@
-import { generateAuthenticWHOData } from '../shared/who-data';
-
 interface HealthOpportunityCountry {
   name: string;
   iso3: string;
@@ -30,8 +28,16 @@ export class HealthOpportunityService {
     console.log('Starting health opportunities analysis...');
     try {
       // Calculate authentic WHO health scores for all countries
-      const whoHealthData = generateAuthenticWHOData();
+      const { generateAuthenticWHOData } = await import('../shared/who-data');
+      console.log('WHO data import successful');
+      const whoDataResult = generateAuthenticWHOData();
+      const whoHealthData = whoDataResult.countries;
       console.log(`Loaded WHO health data for ${Object.keys(whoHealthData).length} countries`);
+      
+      if (Object.keys(whoHealthData).length === 0) {
+        console.log('WHO data is empty, returning empty array');
+        return [];
+      }
       
       // Convert WHO data object to array format for processing
       const countries = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
