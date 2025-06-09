@@ -118,7 +118,7 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
               <div className="relative bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-inner" style={{ aspectRatio: '2/1' }}>
                 {/* Static World Map Background */}
                 <img 
-                  src="/attached_assets/world-map-306338_1280.png" 
+                  src={worldMapPath} 
                   alt="World Map with Political Borders" 
                   className="w-full h-full object-cover opacity-90"
                 />
