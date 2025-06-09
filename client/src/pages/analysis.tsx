@@ -21,7 +21,7 @@ import {
   Shield,
   Zap
 } from "lucide-react";
-import Navigation from "@/components/navigation";
+import MultiSectorNavigation from "@/components/multi-sector-navigation";
 
 interface ConflictPrediction {
   conflictId: number;
@@ -66,6 +66,7 @@ interface ConflictStoryline {
 
 export default function Analysis() {
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
+  const [selectedSector, setSelectedSector] = useState<'defense' | 'healthcare' | 'energy'>('defense');
 
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions"],
@@ -133,7 +134,10 @@ export default function Analysis() {
   if (predictionsLoading || marketLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <Navigation />
+        <MultiSectorNavigation 
+          currentSector={selectedSector}
+          onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+        />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -149,7 +153,10 @@ export default function Analysis() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navigation />
+      <MultiSectorNavigation 
+        currentSector={selectedSector}
+        onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+      />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center mb-4">

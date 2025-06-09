@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Navigation from "@/components/navigation";
+import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import LearningModule from "@/components/learning-module";
 import DailyQuiz from "@/components/daily-quiz";
 import QuizLeaderboard from "@/components/quiz-leaderboard";
@@ -61,6 +61,7 @@ export default function Learning() {
 
   const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
+  const [selectedSector, setSelectedSector] = useState<'defense' | 'healthcare' | 'energy'>('defense');
 
   const { data: conflicts } = useQuery({
     queryKey: ["/api/conflicts"],
@@ -231,7 +232,10 @@ export default function Learning() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Navigation />
+      <MultiSectorNavigation 
+        currentSector={selectedSector}
+        onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+      />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-4">
