@@ -7,17 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-// Color scale utility for health scores based on actual ranges
+// Color scale utility for health scores with 5 categories (20-point ranges)
 const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
   if (!healthScore) return '#E5E7EB'; // Gray for no data
   
-  const range = scoreRange.max - scoreRange.min;
-  const highThreshold = scoreRange.min + (range * 0.67);
-  const mediumThreshold = scoreRange.min + (range * 0.33);
-  
-  if (healthScore >= highThreshold) return '#10b981'; // Green for high health scores
-  if (healthScore >= mediumThreshold) return '#f59e0b'; // Amber for medium health scores
-  return '#ef4444'; // Red for low health scores
+  // 5 categories with 20-point ranges
+  if (healthScore >= 80) return '#065f46'; // Dark green (80-100)
+  if (healthScore >= 60) return '#10b981'; // Green (60-79)
+  if (healthScore >= 40) return '#f59e0b'; // Amber (40-59)
+  if (healthScore >= 20) return '#dc2626'; // Red (20-39)
+  return '#7f1d1d'; // Dark red (0-19)
 };
 
 interface HealthIndicator {
@@ -1068,18 +1067,26 @@ export default function WorldHealthMapSimple() {
           </CardTitle>
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">Interactive world health visualization based on 36 WHO health indicators. Coverage: 175 of 195 UN member states (90% global coverage)</p>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-                <span className="text-gray-600">High (67-100)</span>
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#065f46'}}></div>
+                <span className="text-gray-600">80-100</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
-                <span className="text-gray-600">Medium (33-66)</span>
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#10b981'}}></div>
+                <span className="text-gray-600">60-79</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                <span className="text-gray-600">Low (0-32)</span>
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#f59e0b'}}></div>
+                <span className="text-gray-600">40-59</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#dc2626'}}></div>
+                <span className="text-gray-600">20-39</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#7f1d1d'}}></div>
+                <span className="text-gray-600">0-19</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
