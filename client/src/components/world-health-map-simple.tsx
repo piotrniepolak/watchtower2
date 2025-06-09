@@ -288,33 +288,60 @@ export default function WorldHealthMapSimple() {
               console.log(`Country ${index} properties:`, country.properties);
             }
             
-            // Get ISO code from country properties - try all possible field names
+            // Get country name from Natural Earth data
             const props = country.properties || {};
-            const iso3 = props.ISO_A3 || props.ADM0_A3 || props.ISO3 || props.iso_a3 || 
-                        props.ISO_A3_EH || props.ADM0_ISO || props.SOV_A3 || props.SU_A3;
+            const countryName = props.name || props.NAME || props.NAME_EN;
             
-            // Try to match by name if no ISO code
-            let countryData = healthData.get(iso3);
-            if (!countryData && props.NAME) {
-              // Simple name matching fallback
-              for (const [key, data] of healthData.entries()) {
-                if (data.name.toLowerCase().includes(props.NAME.toLowerCase()) || 
-                    props.NAME.toLowerCase().includes(data.name.toLowerCase())) {
+            // Match country by name with health data
+            let countryData: CountryHealthData | null = null;
+            if (countryName) {
+              // Direct name matching with common country name variations
+              const nameMap: { [key: string]: string } = {
+                'United States of America': 'United States',
+                'Russian Federation': 'Russia',
+                'United Kingdom': 'United Kingdom',
+                'Tanzania': 'Tanzania',
+                'Fiji': 'Fiji',
+                'W. Sahara': 'Western Sahara',
+                'South Korea': 'Korea, Rep.',
+                'North Korea': 'Korea, Dem. People\'s Rep.',
+                'Czech Republic': 'Czechia',
+                'Bosnia and Herzegovina': 'Bosnia and Herzegovina',
+                'Congo': 'Congo, Rep.',
+                'Democratic Republic of the Congo': 'Congo, Dem. Rep.',
+                'Myanmar': 'Myanmar',
+                'Macedonia': 'North Macedonia'
+              };
+              
+              const searchName = nameMap[countryName] || countryName;
+              
+              // Try exact match first
+              Array.from(healthData.entries()).forEach(([key, data]) => {
+                if (!countryData && (data.name === searchName || data.iso3 === key)) {
                   countryData = data;
-                  break;
                 }
+              });
+              
+              // Try partial matching if no exact match
+              if (!countryData) {
+                Array.from(healthData.entries()).forEach(([key, data]) => {
+                  if (!countryData && (data.name.toLowerCase().includes(searchName.toLowerCase()) || 
+                      searchName.toLowerCase().includes(data.name.toLowerCase()))) {
+                    countryData = data;
+                  }
+                });
               }
             }
             
             if (index < 5) {
-              console.log(`Country ${props.NAME || 'Unknown'} (${iso3}): ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
+              console.log(`Country ${countryName || 'Unknown'}: ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
             }
             
             // Apply health data coloring
             if (countryData) {
               const color = getCountryColor(countryData.healthScore);
               pathElement.setAttribute('fill', color);
-              pathElement.setAttribute('data-iso', iso3);
+              pathElement.setAttribute('data-country', countryName);
               pathElement.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s;');
               
               // Add interaction handlers
@@ -325,7 +352,7 @@ export default function WorldHealthMapSimple() {
               
               pathElement.addEventListener('mouseenter', () => {
                 pathElement.style.opacity = '0.8';
-                setHoveredCountry(iso3);
+                setHoveredCountry(countryName);
               });
               
               pathElement.addEventListener('mouseleave', () => {
