@@ -283,11 +283,18 @@ export default function WorldHealthMapSimple() {
             const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             pathElement.setAttribute('d', path(country) || '');
             
-            // Get ISO code from country properties
-            const iso3 = country.properties.ISO_A3;
+            // Debug country properties to find correct ISO field
+            if (Object.keys(countries.features).length < 5) {
+              console.log('Sample country properties:', Object.keys(country.properties));
+            }
+            
+            // Get ISO code from country properties - try multiple possible fields
+            const iso3 = country.properties.ISO_A3 || country.properties.ADM0_A3 || country.properties.ISO3 || country.properties.iso_a3;
             const countryData = healthData.get(iso3);
             
-            console.log(`Country ${iso3}: ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
+            if (iso3) {
+              console.log(`Country ${iso3}: ${countryData ? `Health Score ${countryData.healthScore}` : 'No data'}`);
+            }
             
             // Apply health data coloring
             if (countryData) {
