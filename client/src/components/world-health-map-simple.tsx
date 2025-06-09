@@ -49,8 +49,8 @@ const useWHOStatisticalData = () => {
   return useQuery({
     queryKey: ['who-statistical-annex'],
     queryFn: async () => {
-      // Use authentic WHO Global Health Observatory data structure
-      // This matches the actual WHO Statistical Annex format with 36+ health indicators
+      // Import the shared WHO data function to ensure consistency
+      const { generateAuthenticWHOData } = await import('../../../shared/who-data');
       return generateAuthenticWHOData();
     },
     staleTime: 60 * 60 * 1000, // Cache for 1 hour
