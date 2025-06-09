@@ -27,9 +27,11 @@ export class HealthOpportunityService {
   }
 
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
+    console.log('Starting health opportunities analysis...');
     try {
       // Calculate authentic WHO health scores for all countries
       const whoHealthData = generateAuthenticWHOData();
+      console.log(`Loaded WHO health data for ${Object.keys(whoHealthData).length} countries`);
       
       // Convert WHO data object to array format for processing
       const countries = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
@@ -37,6 +39,7 @@ export class HealthOpportunityService {
         name: data.name,
         indicators: data.indicators
       }));
+      console.log(`Converted ${countries.length} countries to array format`);
       
       // Calculate health scores for each country based on 36 WHO indicators
       const countryHealthScores = countries.map((country: any) => {

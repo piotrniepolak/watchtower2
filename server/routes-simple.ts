@@ -997,8 +997,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Health opportunity analysis endpoint
   app.get('/api/health/opportunities', async (req, res) => {
+    console.log('Health opportunities endpoint called');
     try {
+      console.log('Calling healthOpportunityService.analyzeHealthOpportunities()...');
       const opportunities = await healthOpportunityService.analyzeHealthOpportunities();
+      console.log(`Health opportunities service returned ${opportunities.length} opportunities`);
       res.json(opportunities);
     } catch (error) {
       console.error('Error fetching health opportunities:', error);
