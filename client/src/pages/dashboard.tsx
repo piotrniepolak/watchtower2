@@ -32,25 +32,29 @@ export default function Dashboard() {
           <MetricsCards />
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
             {/* Left Column */}
-            <div className="space-y-6">
+            <div className="space-y-6 lg:space-y-8">
               <ActiveConflictsList />
               <ConflictSeverityMap />
               <CorrelationAnalysis />
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6">
+            <div className="space-y-6 lg:space-y-8">
               <EnhancedChartsSection />
               <DailyNews />
             </div>
           </div>
 
           {/* Bottom Full Width Widgets */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <RoiRankings />
-            <ConflictTimeline />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+            <div className="order-1">
+              <RoiRankings />
+            </div>
+            <div className="order-2">
+              <ConflictTimeline />
+            </div>
           </div>
         </div>
       </main>
