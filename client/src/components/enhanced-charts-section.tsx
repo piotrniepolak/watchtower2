@@ -1,15 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, ChevronDown, ChevronRight } from "lucide-react";
 import type { Stock } from "@shared/schema";
 import CompanyLogo from "./company-logo";
 import GeopoliticalLoader from "@/components/geopolitical-loader";
+import { useState } from "react";
 
 export default function EnhancedChartsSection() {
+  const [expandedStock, setExpandedStock] = useState<string | null>(null);
+  
   const { data: stocks, isLoading: stocksLoading } = useQuery({
     queryKey: ["/api/stocks"],
     refetchInterval: 30000, // Real-time updates every 30 seconds
   });
+
+  const toggleExpanded = (symbol: string) => {
+    setExpandedStock(expandedStock === symbol ? null : symbol);
+  };
   
   // Filter to only defense stocks for ConflictWatch
   const getDefenseStockPerformance = () => {
@@ -108,30 +115,59 @@ export default function EnhancedChartsSection() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-2">
-              {topPerformers.map((stock: Stock, index: number) => (
-                <div key={stock.symbol} className="flex items-center p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
-                  <div className="flex items-center space-x-2 flex-1 overflow-hidden">
-                    <span className="text-xs font-bold text-green-700 dark:text-green-400 bg-green-200 dark:bg-green-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                      {index + 1}
-                    </span>
-                    <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">{stock.symbol.slice(0, 2)}</span>
+              {topPerformers.map((stock: Stock, index: number) => {
+                const isExpanded = expandedStock === stock.symbol;
+                return (
+                  <div key={stock.symbol} className="bg-green-50 dark:bg-green-900/20 rounded-md">
+                    <div 
+                      className="flex items-center p-2 cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                      onClick={() => toggleExpanded(stock.symbol)}
+                    >
+                      <div className="flex items-center space-x-2 flex-1 overflow-hidden">
+                        <span className="text-xs font-bold text-green-700 dark:text-green-400 bg-green-200 dark:bg-green-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                          {index + 1}
+                        </span>
+                        <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs font-bold">{stock.symbol.slice(0, 2)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="font-medium text-slate-900 dark:text-slate-100 text-xs truncate">
+                            {isExpanded ? stock.name : stock.symbol}
+                          </div>
+                          {!isExpanded && (
+                            <div className="text-xs text-slate-600 dark:text-slate-400">Click to expand</div>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {isExpanded ? (
+                            <ChevronDown className="w-3 h-3 text-slate-400" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3 text-slate-400" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 min-w-[70px]">
+                        <div className="text-green-600 dark:text-green-400 font-bold text-xs">
+                          +{stock.changePercent.toFixed(2)}%
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400">
+                          ${stock.price.toFixed(2)}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0 pr-2">
-                      <div className="font-medium text-slate-900 dark:text-slate-100 text-xs truncate">{stock.name}</div>
-                      <div className="text-xs text-slate-600 dark:text-slate-400">{stock.symbol}</div>
-                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-2 border-t border-green-200 dark:border-green-800 mt-1 pt-2">
+                        <div className="text-xs text-slate-700 dark:text-slate-300">
+                          <strong>Full Name:</strong> {stock.name}
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          <strong>Symbol:</strong> {stock.symbol}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-right flex-shrink-0 min-w-[70px]">
-                    <div className="text-green-600 dark:text-green-400 font-bold text-xs">
-                      +{stock.changePercent.toFixed(2)}%
-                    </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                      ${stock.price.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -146,30 +182,59 @@ export default function EnhancedChartsSection() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-2">
-              {worstPerformers.map((stock: Stock, index: number) => (
-                <div key={stock.symbol} className="flex items-center p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
-                  <div className="flex items-center space-x-2 flex-1 overflow-hidden">
-                    <span className="text-xs font-bold text-red-700 dark:text-red-400 bg-red-200 dark:bg-red-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
-                      {index + 1}
-                    </span>
-                    <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">{stock.symbol.slice(0, 2)}</span>
+              {worstPerformers.map((stock: Stock, index: number) => {
+                const isExpanded = expandedStock === stock.symbol;
+                return (
+                  <div key={stock.symbol} className="bg-red-50 dark:bg-red-900/20 rounded-md">
+                    <div 
+                      className="flex items-center p-2 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                      onClick={() => toggleExpanded(stock.symbol)}
+                    >
+                      <div className="flex items-center space-x-2 flex-1 overflow-hidden">
+                        <span className="text-xs font-bold text-red-700 dark:text-red-400 bg-red-200 dark:bg-red-800 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
+                          {index + 1}
+                        </span>
+                        <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs font-bold">{stock.symbol.slice(0, 2)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="font-medium text-slate-900 dark:text-slate-100 text-xs truncate">
+                            {isExpanded ? stock.name : stock.symbol}
+                          </div>
+                          {!isExpanded && (
+                            <div className="text-xs text-slate-600 dark:text-slate-400">Click to expand</div>
+                          )}
+                        </div>
+                        <div className="flex-shrink-0">
+                          {isExpanded ? (
+                            <ChevronDown className="w-3 h-3 text-slate-400" />
+                          ) : (
+                            <ChevronRight className="w-3 h-3 text-slate-400" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 min-w-[70px]">
+                        <div className="text-red-600 dark:text-red-400 font-bold text-xs">
+                          {stock.changePercent.toFixed(2)}%
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400">
+                          ${stock.price.toFixed(2)}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0 pr-2">
-                      <div className="font-medium text-slate-900 dark:text-slate-100 text-xs truncate">{stock.name}</div>
-                      <div className="text-xs text-slate-600 dark:text-slate-400">{stock.symbol}</div>
-                    </div>
+                    {isExpanded && (
+                      <div className="px-4 pb-2 border-t border-red-200 dark:border-red-800 mt-1 pt-2">
+                        <div className="text-xs text-slate-700 dark:text-slate-300">
+                          <strong>Full Name:</strong> {stock.name}
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          <strong>Symbol:</strong> {stock.symbol}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-right flex-shrink-0 min-w-[70px]">
-                    <div className="text-red-600 dark:text-red-400 font-bold text-xs">
-                      {stock.changePercent.toFixed(2)}%
-                    </div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                      ${stock.price.toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
