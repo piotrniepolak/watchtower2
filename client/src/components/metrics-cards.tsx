@@ -48,7 +48,7 @@ export default function MetricsCards() {
       // Calculate market cap from price and shares outstanding if marketCap is null
       let marketCapValue = 0;
       
-      if (marketCap && typeof marketCap === 'string' && marketCap !== 'null') {
+      if (marketCap && typeof marketCap === 'string' && marketCap !== 'null' && marketCap !== null) {
         // Parse market cap from Yahoo Finance (e.g., "125.4B", "45.2M")
         const marketCapStr = marketCap.replace('$', '');
         
@@ -65,11 +65,12 @@ export default function MetricsCards() {
         let estimatedShares = 0;
         
         // Use sector-based estimates for shares outstanding (in millions)
-        if (stock.sector === 'Defense') {
+        const sector = (stock as any).sector;
+        if (sector === 'Defense') {
           estimatedShares = price > 200 ? 250 : 500; // Large defense companies typically have 250-500M shares
-        } else if (stock.sector === 'Healthcare') {
+        } else if (sector === 'Healthcare') {
           estimatedShares = price > 100 ? 300 : 600; // Healthcare companies vary widely
-        } else if (stock.sector === 'Energy') {
+        } else if (sector === 'Energy') {
           estimatedShares = price > 50 ? 400 : 800; // Energy companies often have more shares
         } else {
           estimatedShares = 500; // Default estimate
