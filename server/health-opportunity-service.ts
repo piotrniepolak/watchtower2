@@ -170,7 +170,11 @@ export class HealthOpportunityService {
   }
 
   private calculateWHOHealthScore(indicators: Record<string, number>, allCountries: Record<string, any>, healthIndicators: string[]): number {
-    if (Object.keys(indicators).length === 0) return 0;
+    console.log(`Calculating health score - indicators count: ${Object.keys(indicators).length}, health indicators: ${healthIndicators.length}`);
+    if (Object.keys(indicators).length === 0) {
+      console.log('No indicators found, returning 0');
+      return 0;
+    }
     
     let totalScore = 0;
     let validIndicators = 0;
