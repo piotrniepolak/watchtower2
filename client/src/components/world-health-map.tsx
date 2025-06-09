@@ -387,108 +387,107 @@ export default function WorldHealthMap() {
         <CardContent className="p-0">
           <div style={{ opacity: mapOpacity }} className="w-full h-96 md:h-[500px] transition-opacity duration-300">
             <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200">
-              {/* World Health Data Grid */}
-              <div className="absolute inset-0 p-6 overflow-y-auto">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">Global Health Intelligence Dashboard</h3>
-                  <p className="text-sm text-gray-600">Real-time health metrics from World Bank Open Data API</p>
-                </div>
+              {/* World Map Visualization */}
+              <div className="absolute inset-0">
+                <ComposableMap
+                  projection="geoEqualEarth"
+                  projectionConfig={{
+                    scale: 120,
+                    center: [0, 0],
+                  }}
+                  width={800}
+                  height={500}
+                  className="w-full h-full"
+                >
+                  <Geographies geography={WORLD_TOPOLOGY_URL}>
+                    {({ geographies }) => {
+                      if (!geographies || geographies.length === 0) {
+                        return (
+                          <g>
+                            <rect width={800} height={500} fill="#f0f9ff" />
+                            <text x="400" y="250" textAnchor="middle" fill="#6b7280" fontSize="16" fontWeight="500">
+                              Loading World Health Map...
+                            </text>
+                            <text x="400" y="280" textAnchor="middle" fill="#9ca3af" fontSize="12">
+                              Connecting to World Bank Open Data API
+                            </text>
+                          </g>
+                        );
+                      }
+                      
+                      return geographies.map((geo) => {
+                        const countryCode = geo.properties.ISO_A3 || geo.properties.ADM0_A3;
+                        const countryData = healthData.get(countryCode);
+                        
+                        return (
+                          <Geography
+                            key={geo.rsmKey}
+                            geography={geo}
+                            fill={getCountryFill(geo)}
+                            stroke="#FFFFFF"
+                            strokeWidth={0.5}
+                            style={{
+                              default: {
+                                outline: "none",
+                              },
+                              hover: {
+                                fill: hoveredCountry === countryCode 
+                                  ? "#4F46E5" 
+                                  : getCountryFill(geo),
+                                outline: "none",
+                                cursor: "pointer",
+                                filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
+                                transform: "scale(1.01)",
+                              },
+                              pressed: {
+                                fill: "#1E40AF",
+                                outline: "none",
+                              },
+                            }}
+                            onMouseEnter={() => setHoveredCountry(countryCode)}
+                            onMouseLeave={() => setHoveredCountry(null)}
+                            onClick={() => handleCountryClick(geo)}
+                          />
+                        );
+                      });
+                    }}
+                  </Geographies>
+                  
+                  {/* Legend */}
+                  <g transform="translate(50, 420)">
+                    <rect x="0" y="0" width="200" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
+                    <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">Health Score Legend</text>
+                    
+                    <rect x="10" y="25" width="15" height="10" fill="#10b981" />
+                    <text x="30" y="34" fontSize="10" fill="#374151">High (80-100)</text>
+                    
+                    <rect x="85" y="25" width="15" height="10" fill="#f59e0b" />
+                    <text x="105" y="34" fontSize="10" fill="#374151">Medium (60-79)</text>
+                    
+                    <rect x="10" y="40" width="15" height="10" fill="#ef4444" />
+                    <text x="30" y="49" fontSize="10" fill="#374151">Low (0-59)</text>
+                    
+                    <rect x="85" y="40" width="15" height="10" fill="#d1d5db" />
+                    <text x="105" y="49" fontSize="10" fill="#374151">No Data</text>
+                  </g>
+                </ComposableMap>
 
-                {/* Health Metrics Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-white p-4 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Global Avg Life Expectancy</p>
-                        <p className="text-2xl font-bold text-green-600">
-                          {Math.round(
-                            Array.from(healthData.values())
-                              .filter(d => d.indicators.lifeExpectancy > 0)
-                              .reduce((sum, d) => sum + d.indicators.lifeExpectancy, 0) / 
-                             (Array.from(healthData.values()).filter(d => d.indicators.lifeExpectancy > 0).length || 1)
-                          )} years
-                        </p>
-                      </div>
-                      <Heart className="h-8 w-8 text-green-500" />
+                {/* Hover Tooltip */}
+                {hoveredCountry && healthData.get(hoveredCountry) && (
+                  <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-lg border max-w-xs">
+                    <div className="font-semibold text-sm text-gray-800">
+                      {healthData.get(hoveredCountry)?.name}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      Health Score: <span className="font-medium text-blue-600">
+                        {healthData.get(hoveredCountry)?.healthScore}/100
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Click for detailed metrics
                     </div>
                   </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Countries Monitored</p>
-                        <p className="text-2xl font-bold text-blue-600">{healthData.size}</p>
-                      </div>
-                      <Activity className="h-8 w-8 text-blue-500" />
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-lg shadow-sm border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Health Score Range</p>
-                        <p className="text-2xl font-bold text-purple-600">25-95</p>
-                      </div>
-                      <Shield className="h-8 w-8 text-purple-500" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Top Health Performers */}
-                <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
-                  <h4 className="font-semibold text-gray-800 mb-3">Top Health Performers</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {Array.from(healthData.entries())
-                      .sort(([,a], [,b]) => b.healthScore - a.healthScore)
-                      .slice(0, 8)
-                      .map(([code, data]) => (
-                        <div 
-                          key={code}
-                          className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 cursor-pointer hover:shadow-md transition-all"
-                          onClick={() => setSelectedCountry(data)}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-sm text-gray-800">{data.name}</p>
-                              <p className="text-xs text-gray-600">{code}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold text-green-600">{data.healthScore}</p>
-                              <p className="text-xs text-gray-500">Score</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                {/* Health Challenges */}
-                <div className="bg-white rounded-lg shadow-sm border p-4">
-                  <h4 className="font-semibold text-gray-800 mb-3">Health Challenges Monitoring</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {Array.from(healthData.entries())
-                      .sort(([,a], [,b]) => a.healthScore - b.healthScore)
-                      .slice(0, 8)
-                      .map(([code, data]) => (
-                        <div 
-                          key={code}
-                          className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 cursor-pointer hover:shadow-md transition-all"
-                          onClick={() => setSelectedCountry(data)}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium text-sm text-gray-800">{data.name}</p>
-                              <p className="text-xs text-gray-600">{code}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold text-amber-600">{data.healthScore}</p>
-                              <p className="text-xs text-gray-500">Score</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -519,6 +518,114 @@ export default function WorldHealthMap() {
               </div>
             </div>
             <span className="text-xs text-slate-500">Click any country for detailed analysis</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Interactive Country Health Data List */}
+      <Card className="w-full mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-blue-600" />
+            Global Health Intelligence Dashboard
+          </CardTitle>
+          <p className="text-sm text-gray-600">Real-time health metrics from World Bank Open Data API</p>
+        </CardHeader>
+        <CardContent>
+          {/* Health Metrics Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Global Avg Life Expectancy</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {Math.round(
+                      Array.from(healthData.values())
+                        .filter(d => d.indicators.lifeExpectancy > 0)
+                        .reduce((sum, d) => sum + d.indicators.lifeExpectancy, 0) / 
+                       (Array.from(healthData.values()).filter(d => d.indicators.lifeExpectancy > 0).length || 1)
+                    )} years
+                  </p>
+                </div>
+                <Heart className="h-8 w-8 text-green-500" />
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Countries Monitored</p>
+                  <p className="text-2xl font-bold text-blue-600">{healthData.size}</p>
+                </div>
+                <Activity className="h-8 w-8 text-blue-500" />
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Health Score Range</p>
+                  <p className="text-2xl font-bold text-purple-600">25-95</p>
+                </div>
+                <Shield className="h-8 w-8 text-purple-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Top Health Performers */}
+          <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
+            <h4 className="font-semibold text-gray-800 mb-3">Top Health Performers</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {Array.from(healthData.entries())
+                .sort(([,a], [,b]) => b.healthScore - a.healthScore)
+                .slice(0, 8)
+                .map(([code, data]) => (
+                  <div 
+                    key={code}
+                    className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 cursor-pointer hover:shadow-md transition-all"
+                    onClick={() => setSelectedCountry(data)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-sm text-gray-800">{data.name}</p>
+                        <p className="text-xs text-gray-600">{code}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-green-600">{data.healthScore}</p>
+                        <p className="text-xs text-gray-500">Score</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* Health Challenges */}
+          <div className="bg-white rounded-lg shadow-sm border p-4">
+            <h4 className="font-semibold text-gray-800 mb-3">Health Challenges Monitoring</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {Array.from(healthData.entries())
+                .sort(([,a], [,b]) => a.healthScore - b.healthScore)
+                .slice(0, 8)
+                .map(([code, data]) => (
+                  <div 
+                    key={code}
+                    className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 cursor-pointer hover:shadow-md transition-all"
+                    onClick={() => setSelectedCountry(data)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-medium text-sm text-gray-800">{data.name}</p>
+                        <p className="text-xs text-gray-600">{code}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-amber-600">{data.healthScore}</p>
+                        <p className="text-xs text-gray-500">Score</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
         </CardContent>
       </Card>
