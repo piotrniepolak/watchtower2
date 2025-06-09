@@ -281,7 +281,12 @@ export default function CaseStudies() {
                                   </p>
                                 </div>
                                 <div className="flex justify-end">
-                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="text-blue-600 hover:text-blue-800"
+                                    onClick={() => window.open(`https://doi.org/${researchStudy.doi}`, '_blank')}
+                                  >
                                     <ExternalLink className="h-4 w-4 mr-1" />
                                     View on Publisher Site
                                   </Button>
