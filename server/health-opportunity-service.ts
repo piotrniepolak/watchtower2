@@ -169,30 +169,41 @@ export class HealthOpportunityService {
     
     let totalScore = 0;
     let validIndicators = 0;
-
-    // Get all indicator values across countries for normalization
-    const allIndicatorValues: Record<string, number[]> = {};
-    Object.values(allCountries).forEach((country: any) => {
-      Object.entries(country.indicators || {}).forEach(([indicator, value]) => {
-        if (!allIndicatorValues[indicator]) allIndicatorValues[indicator] = [];
-        allIndicatorValues[indicator].push(value as number);
-      });
-    });
-
+    
+    // Equal weight for each indicator (matching map component)
+    const weight = 1 / healthIndicators.length;
+    
     healthIndicators.forEach(indicator => {
       const value = indicators[indicator];
-      if (value !== undefined && value !== null && !isNaN(value)) {
-        const indicatorValues = allIndicatorValues[indicator] || [];
-        if (indicatorValues.length > 0) {
-          const isPositive = this.isPositiveDirection(indicator);
-          const normalizedScore = this.normalizeIndicator(indicatorValues, value, isPositive);
-          totalScore += normalizedScore;
-          validIndicators++;
-        }
-      }
+      if (value === undefined || isNaN(value)) return;
+      
+      // Get all values for this indicator across countries for normalization
+      const allValues = Object.values(allCountries)
+        .map((country: any) => country.indicators[indicator])
+        .filter((val: any) => val !== undefined && !isNaN(val));
+      
+      if (allValues.length === 0) return;
+      
+      const isPositive = this.isPositiveDirection(indicator);
+      const normalizedValue = this.normalizeIndicator(allValues, value, isPositive);
+      
+      totalScore += normalizedValue * weight;
+      validIndicators++;
     });
-
-    return validIndicators > 0 ? (totalScore / validIndicators) * 100 : 0;
+    
+    // Scale to 0-100 and adjust for missing indicators (matching map component)
+    const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
+    const rawScore = totalScore * 100 * adjustmentFactor;
+    
+    // Calibrate score to 0-100 range where original min=28 maps to 0 and max=69 maps to 100 (matching map component)
+    const originalMin = 28;
+    const originalMax = 69;
+    const originalRange = originalMax - originalMin;
+    
+    // Apply linear transformation: newScore = ((rawScore - originalMin) / originalRange) * 100
+    const calibratedScore = Math.max(0, Math.min(100, ((rawScore - originalMin) / originalRange) * 100));
+    
+    return calibratedScore;
   }
 
   private isPositiveDirection(indicator: string): boolean {
