@@ -85,6 +85,17 @@ export default function FlagIcon({ countryCode, size = "sm", className = "" }: F
     "Al-Qaeda": "XX", // No flag
     "PKK": "TR", // Use Turkey flag (Kurdish organization)
     "Peshmerga": "IQ", // Use Iraq flag
+    // Congo M23 Crisis
+    "DRC Government": "CD", // Democratic Republic of Congo
+    "M23": "XX", // Rebel group - will show as text
+    "Rwanda": "RW",
+    // Iran-Israel Shadow War
+    "Proxies": "XX", // Generic proxy forces - will show as text
+    // West Africa Sahel Crisis
+    "Mali": "ML",
+    "Niger": "NE", 
+    "Burkina Faso": "BF",
+    "Jihadist Groups": "XX" // Generic jihadist groups - will show as text
   };
 
   const getFlagEmoji = (input: string) => {
@@ -98,8 +109,10 @@ export default function FlagIcon({ countryCode, size = "sm", className = "" }: F
       code = countryNameToCode[input] || null;
     }
     
-    // If no valid code found, return generic flag
-    if (!code || code === "XX") return "🏳️";
+    // If no valid code found, return the first 2 letters of the input
+    if (!code || code === "XX") {
+      return input.slice(0, 2).toUpperCase();
+    }
     
     // Convert to flag emoji
     const codePoints = code
