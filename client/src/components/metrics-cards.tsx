@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, DollarSign, Link } from "lucide-react";
+import { AlertTriangle, TrendingUp, DollarSign, Link } from "lucide-react";
 import { useRealTimeStocks } from "@/hooks/useRealTimeStocks";
+import type { Conflict } from "@shared/schema";
 
 export default function MetricsCards() {
   const { data: metrics, isLoading } = useQuery({
@@ -10,6 +11,11 @@ export default function MetricsCards() {
   });
 
   const { stocks, isConnected } = useRealTimeStocks();
+
+  const { data: conflicts } = useQuery({
+    queryKey: ["/api/conflicts"],
+    refetchInterval: 30000, // Real-time conflict data
+  });
 
   // Calculate real-time metrics using Yahoo Finance data
   const calculateRealTimeMetrics = () => {
