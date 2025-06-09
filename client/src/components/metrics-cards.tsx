@@ -97,7 +97,21 @@ export default function MetricsCards() {
     );
   }
 
+  // Calculate critical/high intensity conflicts
+  const criticalHighConflicts = (conflicts as Conflict[] || [])
+    .filter(c => c.severity === "Critical" || c.severity === "High").length;
+
   const metricCards = [
+    {
+      title: "Active Conflicts",
+      value: `${(metrics as any)?.activeConflicts || 0} / ${(metrics as any)?.totalConflicts || 0}`,
+      change: criticalHighConflicts.toString(),
+      changeText: "critical/high intensity",
+      icon: AlertTriangle,
+      iconBg: "bg-red-100",
+      iconColor: "text-red-600",
+      changeColor: "text-red-600",
+    },
     {
       title: "Defense Index",
       value: `$${realTimeMetrics.defenseIndex}`,
