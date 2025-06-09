@@ -28,6 +28,10 @@ import Outbreaks from "@/pages/outbreaks";
 import Pharma from "@/pages/pharma";
 import Regulations from "@/pages/regulations";
 import Commodities from "@/pages/commodities";
+import ResearchIntel from "@/pages/research-intel";
+import CaseStudies from "@/pages/case-studies";
+import Trends from "@/pages/trends";
+import MarketAnalysis from "@/pages/market-analysis";
 
 import NotFound from "@/pages/not-found";
 
@@ -56,8 +60,12 @@ function Router() {
       <Route path="/discussions" component={Discussions} />
       <Route path="/outbreaks" component={Outbreaks} />
       <Route path="/pharma" component={Pharma} />
+      <Route path="/research" component={ResearchIntel} />
+      <Route path="/studies" component={CaseStudies} />
       <Route path="/regulations" component={Regulations} />
       <Route path="/commodities" component={Commodities} />
+      <Route path="/trends" component={Trends} />
+      <Route path="/market-analysis" component={MarketAnalysis} />
       <Route component={NotFound} />
     </Switch>
   );

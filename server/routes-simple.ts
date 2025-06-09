@@ -935,14 +935,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Total stocks in database: ${stocks.length}`);
       console.log(`Fetching stocks for sector ${req.params.sectorKey}:`);
       console.log(`Sector tickers:`, sector.dataSources.stocks.tickers);
+      // Map sector keys to database sector names
+      const sectorMapping: Record<string, string> = {
+        'defense': 'Defense',
+        'health': 'Healthcare', 
+        'energy': 'Energy'
+      };
+      
+      const dbSectorName = sectorMapping[req.params.sectorKey];
+      
       console.log(`Available stocks by sector:`, {
         defense: stocks.filter(s => s.sector === 'Defense').map(s => s.symbol),
         healthcare: stocks.filter(s => s.sector === 'Healthcare').map(s => s.symbol),
         energy: stocks.filter(s => s.sector === 'Energy').map(s => s.symbol)
       });
       
+      // Filter stocks by actual database sector name instead of tickers
       const sectorStocks = stocks.filter(stock => 
-        sector.dataSources.stocks.tickers.includes(stock.symbol)
+        stock.sector === dbSectorName
       );
       
       console.log(`Filtered stocks:`, sectorStocks.map(s => s.symbol));
