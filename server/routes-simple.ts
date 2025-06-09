@@ -596,9 +596,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/quiz/leaderboard', async (req, res) => {
     try {
+      // First try today's date
       const today = new Date().toISOString().split('T')[0];
       console.log(`Leaderboard API called for date: ${today}`);
-      const leaderboard = await storage.getDailyQuizLeaderboard(today);
+      let leaderboard = await storage.getDailyQuizLeaderboard(today);
+      
+      // If no leaderboard data for today, try yesterday
+      if (leaderboard.length === 0) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        console.log(`No data for today, trying yesterday: ${yesterdayStr}`);
+        leaderboard = await storage.getDailyQuizLeaderboard(yesterdayStr);
+      }
+      
       console.log(`Leaderboard returned ${leaderboard.length} entries`);
       res.json(leaderboard);
     } catch (error) {
