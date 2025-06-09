@@ -46,14 +46,14 @@ export default function ActiveConflictsList() {
           {activeConflicts.map((conflict) => (
             <div
               key={conflict.id}
-              className="border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-w-0"
+              className="border rounded-lg p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors min-w-0"
             >
-              <div className="flex items-start justify-between mb-3 gap-2">
+              <div className="flex items-start justify-between mb-2 gap-2">
                 <div className="flex items-start gap-2 min-w-0 flex-1">
                   <div className="flex-shrink-0 mt-0.5">
                     {getSeverityIcon(conflict.severity)}
                   </div>
-                  <h3 className="font-semibold text-sm leading-tight break-words min-w-0">
+                  <h3 className="font-medium text-sm leading-tight break-words min-w-0">
                     {conflict.name}
                   </h3>
                 </div>
@@ -65,34 +65,16 @@ export default function ActiveConflictsList() {
                 </Badge>
               </div>
               
-              <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                  <span className="break-words min-w-0">{conflict.region}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
+              <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{conflict.region}</span>
+                  <span className="text-slate-400">•</span>
                   <Clock className="h-3 w-3 flex-shrink-0" />
                   <span className="truncate">{conflict.duration}</span>
                 </div>
                 
-                {conflict.parties && conflict.parties.length > 0 && (
-                  <div className="flex items-start gap-2 mt-2">
-                    <span className="text-xs font-medium flex-shrink-0">Parties:</span>
-                    <div className="flex flex-wrap gap-1 min-w-0">
-                      {conflict.parties.slice(0, 3).map((party, index) => (
-                        <FlagIcon key={index} countryCode={party} size="sm" />
-                      ))}
-                      {conflict.parties.length > 3 && (
-                        <span className="text-xs text-slate-500 whitespace-nowrap">
-                          +{conflict.parties.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-                
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                   {conflict.description}
                 </p>
               </div>

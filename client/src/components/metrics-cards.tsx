@@ -115,27 +115,8 @@ export default function MetricsCards() {
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Real-time data indicator */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-900">Market Overview</h3>
-        <div className="flex items-center space-x-2">
-          {isConnected ? (
-            <>
-              <Wifi className="h-4 w-4 text-green-600" />
-              <span className="text-sm text-green-600 font-medium">Live Data</span>
-            </>
-          ) : (
-            <>
-              <WifiOff className="h-4 w-4 text-orange-600" />
-              <span className="text-sm text-orange-600 font-medium">Updating...</span>
-            </>
-          )}
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metricCards.map((metric, index) => (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      {metricCards.map((metric, index) => (
           <Card key={index} className="shadow-sm border border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-3 gap-3">
@@ -162,7 +143,6 @@ export default function MetricsCards() {
             </CardContent>
           </Card>
         ))}
-      </div>
     </div>
   );
 }

@@ -18,13 +18,12 @@ export default function Dashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2 break-words">
-              ConflictWatch Intelligence
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+              ConflictWatch
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 max-w-4xl text-sm sm:text-base leading-relaxed">
-              Advanced geopolitical conflict monitoring and defense market analysis. 
-              Track global conflicts, market correlations, and defense sector performance in real-time.
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Global conflict monitoring and defense market intelligence
             </p>
           </div>
 
