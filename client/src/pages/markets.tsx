@@ -80,7 +80,9 @@ export default function Markets() {
     }
 
     // Use authentic iShares US Aerospace & Defense ETF (ITA) data from API
-    const defenseIndexValue = ita?.price || 183.12;
+    const defenseIndexValue = metricsData?.defenseIndex && typeof metricsData.defenseIndex === 'object' && 'value' in metricsData.defenseIndex 
+      ? metricsData.defenseIndex.value 
+      : 183.12;
     
     // Calculate average change percentage for market trends
     const avgChangePercent = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
