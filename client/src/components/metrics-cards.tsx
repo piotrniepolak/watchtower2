@@ -92,7 +92,7 @@ export default function MetricsCards() {
     },
     {
       title: "Defense Index",
-      value: realTimeMetrics.defenseIndex,
+      value: `$${realTimeMetrics.defenseIndex}`,
       change: realTimeMetrics.indexChange,
       changeText: "weighted portfolio today",
       icon: TrendingUp,
