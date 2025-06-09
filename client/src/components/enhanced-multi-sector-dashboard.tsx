@@ -207,7 +207,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sectorStocks.slice(0, 5).map((stock: any, index: number) => (
+              {sectorStocks.slice(0, 5).map((stock, index: number) => (
                 <div key={stock.symbol} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{stock.symbol}</p>
@@ -327,7 +327,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sectorStocks.slice(0, 5).map((stock: any, index: number) => (
+              {sectorStocks.slice(0, 5).map((stock, index: number) => (
                 <div key={stock.symbol} className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{stock.symbol}</p>
