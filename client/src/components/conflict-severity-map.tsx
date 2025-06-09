@@ -57,11 +57,11 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
-      case 'critical': return '#DC143C'; // Crimson red
-      case 'high': return '#DC2626';     // Red
-      case 'medium': return '#F59E0B';   // Orange
-      case 'low': return '#10B981';      // Green
-      default: return '#6B7280';         // Grey
+      case 'critical': return '#8B0000'; // Dark red
+      case 'high': return '#DC143C';     // Crimson red
+      case 'medium': return '#FF8C00';   // Dark orange
+      case 'low': return '#FFD700';      // Gold
+      default: return '#808080';         // Grey
     }
   };
 
@@ -97,12 +97,14 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Map Section */}
             <div className="lg:col-span-2">
-              <div className="relative bg-slate-100 rounded-lg overflow-hidden" style={{ aspectRatio: '2/1' }}>
+              <div className="relative bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-inner" style={{ aspectRatio: '2/1' }}>
                 <img 
                   src={worldMapPath} 
                   alt="World Map" 
-                  className="w-full h-full object-cover opacity-80"
+                  className="w-full h-full object-cover opacity-90"
                 />
+                {/* Map overlay for better contrast */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-slate-100/30 pointer-events-none"></div>
                 
                 {/* Conflict Markers */}
                 {activeConflicts.map((conflict) => {
@@ -120,14 +122,25 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                       onClick={() => setSelectedConflict(conflict)}
                     >
                       <div
-                        className="rounded-full border-2 border-white shadow-lg flex items-center justify-center"
+                        className="rounded-full border-2 border-white shadow-lg flex items-center justify-center relative"
                         style={{
                           backgroundColor: getSeverityColor(conflict.severity),
                           width: `${getSeveritySize(conflict.severity)}px`,
                           height: `${getSeveritySize(conflict.severity)}px`,
+                          boxShadow: `0 0 0 2px ${getSeverityColor(conflict.severity)}40`,
                         }}
                       >
-                        <AlertTriangle className="h-3 w-3 text-white" />
+                        <AlertTriangle className="h-3 w-3 text-white drop-shadow-sm" />
+                        {/* Pulse animation ring */}
+                        <div 
+                          className="absolute rounded-full border-2 animate-ping"
+                          style={{
+                            borderColor: getSeverityColor(conflict.severity),
+                            width: `${getSeveritySize(conflict.severity) + 8}px`,
+                            height: `${getSeveritySize(conflict.severity) + 8}px`,
+                            opacity: 0.6,
+                          }}
+                        />
                       </div>
                     </div>
                   );
@@ -193,9 +206,9 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                       onClick={() => setSelectedConflict(conflict)}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <FlagIcon countryCode={getCountryCode(conflict.name)} size="sm" />
-                          <span className="font-medium text-sm">{conflict.name}</span>
+                          <span className="font-medium text-sm truncate">{conflict.name}</span>
                         </div>
                         <Badge 
                           variant={
