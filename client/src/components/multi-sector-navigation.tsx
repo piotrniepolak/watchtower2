@@ -53,7 +53,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
       { key: "pharma", label: "Pharma Markets", href: "/pharma" },
       { key: "research", label: "Research Intel", href: "/research" },
-      { key: "reports", label: "Reports", href: "/reports" },
+      { key: "reports", label: "Health Reports", href: "/studies" },
       { key: "studies", label: "Case Studies", href: "/studies" }
     ]
   },
@@ -67,8 +67,8 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "dashboard", label: "Dashboard", href: "/" },
       { key: "regulations", label: "Regulations", href: "/regulations" },
       { key: "commodities", label: "Commodities", href: "/commodities" },
-      { key: "analysis", label: "Market Analysis", href: "/analysis" },
-      { key: "reports", label: "Reports", href: "/reports" },
+      { key: "analysis", label: "Market Analysis", href: "/market-analysis" },
+      { key: "reports", label: "Energy Reports", href: "/trends" },
       { key: "trends", label: "Trends", href: "/trends" }
     ]
   }
