@@ -116,425 +116,279 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
             {/* Map Section */}
             <div className="lg:col-span-2">
               <div className="relative bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-300 shadow-inner" style={{ aspectRatio: '2/1' }}>
-                {/* SVG World Map with Accurate Geography and Country Borders */}
+                {/* Static World Map Background */}
+                <img 
+                  src={worldMapPath} 
+                  alt="World Map" 
+                  className="w-full h-full object-cover"
+                />
+                
+                {/* SVG Overlay for Interactive Elements */}
                 <svg 
                   viewBox="0 0 1000 500" 
-                  className="w-full h-full"
-                  style={{ backgroundColor: '#bfdbfe' }}
+                  className="absolute inset-0 w-full h-full"
+                  style={{ pointerEvents: 'none' }}
                 >
-                  {/* Ocean background */}
-                  <rect width="1000" height="500" fill="#bfdbfe" />
+                  <defs>
+                    {/* Drop shadow filter */}
+                    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feDropShadow dx="2" dy="4" stdDeviation="3" floodColor="#000000" floodOpacity="0.3"/>
+                    </filter>
+                  </defs>
                   
-                  {/* Country territories with geographically accurate shapes */}
-                  <g>
-                    {/* North America */}
-                    {/* United States - continental */}
+                  {/* Interactive Country Overlays */}
+                  <g style={{ pointerEvents: 'auto' }}>
+                    {/* Ukraine - positioned over real Ukraine on map */}
                     <path 
-                      d="M50,160 L60,140 L80,135 L120,130 L160,135 L180,140 L220,145 L260,150 L300,155 L320,165 L325,175 L330,185 L325,195 L315,205 L300,215 L280,220 L250,225 L220,230 L180,235 L140,230 L100,225 L70,220 L50,210 L45,190 L48,175 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Alaska */}
-                    <path 
-                      d="M25,120 L50,115 L65,120 L70,135 L65,145 L50,150 L35,145 L25,135 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Canada */}
-                    <path 
-                      d="M50,60 L80,55 L120,50 L160,55 L200,60 L240,65 L280,70 L320,75 L350,85 L360,95 L355,105 L345,115 L320,125 L280,120 L240,115 L200,110 L160,105 L120,100 L80,105 L50,100 L40,90 L45,75 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Mexico */}
-                    <path 
-                      d="M80,240 L120,235 L160,240 L200,245 L220,255 L215,265 L200,270 L180,275 L150,270 L120,265 L90,260 L80,250 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Central America */}
-                    <path 
-                      d="M200,270 L220,275 L235,285 L230,295 L220,300 L210,295 L200,285 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* South America */}
-                    {/* Brazil */}
-                    <path 
-                      d="M240,300 L280,295 L320,305 L340,320 L350,340 L355,360 L350,380 L340,395 L320,405 L300,410 L280,405 L260,400 L245,385 L240,365 L238,345 L240,325 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Argentina */}
-                    <path 
-                      d="M260,405 L280,400 L295,410 L300,430 L295,450 L280,455 L265,450 L260,430 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Chile */}
-                    <path 
-                      d="M250,400 L265,405 L268,425 L265,445 L260,460 L255,445 L252,425 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Europe */}
-                    {/* United Kingdom */}
-                    <path 
-                      d="M410,120 L425,115 L430,125 L425,135 L415,140 L405,135 L405,125 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* France */}
-                    <path 
-                      d="M420,140 L440,135 L455,145 L450,160 L435,165 L420,160 L415,150 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Germany */}
-                    <path 
-                      d="M440,125 L460,120 L475,130 L470,145 L455,150 L440,145 L435,135 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Ukraine */}
-                    <path 
-                      d="M500,140 L530,135 L560,145 L565,160 L560,175 L545,185 L520,180 L500,170 L495,155 Z"
+                      d="M480,150 L510,145 L540,155 L545,170 L540,185 L525,195 L500,190 L480,180 L475,165 Z"
                       fill={getTerritoryColor('UA')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Ukraine'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Russia */}
+                    {/* Russia - positioned over real Russia on map */}
                     <path 
-                      d="M560,80 L620,75 L680,80 L740,85 L800,90 L860,95 L900,100 L920,110 L915,125 L900,135 L880,145 L860,150 L840,155 L820,160 L800,165 L780,170 L760,175 L740,180 L720,175 L700,170 L680,165 L660,160 L640,155 L620,150 L600,145 L580,140 L565,130 L560,115 L555,100 Z"
+                      d="M540,100 L600,95 L660,100 L720,105 L780,110 L840,115 L880,125 L875,140 L860,155 L840,165 L820,170 L800,175 L780,180 L760,185 L740,190 L720,185 L700,180 L680,175 L660,170 L640,165 L620,160 L600,155 L580,150 L560,145 L545,135 L540,120 Z"
                       fill={getTerritoryColor('RU')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Russia'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Middle East */}
-                    {/* Turkey */}
+                    {/* Syria - positioned over real Syria on map */}
                     <path 
-                      d="M490,180 L520,175 L545,185 L540,195 L520,200 L500,195 L485,185 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Syria */}
-                    <path 
-                      d="M520,200 L535,195 L545,205 L540,215 L525,220 L515,215 L515,205 Z"
+                      d="M510,200 L525,195 L535,205 L530,215 L515,220 L505,215 L505,205 Z"
                       fill={getTerritoryColor('SY')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Syria'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Israel/Palestine */}
+                    {/* Israel/Palestine - positioned over real Israel/Palestine on map */}
                     <path 
-                      d="M515,220 L525,215 L530,225 L525,235 L515,230 Z"
+                      d="M505,220 L515,215 L520,225 L515,235 L505,230 Z"
                       fill={getTerritoryColor('IL')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Gaza') || c.name.includes('Israel'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Iraq */}
+                    {/* Yemen - positioned over real Yemen on map */}
                     <path 
-                      d="M545,205 L565,200 L580,210 L575,225 L560,230 L545,225 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Iran */}
-                    <path 
-                      d="M580,200 L610,195 L630,205 L625,220 L610,230 L590,225 L580,215 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Saudi Arabia */}
-                    <path 
-                      d="M530,235 L570,230 L590,250 L585,270 L570,280 L540,275 L530,255 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Yemen */}
-                    <path 
-                      d="M540,275 L570,270 L580,285 L575,295 L560,300 L545,295 L540,285 Z"
+                      d="M530,275 L560,270 L570,285 L565,295 L550,300 L535,295 L530,285 Z"
                       fill={getTerritoryColor('YE')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Yemen'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Afghanistan */}
+                    {/* Afghanistan - positioned over real Afghanistan on map */}
                     <path 
-                      d="M630,200 L660,195 L680,205 L675,220 L665,235 L650,240 L635,235 L630,220 Z"
+                      d="M620,200 L650,195 L670,205 L665,220 L655,235 L640,240 L625,235 L620,220 Z"
                       fill={getTerritoryColor('AF')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Afghanistan'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Africa */}
-                    {/* Egypt */}
+                    {/* Mali - positioned over real Mali on map */}
                     <path 
-                      d="M500,235 L530,230 L540,250 L535,265 L520,270 L505,265 L500,250 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Libya */}
-                    <path 
-                      d="M470,240 L500,235 L510,255 L505,270 L485,275 L470,270 L465,255 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Mali */}
-                    <path 
-                      d="M420,270 L450,265 L470,275 L465,290 L450,300 L430,295 L420,285 Z"
+                      d="M410,270 L440,265 L460,275 L455,290 L440,300 L420,295 L410,285 Z"
                       fill={getTerritoryColor('ML')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Mali'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Nigeria */}
+                    {/* Sudan - positioned over real Sudan on map */}
                     <path 
-                      d="M450,300 L480,295 L490,310 L485,320 L470,325 L455,320 L450,310 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Sudan */}
-                    <path 
-                      d="M520,270 L550,265 L565,280 L560,300 L545,310 L530,305 L520,290 Z"
+                      d="M510,270 L540,265 L555,280 L550,300 L535,310 L520,305 L510,290 Z"
                       fill={getTerritoryColor('SD')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Sudan'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Ethiopia */}
+                    {/* Ethiopia - positioned over real Ethiopia on map */}
                     <path 
-                      d="M565,300 L590,295 L605,310 L600,325 L585,335 L570,330 L565,315 Z"
+                      d="M555,300 L580,295 L595,310 L590,325 L575,335 L560,330 L555,315 Z"
                       fill={getTerritoryColor('ET')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Ethiopia') || c.name.includes('Tigray'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* Kenya */}
+                    {/* China - positioned over real China on map */}
                     <path 
-                      d="M585,330 L605,325 L615,340 L610,350 L595,355 L585,350 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* DRC */}
-                    <path 
-                      d="M490,330 L530,325 L550,340 L545,360 L525,370 L505,365 L490,350 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* South Africa */}
-                    <path 
-                      d="M510,380 L540,375 L560,390 L555,405 L540,410 L520,405 L510,395 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Asia */}
-                    {/* China */}
-                    <path 
-                      d="M680,160 L740,155 L800,165 L840,175 L860,190 L855,210 L845,230 L830,245 L810,255 L790,260 L770,255 L750,250 L730,245 L710,240 L690,235 L680,220 L675,200 L680,180 Z"
+                      d="M670,160 L730,155 L790,165 L830,175 L850,190 L845,210 L835,230 L820,245 L800,255 L780,260 L760,255 L740,250 L720,245 L700,240 L680,235 L670,220 L665,200 L670,180 Z"
                       fill={getTerritoryColor('CN')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('China') || c.name.includes('South China Sea'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                     
-                    {/* India */}
+                    {/* Myanmar - positioned over real Myanmar on map */}
                     <path 
-                      d="M640,240 L680,235 L700,250 L710,270 L705,290 L690,305 L670,315 L650,310 L635,295 L630,275 L635,255 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Myanmar */}
-                    <path 
-                      d="M710,270 L730,265 L745,280 L740,295 L725,305 L715,300 L710,285 Z"
+                      d="M700,270 L720,265 L735,280 L730,295 L715,305 L705,300 L700,285 Z"
                       fill={getTerritoryColor('MM')}
+                      fillOpacity="0.6"
                       stroke="#1e293b"
-                      strokeWidth="1.5"
-                      className="hover:opacity-80 cursor-pointer"
+                      strokeWidth="2"
+                      className="hover:drop-shadow-lg hover:filter hover:brightness-110 cursor-pointer transition-all duration-200"
+                      style={{ filter: 'url(#dropShadow)' }}
                       onClick={() => {
                         const conflict = activeConflicts.find(c => c.name.includes('Myanmar'));
                         if (conflict) setSelectedConflict(conflict);
                       }}
-                    />
-                    
-                    {/* Thailand */}
-                    <path 
-                      d="M725,305 L745,300 L755,315 L750,330 L735,335 L725,330 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Vietnam */}
-                    <path 
-                      d="M755,280 L770,275 L780,290 L775,310 L765,325 L755,320 L750,305 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Indonesia */}
-                    <path 
-                      d="M750,335 L780,330 L810,340 L820,355 L815,365 L795,370 L775,365 L755,360 L750,345 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Japan */}
-                    <path 
-                      d="M860,200 L875,195 L885,205 L880,220 L870,225 L860,220 L855,210 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* South Korea */}
-                    <path 
-                      d="M840,220 L850,215 L855,225 L850,235 L840,230 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* Australia */}
-                    <path 
-                      d="M750,390 L800,385 L840,395 L870,405 L885,420 L880,440 L865,450 L840,455 L810,450 L780,445 L760,440 L750,425 L745,410 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
-                    />
-                    
-                    {/* New Zealand */}
-                    <path 
-                      d="M890,450 L905,445 L910,455 L905,465 L890,460 Z"
-                      fill="#e2e8f0"
-                      stroke="#475569"
-                      strokeWidth="0.8"
-                      className="hover:opacity-80"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow) brightness(1.1)';
+                        e.currentTarget.style.transform = 'scale(1.02)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'url(#dropShadow)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                     />
                   </g>
                 </svg>
