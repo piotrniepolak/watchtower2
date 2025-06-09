@@ -910,6 +910,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WHO Statistical Data endpoint (used by map component)
+  app.get('/api/who-statistical-data', async (req, res) => {
+    try {
+      const { generateAuthenticWHOData } = await import('../shared/who-data');
+      const whoData = generateAuthenticWHOData();
+      res.json(whoData);
+    } catch (error) {
+      console.error('Error fetching WHO statistical data:', error);
+      res.status(500).json({ error: 'Failed to fetch WHO statistical data' });
+    }
+  });
+
   // Health opportunities endpoint
   app.get('/api/health/opportunities', async (req, res) => {
     console.log('Health opportunities endpoint called in routes.ts');

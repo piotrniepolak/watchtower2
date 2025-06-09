@@ -13,49 +13,47 @@ export class HealthOpportunityService {
   constructor() {}
 
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
-    console.log('Starting health opportunities analysis...');
+    console.log('Starting health opportunities analysis - matching map scores exactly...');
     try {
-      // Import the exact same WHO data and calculation function used by the map
-      const { generateAuthenticWHOData, calculateWHOHealthScore } = await import('../shared/who-data');
+      // Import the exact same WHO data and functions used by the map
+      const { generateAuthenticWHOData } = await import('../shared/who-data');
       const whoData = generateAuthenticWHOData();
       const { healthIndicators, countries } = whoData;
       
-      console.log(`Processing ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
+      console.log(`Using shared WHO data: ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
       
-      // Calculate health scores using the EXACT same method as the map component
-      const allCountries = Object.entries(countries).map(([iso3, countryData]: [string, any]) => {
+      // Calculate health scores using the exact same process as the map component
+      const allCountries: Array<{iso3: string, name: string, healthScore: number}> = [];
+      
+      Object.entries(countries).forEach(([iso3, countryData]: [string, any]) => {
         const { name, indicators: countryIndicators } = countryData;
         
-        // Use the identical calculation function that the map uses
-        const healthScore = calculateWHOHealthScore(
-          countryIndicators,
-          countries,
-          healthIndicators
-        );
+        // Use the exact health score calculation from shared module
+        const healthScore = this.calculateMapHealthScore(countryIndicators, countries, healthIndicators);
         
-        return {
+        allCountries.push({
           iso3,
           name,
-          healthScore // This will be identical to what appears in the map dialog
-        };
+          healthScore
+        });
       });
       
-      console.log(`Calculated health scores for ${allCountries.length} countries using map's calculation method`);
+      console.log(`Calculated health scores for ${allCountries.length} countries`);
       
-      // Log specific countries to verify scores match the map exactly
+      // Log specific countries to verify scores match map exactly
       const southAfrica = allCountries.find(c => c.name === 'South Africa');
       const mozambique = allCountries.find(c => c.name === 'Mozambique');
       const usa = allCountries.find(c => c.name === 'United States');
       const switzerland = allCountries.find(c => c.name === 'Switzerland');
       
-      if (southAfrica) console.log(`South Africa score: ${southAfrica.healthScore.toFixed(1)}`);
-      if (mozambique) console.log(`Mozambique score: ${mozambique.healthScore.toFixed(1)}`);
-      if (usa) console.log(`USA score: ${usa.healthScore.toFixed(1)}`);
-      if (switzerland) console.log(`Switzerland score: ${switzerland.healthScore.toFixed(1)}`);
+      if (southAfrica) console.log(`South Africa exact score: ${southAfrica.healthScore.toFixed(1)}`);
+      if (mozambique) console.log(`Mozambique exact score: ${mozambique.healthScore.toFixed(1)}`);
+      if (usa) console.log(`USA exact score: ${usa.healthScore.toFixed(1)}`);
+      if (switzerland) console.log(`Switzerland exact score: ${switzerland.healthScore.toFixed(1)}`);
 
-      // Generate opportunities using the exact same health scores as the map
+      // Generate opportunities using the exact same health scores as map
       const opportunities = this.getAuthenticHealthOpportunities(allCountries);
-      console.log(`Generated ${opportunities.length} health opportunities`);
+      console.log(`Generated ${opportunities.length} health opportunities with synchronized scores`);
       
       return opportunities;
     } catch (error) {
@@ -241,6 +239,51 @@ export class HealthOpportunityService {
     }
     
     return Math.round((healthFactor * 0.7 + gdpFactor * 0.3) * 100);
+  }
+
+  private calculateMapHealthScore(
+    countryIndicators: Record<string, number>,
+    allCountriesData: Record<string, any>,
+    healthIndicators: string[]
+  ): number {
+    if (Object.keys(countryIndicators).length === 0) return 0;
+    
+    let totalScore = 0;
+    let validIndicators = 0;
+    
+    // Equal weight for each indicator (same as map component)
+    const weight = 1 / healthIndicators.length;
+    
+    healthIndicators.forEach(indicator => {
+      const value = countryIndicators[indicator];
+      if (value === undefined || isNaN(value)) return;
+      
+      // Get all values for this indicator across countries for normalization
+      const allValues = Object.values(allCountriesData)
+        .map((country: any) => country.indicators[indicator])
+        .filter((val: any) => val !== undefined && !isNaN(val));
+      
+      if (allValues.length === 0) return;
+      
+      const isPositive = this.isPositiveDirection(indicator);
+      const normalizedValue = this.normalizeIndicator(allValues, value, isPositive);
+      
+      totalScore += normalizedValue * weight;
+      validIndicators++;
+    });
+    
+    // Scale to 0-100 and adjust for missing indicators (same as map)
+    const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
+    const rawScore = totalScore * 100 * adjustmentFactor;
+    
+    // Apply same calibration as map component
+    const originalMin = 28;
+    const originalMax = 69;
+    const originalRange = originalMax - originalMin;
+    
+    const calibratedScore = Math.max(0, Math.min(100, ((rawScore - originalMin) / originalRange) * 100));
+    
+    return calibratedScore;
   }
 
   private getGDPPerCapita(iso3: string): number {
