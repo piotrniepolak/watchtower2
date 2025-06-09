@@ -50,7 +50,7 @@ const getSeverityLabel = (severity: string) => {
 export default function ConflictSeverityMap({ className }: ConflictMapProps) {
   const [selectedConflict, setSelectedConflict] = useState<Conflict | null>(null);
 
-  const { data: conflicts = [] } = useQuery({
+  const { data: conflicts = [] } = useQuery<Conflict[]>({
     queryKey: ["/api/conflicts"],
   });
 
@@ -90,7 +90,7 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                 </div>
                 
                 {/* Conflict Markers */}
-                {activeConflicts.map((conflict) => {
+                {activeConflicts.map((conflict: Conflict) => {
                   const position = conflictRegions[conflict.name as keyof typeof conflictRegions];
                   if (!position) return null;
                   
@@ -150,7 +150,7 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                     <p className="text-sm text-muted-foreground">{selectedConflict.description}</p>
                     <div className="space-y-2 text-sm">
                       <div><strong>Started:</strong> {new Date(selectedConflict.startDate).toLocaleDateString()}</div>
-                      <div><strong>Casualties:</strong> {selectedConflict.casualties?.toLocaleString() || 'Unknown'}</div>
+                      <div><strong>Duration:</strong> {selectedConflict.duration}</div>
                       <div><strong>Status:</strong> {selectedConflict.status}</div>
                     </div>
                     <Button 
@@ -189,7 +189,7 @@ export default function ConflictSeverityMap({ className }: ConflictMapProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {activeConflicts.map((conflict) => (
+                    {activeConflicts.map((conflict: Conflict) => (
                       <div
                         key={conflict.id}
                         className="flex items-center justify-between p-2 hover:bg-muted rounded cursor-pointer"
