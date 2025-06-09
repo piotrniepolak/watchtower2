@@ -1,0 +1,51 @@
+````markdown
+You are updating the `<WorldHealthMap>` component in our PharmaWatch dashboard to compute its healthiness score from **all** the columns in the WHO Statistical Annex dataset—except for the explicitly non‐health metrics like road traffic mortality and suicide mortality. The CSV at https://www.who.int/data/gho/whs-annex/ contains 38 columns; your task is to:
+
+1. **Fetch & parse the CSV**  
+   - Download the full WHO WHS Annex CSV.  
+   - Parse the header row to discover all 38 column names.
+
+2. **Filter out unrelated columns**  
+   - Exclude only these non-health indicators:  
+     - **Road traffic mortality rate**  
+     - **Suicide mortality rate**  
+   - Keep every other column (≈36 remaining) as part of your scoring.
+
+3. **Normalize each indicator**  
+   - For positive‐direction metrics (higher = better), normalize via  
+     \[
+       N = \frac{X - \min}{\max - \min}
+     \]  
+   - For negative‐direction metrics (lower = better), normalize via  
+     \[
+       N = \frac{\max - X}{\max - \min}
+     \]
+
+4. **Apply equal weights**  
+   - Assign each of the remaining indicators equal weight \(w = 1 / 36\).  
+   - Compute each country’s composite health score:  
+     ```js
+     const score = 100 * indicators.reduce(
+       (sum, key) => sum + w * normalize(key, valueByCountry[key]),
+       0
+     );
+     ```
+
+5. **Integrate with the map**  
+   - Build `healthScoresByIso = { USA: 82.3, FRA: 78.5, … }`.  
+   - In your `<Geography>` mapping, set  
+     ```jsx
+     fill={getCountryColor(healthScoresByIso[geo.properties.ISO_A3])}
+     ```  
+   - Maintain the green→yellow→red scale and hover‐lift/click‐to‐modal behavior.
+
+6. **Performance & caching**  
+   - Cache the parsed CSV & normalized scores locally so you don’t re‐download on every render.  
+
+Deliver a code diff or updated component that:  
+- Dynamically reads all columns of the WHO annex CSV  
+- Excludes only “Road traffic mortality rate” and “Suicide mortality rate”  
+- Normalizes & equally weights the remaining ≈36 health indicators  
+- Computes a 0–100 composite score per country  
+- Color‐codes each country on the map accordingly, preserving existing interactivity.  
+````
