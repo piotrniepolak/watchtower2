@@ -36,13 +36,34 @@ export default function MetricsCards() {
     }
 
     // Calculate total market cap from all tracked companies
-    let totalMarketCap = 2847.3; // Fixed realistic market cap for our portfolio
+    let totalMarketCap = 0;
     let totalChangePercent = 0;
     let validStocks = 0;
 
-    // Calculate average change percentage from valid stocks
     stocks.forEach(stock => {
       const changePercent = stock.changePercent !== undefined ? stock.changePercent : (stock as any).change_percent;
+      const marketCap = stock.marketCap || (stock as any).market_cap;
+      let marketCapValue = 0;
+      
+      // Parse market cap from API (e.g., "125.4B", "45.2M", "1.2T")
+      if (marketCap && typeof marketCap === 'string' && marketCap !== 'null' && marketCap !== null) {
+        const marketCapStr = marketCap.replace('$', '');
+        if (marketCapStr.includes('T')) {
+          marketCapValue = parseFloat(marketCapStr.replace('T', '')) * 1000; // Convert trillions to billions
+        } else if (marketCapStr.includes('B')) {
+          marketCapValue = parseFloat(marketCapStr.replace('B', ''));
+        } else if (marketCapStr.includes('M')) {
+          marketCapValue = parseFloat(marketCapStr.replace('M', '')) / 1000; // Convert millions to billions
+        } else if (!isNaN(parseFloat(marketCapStr))) {
+          // Handle plain numbers (assume they're in billions)
+          marketCapValue = parseFloat(marketCapStr);
+        }
+      }
+      
+      if (marketCapValue > 0) {
+        totalMarketCap += marketCapValue;
+      }
+      
       if (changePercent !== undefined && changePercent !== null) {
         totalChangePercent += changePercent;
         validStocks++;

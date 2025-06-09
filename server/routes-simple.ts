@@ -794,12 +794,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const correlationScore = calculateCorrelationScore();
 
+      // Calculate total market cap from all tracked companies
+      let totalMarketCap = 0;
+      let totalChangePercent = 0;
+      let validStocks = 0;
+
+      stocks.forEach(stock => {
+        const marketCap = stock.marketCap;
+        let marketCapValue = 0;
+        
+        // Parse market cap from API (e.g., "125.4B", "45.2M", "1.2T")
+        if (marketCap && typeof marketCap === 'string' && marketCap !== 'null' && marketCap !== null) {
+          const marketCapStr = marketCap.replace('$', '');
+          if (marketCapStr.includes('T')) {
+            marketCapValue = parseFloat(marketCapStr.replace('T', '')) * 1000; // Convert trillions to billions
+          } else if (marketCapStr.includes('B')) {
+            marketCapValue = parseFloat(marketCapStr.replace('B', ''));
+          } else if (marketCapStr.includes('M')) {
+            marketCapValue = parseFloat(marketCapStr.replace('M', '')) / 1000; // Convert millions to billions
+          } else if (!isNaN(parseFloat(marketCapStr))) {
+            // Handle plain numbers (assume they're in billions)
+            marketCapValue = parseFloat(marketCapStr);
+          }
+        }
+        
+        if (marketCapValue > 0) {
+          totalMarketCap += marketCapValue;
+        }
+        
+        if (stock.changePercent !== undefined && stock.changePercent !== null) {
+          totalChangePercent += stock.changePercent;
+          validStocks++;
+        }
+      });
+
+      // Format market cap for display
+      let marketCapDisplay = "$0.0B";
+      if (totalMarketCap > 0) {
+        if (totalMarketCap >= 1000) {
+          marketCapDisplay = `$${(totalMarketCap / 1000).toFixed(1)}T`;
+        } else {
+          marketCapDisplay = `$${totalMarketCap.toFixed(1)}B`;
+        }
+      }
+
       res.json({
         activeConflicts,
         totalConflicts,
         defenseStocks: defenseStocksFiltered.length,
         avgStockChange: parseFloat(avgStockChange.toFixed(2)),
         correlationScore: parseFloat(correlationScore.toFixed(2)),
+        marketCap: marketCapDisplay,
         defenseIndex: defenseIndexData ? {
           value: parseFloat(defenseIndexData.value.toFixed(2)),
           change: parseFloat(defenseIndexData.change.toFixed(2)),

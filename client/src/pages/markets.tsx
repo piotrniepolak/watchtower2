@@ -387,7 +387,7 @@ export default function Markets() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">Market Cap</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">$2.8T</p>
+                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">{metricsData?.marketCap || "$0.0B"}</p>
                   </div>
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
                     <DollarSign className="h-5 w-5 text-green-600" />
