@@ -1066,7 +1066,27 @@ export default function WorldHealthMapSimple() {
             <Activity className="h-5 w-5 text-blue-600" />
             Global Health Map - WHO Statistical Annex Data
           </CardTitle>
-          <p className="text-sm text-gray-600">Interactive world health visualization based on 36 WHO health indicators. Coverage: 175 of 195 UN member states (90% global coverage)</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600">Interactive world health visualization based on 36 WHO health indicators. Coverage: 175 of 195 UN member states (90% global coverage)</p>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
+                <span className="text-gray-600">High (67-100)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-amber-500 rounded-sm"></div>
+                <span className="text-gray-600">Medium (33-66)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                <span className="text-gray-600">Low (0-32)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
+                <span className="text-gray-600">No Data</span>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-400 to-blue-300 rounded-lg border border-gray-200 relative overflow-hidden">
@@ -1076,24 +1096,6 @@ export default function WorldHealthMapSimple() {
               className="w-full h-full"
             >
               <g id="countries"></g>
-              
-              {/* Dynamic Legend based on actual score ranges */}
-              <g transform="translate(50, 420)">
-                <rect x="0" y="0" width="350" height="60" fill="white" fillOpacity="0.9" rx="4" stroke="#e5e7eb" strokeWidth="1"/>
-                <text x="10" y="20" fontSize="12" fontWeight="600" fill="#374151">WHO Health Score (Range: {scoreRange.min}-{scoreRange.max})</text>
-                
-                <rect x="10" y="25" width="15" height="10" fill="#10b981" />
-                <text x="30" y="34" fontSize="10" fill="#374151">High ({Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67)}-{scoreRange.max})</text>
-                
-                <rect x="120" y="25" width="15" height="10" fill="#f59e0b" />
-                <text x="140" y="34" fontSize="10" fill="#374151">Medium ({Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.33)}-{Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.67)})</text>
-                
-                <rect x="250" y="25" width="15" height="10" fill="#ef4444" />
-                <text x="270" y="34" fontSize="10" fill="#374151">Low ({scoreRange.min}-{Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.33)})</text>
-                
-                <rect x="10" y="40" width="15" height="10" fill="#d1d5db" />
-                <text x="30" y="49" fontSize="10" fill="#374151">No Data (Limited WHO reporting)</text>
-              </g>
             </svg>
           </div>
         </CardContent>
