@@ -31,6 +31,7 @@ export const stocks = pgTable("stocks", {
   changePercent: real("change_percent").notNull(),
   volume: integer("volume").notNull(),
   marketCap: text("market_cap"),
+  sector: varchar("sector", { length: 50 }).default("Defense"),
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
 });
 
