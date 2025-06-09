@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import Navigation from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -350,18 +350,30 @@ export default function Markets() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
-                    <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
-                      ${itaData.price.toFixed(2)}
-                    </p>
+                    {ita && !Number.isNaN(ita.price) ? (
+                      <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
+                        ${ita.price.toFixed(2)}
+                      </p>
+                    ) : (
+                      <Skeleton className="h-8 w-24" />
+                    )}
                   </div>
-                  <div className={`w-10 h-10 ${itaData.change >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
-                    <TrendingUp className={`h-5 w-5 ${itaData.change >= 0 ? 'text-green-600' : 'text-red-600'}`} />
-                  </div>
+                  {ita && !Number.isNaN(ita.change) ? (
+                    <div className={`w-10 h-10 ${ita.change >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center flex-shrink-0 ml-2`}>
+                      <TrendingUp className={`h-5 w-5 ${ita.change >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                    </div>
+                  ) : (
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                  )}
                 </div>
                 <div className="flex items-center text-xs">
-                  <span className={`font-medium ${itaData.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {itaData.change >= 0 ? '+' : ''}{itaData.change.toFixed(2)}%
-                  </span>
+                  {ita && !Number.isNaN(ita.change) ? (
+                    <span className={`font-medium ${ita.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {ita.change >= 0 ? '+' : ''}{ita.change.toFixed(2)}%
+                    </span>
+                  ) : (
+                    <Skeleton className="h-4 w-16" />
+                  )}
                   <span className="text-slate-600 ml-1">(ITA) today</span>
                 </div>
               </CardContent>
