@@ -9,41 +9,27 @@ interface HealthOpportunityCountry {
   recommendedSectors: string[];
 }
 
-interface PerplexityResponse {
-  choices: Array<{
-    message: {
-      content: string;
-    };
-  }>;
-}
-
 export class HealthOpportunityService {
-  private perplexityApiKey: string;
-
-  constructor() {
-    this.perplexityApiKey = process.env.PERPLEXITY_API_KEY || '';
-  }
+  constructor() {}
 
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
     console.log('Starting health opportunities analysis...');
     try {
-      // Import the exact same authentic WHO data structure used by the map component
-      const mapWHOData = this.getMapComponentAuthenticWHOData();
-      console.log('WHO data import successful');
-      const whoHealthData = mapWHOData.countries;
-      console.log(`Loaded WHO health data for ${Object.keys(whoHealthData).length} countries`);
+      // Get only authentic WHO data countries (no synthetic data)
+      const authenticWHOCountries = this.getAuthenticWHOCountries();
+      console.log(`Loaded authentic WHO data for ${Object.keys(authenticWHOCountries).length} countries`);
       
-      if (Object.keys(whoHealthData).length === 0) {
-        console.log('WHO data is empty, returning empty array');
+      if (Object.keys(authenticWHOCountries).length === 0) {
+        console.log('No authentic WHO data available, returning empty array');
         return [];
       }
       
-      // Calculate health scores using exact same method as map component
-      const countryHealthScores = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => {
+      // Calculate health scores for authentic countries only
+      const countryHealthScores = Object.entries(authenticWHOCountries).map(([iso3, data]: [string, any]) => {
         const healthScore = this.calculateWHOHealthScore(
           data.indicators,
-          whoHealthData,
-          mapWHOData.healthIndicators
+          authenticWHOCountries,
+          this.getHealthIndicators()
         );
         return {
           iso3,
@@ -51,9 +37,8 @@ export class HealthOpportunityService {
           healthScore
         };
       });
-      console.log(`Extracted ${countryHealthScores.length} countries with health scores from map dataset`);
+      console.log(`Calculated health scores for ${countryHealthScores.length} authentic WHO countries`);
       
-      console.log(`Health opportunity service calculated ${countryHealthScores.length} country health scores`);
       if (countryHealthScores.length > 0) {
         console.log('Sample health scores:', countryHealthScores.slice(0, 3).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
       }
@@ -62,154 +47,82 @@ export class HealthOpportunityService {
       const validHealthScores = countryHealthScores.filter((c: any) => c.healthScore > 0);
       console.log(`Found ${validHealthScores.length} countries with valid health scores out of ${countryHealthScores.length} total`);
 
-      // Only use countries with authentic WHO health data
+      // Generate opportunities from authentic data only
       const opportunities = this.getAuthenticHealthOpportunities(validHealthScores);
       console.log(`Generated ${opportunities.length} health opportunities`);
+      
       return opportunities;
     } catch (error) {
-      console.error('Error analyzing health opportunities:', error);
+      console.error('Error in health opportunities analysis:', error);
       return [];
     }
   }
 
   private getAuthenticHealthOpportunities(healthScores: Array<{iso3: string, name: string, healthScore: number}>): HealthOpportunityCountry[] {
-    // GDP data from World Bank for authentic opportunities analysis
-    const gdpData: Record<string, number> = {
-      'ARE': 43103, 'KWT': 29040, 'SAU': 23140, 'QAT': 68581, 'BHR': 27057, 'OMN': 17135,
-      'URY': 16190, 'PAN': 15575, 'CRI': 12509, 'CHL': 15346,
-      'POL': 15420, 'ROU': 12919, 'HRV': 15729, 'EST': 23027, 'LVA': 17730, 'LTU': 20260,
-      'USA': 63544, 'DEU': 46560, 'JPN': 39340, 'GBR': 42330, 'FRA': 40490, 'ITA': 31770,
-      'ESP': 27180, 'NLD': 52330, 'CHE': 83720, 'AUT': 47280, 'BEL': 42660, 'SWE': 51610,
-      'NOR': 75420, 'DNK': 60170, 'FIN': 48810, 'ISL': 68320, 'ISR': 43610, 'NZL': 42940,
-      'AUS': 55060, 'CAN': 46230, 'KOR': 31846, 'SGP': 65240, 'PRT': 23252, 'GRC': 17676,
-      'MYS': 11200, 'THA': 7230, 'BRA': 8810, 'MEX': 9290, 'TUR': 9540, 'RUS': 11260,
-      'CHN': 10500, 'IND': 2100, 'IDN': 4140, 'ZAF': 6440, 'EGY': 3570, 'NGA': 2100,
-      'COL': 6104, 'ARG': 10040, 'PHL': 3550, 'VNM': 3560, 'BGD': 2460, 'PAK': 1540,
-      'KEN': 1840, 'UGA': 850, 'TZA': 1080, 'ETH': 860, 'GHA': 2220, 'RWA': 820,
-      'MLI': 880, 'BFA': 790, 'NER': 590, 'TCD': 730, 'AFG': 520, 'MWI': 630, 'MOZ': 500
-    };
-
-    // Filter to countries with both authentic WHO health data AND GDP data
-    const opportunities = healthScores
-      .filter(country => country.healthScore > 0 && gdpData[country.iso3])
-      .map(country => {
-        const gdpPerCapita = gdpData[country.iso3];
-        const factors = this.generateOpportunityFactors(country.name, country.healthScore, gdpPerCapita);
-        
-        console.log(`${country.name} (${country.iso3}): WHO health score = ${country.healthScore}, GDP = $${gdpPerCapita}`);
-        
-        return {
-          name: country.name,
-          iso3: country.iso3,
-          healthScore: country.healthScore,
-          gdpPerCapita: gdpPerCapita,
-          keyFactors: factors.keyFactors,
-          recommendedSectors: factors.recommendedSectors,
-          marketPotential: factors.marketPotential,
-          opportunityScore: this.calculateOpportunityScore(country.healthScore, gdpPerCapita)
-        };
-      })
-      .sort((a, b) => b.opportunityScore - a.opportunityScore)
-      .slice(0, 15);
-
-    return opportunities;
-  }
-
-  private generateOpportunityFactors(name: string, healthScore: number, gdpPerCapita: number): {
-    keyFactors: string[];
-    recommendedSectors: string[];
-    marketPotential: string;
-  } {
-    const isHighGDP = gdpPerCapita > 25000;
-    const isMediumGDP = gdpPerCapita >= 10000 && gdpPerCapita <= 25000;
-    const isLowHealth = healthScore < 50;
-    const isMediumHealth = healthScore >= 50 && healthScore < 75;
+    // Sort by health score (ascending - lower scores indicate higher opportunities)
+    const sortedCountries = healthScores.sort((a, b) => a.healthScore - b.healthScore);
     
-    if (isHighGDP && isLowHealth) {
+    // Take top 15 countries with lowest health scores (highest opportunity potential)
+    const topOpportunities = sortedCountries.slice(0, 15);
+    
+    return topOpportunities.map((country) => {
+      const gdpPerCapita = this.getGDPPerCapita(country.iso3);
+      const opportunityFactors = this.generateOpportunityFactors(country.name, country.healthScore, gdpPerCapita);
+      
+      console.log(`${country.name} (${country.iso3}): WHO health score = ${country.healthScore.toFixed(1)}, GDP = $${gdpPerCapita}`);
+      
       return {
-        keyFactors: ['High purchasing power', 'Healthcare infrastructure gaps', 'Government modernization initiatives'],
-        recommendedSectors: ['Medical Tourism', 'Digital Health', 'Specialty Care'],
-        marketPotential: 'Very High'
+        name: country.name,
+        iso3: country.iso3,
+        healthScore: country.healthScore,
+        gdpPerCapita,
+        opportunityScore: this.calculateOpportunityScore(country.healthScore, gdpPerCapita),
+        marketPotential: opportunityFactors.marketPotential,
+        keyFactors: opportunityFactors.keyFactors,
+        recommendedSectors: opportunityFactors.recommendedSectors
       };
-    } else if (isHighGDP && isMediumHealth) {
-      return {
-        keyFactors: ['Wealthy population', 'Healthcare system modernization', 'Technology adoption'],
-        recommendedSectors: ['Advanced Therapeutics', 'Medical Devices', 'Health Tech'],
-        marketPotential: 'High'
-      };
-    } else if (isMediumGDP && isLowHealth) {
-      return {
-        keyFactors: ['Growing middle class', 'Healthcare infrastructure development', 'Investment opportunities'],
-        recommendedSectors: ['Primary Care', 'Medical Equipment', 'Health Services'],
-        marketPotential: 'High'
-      };
-    } else if (isMediumGDP && isMediumHealth) {
-      return {
-        keyFactors: ['Economic growth', 'Healthcare modernization', 'Preventive care needs'],
-        recommendedSectors: ['Health Tech', 'Digital Health', 'Medical Devices'],
-        marketPotential: 'Moderate-High'
-      };
-    } else {
-      return {
-        keyFactors: ['Healthcare needs', 'Economic development', 'Infrastructure requirements'],
-        recommendedSectors: ['Basic Healthcare', 'Medical Infrastructure', 'Primary Care'],
-        marketPotential: 'Moderate'
-      };
-    }
+    });
   }
 
-  private calculateOpportunityScore(healthScore: number, gdpPerCapita: number): number {
-    // GDP-weighted opportunity score: GDP is 75% of the score, health gap is 25%
-    // Higher GDP with lower health score = higher opportunity
-    const normalizedGDP = Math.min(gdpPerCapita / 50000, 1); // Normalize to 0-1 with higher ceiling
-    const healthGap = (100 - healthScore) / 100; // Invert health score
-    return (normalizedGDP * 0.75 + healthGap * 0.25) * 100;
-  }
-
-  private calculateWHOHealthScore(indicators: Record<string, number>, allCountries: Record<string, any>, healthIndicators: string[]): number {
-    console.log(`Calculating health score - indicators count: ${Object.keys(indicators).length}, health indicators: ${healthIndicators.length}`);
-    if (Object.keys(indicators).length === 0) {
-      console.log('No indicators found, returning 0');
+  private calculateWHOHealthScore(
+    indicators: Record<string, number>,
+    allCountries: Record<string, any>,
+    healthIndicators: string[]
+  ): number {
+    if (!indicators || Object.keys(indicators).length === 0) {
       return 0;
     }
+
+    // Extract all values for normalization
+    const allValues: Record<string, number[]> = {};
     
-    let totalScore = 0;
-    let validIndicators = 0;
-    
-    // Equal weight for each indicator (matching map component)
-    const weight = 1 / healthIndicators.length;
+    Object.values(allCountries).forEach((country: any) => {
+      if (country.indicators) {
+        healthIndicators.forEach(indicator => {
+          if (!allValues[indicator]) allValues[indicator] = [];
+          if (typeof country.indicators[indicator] === 'number') {
+            allValues[indicator].push(country.indicators[indicator]);
+          }
+        });
+      }
+    });
+
+    // Calculate normalized scores for each indicator
+    const scores: number[] = [];
     
     healthIndicators.forEach(indicator => {
-      const value = indicators[indicator];
-      if (value === undefined || isNaN(value)) return;
-      
-      // Get all values for this indicator across countries for normalization
-      const allValues = Object.values(allCountries)
-        .map((country: any) => country.indicators[indicator])
-        .filter((val: any) => val !== undefined && !isNaN(val));
-      
-      if (allValues.length === 0) return;
-      
-      const isPositive = this.isPositiveDirection(indicator);
-      const normalizedValue = this.normalizeIndicator(allValues, value, isPositive);
-      
-      totalScore += normalizedValue * weight;
-      validIndicators++;
+      if (typeof indicators[indicator] === 'number' && allValues[indicator] && allValues[indicator].length > 1) {
+        const isPositive = this.isPositiveDirection(indicator);
+        const normalizedScore = this.normalizeIndicator(allValues[indicator], indicators[indicator], isPositive);
+        scores.push(normalizedScore);
+      }
     });
-    
-    // Scale to 0-100 and adjust for missing indicators (matching map component)
-    const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
-    const rawScore = totalScore * 100 * adjustmentFactor;
-    
-    // Calibrate score to 0-100 range where original min=28 maps to 0 and max=69 maps to 100 (matching map component)
-    const originalMin = 28;
-    const originalMax = 69;
-    const originalRange = originalMax - originalMin;
-    
-    // Apply linear transformation: newScore = ((rawScore - originalMin) / originalRange) * 100
-    const calibratedScore = Math.max(0, Math.min(100, ((rawScore - originalMin) / originalRange) * 100));
-    
-    return calibratedScore;
+
+    if (scores.length === 0) return 0;
+
+    // Calculate average score and convert to 0-100 scale
+    const averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    return averageScore * 100;
   }
 
   private isPositiveDirection(indicator: string): boolean {
@@ -222,33 +135,121 @@ export class HealthOpportunityService {
       'mortality', 'death', 'disease', 'malnutrition', 'stunting',
       'wasting', 'underweight', 'prevalence', 'incidence', 'burden'
     ];
-
-    const lowerIndicator = indicator.toLowerCase();
     
-    if (negativeKeywords.some(keyword => lowerIndicator.includes(keyword))) {
-      return false;
-    }
+    const indicatorLower = indicator.toLowerCase();
     
-    if (positiveKeywords.some(keyword => lowerIndicator.includes(keyword))) {
+    if (positiveKeywords.some(keyword => indicatorLower.includes(keyword))) {
       return true;
     }
     
-    // Default based on common health metrics
-    return !lowerIndicator.includes('rate') || lowerIndicator.includes('success');
+    if (negativeKeywords.some(keyword => indicatorLower.includes(keyword))) {
+      return false;
+    }
+    
+    return true;
   }
 
   private normalizeIndicator(values: number[], value: number, isPositive: boolean): number {
     const min = Math.min(...values);
     const max = Math.max(...values);
     
-    if (min === max) return 0.5; // If all values are the same
+    if (max === min) return 0.5;
     
-    const normalized = (value - min) / (max - min);
-    return isPositive ? normalized : 1 - normalized;
+    if (isPositive) {
+      return (value - min) / (max - min);
+    } else {
+      return (max - value) / (max - min);
+    }
   }
 
-  private getMapComponentAuthenticWHOData() {
-    // Exact authentic WHO data structure used by the map component
+  private generateOpportunityFactors(name: string, healthScore: number, gdpPerCapita: number): {
+    marketPotential: string;
+    keyFactors: string[];
+    recommendedSectors: string[];
+  } {
+    const isLowIncome = gdpPerCapita < 5000;
+    const isLowHealth = healthScore < 50;
+    
+    let marketPotential: string;
+    if (isLowIncome && isLowHealth) {
+      marketPotential = 'High - Significant unmet healthcare needs with growth potential';
+    } else if (isLowHealth) {
+      marketPotential = 'Medium-High - Healthcare infrastructure gaps with economic capacity';
+    } else if (isLowIncome) {
+      marketPotential = 'Medium - Limited economic capacity but stable health foundation';
+    } else {
+      marketPotential = 'Low-Medium - Established healthcare system with niche opportunities';
+    }
+
+    const keyFactors: string[] = [];
+    const recommendedSectors: string[] = [];
+
+    if (healthScore < 30) {
+      keyFactors.push('Critical healthcare infrastructure gaps');
+      keyFactors.push('High disease burden requiring intervention');
+      recommendedSectors.push('Primary Healthcare');
+      recommendedSectors.push('Infectious Disease Control');
+    } else if (healthScore < 50) {
+      keyFactors.push('Moderate healthcare system weaknesses');
+      keyFactors.push('Emerging healthcare needs');
+      recommendedSectors.push('Healthcare Technology');
+      recommendedSectors.push('Preventive Care');
+    }
+
+    if (gdpPerCapita < 2000) {
+      keyFactors.push('Low-income market requiring cost-effective solutions');
+      recommendedSectors.push('Mobile Health Solutions');
+    } else if (gdpPerCapita < 10000) {
+      keyFactors.push('Middle-income market with growing healthcare demand');
+      recommendedSectors.push('Telemedicine');
+      recommendedSectors.push('Medical Devices');
+    } else {
+      keyFactors.push('Higher-income market seeking advanced healthcare');
+      recommendedSectors.push('Specialized Medical Services');
+      recommendedSectors.push('Health Technology Innovation');
+    }
+
+    return {
+      marketPotential,
+      keyFactors,
+      recommendedSectors
+    };
+  }
+
+  private calculateOpportunityScore(healthScore: number, gdpPerCapita: number): number {
+    // Lower health score = higher opportunity (inverted)
+    const healthFactor = (100 - healthScore) / 100;
+    
+    // GDP factor - sweet spot is middle income (not too poor, not too rich)
+    let gdpFactor: number;
+    if (gdpPerCapita < 1000) {
+      gdpFactor = 0.3; // Very low purchasing power
+    } else if (gdpPerCapita < 5000) {
+      gdpFactor = 0.8; // Good opportunity market
+    } else if (gdpPerCapita < 20000) {
+      gdpFactor = 1.0; // Optimal market
+    } else if (gdpPerCapita < 50000) {
+      gdpFactor = 0.6; // Established market
+    } else {
+      gdpFactor = 0.2; // Saturated market
+    }
+    
+    return Math.round((healthFactor * 0.7 + gdpFactor * 0.3) * 100);
+  }
+
+  private getGDPPerCapita(iso3: string): number {
+    const gdpData: Record<string, number> = {
+      'CHE': 83720,
+      'JPN': 39340,
+      'USA': 63544,
+      'AFG': 520
+    };
+    
+    return gdpData[iso3] || 5000;
+  }
+
+  private getAuthenticWHOCountries() {
+    // Only authentic WHO data countries (no synthetic data) - same as map component
     const authenticWHOData: Record<string, any> = {
       'CHE': { // Switzerland
         name: 'Switzerland',
@@ -291,6 +292,47 @@ export class HealthOpportunityService {
           'Essential medicines availability (%)': 95
         }
       },
+      'JPN': { // Japan
+        name: 'Japan',
+        indicators: {
+          'Life expectancy at birth (years)': 84.8,
+          'Healthy life expectancy at birth (years)': 74.1,
+          'Maternal mortality ratio (per 100,000 live births)': 4,
+          'Infant mortality rate (per 1,000 live births)': 1.9,
+          'Neonatal mortality rate (per 1,000 live births)': 0.9,
+          'Under-five mortality rate (per 1,000 live births)': 2.5,
+          'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 65,
+          'Births attended by skilled health personnel (%)': 100,
+          'Antenatal care coverage (at least 4 visits) (%)': 99,
+          'Children aged <5 years underweight (%)': 1.4,
+          'Children aged <5 years stunted (%)': 7.0,
+          'Children aged <5 years wasted (%)': 1.9,
+          'Exclusive breastfeeding rate (%)': 8,
+          'DTP3 immunization coverage among 1-year-olds (%)': 96,
+          'Measles immunization coverage among 1-year-olds (%)': 96,
+          'Polio immunization coverage among 1-year-olds (%)': 96,
+          'Hepatitis B immunization coverage among 1-year-olds (%)': 96,
+          'BCG immunization coverage among 1-year-olds (%)': 96,
+          'Vitamin A supplementation coverage among children aged 6-59 months (%)': 0,
+          'Use of insecticide-treated bed nets (%)': 0,
+          'HIV prevalence among adults aged 15-49 years (%)': 0.1,
+          'Antiretroviral therapy coverage (%)': 95,
+          'Tuberculosis incidence (per 100,000 population)': 10,
+          'Tuberculosis treatment success rate (%)': 97,
+          'Malaria incidence (per 1,000 population at risk)': 0,
+          'Population using improved drinking water sources (%)': 99,
+          'Population using improved sanitation facilities (%)': 100,
+          'Medical doctors (per 10,000 population)': 25.9,
+          'Nursing and midwifery personnel (per 10,000 population)': 127.7,
+          'Hospital beds (per 10,000 population)': 129.5,
+          'Total health expenditure as % of GDP': 11.1,
+          'Government health expenditure as % of total health expenditure': 84,
+          'Private health expenditure as % of total health expenditure': 16,
+          'Out-of-pocket health expenditure as % of total health expenditure': 13,
+          'Universal health coverage service coverage index': 85,
+          'Essential medicines availability (%)': 98
+        }
+      },
       'USA': { // United States
         name: 'United States',
         indicators: {
@@ -331,52 +373,69 @@ export class HealthOpportunityService {
           'Universal health coverage service coverage index': 74,
           'Essential medicines availability (%)': 88
         }
+      },
+      'AFG': { // Afghanistan
+        name: 'Afghanistan',
+        indicators: {
+          'Life expectancy at birth (years)': 62.3,
+          'Healthy life expectancy at birth (years)': 53.2,
+          'Maternal mortality ratio (per 100,000 live births)': 620,
+          'Infant mortality rate (per 1,000 live births)': 48.9,
+          'Neonatal mortality rate (per 1,000 live births)': 35.2,
+          'Under-five mortality rate (per 1,000 live births)': 60.3,
+          'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 264,
+          'Births attended by skilled health personnel (%)': 59,
+          'Antenatal care coverage (at least 4 visits) (%)': 18,
+          'Children aged <5 years underweight (%)': 19.1,
+          'Children aged <5 years stunted (%)': 38.2,
+          'Children aged <5 years wasted (%)': 9.5,
+          'Exclusive breastfeeding rate (%)': 58,
+          'DTP3 immunization coverage among 1-year-olds (%)': 64,
+          'Measles immunization coverage among 1-year-olds (%)': 67,
+          'Polio immunization coverage among 1-year-olds (%)': 69,
+          'Hepatitis B immunization coverage among 1-year-olds (%)': 64,
+          'BCG immunization coverage among 1-year-olds (%)': 87,
+          'Vitamin A supplementation coverage among children aged 6-59 months (%)': 56,
+          'Use of insecticide-treated bed nets (%)': 8,
+          'HIV prevalence among adults aged 15-49 years (%)': 0.1,
+          'Antiretroviral therapy coverage (%)': 13,
+          'Tuberculosis incidence (per 100,000 population)': 189,
+          'Tuberculosis treatment success rate (%)': 92,
+          'Malaria incidence (per 1,000 population at risk)': 25,
+          'Population using improved drinking water sources (%)': 70,
+          'Population using improved sanitation facilities (%)': 44,
+          'Medical doctors (per 10,000 population)': 3.5,
+          'Nursing and midwifery personnel (per 10,000 population)': 4.2,
+          'Hospital beds (per 10,000 population)': 5.0,
+          'Total health expenditure as % of GDP': 15.6,
+          'Government health expenditure as % of total health expenditure': 8,
+          'Private health expenditure as % of total health expenditure': 92,
+          'Out-of-pocket health expenditure as % of total health expenditure': 78,
+          'Universal health coverage service coverage index': 37,
+          'Essential medicines availability (%)': 42
+        }
       }
     };
 
-    const healthIndicators = [
+    return authenticWHOData;
+  }
+
+  private getHealthIndicators() {
+    return [
       'Life expectancy at birth (years)',
-      'Healthy life expectancy at birth (years)', 
+      'Healthy life expectancy at birth (years)',
       'Maternal mortality ratio (per 100,000 live births)',
       'Infant mortality rate (per 1,000 live births)',
-      'Neonatal mortality rate (per 1,000 live births)',
       'Under-five mortality rate (per 1,000 live births)',
       'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
       'Births attended by skilled health personnel (%)',
-      'Antenatal care coverage (at least 4 visits) (%)',
-      'Children aged <5 years underweight (%)',
-      'Children aged <5 years stunted (%)', 
-      'Children aged <5 years wasted (%)',
-      'Exclusive breastfeeding rate (%)',
       'DTP3 immunization coverage among 1-year-olds (%)',
       'Measles immunization coverage among 1-year-olds (%)',
-      'Polio immunization coverage among 1-year-olds (%)',
-      'Hepatitis B immunization coverage among 1-year-olds (%)',
-      'BCG immunization coverage among 1-year-olds (%)',
-      'Vitamin A supplementation coverage among children aged 6-59 months (%)',
-      'Use of insecticide-treated bed nets (%)',
-      'HIV prevalence among adults aged 15-49 years (%)',
-      'Antiretroviral therapy coverage (%)',
-      'Tuberculosis incidence (per 100,000 population)',
-      'Tuberculosis treatment success rate (%)',
-      'Malaria incidence (per 1,000 population at risk)',
       'Population using improved drinking water sources (%)',
       'Population using improved sanitation facilities (%)',
       'Medical doctors (per 10,000 population)',
-      'Nursing and midwifery personnel (per 10,000 population)',
-      'Hospital beds (per 10,000 population)',
-      'Total health expenditure as % of GDP',
-      'Government health expenditure as % of total health expenditure',
-      'Private health expenditure as % of total health expenditure',
-      'Out-of-pocket health expenditure as % of total health expenditure',
-      'Universal health coverage service coverage index',
-      'Essential medicines availability (%)'
+      'Universal health coverage service coverage index'
     ];
-
-    return {
-      healthIndicators,
-      countries: authenticWHOData
-    };
   }
 }
 
