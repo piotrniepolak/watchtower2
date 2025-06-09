@@ -61,7 +61,7 @@ function Router() {
       <Route path="/outbreaks" component={Outbreaks} />
       <Route path="/pharma" component={Pharma} />
       <Route path="/research" component={ResearchIntel} />
-      <Route path="/studies" component={CaseStudies} />
+      <Route path="/case-studies" component={CaseStudies} />
       <Route path="/regulations" component={Regulations} />
       <Route path="/commodities" component={Commodities} />
       <Route path="/trends" component={Trends} />

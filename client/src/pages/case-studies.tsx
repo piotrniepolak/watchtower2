@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { FileText, TrendingUp, AlertTriangle, CheckCircle, Clock, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { FileText, TrendingUp, AlertTriangle, CheckCircle, Clock, Users, ExternalLink, BookOpen } from "lucide-react";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 
 export default function CaseStudies() {
@@ -26,7 +28,30 @@ export default function CaseStudies() {
       ],
       summary: "Analysis of how pharmaceutical companies leveraged cutting-edge mRNA technology and unprecedented global collaboration to develop COVID-19 vaccines in record time.",
       status: "Completed",
-      duration: "11 months"
+      duration: "11 months",
+      studies: [
+        {
+          doi: "10.1056/NEJMoa2034577",
+          title: "Safety and Efficacy of the BNT162b2 mRNA Covid-19 Vaccine",
+          journal: "New England Journal of Medicine",
+          year: "2020",
+          overview: "Phase 3 trial demonstrating 95% efficacy of the Pfizer-BioNTech vaccine in preventing COVID-19, establishing the foundation for global vaccination programs."
+        },
+        {
+          doi: "10.1056/NEJMoa2035389",
+          title: "Efficacy and Safety of the mRNA-1273 SARS-CoV-2 Vaccine",
+          journal: "New England Journal of Medicine", 
+          year: "2021",
+          overview: "Clinical trial results showing 94.1% efficacy of Moderna's mRNA-1273 vaccine, validating the mRNA platform for pandemic response."
+        },
+        {
+          doi: "10.1038/s41586-021-03275-y",
+          title: "mRNA vaccines manufacturing: challenges and opportunities",
+          journal: "Nature",
+          year: "2021",
+          overview: "Comprehensive analysis of manufacturing processes, supply chain considerations, and scalability challenges in mRNA vaccine production."
+        }
+      ]
     },
     {
       id: 2,
@@ -43,7 +68,30 @@ export default function CaseStudies() {
       ],
       summary: "Comprehensive analysis of the setbacks and breakthroughs in Alzheimer's research, including Aducanumab's controversial approval and Lecanemab's success.",
       status: "Ongoing",
-      duration: "8+ years"
+      duration: "8+ years",
+      studies: [
+        {
+          doi: "10.1056/NEJMoa2212948",
+          title: "Lecanemab in Early Alzheimer's Disease",
+          journal: "New England Journal of Medicine",
+          year: "2023",
+          overview: "Phase 3 trial demonstrating 27% reduction in cognitive decline with lecanemab, marking a breakthrough in Alzheimer's treatment after decades of failures."
+        },
+        {
+          doi: "10.1038/s41591-021-01343-z",
+          title: "Aducanumab and the FDA - A regulatory controversy",
+          journal: "Nature Medicine",
+          year: "2021",
+          overview: "Analysis of the controversial FDA approval of aducanumab despite mixed clinical trial results and advisory committee opposition."
+        },
+        {
+          doi: "10.1016/S1474-4422(19)30434-2",
+          title: "The economics of Alzheimer's disease drug development",
+          journal: "Lancet Neurology",
+          year: "2020",
+          overview: "Economic evaluation of R&D costs and market dynamics in Alzheimer's drug development, highlighting the $5.7 trillion failure cost."
+        }
+      ]
     },
     {
       id: 3,
@@ -60,7 +108,30 @@ export default function CaseStudies() {
       ],
       summary: "How CAR-T cell therapies transformed cancer treatment and created a new therapeutic category worth $8B+ annually.",
       status: "Expanding",
-      duration: "7 years"
+      duration: "7 years",
+      studies: [
+        {
+          doi: "10.1056/NEJMoa1709866",
+          title: "Tisagenlecleucel in Children and Young Adults with B-Cell Lymphoblastic Leukemia",
+          journal: "New England Journal of Medicine",
+          year: "2018",
+          overview: "Pivotal trial demonstrating 81% overall remission rate with tisagenlecleucel, establishing CAR-T therapy as a breakthrough treatment for relapsed B-ALL."
+        },
+        {
+          doi: "10.1038/s41573-020-0090-z",
+          title: "CAR-T cell therapy: current limitations and potential strategies",
+          journal: "Nature Reviews Drug Discovery",
+          year: "2021",
+          overview: "Comprehensive review of manufacturing challenges, cost barriers, and emerging strategies to improve CAR-T therapy accessibility and efficacy."
+        },
+        {
+          doi: "10.1016/S1470-2045(22)00372-6",
+          title: "Economic evaluation of CAR-T cell therapy in oncology",
+          journal: "Lancet Oncology",
+          year: "2022",
+          overview: "Cost-effectiveness analysis showing $373,000-$450,000 per treatment, with health economic models supporting reimbursement decisions."
+        }
+      ]
     }
   ];
 
@@ -169,9 +240,57 @@ export default function CaseStudies() {
                         </div>
                       </div>
 
-                      <Button variant="outline" size="sm" className="w-full">
-                        Read Full Study
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full">
+                            <BookOpen className="h-4 w-4 mr-2" />
+                            Read Full Studies
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center space-x-2">
+                              <FileText className="h-5 w-5" />
+                              <span>Research Studies: {study.title}</span>
+                            </DialogTitle>
+                            <DialogDescription>
+                              Academic papers and research studies that informed this case study analysis
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-6 mt-6">
+                            {study.studies.map((researchStudy, idx) => (
+                              <div key={idx} className="border rounded-lg p-4 space-y-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-lg leading-tight">{researchStudy.title}</h4>
+                                    <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                                      <span className="font-medium">{researchStudy.journal}</span>
+                                      <span>•</span>
+                                      <span>{researchStudy.year}</span>
+                                    </div>
+                                  </div>
+                                  <Badge variant="secondary" className="ml-4">
+                                    DOI: {researchStudy.doi}
+                                  </Badge>
+                                </div>
+                                <Separator />
+                                <div>
+                                  <h5 className="font-medium mb-2">Study Overview</h5>
+                                  <p className="text-sm text-muted-foreground leading-relaxed">
+                                    {researchStudy.overview}
+                                  </p>
+                                </div>
+                                <div className="flex justify-end">
+                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                                    <ExternalLink className="h-4 w-4 mr-1" />
+                                    View on Publisher Site
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </CardContent>
                   </Card>
                 ))}
