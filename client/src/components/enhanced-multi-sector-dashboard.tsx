@@ -28,6 +28,13 @@ export default function EnhancedMultiSectorDashboard() {
     return 'defense';
   };
   
+  // Get route based on sector
+  const getRouteFromSector = (sector: string) => {
+    if (sector === 'healthcare') return '/pharmawatch';
+    if (sector === 'energy') return '/energywatch';
+    return '/';
+  };
+  
   const [currentSector, setCurrentSector] = useState(() => getSectorFromRoute(location));
   
   // Update sector when route changes
@@ -37,6 +44,12 @@ export default function EnhancedMultiSectorDashboard() {
       setCurrentSector(newSector);
     }
   }, [location, currentSector]);
+  
+  // Handle sector change with navigation
+  const handleSectorChange = (newSector: string) => {
+    const newRoute = getRouteFromSector(newSector);
+    window.location.href = newRoute;
+  };
 
   // Fetch sector-specific data
   const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery({
@@ -347,7 +360,7 @@ export default function EnhancedMultiSectorDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <MultiSectorNavigation 
         currentSector={currentSector} 
-        onSectorChange={setCurrentSector} 
+        onSectorChange={handleSectorChange} 
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

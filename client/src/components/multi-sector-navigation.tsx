@@ -160,8 +160,8 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               </div>
             </Link>
 
-            {/* Sector Selector - Only show on dashboard */}
-            {location === "/" && (
+            {/* Sector Selector - Show on all dashboard routes */}
+            {(location === "/" || location === "/pharmawatch" || location === "/energywatch") && (
               <div className="ml-6">
                 <Select value={currentSector} onValueChange={onSectorChange}>
                   <SelectTrigger className="w-36 h-8 text-xs border-slate-300">
@@ -174,7 +174,7 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
                         <span>Defense</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="health">
+                    <SelectItem value="healthcare">
                       <div className="flex items-center space-x-2">
                         <Pill className="h-4 w-4 text-green-600" />
                         <span>Health</span>
