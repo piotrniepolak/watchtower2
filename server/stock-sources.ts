@@ -47,7 +47,7 @@ export class StockDataManager {
     
     for (const symbol of majorSymbols) {
       const data = await this.fetchStockPrice(symbol);
-      if (data) stockData.push({ symbol, ...data });
+      if (data) stockData.push({ stockSymbol: symbol, ...data });
     }
     
     if (stockData.length > 0) {

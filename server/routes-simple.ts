@@ -643,61 +643,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const activeConflicts = conflicts.filter(c => c.status === 'Active').length;
       const totalConflicts = conflicts.length;
-      const defenseStocks = stocks.length;
+      const totalStocks = stocks.length;
       const avgStockChange = stocks.reduce((sum, stock) => sum + stock.changePercent, 0) / stocks.length;
 
-      // Fetch iShares US Aerospace & Defense ETF (ITA)
-      let defenseIndexData = null;
-      try {
-        const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/ITA`);
-        const data = await response.json();
+      // Calculate Defense Index from actual defense stocks
+      let defenseIndexData = { value: 100, change: 0, changePercent: 0 };
+      
+      const defenseStocksFiltered = stocks.filter(stock => 
+        stock.sector === 'Defense' || 
+        ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'HII', 'KTOS', 'LDOS', 'LHX', 'AVAV'].includes(stock.symbol)
+      );
+      
+      if (defenseStocksFiltered.length > 0) {
+        const weights = {
+          'LMT': 0.20, 'RTX': 0.18, 'NOC': 0.15, 'GD': 0.12, 'BA': 0.15,
+          'HII': 0.06, 'LHX': 0.08, 'LDOS': 0.03, 'KTOS': 0.02, 'AVAV': 0.01
+        };
         
-        if (data?.chart?.result?.[0]) {
-          const result = data.chart.result[0];
-          const meta = result.meta;
-          const currentPrice = meta.regularMarketPrice || meta.previousClose;
-          const previousClose = meta.previousClose;
-          const change = currentPrice - previousClose;
-          const changePercent = (change / previousClose) * 100;
+        let weightedPrice = 0;
+        let weightedChangePercent = 0;
+        let totalWeight = 0;
+        
+        defenseStocksFiltered.forEach(stock => {
+          const weight = weights[stock.symbol as keyof typeof weights] || 0.01;
+          const normalizedPrice = stock.price / 100; // Normalize to index scale
+          weightedPrice += normalizedPrice * weight;
+          weightedChangePercent += stock.changePercent * weight;
+          totalWeight += weight;
+        });
+        
+        if (totalWeight > 0) {
+          const indexValue = (weightedPrice / totalWeight) * 100;
+          const indexChangePercent = weightedChangePercent / totalWeight;
+          const indexChange = (indexValue * indexChangePercent) / 100;
           
           defenseIndexData = {
-            price: currentPrice,
-            change: change,
-            changePercent: changePercent
+            value: indexValue,
+            change: indexChange,
+            changePercent: indexChangePercent
           };
-          console.log(`Successfully fetched iShares US Aerospace & Defense ETF (ITA): $${currentPrice.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
-        }
-      } catch (error) {
-        console.log('Failed to fetch ITA ETF data, using fallback calculation');
-        
-        // Fallback: Calculate from major defense stocks
-        const majorDefenseStocks = stocks.filter(stock => 
-          ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'HWM', 'LDOS', 'LHX'].includes(stock.symbol)
-        );
-        
-        if (majorDefenseStocks.length > 0) {
-          const weights = {
-            'LMT': 0.22, 'RTX': 0.20, 'NOC': 0.16, 'GD': 0.14, 'BA': 0.12,
-            'HWM': 0.06, 'LDOS': 0.05, 'LHX': 0.05
-          };
-          
-          let weightedPrice = 0;
-          let weightedChange = 0;
-          let totalWeight = 0;
-          
-          majorDefenseStocks.forEach(stock => {
-            const weight = weights[stock.symbol as keyof typeof weights] || 0;
-            weightedPrice += stock.price * weight;
-            weightedChange += stock.changePercent * weight;
-            totalWeight += weight;
-          });
-          
-          defenseIndexData = {
-            price: (weightedPrice / totalWeight) * 0.5, // Scale to ETF price range
-            change: 0,
-            changePercent: weightedChange / totalWeight
-          };
-          console.log(`Calculated Defense ETF estimate: $${defenseIndexData.price.toFixed(2)} (${defenseIndexData.changePercent >= 0 ? '+' : ''}${defenseIndexData.changePercent.toFixed(2)}%)`);
+          console.log(`Defense Index calculated: ${indexValue.toFixed(2)} (${indexChangePercent >= 0 ? '+' : ''}${indexChangePercent.toFixed(2)}%) from ${defenseStocksFiltered.length} defense stocks`);
         }
       }
 
@@ -708,7 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Higher correlation when high-severity conflicts correlate with positive defense stock performance
         const severityWeight = highSeverityConflicts / Math.max(totalConflicts, 1);
-        const performanceWeight = positiveStockPerformance / Math.max(defenseStocks, 1);
+        const performanceWeight = positiveStockPerformance / Math.max(totalStocks, 1);
         
         // Calculate correlation based on geopolitical tensions driving defense spending
         const baseCorrelation = 0.65; // Historical baseline
@@ -723,11 +708,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         activeConflicts,
         totalConflicts,
-        defenseStocks,
+        defenseStocks: defenseStocksFiltered.length,
         avgStockChange: parseFloat(avgStockChange.toFixed(2)),
         correlationScore: parseFloat(correlationScore.toFixed(2)),
         defenseIndex: defenseIndexData ? {
-          value: parseFloat(defenseIndexData.price.toFixed(2)),
+          value: parseFloat(defenseIndexData.value.toFixed(2)),
           change: parseFloat(defenseIndexData.change.toFixed(2)),
           changePercent: parseFloat(defenseIndexData.changePercent.toFixed(2))
         } : null
