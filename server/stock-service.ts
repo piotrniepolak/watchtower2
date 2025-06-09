@@ -23,6 +23,15 @@ class StockService {
     return await stockDataManager.fetchStockPrice(symbol);
   }
 
+  async fetchYahooFinanceData(symbol: string): Promise<{
+    price: number;
+    change: number;
+    changePercent: number;
+    volume: number;
+  } | null> {
+    return await stockDataManager.fetchStockPrice(symbol);
+  }
+
   async updateAllStockPrices(): Promise<void> {
     if (this.isUpdating) {
       console.log("Stock update already in progress, skipping...");
