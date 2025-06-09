@@ -803,33 +803,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activeConflicts = conflicts.filter(c => c.status === "Active").length;
       const totalConflicts = conflicts.length;
       
-      // Get authentic ITA ETF data from Yahoo Finance through stock service
-      let defenseIndexValue = 183.11; // Default fallback
-      let defenseIndexChange = 0.64; // Default fallback
-      let itaPrice = 183.11;
-      let itaChange = 1.17;
-      let itaChangePercent = 0.64;
+      // Calculate Defense Index from actual defense stocks
+      let defenseIndexValue = 100; // Base index value
+      let defenseIndexChange = 0;
+      let defenseIndexChangePercent = 0;
       
-      try {
-        // Try to get real ITA data from our stock service
-        const itaData = await stockService.fetchYahooFinanceData('ITA');
-        if (itaData && itaData.price) {
-          defenseIndexValue = itaData.price;
-          defenseIndexChange = itaData.changePercent || 0;
-          itaPrice = itaData.price;
-          itaChange = itaData.change || 0;
-          itaChangePercent = itaData.changePercent || 0;
-        }
-      } catch (error) {
-        console.log('Using fallback ITA data - Yahoo Finance may be rate limited');
-      }
-      
-      // Calculate total market cap from defense stocks only
+      // Get defense stocks with weights based on market cap and importance
       const defenseStocks = stocks.filter(stock => 
         stock.sector === 'Defense' || 
         ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'HII', 'KTOS', 'LDOS', 'LHX', 'AVAV'].includes(stock.symbol)
       );
       
+      if (defenseStocks.length > 0) {
+        // Define weights for major defense companies
+        const stockWeights: { [key: string]: number } = {
+          'LMT': 0.20,  // Lockheed Martin - largest defense contractor
+          'RTX': 0.18,  // Raytheon Technologies
+          'NOC': 0.15,  // Northrop Grumman
+          'GD': 0.12,   // General Dynamics
+          'BA': 0.15,   // Boeing (defense portion)
+          'HII': 0.06,  // Huntington Ingalls
+          'LHX': 0.08,  // L3Harris Technologies
+          'LDOS': 0.03, // Leidos
+          'KTOS': 0.02, // Kratos Defense
+          'AVAV': 0.01  // AeroVironment
+        };
+        
+        let weightedPrice = 0;
+        let weightedChangePercent = 0;
+        let totalWeight = 0;
+        
+        defenseStocks.forEach(stock => {
+          const weight = stockWeights[stock.symbol] || 0.01; // Small weight for other defense stocks
+          
+          // Normalize stock prices to index scale (average around 100)
+          const normalizedPrice = (stock.price / 200) * 100; // Rough normalization
+          
+          weightedPrice += normalizedPrice * weight;
+          weightedChangePercent += stock.changePercent * weight;
+          totalWeight += weight;
+        });
+        
+        if (totalWeight > 0) {
+          defenseIndexValue = weightedPrice / totalWeight;
+          defenseIndexChangePercent = weightedChangePercent / totalWeight;
+          defenseIndexChange = (defenseIndexValue * defenseIndexChangePercent) / 100;
+        }
+        
+        console.log(`Defense Index calculated: ${defenseIndexValue.toFixed(2)} (${defenseIndexChangePercent >= 0 ? '+' : ''}${defenseIndexChangePercent.toFixed(2)}%) from ${defenseStocks.length} defense stocks`);
+      }
+      
+      // Calculate total market cap from defense stocks
       const totalMarketCap = defenseStocks.reduce((sum, stock) => {
         if (!stock.marketCap) return sum;
         
@@ -867,8 +891,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalConflicts,
         defenseIndex: {
           value: defenseIndexValue,
-          change: itaChange,
-          changePercent: itaChangePercent
+          change: defenseIndexChange,
+          changePercent: defenseIndexChangePercent
         },
         marketCap: `$${totalMarketCap.toFixed(1)}B`,
         correlationScore,
