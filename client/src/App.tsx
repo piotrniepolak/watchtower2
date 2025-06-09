@@ -39,6 +39,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={EnhancedMultiSectorDashboard} />
+      <Route path="/pharmawatch" component={EnhancedMultiSectorDashboard} />
+      <Route path="/energywatch" component={EnhancedMultiSectorDashboard} />
       <Route path="/landing" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />

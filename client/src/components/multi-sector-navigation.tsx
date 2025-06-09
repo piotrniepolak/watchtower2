@@ -42,18 +42,19 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "learning", label: "Learning", href: "/learning" }
     ]
   },
-  health: {
-    key: "health",
+  healthcare: {
+    key: "healthcare",
     name: "PharmaWatch",
     tagline: "Global Health & Disease Intelligence",
     icon: Pill,
     color: "from-green-600 to-teal-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/" },
-      { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
-      { key: "pharma", label: "Pharma Markets", href: "/pharma" },
-      { key: "research", label: "Research Intel", href: "/research" },
-      { key: "studies", label: "Case Studies", href: "/case-studies" }
+      { key: "dashboard", label: "Dashboard", href: "/pharmawatch" },
+      { key: "conflicts", label: "Conflicts", href: "/conflicts" },
+      { key: "markets", label: "Markets", href: "/markets" },
+      { key: "analysis", label: "AI Analysis", href: "/analysis" },
+      { key: "reports", label: "Reports", href: "/reports" },
+      { key: "learning", label: "Learning", href: "/learning" }
     ]
   },
   energy: {
@@ -63,11 +64,12 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Zap,
     color: "from-orange-600 to-red-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/" },
-      { key: "regulations", label: "Regulations", href: "/regulations" },
-      { key: "commodities", label: "Commodities", href: "/commodities" },
-      { key: "analysis", label: "Market Analysis", href: "/market-analysis" },
-      { key: "trends", label: "Trends", href: "/trends" }
+      { key: "dashboard", label: "Dashboard", href: "/energywatch" },
+      { key: "conflicts", label: "Conflicts", href: "/conflicts" },
+      { key: "markets", label: "Markets", href: "/markets" },
+      { key: "analysis", label: "AI Analysis", href: "/analysis" },
+      { key: "reports", label: "Reports", href: "/reports" },
+      { key: "learning", label: "Learning", href: "/learning" }
     ]
   }
 };

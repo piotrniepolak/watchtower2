@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -17,12 +18,25 @@ import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
 
-interface EnhancedMultiSectorDashboardProps {
-  defaultSector?: string;
-}
-
-export default function EnhancedMultiSectorDashboard({ defaultSector = "defense" }: EnhancedMultiSectorDashboardProps) {
-  const [currentSector, setCurrentSector] = useState(defaultSector);
+export default function EnhancedMultiSectorDashboard() {
+  const [location] = useLocation();
+  
+  // Determine sector based on current route
+  const getSectorFromRoute = (path: string) => {
+    if (path === '/pharmawatch') return 'healthcare';
+    if (path === '/energywatch') return 'energy';
+    return 'defense';
+  };
+  
+  const [currentSector, setCurrentSector] = useState(() => getSectorFromRoute(location));
+  
+  // Update sector when route changes
+  useEffect(() => {
+    const newSector = getSectorFromRoute(location);
+    if (newSector !== currentSector) {
+      setCurrentSector(newSector);
+    }
+  }, [location, currentSector]);
 
   // Fetch sector-specific data
   const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery({
