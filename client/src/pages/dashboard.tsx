@@ -31,18 +31,22 @@ export default function Dashboard() {
           {/* Top Metrics Row */}
           <MetricsCards />
 
+          {/* Active Conflicts Section - Priority Display */}
+          <ActiveConflictsList />
+
+          {/* Market Performance Section */}
+          <EnhancedChartsSection />
+
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
             {/* Left Column */}
             <div className="space-y-6 lg:space-y-8">
-              <ActiveConflictsList />
               <ConflictSeverityMap />
               <CorrelationAnalysis />
             </div>
 
             {/* Right Column */}
             <div className="space-y-6 lg:space-y-8">
-              <EnhancedChartsSection />
               <DailyNews />
             </div>
           </div>
