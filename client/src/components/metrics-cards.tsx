@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, DollarSign, Link, Wifi, WifiOff } from "lucide-react";
-import { MiniGeopoliticalLoader } from "@/components/geopolitical-loader";
+import { TrendingUp, DollarSign, Link } from "lucide-react";
 import { useRealTimeStocks } from "@/hooks/useRealTimeStocks";
-import type { Conflict } from "@shared/schema";
 
 export default function MetricsCards() {
   const { data: metrics, isLoading } = useQuery({
@@ -12,11 +10,6 @@ export default function MetricsCards() {
   });
 
   const { stocks, isConnected } = useRealTimeStocks();
-
-  const { data: conflicts } = useQuery({
-    queryKey: ["/api/conflicts"],
-    refetchInterval: 30000, // Real-time conflict data
-  });
 
   // Use calculated Defense Index from metrics API
   const calculateRealTimeMetrics = () => {
@@ -75,21 +68,7 @@ export default function MetricsCards() {
     );
   }
 
-  // Calculate critical/high intensity conflicts
-  const criticalHighConflicts = (conflicts as Conflict[] || [])
-    .filter(c => c.severity === "Critical" || c.severity === "High").length;
-
   const metricCards = [
-    {
-      title: "Active Conflicts",
-      value: `${(metrics as any)?.activeConflicts || 0} / ${(metrics as any)?.totalConflicts || 0}`,
-      change: criticalHighConflicts.toString(),
-      changeText: "critical/high intensity",
-      icon: AlertTriangle,
-      iconBg: "bg-red-100",
-      iconColor: "text-red-600",
-      changeColor: "text-red-600",
-    },
     {
       title: "Defense Index",
       value: `$${realTimeMetrics.defenseIndex}`,
@@ -123,7 +102,7 @@ export default function MetricsCards() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
       {metricCards.map((metric, index) => (
           <Card key={index} className="shadow-sm border border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
