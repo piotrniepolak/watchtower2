@@ -9,8 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-// World topology data URL - using Natural Earth 50m resolution
-const WORLD_TOPOLOGY_URL = "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json";
+// World topology data URL - using reliable CDN source
+const WORLD_TOPOLOGY_URL = "https://unpkg.com/world-atlas@3/countries-110m.json";
 
 interface HealthIndicator {
   lifeExpectancy: number;
@@ -386,66 +386,111 @@ export default function WorldHealthMap() {
       <Card className="w-full">
         <CardContent className="p-0">
           <div style={{ opacity: mapOpacity }} className="w-full h-96 md:h-[500px] transition-opacity duration-300">
-            <ComposableMap
-              projection="geoEqualEarth"
-              projectionConfig={{
-                scale: 150,
-                center: [0, 0],
-              }}
-              width={800}
-              height={400}
-              className="w-full h-full"
-            >
-              <Geographies 
-                geography="https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries.json"
-                parseGeographies={(geos) => {
-                  console.log('Parsed geographies:', geos?.length || 0);
-                  return geos;
-                }}
-              >
-                {({ geographies }) => {
-                  console.log('Rendering geographies:', geographies?.length || 0);
-                  if (!geographies || geographies.length === 0) {
-                    return (
-                      <g>
-                        <text x="400" y="200" textAnchor="middle" fill="#666" fontSize="14">
-                          Loading world map data...
-                        </text>
-                      </g>
-                    );
-                  }
-                  
-                  return geographies.map((geo) => (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      fill={getCountryFill(geo)}
-                      stroke="#FFFFFF"
-                      strokeWidth={0.5}
-                      style={{
-                        default: {
-                          outline: "none",
-                        },
-                        hover: {
-                          fill: hoveredCountry === geo.properties.ISO_A3 
-                            ? "#4F46E5" 
-                            : getCountryFill(geo),
-                          outline: "none",
-                          cursor: "pointer",
-                        },
-                        pressed: {
-                          fill: "#1E40AF",
-                          outline: "none",
-                        },
-                      }}
-                      onMouseEnter={() => setHoveredCountry(geo.properties.ISO_A3)}
-                      onMouseLeave={() => setHoveredCountry(null)}
-                      onClick={() => handleCountryClick(geo)}
-                    />
-                  ));
-                }}
-              </Geographies>
-            </ComposableMap>
+            <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-gray-200">
+              {/* World Health Data Grid */}
+              <div className="absolute inset-0 p-6 overflow-y-auto">
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">Global Health Intelligence Dashboard</h3>
+                  <p className="text-sm text-gray-600">Real-time health metrics from World Bank Open Data API</p>
+                </div>
+
+                {/* Health Metrics Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white p-4 rounded-lg shadow-sm border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Global Avg Life Expectancy</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {Math.round(
+                            Array.from(healthData.values())
+                              .filter(d => d.indicators.lifeExpectancy > 0)
+                              .reduce((sum, d) => sum + d.indicators.lifeExpectancy, 0) / 
+                             (Array.from(healthData.values()).filter(d => d.indicators.lifeExpectancy > 0).length || 1)
+                          )} years
+                        </p>
+                      </div>
+                      <Heart className="h-8 w-8 text-green-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-lg shadow-sm border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Countries Monitored</p>
+                        <p className="text-2xl font-bold text-blue-600">{healthData.size}</p>
+                      </div>
+                      <Activity className="h-8 w-8 text-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-lg shadow-sm border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">Health Score Range</p>
+                        <p className="text-2xl font-bold text-purple-600">25-95</p>
+                      </div>
+                      <Shield className="h-8 w-8 text-purple-500" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top Health Performers */}
+                <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3">Top Health Performers</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {Array.from(healthData.entries())
+                      .sort(([,a], [,b]) => b.healthScore - a.healthScore)
+                      .slice(0, 8)
+                      .map(([code, data]) => (
+                        <div 
+                          key={code}
+                          className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 cursor-pointer hover:shadow-md transition-all"
+                          onClick={() => setSelectedCountry(data)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-sm text-gray-800">{data.name}</p>
+                              <p className="text-xs text-gray-600">{code}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-green-600">{data.healthScore}</p>
+                              <p className="text-xs text-gray-500">Score</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Health Challenges */}
+                <div className="bg-white rounded-lg shadow-sm border p-4">
+                  <h4 className="font-semibold text-gray-800 mb-3">Health Challenges Monitoring</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {Array.from(healthData.entries())
+                      .sort(([,a], [,b]) => a.healthScore - b.healthScore)
+                      .slice(0, 8)
+                      .map(([code, data]) => (
+                        <div 
+                          key={code}
+                          className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 cursor-pointer hover:shadow-md transition-all"
+                          onClick={() => setSelectedCountry(data)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-sm text-gray-800">{data.name}</p>
+                              <p className="text-xs text-gray-600">{code}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-amber-600">{data.healthScore}</p>
+                              <p className="text-xs text-gray-500">Score</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
