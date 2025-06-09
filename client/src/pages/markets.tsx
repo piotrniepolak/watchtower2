@@ -342,7 +342,7 @@ export default function Markets() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600 leading-tight">iShares Aerospace & Defense ETF</p>
+                    <p className="text-xs font-medium text-slate-600 leading-tight">Defense Sector Index</p>
                     {metricsData?.defenseIndex ? (
                       <p className="text-xl font-bold text-slate-900 mt-1 leading-tight">
                         ${(typeof metricsData.defenseIndex === 'object' && 'value' in metricsData.defenseIndex 
@@ -370,7 +370,7 @@ export default function Markets() {
                   ) : (
                     <Skeleton className="h-4 w-16" />
                   )}
-                  <span className="text-slate-600 ml-1">(ITA) today</span>
+                  <span className="text-slate-600 ml-1">Defense Index today</span>
                 </div>
               </CardContent>
             </Card>

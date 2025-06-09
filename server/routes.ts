@@ -660,35 +660,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manual ITA ETF addition and update
+  // Manual stock data update
   app.post("/api/stocks/manual-update", async (req, res) => {
     try {
-      // Add ITA ETF if it doesn't exist
-      const stocks = await storage.getStocks();
-      const itaStock = stocks.find(s => s.symbol === 'ITA');
-      
-      if (!itaStock) {
-        console.log("Adding ITA ETF to database...");
-        await storage.createStock({
-          symbol: "ITA",
-          name: "iShares U.S. Aerospace & Defense ETF",
-          price: 183.0,
-          change: 0.0,
-          changePercent: 0.0,
-          volume: 0,
-          marketCap: "$3.2B",
-          sector: "Defense"
-        });
-        console.log("ITA ETF added successfully");
-      }
-
-      // Force update ITA with current Yahoo Finance data
+      // Force update all stock prices
       await stockService.updateAllStockPrices();
       
-      res.json({ success: true, message: "ITA ETF updated successfully" });
+      res.json({ success: true, message: "Stock data updated successfully" });
     } catch (error) {
-      console.error("Error updating ITA ETF:", error);
-      res.status(500).json({ error: "Failed to update ITA ETF" });
+      console.error("Error updating stock data:", error);
+      res.status(500).json({ error: "Failed to update stock data" });
     }
   });
 
