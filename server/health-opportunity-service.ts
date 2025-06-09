@@ -15,46 +15,46 @@ export class HealthOpportunityService {
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
     console.log('Starting health opportunities analysis...');
     try {
-      // Import the exact same WHO data function used by the map component
-      const { generateAuthenticWHOData } = await import('../shared/who-data');
-      const mapWHOData = generateAuthenticWHOData();
-      console.log('WHO data import successful');
-      const whoHealthData = mapWHOData.countries;
-      console.log(`Loaded WHO health data for ${Object.keys(whoHealthData).length} countries`);
+      // Import the exact same WHO data and calculation function used by the map
+      const { generateAuthenticWHOData, calculateWHOHealthScore } = await import('../shared/who-data');
+      const whoData = generateAuthenticWHOData();
+      const { healthIndicators, countries } = whoData;
       
-      if (Object.keys(whoHealthData).length === 0) {
-        console.log('WHO data is empty, returning empty array');
-        return [];
-      }
+      console.log(`Processing ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
       
-      // Use the pre-calculated health scores directly from the map data (identical to map display)
-      const countryHealthScores = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
-        iso3,
-        name: data.name,
-        healthScore: data.healthScore // Use exact score from map component
-      }));
-      console.log(`Extracted ${countryHealthScores.length} countries with health scores from map dataset`);
-      
-      if (countryHealthScores.length > 0) {
-        console.log('Sample health scores:', countryHealthScores.slice(0, 3).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
+      // Calculate health scores using the EXACT same method as the map component
+      const allCountries = Object.entries(countries).map(([iso3, countryData]: [string, any]) => {
+        const { name, indicators: countryIndicators } = countryData;
         
-        // Log specific countries for verification
-        const usaData = countryHealthScores.find((c: any) => c.name === 'United States');
-        const switzerlandData = countryHealthScores.find((c: any) => c.name === 'Switzerland');
-        if (usaData) console.log(`USA health score: ${usaData.healthScore.toFixed(1)}`);
-        if (switzerlandData) console.log(`Switzerland health score: ${switzerlandData.healthScore.toFixed(1)}`);
-        if (!usaData) console.log('USA not found in health data');
+        // Use the identical calculation function that the map uses
+        const healthScore = calculateWHOHealthScore(
+          countryIndicators,
+          countries,
+          healthIndicators
+        );
         
-        // Log all country names to verify what's available
-        console.log('Available countries:', countryHealthScores.map((c: any) => c.name).sort().slice(0, 10));
-      }
+        return {
+          iso3,
+          name,
+          healthScore // This will be identical to what appears in the map dialog
+        };
+      });
+      
+      console.log(`Calculated health scores for ${allCountries.length} countries using map's calculation method`);
+      
+      // Log specific countries to verify scores match the map exactly
+      const southAfrica = allCountries.find(c => c.name === 'South Africa');
+      const mozambique = allCountries.find(c => c.name === 'Mozambique');
+      const usa = allCountries.find(c => c.name === 'United States');
+      const switzerland = allCountries.find(c => c.name === 'Switzerland');
+      
+      if (southAfrica) console.log(`South Africa score: ${southAfrica.healthScore.toFixed(1)}`);
+      if (mozambique) console.log(`Mozambique score: ${mozambique.healthScore.toFixed(1)}`);
+      if (usa) console.log(`USA score: ${usa.healthScore.toFixed(1)}`);
+      if (switzerland) console.log(`Switzerland score: ${switzerland.healthScore.toFixed(1)}`);
 
-      // Filter for valid health scores
-      const validHealthScores = countryHealthScores.filter((c: any) => c.healthScore > 0);
-      console.log(`Found ${validHealthScores.length} countries with valid health scores out of ${countryHealthScores.length} total`);
-
-      // Generate opportunities using exact same data as map
-      const opportunities = this.getAuthenticHealthOpportunities(validHealthScores);
+      // Generate opportunities using the exact same health scores as the map
+      const opportunities = this.getAuthenticHealthOpportunities(allCountries);
       console.log(`Generated ${opportunities.length} health opportunities`);
       
       return opportunities;
