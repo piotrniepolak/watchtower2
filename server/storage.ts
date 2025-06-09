@@ -561,6 +561,7 @@ export class MemStorage implements IStorage {
         changePercent: 1.98,
         volume: 1250000,
         marketCap: "$120.5B",
+        sector: "defense",
         lastUpdated: new Date()
       },
       {
