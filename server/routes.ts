@@ -806,6 +806,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get authentic ITA ETF data from Yahoo Finance through stock service
       let defenseIndexValue = 183.11; // Default fallback
       let defenseIndexChange = 0.64; // Default fallback
+      let itaPrice = 183.11;
+      let itaChange = 1.17;
+      let itaChangePercent = 0.64;
       
       try {
         // Try to get real ITA data from our stock service
@@ -813,6 +816,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (itaData && itaData.price) {
           defenseIndexValue = itaData.price;
           defenseIndexChange = itaData.changePercent || 0;
+          itaPrice = itaData.price;
+          itaChange = itaData.change || 0;
+          itaChangePercent = itaData.changePercent || 0;
         }
       } catch (error) {
         console.log('Using fallback ITA data - Yahoo Finance may be rate limited');
@@ -863,6 +869,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         defenseIndexChange: `${defenseIndexChange >= 0 ? '+' : ''}${defenseIndexChange.toFixed(2)}%`,
         marketCap: `$${totalMarketCap.toFixed(1)}B`,
         correlationScore,
+        itaPrice,
+        itaChange,
+        itaChangePercent,
       });
     } catch (error) {
       console.error("Error in metrics endpoint:", error);
