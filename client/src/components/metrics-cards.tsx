@@ -11,7 +11,7 @@ export default function MetricsCards() {
 
   const { stocks, isConnected } = useRealTimeStocks();
 
-  // Use calculated Defense Index from metrics API
+  // Calculate real-time metrics using Yahoo Finance data
   const calculateRealTimeMetrics = () => {
     // Extract Defense Index data from the metrics API
     const defenseIndexData = (metrics as any)?.defenseIndex;
@@ -19,36 +19,59 @@ export default function MetricsCards() {
     const defenseIndexChangePercent = defenseIndexData?.changePercent || 0;
     const defenseIndexChange = `${defenseIndexChangePercent >= 0 ? '+' : ''}${defenseIndexChangePercent.toFixed(2)}%`;
     
-    // Calculate market cap based on defense stocks performance
+    // Calculate combined market cap from all tracked stocks
     if (!stocks || !Array.isArray(stocks)) {
       return {
         defenseIndex: defenseIndexValue.toFixed(2),
-        marketCap: "$580.6B",
+        marketCap: "Loading...",
         indexChange: defenseIndexChange,
-        marketCapChange: "+0.9%"
+        marketCapChange: "..."
       };
     }
 
-    // Calculate average change percentage for market cap trend from defense stocks
-    const defenseStocks = stocks.filter(stock => 
-      (stock as any).sector === 'Defense' || 
-      ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'HII', 'KTOS', 'LDOS', 'LHX', 'AVAV'].includes(stock.symbol)
-    );
+    // Calculate total market cap from all tracked companies using Yahoo Finance data
+    let totalMarketCap = 0;
+    let totalChangePercent = 0;
+    let validStocks = 0;
+
+    stocks.forEach(stock => {
+      if (stock.marketCap && typeof stock.marketCap === 'string') {
+        // Parse market cap from Yahoo Finance (e.g., "125.4B", "45.2M")
+        const marketCapStr = stock.marketCap.replace('$', '');
+        let marketCapValue = 0;
+        
+        if (marketCapStr.includes('T')) {
+          marketCapValue = parseFloat(marketCapStr.replace('T', '')) * 1000; // Convert trillions to billions
+        } else if (marketCapStr.includes('B')) {
+          marketCapValue = parseFloat(marketCapStr.replace('B', ''));
+        } else if (marketCapStr.includes('M')) {
+          marketCapValue = parseFloat(marketCapStr.replace('M', '')) / 1000; // Convert millions to billions
+        }
+        
+        if (marketCapValue > 0) {
+          totalMarketCap += marketCapValue;
+          totalChangePercent += (stock.changePercent || 0);
+          validStocks++;
+        }
+      }
+    });
+
+    // Calculate average change percentage
+    const avgChangePercent = validStocks > 0 ? totalChangePercent / validStocks : 0;
     
-    const avgChangePercent = defenseStocks.length > 0 
-      ? defenseStocks.reduce((sum, stock) => sum + (stock.changePercent || 0), 0) / defenseStocks.length
-      : 0.9;
-    
-    // Calculate estimated market cap based on defense stocks
-    const estimatedMarketCap = defenseStocks.length > 0 
-      ? (defenseStocks.reduce((sum, stock) => sum + (stock.price * 1000000), 0) / 1000000000).toFixed(1)
-      : "580.6";
+    // Format market cap display
+    let marketCapDisplay = "";
+    if (totalMarketCap >= 1000) {
+      marketCapDisplay = `$${(totalMarketCap / 1000).toFixed(2)}T`;
+    } else {
+      marketCapDisplay = `$${totalMarketCap.toFixed(1)}B`;
+    }
     
     return {
       defenseIndex: defenseIndexValue.toFixed(2),
-      marketCap: `$${estimatedMarketCap}B`,
+      marketCap: marketCapDisplay,
       indexChange: defenseIndexChange,
-      marketCapChange: `${avgChangePercent >= 0 ? '+' : ''}${(avgChangePercent * 0.8).toFixed(1)}%`
+      marketCapChange: `${avgChangePercent >= 0 ? '+' : ''}${avgChangePercent.toFixed(2)}%`
     };
   };
 
