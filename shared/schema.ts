@@ -1,7 +1,11 @@
-import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date, index, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
+
+// Import sector-specific schemas
+export * from "./health-schema";
+export * from "./energy-schema";
 
 export const conflicts = pgTable("conflicts", {
   id: serial("id").primaryKey(),
