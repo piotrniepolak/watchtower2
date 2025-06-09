@@ -45,6 +45,7 @@ export class HealthOpportunityService {
           whoHealthData,
           Object.keys(country.indicators)
         );
+        console.log(`Calculated health score for ${country.name}: ${healthScore.toFixed(2)}`);
         return {
           iso3: country.iso3,
           name: country.name,
@@ -53,11 +54,13 @@ export class HealthOpportunityService {
       });
       
       console.log(`Health opportunity service calculated ${countryHealthScores.length} country health scores`);
-      console.log('Sample health scores:', countryHealthScores.slice(0, 5).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
+      if (countryHealthScores.length > 0) {
+        console.log('Sample health scores:', countryHealthScores.slice(0, 3).map((c: any) => `${c.name}: ${c.healthScore.toFixed(1)}`));
+      }
 
       // Filter for valid health scores
       const validHealthScores = countryHealthScores.filter((c: any) => c.healthScore > 0);
-      console.log(`Found ${validHealthScores.length} countries with valid health scores`);
+      console.log(`Found ${validHealthScores.length} countries with valid health scores out of ${countryHealthScores.length} total`);
 
       // Only use countries with authentic WHO health data
       const opportunities = this.getAuthenticHealthOpportunities(validHealthScores);
