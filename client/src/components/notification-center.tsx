@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Bell, 
-  BellOff, 
+ 
   AlertTriangle, 
   TrendingUp, 
   Globe, 
@@ -190,11 +190,7 @@ export default function NotificationCenter() {
         className="relative"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {unreadCount > 0 ? (
-          <Bell className="w-5 h-5" />
-        ) : (
-          <BellOff className="w-5 h-5" />
-        )}
+        <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <Badge 
             variant="destructive" 
