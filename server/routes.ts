@@ -214,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Verify password
       const bcrypt = await import('bcrypt');
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = await bcrypt.compare(password, user.password ?? '');
       if (!isValidPassword) {
         return res.status(401).json({ message: "Invalid email or password" });
       }

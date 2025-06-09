@@ -387,15 +387,17 @@ export default function WorldHealthMapSimple() {
             currentTranslateY = newTranslateY;
             
             // Apply transform to the countries group
-            countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
-            countriesGroup.style.transformOrigin = '0 0';
+            if (countriesGroup instanceof HTMLElement || countriesGroup instanceof SVGElement) {
+              countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+              countriesGroup.style.transformOrigin = '0 0';
+            }
           };
           
           const handleMouseDown = (event: MouseEvent) => {
             isDragging = true;
             lastMouseX = event.clientX;
             lastMouseY = event.clientY;
-            svgElement.style.cursor = 'grabbing';
+            if (svgElement) svgElement.style.cursor = 'grabbing';
           };
           
           const handleMouseMove = (event: MouseEvent) => {
@@ -407,7 +409,9 @@ export default function WorldHealthMapSimple() {
             currentTranslateX += deltaX;
             currentTranslateY += deltaY;
             
-            countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+            if (countriesGroup instanceof HTMLElement || countriesGroup instanceof SVGElement) {
+              countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+            }
             
             lastMouseX = event.clientX;
             lastMouseY = event.clientY;
@@ -415,25 +419,29 @@ export default function WorldHealthMapSimple() {
           
           const handleMouseUp = () => {
             isDragging = false;
-            svgElement.style.cursor = 'grab';
+            if (svgElement) svgElement.style.cursor = 'grab';
           };
           
           // Add event listeners
-          svgElement.addEventListener('wheel', handleWheel, { passive: false });
-          svgElement.addEventListener('mousedown', handleMouseDown);
-          svgElement.addEventListener('mousemove', handleMouseMove);
-          svgElement.addEventListener('mouseup', handleMouseUp);
-          svgElement.addEventListener('mouseleave', handleMouseUp);
-          svgElement.style.cursor = 'grab';
-          
-          // Store cleanup function for later removal
-          (svgElement as any).zoomCleanup = () => {
-            svgElement.removeEventListener('wheel', handleWheel);
-            svgElement.removeEventListener('mousedown', handleMouseDown);
-            svgElement.removeEventListener('mousemove', handleMouseMove);
-            svgElement.removeEventListener('mouseup', handleMouseUp);
-            svgElement.removeEventListener('mouseleave', handleMouseUp);
-          };
+          if (svgElement) {
+            svgElement.addEventListener('wheel', handleWheel, { passive: false });
+            svgElement.addEventListener('mousedown', handleMouseDown);
+            svgElement.addEventListener('mousemove', handleMouseMove);
+            svgElement.addEventListener('mouseup', handleMouseUp);
+            svgElement.addEventListener('mouseleave', handleMouseUp);
+            svgElement.style.cursor = 'grab';
+            
+            // Store cleanup function for later removal
+            (svgElement as any).zoomCleanup = () => {
+              if (svgElement) {
+                svgElement.removeEventListener('wheel', handleWheel);
+                svgElement.removeEventListener('mousedown', handleMouseDown);
+                svgElement.removeEventListener('mousemove', handleMouseMove);
+                svgElement.removeEventListener('mouseup', handleMouseUp);
+                svgElement.removeEventListener('mouseleave', handleMouseUp);
+              }
+            };
+          }
 
           // Create country paths with health score coloring and interactivity
           (countries as any).features.forEach((country: any, index: number) => {

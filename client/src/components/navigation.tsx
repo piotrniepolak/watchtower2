@@ -63,11 +63,11 @@ export default function Navigation() {
 
   // Filter search results
   const searchResults = searchQuery ? [
-    ...(conflicts || []).filter(c => 
+    ...(Array.isArray(conflicts) ? conflicts : []).filter((c: any) => 
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.region.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 3),
-    ...(stocks || []).filter(s => 
+    ...(Array.isArray(stocks) ? stocks : []).filter((s: any) => 
       s.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.name.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 3)
