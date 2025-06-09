@@ -258,7 +258,7 @@ export default function WorldHealthMapSimple() {
         const path = geoPath().projection(projection);
 
         // Convert TopoJSON to GeoJSON
-        const countries = feature(countries110m, countries110m.objects.countries);
+        const countries: any = feature(world, world.objects.countries);
 
         // Clear existing content
         const svgElement = svgRef.current;
@@ -267,7 +267,7 @@ export default function WorldHealthMapSimple() {
           countriesGroup.innerHTML = '';
 
           // Create country paths
-          countries.features.forEach((country: any) => {
+          (countries as any).features.forEach((country: any) => {
             const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             pathElement.setAttribute('d', path(country) || '');
             
