@@ -27,7 +27,7 @@ export class HealthOpportunityService {
   async analyzeHealthOpportunities(): Promise<HealthOpportunityCountry[]> {
     console.log('Starting health opportunities analysis...');
     try {
-      // Calculate authentic WHO health scores for all countries
+      // Use the exact same health scores that are displayed on the world health map
       const { generateAuthenticWHOData } = await import('../shared/who-data');
       console.log('WHO data import successful');
       const whoDataResult = generateAuthenticWHOData();
@@ -39,28 +39,13 @@ export class HealthOpportunityService {
         return [];
       }
       
-      // Convert WHO data object to array format for processing
-      const countries = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
+      // Extract health scores directly from the map dataset (no recalculation)
+      const countryHealthScores = Object.entries(whoHealthData).map(([iso3, data]: [string, any]) => ({
         iso3,
         name: data.name,
-        indicators: data.indicators
+        healthScore: data.healthScore // Use pre-calculated score from map
       }));
-      console.log(`Converted ${countries.length} countries to array format`);
-      
-      // Calculate health scores for each country based on 36 WHO indicators
-      const countryHealthScores = countries.map((country: any) => {
-        const healthScore = this.calculateWHOHealthScore(
-          country.indicators,
-          whoHealthData,
-          Object.keys(country.indicators)
-        );
-        console.log(`Calculated health score for ${country.name}: ${healthScore.toFixed(2)}`);
-        return {
-          iso3: country.iso3,
-          name: country.name,
-          healthScore
-        };
-      });
+      console.log(`Extracted ${countryHealthScores.length} countries with health scores from map dataset`);
       
       console.log(`Health opportunity service calculated ${countryHealthScores.length} country health scores`);
       if (countryHealthScores.length > 0) {

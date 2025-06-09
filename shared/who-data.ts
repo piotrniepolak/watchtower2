@@ -1,5 +1,99 @@
 // WHO Statistical Annex data structure and generation functions
 
+// Health score calculation functions (same as map component)
+function isPositiveDirection(indicator: string): boolean {
+  const positiveKeywords = [
+    'coverage', 'access', 'births', 'skilled', 'immunization',
+    'vaccination', 'expectancy', 'density', 'improved', 'safe'
+  ];
+  
+  const negativeKeywords = [
+    'mortality', 'death', 'disease', 'malnutrition', 'stunting',
+    'wasting', 'underweight', 'prevalence', 'incidence', 'burden'
+  ];
+  
+  const indicatorLower = indicator.toLowerCase();
+  
+  // Check for positive indicators first
+  if (positiveKeywords.some(keyword => indicatorLower.includes(keyword))) {
+    return true;
+  }
+  
+  // Check for negative indicators
+  if (negativeKeywords.some(keyword => indicatorLower.includes(keyword))) {
+    return false;
+  }
+  
+  // Default to positive direction if unclear
+  return true;
+}
+
+// Normalize indicator values to 0-1 scale
+function normalizeIndicator(
+  values: number[], 
+  value: number, 
+  isPositive: boolean
+): number {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  
+  if (max === min) return 0.5; // Handle case where all values are the same
+  
+  if (isPositive) {
+    // Higher is better: (value - min) / (max - min)
+    return (value - min) / (max - min);
+  } else {
+    // Lower is better: (max - value) / (max - min)
+    return (max - value) / (max - min);
+  }
+}
+
+function calculateWHOHealthScore(
+  countryIndicators: Record<string, number>,
+  allCountriesData: Record<string, any>,
+  healthIndicators: string[]
+): number {
+  if (Object.keys(countryIndicators).length === 0) return 0;
+  
+  let totalScore = 0;
+  let validIndicators = 0;
+  
+  // Equal weight for each indicator
+  const weight = 1 / healthIndicators.length;
+  
+  healthIndicators.forEach(indicator => {
+    const value = countryIndicators[indicator];
+    if (value === undefined || isNaN(value)) return;
+    
+    // Get all values for this indicator across countries for normalization
+    const allValues = Object.values(allCountriesData)
+      .map((country: any) => country.indicators[indicator])
+      .filter((val: any) => val !== undefined && !isNaN(val));
+    
+    if (allValues.length === 0) return;
+    
+    const isPositive = isPositiveDirection(indicator);
+    const normalizedValue = normalizeIndicator(allValues, value, isPositive);
+    
+    totalScore += normalizedValue * weight;
+    validIndicators++;
+  });
+  
+  // Scale to 0-100 and adjust for missing indicators
+  const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
+  const rawScore = totalScore * 100 * adjustmentFactor;
+  
+  // Calibrate score to 0-100 range where original min=28 maps to 0 and max=69 maps to 100
+  const originalMin = 28;
+  const originalMax = 69;
+  const originalRange = originalMax - originalMin;
+  
+  // Apply linear transformation: newScore = ((rawScore - originalMin) / originalRange) * 100
+  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - originalMin) / originalRange) * 100));
+  
+  return calibratedScore;
+}
+
 export function generateAuthenticWHOData() {
   // Authentic WHO health indicators from Statistical Annex (excluding traffic & suicide mortality)
   const healthIndicators = [
@@ -43,9 +137,25 @@ export function generateAuthenticWHOData() {
 
   const countries = generateComprehensiveHealthData();
   
+  // Calculate health scores for all countries using the same algorithm as the map
+  const countriesWithScores: Record<string, any> = {};
+  
+  Object.entries(countries).forEach(([iso3, countryData]: [string, any]) => {
+    const healthScore = calculateWHOHealthScore(
+      countryData.indicators,
+      countries,
+      healthIndicators
+    );
+    
+    countriesWithScores[iso3] = {
+      ...countryData,
+      healthScore
+    };
+  });
+  
   return {
     healthIndicators,
-    countries
+    countries: countriesWithScores
   };
 }
 
