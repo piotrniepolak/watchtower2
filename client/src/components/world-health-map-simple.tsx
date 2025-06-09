@@ -368,6 +368,7 @@ export default function WorldHealthMapSimple() {
           const handleWheel = (event: WheelEvent) => {
             event.preventDefault();
             
+            if (!svgElement) return;
             const rect = svgElement.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
