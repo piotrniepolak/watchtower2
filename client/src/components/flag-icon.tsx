@@ -64,6 +64,27 @@ export default function FlagIcon({ countryCode, size = "sm", className = "" }: F
     "Hamas": "PS", // Use Palestine flag
     "ISIS": "XX", // No flag
     "Houthis": "YE", // Use Yemen flag
+    // Military and political entities
+    "Myanmar Military": "MM", // Use Myanmar flag
+    "Opposition Forces": "MM", // Use Myanmar flag
+    "Sudanese Armed Forces": "SD", // Use Sudan flag
+    "Rapid Support Forces": "SD", // Use Sudan flag
+    "Philippines": "PH",
+    "Vietnam": "VN",
+    "Malaysia": "MY",
+    "Thai Military": "TH",
+    "Cambodian Government": "KH",
+    "Ethiopian Federal Forces": "ET",
+    "Tigray Forces": "ET",
+    "Nigerian Military": "NG",
+    "Boko Haram": "NG",
+    "Malian Government": "ML",
+    "Wagner Group": "RU", // Use Russia flag
+    "Taliban": "AF", // Use Afghanistan flag
+    "Islamic State": "XX", // No flag
+    "Al-Qaeda": "XX", // No flag
+    "PKK": "TR", // Use Turkey flag (Kurdish organization)
+    "Peshmerga": "IQ", // Use Iraq flag
   };
 
   const getFlagEmoji = (input: string) => {
