@@ -24,6 +24,10 @@ import Quiz from "@/pages/quiz";
 import Settings from "@/pages/settings";
 import Discussions from "@/pages/discussions";
 import SetupUsername from "@/pages/setup-username";
+import Outbreaks from "@/pages/outbreaks";
+import Pharma from "@/pages/pharma";
+import Regulations from "@/pages/regulations";
+import Commodities from "@/pages/commodities";
 
 import NotFound from "@/pages/not-found";
 
@@ -49,6 +53,11 @@ function Router() {
       <Route path="/terms" component={Terms} />
       <Route path="/api" component={ApiDocs} />
       <Route path="/support" component={Support} />
+      <Route path="/discussions" component={Discussions} />
+      <Route path="/outbreaks" component={Outbreaks} />
+      <Route path="/pharma" component={Pharma} />
+      <Route path="/regulations" component={Regulations} />
+      <Route path="/commodities" component={Commodities} />
       <Route component={NotFound} />
     </Switch>
   );

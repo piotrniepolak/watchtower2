@@ -1076,6 +1076,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
   
+  // Health sector API endpoints
+  app.get('/api/sectors/health/events', async (req, res) => {
+    try {
+      const events = await healthService.fetchHealthEvents();
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching health events:', error);
+      res.status(500).json({ error: 'Failed to fetch health events' });
+    }
+  });
+
+  // Energy sector API endpoints  
+  app.get('/api/sectors/energy/events', async (req, res) => {
+    try {
+      const events = await energyService.fetchEnergyRegulations();
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching energy regulations:', error);
+      res.status(500).json({ error: 'Failed to fetch energy regulations' });
+    }
+  });
+
   // Set up periodic stock updates broadcast
   setInterval(broadcastStockUpdate, 30000); // Every 30 seconds
   
