@@ -1,0 +1,200 @@
+=== ALL COUNTRIES SUMMARY ===
+
+Total countries with data: 196
+
+AFG (Afghanistan): 48 indicators
+AGO (Angola): 43 indicators
+ALB (Albania): 48 indicators
+AND (Andorra): 29 indicators
+ARE (United Arab Emirates): 41 indicators
+ARG (Argentina): 49 indicators
+ARM (Armenia): 50 indicators
+ATG (Antigua and Barbuda): 30 indicators
+AUS (Australia): 44 indicators
+AUT (Austria): 40 indicators
+AZE (Azerbaijan): 43 indicators
+BDI (Burundi): 47 indicators
+BEL (Belgium): 45 indicators
+BEN (Benin): 49 indicators
+BFA (Burkina Faso): 52 indicators
+BGD (Bangladesh): 52 indicators
+BGR (Bulgaria): 43 indicators
+BHR (Bahrain): 41 indicators
+BHS (Bahamas): 32 indicators
+BIH (Bosnia and Herzegovina): 45 indicators
+BLR (Belarus): 47 indicators
+BLZ (Belize): 46 indicators
+BOL (Bolivia (Plurinational State of)): 47 indicators
+BRA (Brazil): 49 indicators
+BRB (Barbados): 38 indicators
+BRN (Brunei Darussalam): 37 indicators
+BTN (Bhutan): 49 indicators
+BWA (Botswana): 44 indicators
+CAF (Central African Republic): 43 indicators
+CAN (Canada): 43 indicators
+CHE (Switzerland): 43 indicators
+CHL (Chile): 45 indicators
+CHN (China): 43 indicators
+CIV (Côte d'Ivoire): 49 indicators
+CMR (Cameroon): 46 indicators
+COD (Democratic Republic of the Congo): 49 indicators
+COG (Congo): 37 indicators
+COK (Cook Islands): 26 indicators
+COL (Colombia): 53 indicators
+COM (Comoros): 41 indicators
+CPV (Cabo Verde): 42 indicators
+CRI (Costa Rica): 50 indicators
+CUB (Cuba): 43 indicators
+CYP (Cyprus): 43 indicators
+CZE (Czechia): 46 indicators
+DEU (Germany): 44 indicators
+DJI (Djibouti): 38 indicators
+DMA (Dominica): 23 indicators
+DNK (Denmark): 42 indicators
+DOM (Dominican Republic): 50 indicators
+DZA (Algeria): 44 indicators
+ECU (Ecuador): 48 indicators
+EGY (Egypt): 46 indicators
+ERI (Eritrea): 36 indicators
+ESP (Spain): 42 indicators
+EST (Estonia): 43 indicators
+ETH (Ethiopia): 52 indicators
+FIN (Finland): 46 indicators
+FJI (Fiji): 47 indicators
+FRA (France): 41 indicators
+FSM (Micronesia (Federated States of)): 32 indicators
+GAB (Gabon): 42 indicators
+GBR (United Kingdom): 45 indicators
+GEO (Georgia): 51 indicators
+GHA (Ghana): 52 indicators
+GIN (Guinea): 45 indicators
+GMB (Gambia): 49 indicators
+GNB (Guinea-Bissau): 47 indicators
+GNQ (Equatorial Guinea): 34 indicators
+GRC (Greece): 45 indicators
+GRD (Grenada): 37 indicators
+GTM (Guatemala): 44 indicators
+GUY (Guyana): 47 indicators
+HND (Honduras): 46 indicators
+HRV (Croatia): 41 indicators
+HTI (Haiti): 44 indicators
+HUN (Hungary): 41 indicators
+IDN (Indonesia): 50 indicators
+IND (India): 49 indicators
+IRL (Ireland): 43 indicators
+IRN (Iran (Islamic Republic of)): 47 indicators
+IRQ (Iraq): 49 indicators
+ISL (Iceland): 42 indicators
+ISR (Israel): 41 indicators
+ITA (Italy): 43 indicators
+JAM (Jamaica): 42 indicators
+JOR (Jordan): 47 indicators
+JPN (Japan): 44 indicators
+KAZ (Kazakhstan): 45 indicators
+KEN (Kenya): 51 indicators
+KGZ (Kyrgyzstan): 50 indicators
+KHM (Cambodia): 51 indicators
+KIR (Kiribati): 45 indicators
+KNA (Saint Kitts and Nevis): 21 indicators
+KOR (Republic of Korea): 47 indicators
+KWT (Kuwait): 42 indicators
+LAO (Lao People's Democratic Republic): 50 indicators
+LBN (Lebanon): 39 indicators
+LBR (Liberia): 47 indicators
+LBY (Libya): 35 indicators
+LCA (Saint Lucia): 39 indicators
+LKA (Sri Lanka): 49 indicators
+LSO (Lesotho): 47 indicators
+LTU (Lithuania): 45 indicators
+LUX (Luxembourg): 43 indicators
+LVA (Latvia): 47 indicators
+MAR (Morocco): 50 indicators
+MCO (Monaco): 21 indicators
+MDA (Republic of Moldova): 50 indicators
+MDG (Madagascar): 44 indicators
+MDV (Maldives): 43 indicators
+MEX (Mexico): 49 indicators
+MHL (Marshall Islands): 28 indicators
+MKD (North Macedonia): 50 indicators
+MLI (Mali): 51 indicators
+MLT (Malta): 47 indicators
+MMR (Myanmar): 50 indicators
+MNE (Montenegro): 48 indicators
+MNG (Mongolia): 49 indicators
+MOZ (Mozambique): 48 indicators
+MRT (Mauritania): 43 indicators
+MUS (Mauritius): 44 indicators
+MWI (Malawi): 50 indicators
+MYS (Malaysia): 48 indicators
+NAM (Namibia): 44 indicators
+NER (Niger): 47 indicators
+NGA (Nigeria): 51 indicators
+NIC (Nicaragua): 38 indicators
+NIU (Niue): 22 indicators
+NLD (Netherlands (Kingdom of the)): 43 indicators
+NOR (Norway): 39 indicators
+NPL (Nepal): 51 indicators
+NRU (Nauru): 32 indicators
+NZL (New Zealand): 40 indicators
+OMN (Oman): 41 indicators
+PAK (Pakistan): 47 indicators
+PAN (Panama): 45 indicators
+PER (Peru): 52 indicators
+PHL (Philippines): 52 indicators
+PLW (Palau): 29 indicators
+PNG (Papua New Guinea): 45 indicators
+POL (Poland): 45 indicators
+PRI (Puerto Rico): 12 indicators
+PRK (Democratic People's Republic of Korea): 36 indicators
+PRT (Portugal): 43 indicators
+PRY (Paraguay): 46 indicators
+PSE (occupied Palestinian territory, including east Jerusalem): 32 indicators
+QAT (Qatar): 44 indicators
+ROU (Romania): 44 indicators
+RUS (Russian Federation): 41 indicators
+RWA (Rwanda): 48 indicators
+SAU (Saudi Arabia): 45 indicators
+SDN (Sudan): 37 indicators
+SEN (Senegal): 51 indicators
+SGP (Singapore): 44 indicators
+SLB (Solomon Islands): 42 indicators
+SLE (Sierra Leone): 50 indicators
+SLV (El Salvador): 46 indicators
+SMR (San Marino): 25 indicators
+SOM (Somalia): 37 indicators
+SRB (Serbia): 48 indicators
+SSD (South Sudan): 39 indicators
+STP (Sao Tome and Principe): 48 indicators
+SUR (Suriname): 48 indicators
+SVK (Slovakia): 43 indicators
+SVN (Slovenia): 40 indicators
+SWE (Sweden): 42 indicators
+SWZ (Eswatini): 45 indicators
+SYC (Seychelles): 36 indicators
+SYR (Syrian Arab Republic): 36 indicators
+TCD (Chad): 48 indicators
+TGO (Togo): 50 indicators
+THA (Thailand): 50 indicators
+TJK (Tajikistan): 47 indicators
+TKM (Turkmenistan): 42 indicators
+TLS (Timor-Leste): 45 indicators
+TON (Tonga): 45 indicators
+TTO (Trinidad and Tobago): 38 indicators
+TUN (Tunisia): 50 indicators
+TUR (Türkiye): 48 indicators
+TUV (Tuvalu): 38 indicators
+TZA (United Republic of Tanzania): 53 indicators
+UGA (Uganda): 51 indicators
+UKR (Ukraine): 42 indicators
+URY (Uruguay): 42 indicators
+USA (United States of America): 45 indicators
+UZB (Uzbekistan): 44 indicators
+VCT (Saint Vincent and the Grenadines): 30 indicators
+VEN (Venezuela (Bolivarian Republic of)): 40 indicators
+VNM (Viet Nam): 46 indicators
+VUT (Vanuatu): 39 indicators
+WSM (Samoa): 46 indicators
+YEM (Yemen): 42 indicators
+ZAF (South Africa): 48 indicators
+ZMB (Zambia): 50 indicators
+ZWE (Zimbabwe): 49 indicators
