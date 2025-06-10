@@ -7,9 +7,19 @@ Extracts all South Africa indicators from CSV and compares with implementation
 import csv
 
 def extract_south_africa_csv_data():
-    """Extract ALL South Africa indicators from CSV"""
+    """Extract ALL South Africa indicators from CSV with proper disaggregation priority"""
     
-    south_africa_data = {}
+    # Disaggregation priority (highest to lowest)
+    priority_order = [
+        'NA',           # Main aggregate
+        'BTSX',         # Both sexes
+        'SEX_BTSX',     # Both sexes explicit
+        'TOTAL',        # Total aggregate
+        'ALL',          # All categories
+        '',             # Empty disaggregation
+    ]
+    
+    indicator_candidates = {}
     
     try:
         with open('attached_assets/Pasted-IndicatorName-IndicatorCode-Location-LocationCode-Year-Disaggregation-NumericValue-DisplayValue-Comm-1749582428287_1749582428290.txt', 'r', encoding='utf-8') as f:
@@ -19,6 +29,7 @@ def extract_south_africa_csv_data():
                 location = row['Location']
                 location_code = row['LocationCode']
                 indicator = row['IndicatorName']
+                disaggregation = row['Disaggregation']
                 numeric_value = row['NumericValue']
                 
                 # Only process South Africa
@@ -26,7 +37,21 @@ def extract_south_africa_csv_data():
                     if numeric_value and numeric_value.strip() and numeric_value != 'NO DATA':
                         try:
                             value = float(numeric_value)
-                            south_africa_data[indicator] = value
+                            
+                            # Determine priority score for this disaggregation
+                            priority_score = len(priority_order)  # Default lowest priority
+                            for i, priority_pattern in enumerate(priority_order):
+                                if priority_pattern in disaggregation or disaggregation == priority_pattern:
+                                    priority_score = i
+                                    break
+                            
+                            # Store if this is higher priority than existing entry
+                            if indicator not in indicator_candidates or priority_score < indicator_candidates[indicator]['priority']:
+                                indicator_candidates[indicator] = {
+                                    'value': value,
+                                    'priority': priority_score,
+                                    'disaggregation': disaggregation
+                                }
                         except ValueError:
                             continue
     
@@ -34,6 +59,8 @@ def extract_south_africa_csv_data():
         print("CSV file not found")
         return None
     
+    # Extract final values with only the highest priority entries
+    south_africa_data = {indicator: data['value'] for indicator, data in indicator_candidates.items()}
     return south_africa_data
 
 def get_implemented_south_africa_data():
