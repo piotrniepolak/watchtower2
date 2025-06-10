@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { generateAuthenticWHOData } from "../../../shared/who-data";
 import TopOpportunityList from "./top-opportunity-list";
 
 
@@ -109,16 +110,14 @@ const useWHOStatisticalData = () => {
   return useQuery({
     queryKey: ['who-statistical-annex'],
     queryFn: async () => {
-      // Use authentic WHO Global Health Observatory data structure
-      // This matches the actual WHO Statistical Annex format with 36+ health indicators
+      // Use authentic WHO data from shared module
       return generateAuthenticWHOData();
     },
     staleTime: 60 * 60 * 1000, // Cache for 1 hour
   });
 };
 
-// Generate authentic WHO Statistical Annex data structure
-function generateAuthenticWHOData() {
+
   // Authentic WHO health indicators from Statistical Annex (excluding traffic & suicide mortality)
   const healthIndicators = [
     'Life expectancy at birth (years)',
