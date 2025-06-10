@@ -1,4 +1,4 @@
-import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, ChevronDown, Activity, TrendingUp, BarChart3, FileText, BookOpen, Target, Shield, Pill, Zap } from "lucide-react";
+import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, ChevronDown, Activity, TrendingUp, BarChart3, FileText, BookOpen, Target, Shield, Pill, Zap, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -192,6 +192,19 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
             {/* Navigation links */}
             <div className="hidden md:block ml-8">
               <div className="flex items-center space-x-6">
+                {/* Home tab - always visible */}
+                <Link 
+                  href="/home" 
+                  className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center space-x-1 ${
+                    isActive("/home") 
+                      ? "bg-blue-100 text-blue-700" 
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
+                >
+                  <Home className="h-3 w-3" />
+                  <span>Home</span>
+                </Link>
+
                 {config.navigation.map((navItem) => (
                   <Link 
                     key={navItem.key}
