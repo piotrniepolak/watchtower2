@@ -694,16 +694,88 @@ export default function Analysis() {
                       </CardContent>
                     </Card>
 
-                    {/* Possible Outcomes */}
+                    {/* Outcome Visualization */}
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center">
                           <Target className="w-5 h-5 mr-2" />
-                          Possible Outcome Scenarios
+                          Scenario Outcome Analysis
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
+                        {/* Venn Diagram */}
+                        <div className="mb-8">
+                          <h4 className="font-semibold text-slate-900 mb-4">Outcome Relationship Diagram</h4>
+                          <div className="bg-slate-50 rounded-lg p-6 flex justify-center items-center min-h-[300px]">
+                            <svg width="400" height="300" viewBox="0 0 400 300" className="w-full max-w-md">
+                              {/* Background */}
+                              <rect width="400" height="300" fill="transparent" />
+                              
+                              {/* Circles for different outcome types */}
+                              {(storyline as ConflictStoryline).possibleOutcomes.map((outcome, index) => {
+                                const positions = [
+                                  { cx: 150, cy: 120, color: "#3b82f6" }, // Blue
+                                  { cx: 250, cy: 120, color: "#ef4444" }, // Red
+                                  { cx: 200, cy: 180, color: "#10b981" }, // Green
+                                  { cx: 200, cy: 80, color: "#f59e0b" },  // Orange
+                                ];
+                                const pos = positions[index] || positions[0];
+                                const radius = Math.max(40, Math.min(60, outcome.probability * 0.8));
+                                
+                                return (
+                                  <g key={index}>
+                                    <circle
+                                      cx={pos.cx}
+                                      cy={pos.cy}
+                                      r={radius}
+                                      fill={pos.color}
+                                      fillOpacity="0.3"
+                                      stroke={pos.color}
+                                      strokeWidth="2"
+                                    />
+                                    <text
+                                      x={pos.cx}
+                                      y={pos.cy - 10}
+                                      textAnchor="middle"
+                                      className="text-xs font-semibold fill-slate-800"
+                                    >
+                                      {outcome.scenario}
+                                    </text>
+                                    <text
+                                      x={pos.cx}
+                                      y={pos.cy + 5}
+                                      textAnchor="middle"
+                                      className="text-xs fill-slate-600"
+                                    >
+                                      {outcome.probability}%
+                                    </text>
+                                    <text
+                                      x={pos.cx}
+                                      y={pos.cy + 18}
+                                      textAnchor="middle"
+                                      className="text-xs fill-slate-500"
+                                    >
+                                      {outcome.timeline}
+                                    </text>
+                                  </g>
+                                );
+                              })}
+                              
+                              {/* Legend */}
+                              <text x="20" y="280" className="text-xs fill-slate-600 font-medium">
+                                Circle size represents probability • Overlaps show scenario relationships
+                              </text>
+                            </svg>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-2 text-center">
+                            Interactive visualization showing the probability and interconnections between different scenario outcomes. 
+                            Larger circles indicate higher probability scenarios, while overlapping areas suggest related outcomes.
+                          </p>
+                        </div>
+
+                        {/* Detailed Scenarios */}
                         <div className="space-y-4">
+                          <h4 className="font-semibold text-slate-900 mb-3">Detailed Scenario Analysis</h4>
                           {(storyline as ConflictStoryline).possibleOutcomes.map((outcome, index) => (
                             <div key={index} className="border border-slate-200 rounded-lg p-4">
                               <div className="flex items-center justify-between mb-3">
