@@ -144,7 +144,8 @@ export default function Analysis() {
             <div className="text-center">
               <Brain className="w-12 h-12 text-blue-600 animate-pulse mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-slate-900 mb-2">AI Analysis in Progress</h2>
-              <p className="text-slate-600">Generating conflict predictions and market insights...</p>
+              <p className="text-slate-600 mb-2">Generating conflict predictions and market insights...</p>
+              <p className="text-slate-500 text-sm">This process may take 30-60 seconds to complete.</p>
             </div>
           </div>
         </main>
