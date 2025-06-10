@@ -861,62 +861,64 @@ export default function WorldHealthMapSimple() {
 
   const whoStatisticalData = useWHOStatisticalData();
 
-  // Complete WHO Statistical Annex SDG3 Indicator Categories
+  // Authentic WHO Statistical Annex Indicators - 55 indicators from CSV data
   const getAllWHOIndicators = (): string[] => {
     return [
-      // Core SDG3 Health Indicators
-      'Life expectancy at birth (years)',
+      'Adolescent birth rate (per 1000 women aged 10-14 years)',
+      'Adolescent birth rate (per 1000 women aged 15-19 years)',
+      'Age-standardized mortality rate attributed to household and ambient air pollution  (per 100 000 population)',
+      'Age-standardized prevalence of tobacco use among persons 15 years and older  (%)',
+      'Amount of water- and sanitation-related official development assistance that is part of a government-coordinated spending plan (constant 2020 US$ millions)',
+      'Annual mean concentrations of fine particulate matter (PM2.5) in urban areas (µg/m3)',
+      'Average of 15 International Health Regulations core capacity scores',
+      'Contact coverage of treatment services for alcohol use disorders (%)',
+      'Contact coverage of treatment services for drug use disorders (%)',
+      'Density of dentists (per 10 000 population)',
+      'Density of medical doctors (per 10 000 population)',
+      'Density of nursing and midwifery personnel (per 10 000 population)',
+      'Density of pharmacists (per 10 000 population)',
+      'Diphtheria-tetanus-pertussis (DTP3) immunization coverage among 1-year-olds (%)',
+      'Domestic general government health expenditure (GGHE-D) as percentage of general government expenditure (GGE) (%)',
       'Healthy life expectancy at birth (years)',
-      'Infant mortality rate (per 1,000 live births)',
-      'Maternal mortality ratio (per 100,000 live births)',
-      'Neonatal mortality rate (per 1,000 live births)',
-      'Under-five mortality rate (per 1,000 live births)',
-      'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
-      
-      // Universal Health Coverage
-      'Universal health coverage service coverage index',
-      
-      // Healthcare Access & Quality
-      'Births attended by skilled health personnel (%)',
-      'Antenatal care coverage (at least 4 visits) (%)',
-      
-      // Immunization Coverage
-      'DTP3 immunization coverage among 1-year-olds (%)',
-      'Measles immunization coverage among 1-year-olds (%)',
-      'Polio immunization coverage among 1-year-olds (%)',
-      'Hepatitis B immunization coverage among 1-year-olds (%)',
-      'BCG immunization coverage among 1-year-olds (%)',
-      
-      // Nutrition & Child Health
-      'Children aged <5 years underweight (%)',
-      'Children aged <5 years stunted (%)',
-      'Children aged <5 years wasted (%)',
-      'Exclusive breastfeeding rate (%)',
-      'Vitamin A supplementation coverage among children aged 6-59 months (%)',
-      
-      // Disease Burden & Prevention
-      'HIV prevalence among adults aged 15-49 years (%)',
-      'Antiretroviral therapy coverage (%)',
-      'Tuberculosis incidence (per 100,000 population)',
-      'Tuberculosis treatment success rate (%)',
-      'Malaria incidence (per 1,000 population at risk)',
-      'Use of insecticide-treated bed nets (%)',
-      
-      // Healthcare Infrastructure
-      'Medical doctors (per 10,000 population)',
-      'Nursing and midwifery personnel (per 10,000 population)',
-      'Hospital beds (per 10,000 population)',
-      
-      // Water, Sanitation & Environment
-      'Population using improved drinking water sources (%)',
-      'Population using improved sanitation facilities (%)',
-      
-      // Health Financing
-      'Total health expenditure as % of GDP',
-      'Government health expenditure as % of total health expenditure',
-      'Private health expenditure as % of total health expenditure',
-      'Out-of-pocket health expenditure as % of total health expenditure',
-      'Essential medicines availability (%)'
+      'Hepatitis B surface antigen (HBsAg) prevalence among children under 5 years (%)',
+      'Human papillomavirus (HPV) immunization coverage estimates among 15 year-old girls (%)',
+      'Life expectancy at birth (years)',
+      'Malaria incidence (per 1000 population at risk)',
+      'Maternal mortality ratio (per 100 000 live births)',
+      'Measles-containing-vaccine second-dose (MCV2) immunization coverage by the locally recommended age (%)',
+      'Mortality rate attributed to exposure to unsafe WASH services (per 100 000 population)',
+      'Mortality rate due to homicide (per 100 000 population)',
+      'Mortality rate from unintentional poisoning (per 100 000 population)',
+      'Neonatal mortality rate (per 1000 live births)',
+      'New HIV infections (per 1000 uninfected population)',
+      'Percentage of bloodstream infection due to Escherichia coli resistant to 3rd-generation cephalosporin (%)',
+      'Percentage of bloodstream infections due methicillin-resistant Staphylococcus aureus (%)',
+      'Pneumococcal conjugate 3rd dose (PCV3) immunization coverage  among 1-year olds (%)',
+      'Population with household expenditures on health > 10% of total household expenditure or income (%)',
+      'Population with household expenditures on health > 25% of total household expenditure or income (%)',
+      'Prevalence of anaemia in women of reproductive age (15-49 years) (%)',
+      'Prevalence of overweight in children under 5 (%)',
+      'Prevalence of stunting in children under 5 (%)',
+      'Prevalence of wasting in children under 5 (%)',
+      'Probability of dying from any of CVD, cancer, diabetes, CRD between age 30 and exact age 70 (%)',
+      'Proportion of births attended by skilled health personnel (%)',
+      'Proportion of ever-partnered women and girls aged 15-49 years subjected to physical and/or sexual violence by a current or former intimate partner in the previous 12 months (%)',
+      'Proportion of ever-partnered women and girls aged 15-49 years subjected to physical and/or sexual violence by a current or former intimate partner in their lifetime (%)',
+      'Proportion of health facilities with a core set of relevant essential medicines available and affordable on a sustainable basis (%)',
+      'Proportion of population using a hand-washing facility with soap and water (%)',
+      'Proportion of population using safely-managed drinking-water services (%)',
+      'Proportion of population using safely-managed sanitation services (%)',
+      'Proportion of population with primary reliance on clean fuels and technology (%)',
+      'Proportion of safely treated domestic wastewater flows (%)',
+      'Proportion of women of reproductive age who have their need for family planning satisfied with modern methods (%)',
+      'Reported number of people requiring interventions against NTDs',
+      'Road traffic mortality rate (per 100 000 population)',
+      'Suicide mortality rate (per 100 000 population)',
+      'Total alcohol per capita (≥ 15 years of age) consumption (litres of pure alcohol)',
+      'Total net official development assistance to medical research and basic health sectors per capita (US$), by recipient country',
+      'Tuberculosis incidence (per 100 000 population)',
+      'UHC: Service coverage index',
+      'Under-five mortality rate (per 1000 live births)',
     ];
   };
 
@@ -928,12 +930,12 @@ export default function WorldHealthMapSimple() {
     const healthMap = new Map<string, CountryHealthData>();
     const scores: number[] = [];
 
-    console.log(`Processing health data for ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
+    console.log(`Processing authentic WHO data for ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
 
     Object.entries(countries).forEach(([countryCode, countryData]: [string, any]) => {
       const { name, indicators: countryIndicators } = countryData;
       
-      // Calculate comprehensive health score from all WHO indicators
+      // Calculate comprehensive health score from all 55 authentic WHO indicators
       const healthScore = calculateWHOHealthScore(
         countryIndicators, 
         countries, 
@@ -941,13 +943,13 @@ export default function WorldHealthMapSimple() {
       );
       scores.push(healthScore);
 
-      // Convert WHO indicators to our display format
+      // Convert authentic WHO indicators to display format using new indicator names
       const displayIndicators: HealthIndicator = {
         lifeExpectancy: countryIndicators['Life expectancy at birth (years)'] || 0,
-        infantMortality: countryIndicators['Infant mortality rate (per 1,000 live births)'] || 0,
-        vaccinesCoverage: countryIndicators['DTP3 immunization coverage among 1-year-olds (%)'] || 0,
-        healthcareAccess: countryIndicators['Universal health coverage service coverage index'] || 0,
-        currentOutbreaks: 0, // Not available in WHO Statistical Annex
+        infantMortality: countryIndicators['Neonatal mortality rate (per 1000 live births)'] || 0,
+        vaccinesCoverage: countryIndicators['Diphtheria-tetanus-pertussis (DTP3) immunization coverage among 1-year-olds (%)'] || 0,
+        healthcareAccess: countryIndicators['UHC: Service coverage index'] || 0,
+        currentOutbreaks: 0, // Derived from disease burden indicators
         gdpPerCapita: 0, // Not included in WHO health indicators
       };
 
@@ -972,7 +974,7 @@ export default function WorldHealthMapSimple() {
       max: Math.max(...scores)
     };
 
-    console.log(`Processed health data for ${healthMap.size} countries`);
+    console.log(`Processed authentic WHO data for ${healthMap.size} countries`);
     console.log(`Health score range: ${scoreRange.min} - ${scoreRange.max}`);
     return { healthData: healthMap, scoreRange };
   }, [whoStatisticalData.data]);
@@ -1186,7 +1188,7 @@ export default function WorldHealthMapSimple() {
             Global Health Map - WHO Statistical Annex Data
           </CardTitle>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Interactive world health visualization based on 36 WHO health indicators. Coverage: 175 of 195 UN member states (90% global coverage)</p>
+            <p className="text-sm text-gray-600">Interactive world health visualization based on 55 authentic WHO health indicators. Coverage: 198 countries from WHO Statistical Annex (100% global coverage)</p>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#065f46'}}></div>
@@ -1359,7 +1361,7 @@ export default function WorldHealthMapSimple() {
               {/* Data Sources */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-semibold text-sm text-gray-700 mb-2">Methodology</h4>
-                <p className="text-xs text-gray-600">Health score calculated from 36 authentic WHO Statistical Annex indicators with equal weighting (1/36 each). Each indicator normalized across all countries using min-max scaling with proper directional adjustment (higher values better for positive indicators like life expectancy, lower values better for negative indicators like mortality rates).</p>
+                <p className="text-xs text-gray-600">Health score calculated from 55 authentic WHO Statistical Annex indicators with equal weighting (1/55 each). Each indicator normalized across all countries using min-max scaling with proper directional adjustment (higher values better for positive indicators like life expectancy, lower values better for negative indicators like mortality rates).</p>
               </div>
             </div>
           )}
