@@ -446,9 +446,33 @@ export default function Analysis() {
                         <span className="text-sm font-semibold text-slate-900">{prediction.probability}%</span>
                       </div>
                       <Progress value={prediction.probability} className="h-2" />
-                      <p className="text-xs text-slate-500 mt-2">
-                        This percentage represents the AI's confidence level in this scenario outcome based on current geopolitical factors, historical patterns, and available intelligence data.
-                      </p>
+                      <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <h5 className="text-xs font-semibold text-slate-700 mb-2">Understanding Prediction Confidence</h5>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-2">
+                          This percentage represents the AI's statistical confidence in the predicted scenario outcome. The confidence level is calculated by analyzing multiple data sources and risk factors:
+                        </p>
+                        <ul className="text-xs text-slate-600 space-y-1">
+                          <li className="flex items-start">
+                            <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                            <span><strong>Current Intelligence:</strong> Recent diplomatic activities, military movements, and political developments</span>
+                          </li>
+                          <li className="flex items-start">
+                            <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                            <span><strong>Historical Analysis:</strong> Similar conflict patterns and their outcomes over the past decades</span>
+                          </li>
+                          <li className="flex items-start">
+                            <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                            <span><strong>Economic Indicators:</strong> Defense spending trends, market volatility, and resource allocation patterns</span>
+                          </li>
+                          <li className="flex items-start">
+                            <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                            <span><strong>Regional Stability:</strong> Alliance dynamics, neighboring country responses, and international pressure</span>
+                          </li>
+                        </ul>
+                        <p className="text-xs text-slate-500 mt-2">
+                          Higher percentages indicate greater certainty based on convergent evidence across multiple analytical frameworks. Lower percentages suggest higher uncertainty due to conflicting signals or limited data availability.
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
