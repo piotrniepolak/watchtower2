@@ -16,6 +16,7 @@ import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
 import { healthOpportunityService } from "./health-opportunity-service";
+import { getWHOStatisticalData } from "@shared/who-data";
 
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
