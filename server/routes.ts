@@ -9,6 +9,7 @@ import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline, generateSectorPredictions, generateSectorMarketAnalysis } from "./ai-analysis";
+import { DatabaseStorage } from "./storage";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
@@ -52,6 +53,8 @@ const isAuthenticated = async (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const { storage } = await import('./storage');
+  
   // Add comprehensive request logging middleware
   app.use((req, res, next) => {
     if (req.url.includes('/api/analysis')) {
@@ -1823,13 +1826,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.warn("ALPHA_VANTAGE_API_KEY not found - real-time stock updates disabled");
   }
 
-  // Start daily quiz scheduler
-  if (process.env.OPENAI_API_KEY) {
-    quizService.startDailyQuizScheduler();
-    console.log("Daily quiz scheduler started");
-  } else {
-    console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
-  }
+  // Start daily quiz scheduler - TEMPORARILY DISABLED TO FIX SECTOR SWITCHING BUG
+  // if (process.env.OPENAI_API_KEY) {
+  //   quizService.startDailyQuizScheduler();
+  //   console.log("Daily quiz scheduler started");
+  // } else {
+  //   console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
+  // }
 
 
 
