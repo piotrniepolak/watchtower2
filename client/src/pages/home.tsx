@@ -35,11 +35,13 @@ export default function Home() {
   const { data: predictions = [], isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions", selectedSector],
     queryFn: () => fetch(`/api/analysis/predictions?sector=${selectedSector}`).then(res => res.json()),
+    enabled: !!selectedSector,
   });
 
   const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
     queryKey: ["/api/analysis/market", selectedSector],
     queryFn: () => fetch(`/api/analysis/market?sector=${selectedSector}`).then(res => res.json()),
+    enabled: !!selectedSector,
   });
 
   const sectors = [

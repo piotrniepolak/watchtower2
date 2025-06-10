@@ -1873,10 +1873,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const sector = req.query.sector as string || 'defense';
+      console.log(`Market analysis requested for sector: ${sector}`);
       const stocks = await storage.getStocks();
       const conflicts = await storage.getConflicts();
       const correlationEvents = await storage.getCorrelationEvents();
       const analysis = await generateSectorMarketAnalysis(sector, stocks, conflicts, correlationEvents);
+      console.log(`Market analysis generated for ${sector}, sentiment: ${analysis.overallSentiment}`);
       res.json(analysis);
     } catch (error) {
       console.error('Error generating market analysis:', error);

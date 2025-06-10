@@ -337,14 +337,20 @@ export async function generateSectorMarketAnalysis(
   conflicts: Conflict[],
   correlationEvents: any[]
 ): Promise<MarketAnalysis> {
+  console.log(`generateSectorMarketAnalysis called with sector: ${sector}`);
+  
   if (sector === 'defense') {
+    console.log('Generating defense market analysis');
     return generateDefenseMarketAnalysis(stocks, conflicts, correlationEvents);
   } else if (sector === 'health') {
+    console.log('Generating health market analysis');
     return generateHealthMarketAnalysis(stocks);
   } else if (sector === 'energy') {
+    console.log('Generating energy market analysis');
     return generateEnergyMarketAnalysis(stocks);
   }
   
+  console.log(`Unknown sector ${sector}, defaulting to defense`);
   // Default to defense analysis
   return generateDefenseMarketAnalysis(stocks, conflicts, correlationEvents);
 }
