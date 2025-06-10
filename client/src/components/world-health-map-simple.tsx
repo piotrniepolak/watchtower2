@@ -9764,14 +9764,14 @@ function calculateWHOHealthScore(
   const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
   const rawScore = totalScore * 100 * adjustmentFactor;
   
-  // Calibrate score to 0-100 range based on corrected WHO data distribution
-  // After disaggregation correction, health scores range approximately 12-96
-  const correctedMin = 12;
-  const correctedMax = 96;
-  const correctedRange = correctedMax - correctedMin;
+  // Calibrate score to 0-100 range based on actual observed range from corrected WHO data
+  // Observed range from corrected disaggregation: approximately 25-66
+  const observedMin = 25;
+  const observedMax = 66;
+  const observedRange = observedMax - observedMin;
   
-  // Apply linear transformation: newScore = ((rawScore - correctedMin) / correctedRange) * 100
-  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - correctedMin) / correctedRange) * 100));
+  // Apply linear transformation to use full 0-100 scale: newScore = ((rawScore - observedMin) / observedRange) * 100
+  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - observedMin) / observedRange) * 100));
   
   return calibratedScore;
 }
@@ -10904,7 +10904,7 @@ export default function WorldHealthMapSimple() {
                   <strong>Data Source:</strong> WHO Statistical Annex with corrected disaggregation extraction ensuring proper country-level aggregates (both-sexes combined, not subgroup-specific values).
                 </p>
                 <p className="text-xs text-gray-600">
-                  <strong>Health Score:</strong> Calculated from 55 authentic WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Score calibrated to 12-96 range based on corrected data distribution.
+                  <strong>Health Score:</strong> Calculated from 55 authentic WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Score calibrated to full 0-100 scale based on observed 25-66 range from corrected data.
                 </p>
               </div>
             </div>
