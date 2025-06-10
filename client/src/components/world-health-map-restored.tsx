@@ -9,49 +9,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useWHOStatisticalData } from "@/hooks/use-who-data";
+import { feature } from "topojson-client";
 
-// Custom geography loader with fallback sources
+// Hook to load the same topology data used before data corrections
 const useWorldGeography = () => {
-  const [geography, setGeography] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadGeography = async () => {
-      const sources = [
-        "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json",
-        "https://unpkg.com/world-atlas@3/countries-110m.json",
-        "https://raw.githubusercontent.com/topojson/world-atlas/master/countries-110m.json"
-      ];
-
-      for (const source of sources) {
-        try {
-          console.log(`Attempting to load geography from: ${source}`);
-          const response = await fetch(source);
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          const data = await response.json();
-          console.log(`Successfully loaded geography from: ${source}`);
-          setGeography(data);
-          setLoading(false);
-          return;
-        } catch (err) {
-          console.warn(`Failed to load geography from ${source}:`, err);
-          continue;
+  return useQuery({
+    queryKey: ['/api/world-topology'],
+    queryFn: async () => {
+      try {
+        // Use the exact same topology sources from the original working map
+        const response = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json");
+        if (!response.ok) {
+          throw new Error(`Failed to load topology: ${response.status}`);
         }
+        const topology = await response.json();
+        return topology;
+      } catch (error) {
+        console.error('Topology loading error:', error);
+        throw error;
       }
-      
-      // If all sources fail, create a simple fallback
-      console.log("All geography sources failed, using fallback");
-      setError("Could not load world map data");
-      setLoading(false);
-    };
-
-    loadGeography();
-  }, []);
-
-  return { geography, loading, error };
+    },
+    staleTime: 1000 * 60 * 60 * 24, // Cache for 24 hours
+    retry: 2,
+  });
 };
 
 interface CountryHealthData {
@@ -118,9 +98,23 @@ const calculateHealthScore = (indicators: Record<string, number>): number => {
 export default function WorldHealthMapRestored() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
-  const { geography, loading: geoLoading, error: geoError } = useWorldGeography();
+  const topologyQuery = useWorldGeography();
 
   const whoStatisticalData = useWHOStatisticalData();
+
+  // Convert topology to GeoJSON for react-simple-maps
+  const worldGeography = useMemo(() => {
+    if (!topologyQuery.data) return null;
+    
+    try {
+      // Convert topology to GeoJSON using topojson-client
+      const geoData = feature(topologyQuery.data, topologyQuery.data.objects.countries);
+      return geoData;
+    } catch (error) {
+      console.error('Error converting topology to GeoJSON:', error);
+      return null;
+    }
+  }, [topologyQuery.data]);
 
   // Process WHO Statistical data for countries
   const healthData = useMemo(() => {
@@ -167,7 +161,7 @@ export default function WorldHealthMapRestored() {
   // Map opacity based on data loading
   const mapOpacity = healthData.size > 0 ? 1 : 0.7;
 
-  if (whoStatisticalData.loading || geoLoading) {
+  if (whoStatisticalData.loading || topologyQuery.isLoading) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -189,7 +183,7 @@ export default function WorldHealthMapRestored() {
     );
   }
 
-  if (whoStatisticalData.error || geoError) {
+  if (whoStatisticalData.error) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -201,7 +195,7 @@ export default function WorldHealthMapRestored() {
         <CardContent>
           <div className="flex items-center justify-center h-96">
             <div className="text-center text-red-600">
-              <p>Error loading health data: {whoStatisticalData.error || geoError}</p>
+              <p>Error loading WHO health data: {whoStatisticalData.error}</p>
               <p className="text-sm text-gray-500 mt-2">Please check your connection and try again</p>
             </div>
           </div>
