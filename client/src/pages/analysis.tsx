@@ -67,7 +67,7 @@ interface ConflictStoryline {
 
 export default function Analysis() {
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
-  const [selectedSector, setSelectedSector] = useState<'defense' | 'health' | 'energy'>('defense');
+  const [selectedSector, setSelectedSector] = useState<string>('defense');
 
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions"],
@@ -138,7 +138,7 @@ export default function Analysis() {
       <div className="min-h-screen bg-slate-50">
         <MultiSectorNavigation 
           currentSector={selectedSector}
-          onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+          onSectorChange={setSelectedSector}
         />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
@@ -158,16 +158,59 @@ export default function Analysis() {
     <div className="min-h-screen bg-slate-50">
       <MultiSectorNavigation 
         currentSector={selectedSector}
-        onSectorChange={(sector) => setSelectedSector(sector as 'defense' | 'healthcare' | 'energy')}
+        onSectorChange={setSelectedSector}
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <Brain className="w-8 h-8 text-blue-600 mr-3" />
-            <h1 className="text-3xl font-bold text-slate-900">AI-Powered Conflict Analysis</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <Brain className="w-8 h-8 text-blue-600 mr-3" />
+              <h1 className="text-3xl font-bold text-slate-900">AI-Powered Analysis</h1>
+            </div>
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium text-slate-700">Sector:</span>
+              <Select value={selectedSector} onValueChange={setSelectedSector}>
+                <SelectTrigger className="w-48">
+                  <SelectValue>
+                    <div className="flex items-center space-x-2">
+                      {selectedSector === 'defense' && <Shield className="w-4 h-4" />}
+                      {selectedSector === 'health' && <Pill className="w-4 h-4" />}
+                      {selectedSector === 'energy' && <Zap className="w-4 h-4" />}
+                      <span>
+                        {selectedSector === 'defense' && 'ConflictWatch'}
+                        {selectedSector === 'health' && 'PharmaWatch'}
+                        {selectedSector === 'energy' && 'EnergyWatch'}
+                      </span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="defense">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4" />
+                      <span>ConflictWatch - Defense & Conflict Analytics</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="health">
+                    <div className="flex items-center space-x-2">
+                      <Pill className="w-4 h-4" />
+                      <span>PharmaWatch - Global Health Intelligence</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="energy">
+                    <div className="flex items-center space-x-2">
+                      <Zap className="w-4 h-4" />
+                      <span>EnergyWatch - Oil & Gas Analytics</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <p className="text-slate-600">
-            Advanced AI predictions and market insights based on current geopolitical developments
+            {selectedSector === 'defense' && 'Advanced AI predictions and market insights based on current geopolitical developments'}
+            {selectedSector === 'health' && 'Comprehensive health analytics and pharmaceutical market intelligence powered by authentic WHO data'}
+            {selectedSector === 'energy' && 'Real-time energy market analysis and regulatory intelligence for oil & gas sectors'}
           </p>
         </div>
 
