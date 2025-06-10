@@ -1,0 +1,1154 @@
+{
+  "AFG": {
+    "name": "Afghanistan",
+    "iso3": "AFG",
+    "healthyLifeExp": 50.44624351,
+    "lifeExp": 59.12690224
+  },
+  "AFR": {
+    "name": "African Region",
+    "iso3": "AFR",
+    "healthyLifeExp": 55.15623741,
+    "lifeExp": 63.55243899
+  },
+  "ALB": {
+    "name": "Albania",
+    "iso3": "ALB",
+    "healthyLifeExp": 66.68795531,
+    "lifeExp": 76.39089034
+  },
+  "DZA": {
+    "name": "Algeria",
+    "iso3": "DZA",
+    "healthyLifeExp": 65.54819194,
+    "lifeExp": 75.97765182
+  },
+  "AGO": {
+    "name": "Angola",
+    "iso3": "AGO",
+    "healthyLifeExp": 53.76187008,
+    "lifeExp": 62.13113467
+  },
+  "ATG": {
+    "name": "Antigua and Barbuda",
+    "iso3": "ATG",
+    "healthyLifeExp": 66.52282216,
+    "lifeExp": 76.91527032
+  },
+  "ARG": {
+    "name": "Argentina",
+    "iso3": "ARG",
+    "healthyLifeExp": 64.7943616,
+    "lifeExp": 74.56898059
+  },
+  "ARM": {
+    "name": "Armenia",
+    "iso3": "ARM",
+    "healthyLifeExp": 64.01330853,
+    "lifeExp": 72.98458202
+  },
+  "AUS": {
+    "name": "Australia",
+    "iso3": "AUS",
+    "healthyLifeExp": 70.60635821,
+    "lifeExp": 83.10183853
+  },
+  "AUT": {
+    "name": "Austria",
+    "iso3": "AUT",
+    "healthyLifeExp": 69.78945352,
+    "lifeExp": 80.99297519
+  },
+  "AZE": {
+    "name": "Azerbaijan",
+    "iso3": "AZE",
+    "healthyLifeExp": 64.04244286,
+    "lifeExp": 72.9129401
+  },
+  "BHS": {
+    "name": "Bahamas",
+    "iso3": "BHS",
+    "healthyLifeExp": 61.51529426,
+    "lifeExp": 70.43274063
+  },
+  "BHR": {
+    "name": "Bahrain",
+    "iso3": "BHR",
+    "healthyLifeExp": 64.23784447,
+    "lifeExp": 74.38371772
+  },
+  "BGD": {
+    "name": "Bangladesh",
+    "iso3": "BGD",
+    "healthyLifeExp": 63.05118978,
+    "lifeExp": 73.10251672
+  },
+  "BRB": {
+    "name": "Barbados",
+    "iso3": "BRB",
+    "healthyLifeExp": 66.66856965,
+    "lifeExp": 76.8418344
+  },
+  "BLR": {
+    "name": "Belarus",
+    "iso3": "BLR",
+    "healthyLifeExp": 63.70762409,
+    "lifeExp": 73.12324771
+  },
+  "BEL": {
+    "name": "Belgium",
+    "iso3": "BEL",
+    "healthyLifeExp": 69.79467895,
+    "lifeExp": 81.5059627
+  },
+  "BLZ": {
+    "name": "Belize",
+    "iso3": "BLZ",
+    "healthyLifeExp": 63.82471615,
+    "lifeExp": 73.32055336
+  },
+  "BEN": {
+    "name": "Benin",
+    "iso3": "BEN",
+    "healthyLifeExp": 55.71581111,
+    "lifeExp": 64.01268515
+  },
+  "BTN": {
+    "name": "Bhutan",
+    "iso3": "BTN",
+    "healthyLifeExp": 64.80462869,
+    "lifeExp": 74.87642848
+  },
+  "BOL": {
+    "name": "Bolivia (Plurinational State of)",
+    "iso3": "BOL",
+    "healthyLifeExp": 57.42539887,
+    "lifeExp": 65.41062535
+  },
+  "BIH": {
+    "name": "Bosnia and Herzegovina",
+    "iso3": "BIH",
+    "healthyLifeExp": 64.98581956,
+    "lifeExp": 74.84944487
+  },
+  "BWA": {
+    "name": "Botswana",
+    "iso3": "BWA",
+    "healthyLifeExp": 53.10367193,
+    "lifeExp": 61.23119159
+  },
+  "BRA": {
+    "name": "Brazil",
+    "iso3": "BRA",
+    "healthyLifeExp": 61.8265355,
+    "lifeExp": 72.38840694
+  },
+  "BRN": {
+    "name": "Brunei Darussalam",
+    "iso3": "BRN",
+    "healthyLifeExp": 67.1035797,
+    "lifeExp": 76.92260844
+  },
+  "BGR": {
+    "name": "Bulgaria",
+    "iso3": "BGR",
+    "healthyLifeExp": 62.3889052,
+    "lifeExp": 71.30586
+  },
+  "BFA": {
+    "name": "Burkina Faso",
+    "iso3": "BFA",
+    "healthyLifeExp": 54.56242197,
+    "lifeExp": 62.29728841
+  },
+  "BDI": {
+    "name": "Burundi",
+    "iso3": "BDI",
+    "healthyLifeExp": 55.84413911,
+    "lifeExp": 64.00694993
+  },
+  "CPV": {
+    "name": "Cabo Verde",
+    "iso3": "CPV",
+    "healthyLifeExp": 63.76590577,
+    "lifeExp": 73.16097765
+  },
+  "KHM": {
+    "name": "Cambodia",
+    "iso3": "KHM",
+    "healthyLifeExp": 60.63072299,
+    "lifeExp": 68.92399972
+  },
+  "CMR": {
+    "name": "Cameroon",
+    "iso3": "CMR",
+    "healthyLifeExp": 54.00702693,
+    "lifeExp": 61.76934896
+  },
+  "CAN": {
+    "name": "Canada",
+    "iso3": "CAN",
+    "healthyLifeExp": 69.7835968,
+    "lifeExp": 81.58276248
+  },
+  "CAF": {
+    "name": "Central African Republic",
+    "iso3": "CAF",
+    "healthyLifeExp": 45.43289279,
+    "lifeExp": 52.30772755
+  },
+  "TCD": {
+    "name": "Chad",
+    "iso3": "TCD",
+    "healthyLifeExp": 51.51506012,
+    "lifeExp": 59.08581443
+  },
+  "CHL": {
+    "name": "Chile",
+    "iso3": "CHL",
+    "healthyLifeExp": 67.65230473,
+    "lifeExp": 79.02404788
+  },
+  "CHN": {
+    "name": "China",
+    "iso3": "CHN",
+    "healthyLifeExp": 68.58451615,
+    "lifeExp": 77.61619672
+  },
+  "COL": {
+    "name": "Colombia",
+    "iso3": "COL",
+    "healthyLifeExp": 65.02156489,
+    "lifeExp": 74.53297363
+  },
+  "COM": {
+    "name": "Comoros",
+    "iso3": "COM",
+    "healthyLifeExp": 59.01938606,
+    "lifeExp": 67.4970386
+  },
+  "COG": {
+    "name": "Congo",
+    "iso3": "COG",
+    "healthyLifeExp": 54.83573617,
+    "lifeExp": 63.17262301
+  },
+  "CRI": {
+    "name": "Costa Rica",
+    "iso3": "CRI",
+    "healthyLifeExp": 67.63481911,
+    "lifeExp": 78.63053412
+  },
+  "CIV": {
+    "name": "C\u00f4te d'Ivoire",
+    "iso3": "CIV",
+    "healthyLifeExp": 55.40625311,
+    "lifeExp": 63.5174083
+  },
+  "HRV": {
+    "name": "Croatia",
+    "iso3": "HRV",
+    "healthyLifeExp": 66.80261522,
+    "lifeExp": 76.8616792
+  },
+  "CUB": {
+    "name": "Cuba",
+    "iso3": "CUB",
+    "healthyLifeExp": 64.6194696,
+    "lifeExp": 73.67333077
+  },
+  "CYP": {
+    "name": "Cyprus",
+    "iso3": "CYP",
+    "healthyLifeExp": 70.74237452,
+    "lifeExp": 81.912741
+  },
+  "CZE": {
+    "name": "Czechia",
+    "iso3": "CZE",
+    "healthyLifeExp": 66.65716215,
+    "lifeExp": 77.07730392
+  },
+  "PRK": {
+    "name": "Democratic People's Republic of Korea",
+    "iso3": "PRK",
+    "healthyLifeExp": 64.73145093,
+    "lifeExp": 72.6431485
+  },
+  "COD": {
+    "name": "Democratic Republic of the Congo",
+    "iso3": "COD",
+    "healthyLifeExp": 53.20515661,
+    "lifeExp": 61.62552641
+  },
+  "DNK": {
+    "name": "Denmark",
+    "iso3": "DNK",
+    "healthyLifeExp": 70.05689094,
+    "lifeExp": 81.18400442
+  },
+  "DJI": {
+    "name": "Djibouti",
+    "iso3": "DJI",
+    "healthyLifeExp": 56.99236604,
+    "lifeExp": 64.87227149
+  },
+  "DOM": {
+    "name": "Dominican Republic",
+    "iso3": "DOM",
+    "healthyLifeExp": 63.56255142,
+    "lifeExp": 73.32102758
+  },
+  "EMR": {
+    "name": "Eastern Mediterranean Region",
+    "iso3": "EMR",
+    "healthyLifeExp": 59.03769239,
+    "lifeExp": 68.48743553
+  },
+  "ECU": {
+    "name": "Ecuador",
+    "iso3": "ECU",
+    "healthyLifeExp": 64.34154411,
+    "lifeExp": 73.95801182
+  },
+  "EGY": {
+    "name": "Egypt",
+    "iso3": "EGY",
+    "healthyLifeExp": 60.36317424,
+    "lifeExp": 69.10821615
+  },
+  "SLV": {
+    "name": "El Salvador",
+    "iso3": "SLV",
+    "healthyLifeExp": 62.19610022,
+    "lifeExp": 71.66703998
+  },
+  "GNQ": {
+    "name": "Equatorial Guinea",
+    "iso3": "GNQ",
+    "healthyLifeExp": 53.25633064,
+    "lifeExp": 61.60542301
+  },
+  "ERI": {
+    "name": "Eritrea",
+    "iso3": "ERI",
+    "healthyLifeExp": 55.42494437,
+    "lifeExp": 63.57308435
+  },
+  "EST": {
+    "name": "Estonia",
+    "iso3": "EST",
+    "healthyLifeExp": 66.74032525,
+    "lifeExp": 77.13131363
+  },
+  "SWZ": {
+    "name": "Eswatini",
+    "iso3": "SWZ",
+    "healthyLifeExp": 47.46740336,
+    "lifeExp": 54.59266973
+  },
+  "ETH": {
+    "name": "Ethiopia",
+    "iso3": "ETH",
+    "healthyLifeExp": 58.82731284,
+    "lifeExp": 67.83909086
+  },
+  "EUR": {
+    "name": "European Region",
+    "iso3": "EUR",
+    "healthyLifeExp": 65.95591966,
+    "lifeExp": 76.28728907
+  },
+  "FJI": {
+    "name": "Fiji",
+    "iso3": "FJI",
+    "healthyLifeExp": 57.6905562,
+    "lifeExp": 65.50058445
+  },
+  "FIN": {
+    "name": "Finland",
+    "iso3": "FIN",
+    "healthyLifeExp": 69.92942246,
+    "lifeExp": 81.53419484
+  },
+  "FRA": {
+    "name": "France",
+    "iso3": "FRA",
+    "healthyLifeExp": 70.08345936,
+    "lifeExp": 81.92274175
+  },
+  "GAB": {
+    "name": "Gabon",
+    "iso3": "GAB",
+    "healthyLifeExp": 56.25886929,
+    "lifeExp": 65.09380891
+  },
+  "GMB": {
+    "name": "Gambia",
+    "iso3": "GMB",
+    "healthyLifeExp": 55.84254371,
+    "lifeExp": 64.21396887
+  },
+  "GEO": {
+    "name": "Georgia",
+    "iso3": "GEO",
+    "healthyLifeExp": 62.475847,
+    "lifeExp": 71.24038597
+  },
+  "DEU": {
+    "name": "Germany",
+    "iso3": "DEU",
+    "healthyLifeExp": 68.93389132,
+    "lifeExp": 80.49140555
+  },
+  "GHA": {
+    "name": "Ghana",
+    "iso3": "GHA",
+    "healthyLifeExp": 57.88251828,
+    "lifeExp": 66.10178519
+  },
+  "GLOBAL": {
+    "name": "Global",
+    "iso3": "GLOBAL",
+    "healthyLifeExp": 61.91107106,
+    "lifeExp": 71.36869906
+  },
+  "GRC": {
+    "name": "Greece",
+    "iso3": "GRC",
+    "healthyLifeExp": 68.55281799,
+    "lifeExp": 79.59785025
+  },
+  "GRD": {
+    "name": "Grenada",
+    "iso3": "GRD",
+    "healthyLifeExp": 63.16201019,
+    "lifeExp": 72.77322454
+  },
+  "GTM": {
+    "name": "Guatemala",
+    "iso3": "GTM",
+    "healthyLifeExp": 59.25327698,
+    "lifeExp": 68.69573697
+  },
+  "GIN": {
+    "name": "Guinea",
+    "iso3": "GIN",
+    "healthyLifeExp": 53.42625796,
+    "lifeExp": 61.26251027
+  },
+  "GNB": {
+    "name": "Guinea-Bissau",
+    "iso3": "GNB",
+    "healthyLifeExp": 51.45036507,
+    "lifeExp": 58.62801846
+  },
+  "GUY": {
+    "name": "Guyana",
+    "iso3": "GUY",
+    "healthyLifeExp": 56.82071,
+    "lifeExp": 66.0777533
+  },
+  "HTI": {
+    "name": "Haiti",
+    "iso3": "HTI",
+    "healthyLifeExp": 53.93619508,
+    "lifeExp": 62.4563858
+  },
+  "HND": {
+    "name": "Honduras",
+    "iso3": "HND",
+    "healthyLifeExp": 60.04648065,
+    "lifeExp": 68.96309289
+  },
+  "HUN": {
+    "name": "Hungary",
+    "iso3": "HUN",
+    "healthyLifeExp": 64.8387919,
+    "lifeExp": 74.39546955
+  },
+  "ISL": {
+    "name": "Iceland",
+    "iso3": "ISL",
+    "healthyLifeExp": 71.37048597,
+    "lifeExp": 82.57766731
+  },
+  "IND": {
+    "name": "India",
+    "iso3": "IND",
+    "healthyLifeExp": 58.14674818,
+    "lifeExp": 67.30780612
+  },
+  "IDN": {
+    "name": "Indonesia",
+    "iso3": "IDN",
+    "healthyLifeExp": 60.66924698,
+    "lifeExp": 68.26167935
+  },
+  "IRN": {
+    "name": "Iran (Islamic Republic of)",
+    "iso3": "IRN",
+    "healthyLifeExp": 63.97515583,
+    "lifeExp": 74.71077692
+  },
+  "IRQ": {
+    "name": "Iraq",
+    "iso3": "IRQ",
+    "healthyLifeExp": 61.0158187,
+    "lifeExp": 71.46632369
+  },
+  "IRL": {
+    "name": "Ireland",
+    "iso3": "IRL",
+    "healthyLifeExp": 70.00318423,
+    "lifeExp": 81.60162902
+  },
+  "ISR": {
+    "name": "Israel",
+    "iso3": "ISR",
+    "healthyLifeExp": 70.75752541,
+    "lifeExp": 81.74464677
+  },
+  "ITA": {
+    "name": "Italy",
+    "iso3": "ITA",
+    "healthyLifeExp": 70.56465521,
+    "lifeExp": 82.19747411
+  },
+  "JAM": {
+    "name": "Jamaica",
+    "iso3": "JAM",
+    "healthyLifeExp": 61.72002219,
+    "lifeExp": 70.1439437
+  },
+  "JPN": {
+    "name": "Japan",
+    "iso3": "JPN",
+    "healthyLifeExp": 73.39518386,
+    "lifeExp": 84.46067178
+  },
+  "JOR": {
+    "name": "Jordan",
+    "iso3": "JOR",
+    "healthyLifeExp": 65.06663803,
+    "lifeExp": 75.64973596
+  },
+  "KAZ": {
+    "name": "Kazakhstan",
+    "iso3": "KAZ",
+    "healthyLifeExp": 61.55451989,
+    "lifeExp": 70.27511981
+  },
+  "KEN": {
+    "name": "Kenya",
+    "iso3": "KEN",
+    "healthyLifeExp": 58.21708276,
+    "lifeExp": 66.76221995
+  },
+  "KIR": {
+    "name": "Kiribati",
+    "iso3": "KIR",
+    "healthyLifeExp": 53.64987703,
+    "lifeExp": 60.87345633
+  },
+  "KWT": {
+    "name": "Kuwait",
+    "iso3": "KWT",
+    "healthyLifeExp": 67.78423277,
+    "lifeExp": 78.95211671
+  },
+  "KGZ": {
+    "name": "Kyrgyzstan",
+    "iso3": "KGZ",
+    "healthyLifeExp": 63.42427397,
+    "lifeExp": 72.18500345
+  },
+  "LAO": {
+    "name": "Lao People's Democratic Republic",
+    "iso3": "LAO",
+    "healthyLifeExp": 60.41180302,
+    "lifeExp": 68.23189407
+  },
+  "LVA": {
+    "name": "Latvia",
+    "iso3": "LVA",
+    "healthyLifeExp": 63.76267358,
+    "lifeExp": 73.20251724
+  },
+  "LBN": {
+    "name": "Lebanon",
+    "iso3": "LBN",
+    "healthyLifeExp": 63.21642704,
+    "lifeExp": 74.34207035
+  },
+  "LSO": {
+    "name": "Lesotho",
+    "iso3": "LSO",
+    "healthyLifeExp": 44.63433272,
+    "lifeExp": 51.47907482
+  },
+  "LBR": {
+    "name": "Liberia",
+    "iso3": "LBR",
+    "healthyLifeExp": 53.96099924,
+    "lifeExp": 63.45730846
+  },
+  "LBY": {
+    "name": "Libya",
+    "iso3": "LBY",
+    "healthyLifeExp": 62.05697061,
+    "lifeExp": 72.17844009
+  },
+  "LTU": {
+    "name": "Lithuania",
+    "iso3": "LTU",
+    "healthyLifeExp": 64.22813311,
+    "lifeExp": 74.13314711
+  },
+  "LUX": {
+    "name": "Luxembourg",
+    "iso3": "LUX",
+    "healthyLifeExp": 71.23441146,
+    "lifeExp": 82.78028566
+  },
+  "MDG": {
+    "name": "Madagascar",
+    "iso3": "MDG",
+    "healthyLifeExp": 55.13701841,
+    "lifeExp": 62.9342555
+  },
+  "MWI": {
+    "name": "Malawi",
+    "iso3": "MWI",
+    "healthyLifeExp": 54.6681734,
+    "lifeExp": 62.48652597
+  },
+  "MYS": {
+    "name": "Malaysia",
+    "iso3": "MYS",
+    "healthyLifeExp": 63.9469182,
+    "lifeExp": 72.8101035
+  },
+  "MDV": {
+    "name": "Maldives",
+    "iso3": "MDV",
+    "healthyLifeExp": 66.6741995,
+    "lifeExp": 75.39664085
+  },
+  "MLI": {
+    "name": "Mali",
+    "iso3": "MLI",
+    "healthyLifeExp": 53.55714781,
+    "lifeExp": 61.67398609
+  },
+  "MLT": {
+    "name": "Malta",
+    "iso3": "MLT",
+    "healthyLifeExp": 70.7127916,
+    "lifeExp": 81.81193837
+  },
+  "MRT": {
+    "name": "Mauritania",
+    "iso3": "MRT",
+    "healthyLifeExp": 60.39312204,
+    "lifeExp": 68.86843813
+  },
+  "MUS": {
+    "name": "Mauritius",
+    "iso3": "MUS",
+    "healthyLifeExp": 63.63169692,
+    "lifeExp": 73.41967032
+  },
+  "MEX": {
+    "name": "Mexico",
+    "iso3": "MEX",
+    "healthyLifeExp": 61.43518472,
+    "lifeExp": 70.83258685
+  },
+  "FSM": {
+    "name": "Micronesia (Federated States of)",
+    "iso3": "FSM",
+    "healthyLifeExp": 57.931186,
+    "lifeExp": 65.70956674
+  },
+  "MNG": {
+    "name": "Mongolia",
+    "iso3": "MNG",
+    "healthyLifeExp": 61.31316296,
+    "lifeExp": 70.09795294
+  },
+  "MNE": {
+    "name": "Montenegro",
+    "iso3": "MNE",
+    "healthyLifeExp": 65.14714539,
+    "lifeExp": 74.70975149
+  },
+  "MAR": {
+    "name": "Morocco",
+    "iso3": "MAR",
+    "healthyLifeExp": 62.33965438,
+    "lifeExp": 72.61868352
+  },
+  "MOZ": {
+    "name": "Mozambique",
+    "iso3": "MOZ",
+    "healthyLifeExp": 49.71591103,
+    "lifeExp": 57.66202708
+  },
+  "MMR": {
+    "name": "Myanmar",
+    "iso3": "MMR",
+    "healthyLifeExp": 59.75064952,
+    "lifeExp": 67.84580637
+  },
+  "NAM": {
+    "name": "Namibia",
+    "iso3": "NAM",
+    "healthyLifeExp": 52.82296302,
+    "lifeExp": 60.35994599
+  },
+  "NPL": {
+    "name": "Nepal",
+    "iso3": "NPL",
+    "healthyLifeExp": 60.20389397,
+    "lifeExp": 70.04936795
+  },
+  "NLD": {
+    "name": "Netherlands (Kingdom of the)",
+    "iso3": "NLD",
+    "healthyLifeExp": 69.96870171,
+    "lifeExp": 81.12478594
+  },
+  "NZL": {
+    "name": "New Zealand",
+    "iso3": "NZL",
+    "healthyLifeExp": 69.98321689,
+    "lifeExp": 82.20149177
+  },
+  "NIC": {
+    "name": "Nicaragua",
+    "iso3": "NIC",
+    "healthyLifeExp": 64.61449366,
+    "lifeExp": 75.02796138
+  },
+  "NER": {
+    "name": "Niger",
+    "iso3": "NER",
+    "healthyLifeExp": 52.60991521,
+    "lifeExp": 59.97070525
+  },
+  "NGA": {
+    "name": "Nigeria",
+    "iso3": "NGA",
+    "healthyLifeExp": 54.94979444,
+    "lifeExp": 63.3974984
+  },
+  "MKD": {
+    "name": "North Macedonia",
+    "iso3": "MKD",
+    "healthyLifeExp": 63.71234821,
+    "lifeExp": 72.99535604
+  },
+  "NOR": {
+    "name": "Norway",
+    "iso3": "NOR",
+    "healthyLifeExp": 71.15530529,
+    "lifeExp": 82.88199872
+  },
+  "PSE": {
+    "name": "occupied Palestinian territory, including east Jerusalem",
+    "iso3": "PSE",
+    "healthyLifeExp": 62.9346352,
+    "lifeExp": 73.49178033
+  },
+  "OMN": {
+    "name": "Oman",
+    "iso3": "OMN",
+    "healthyLifeExp": 63.19164799,
+    "lifeExp": 72.47676726
+  },
+  "PAK": {
+    "name": "Pakistan",
+    "iso3": "PAK",
+    "healthyLifeExp": 56.89014881,
+    "lifeExp": 65.99092295
+  },
+  "PAN": {
+    "name": "Panama",
+    "iso3": "PAN",
+    "healthyLifeExp": 66.73552793,
+    "lifeExp": 77.23869904
+  },
+  "PNG": {
+    "name": "Papua New Guinea",
+    "iso3": "PNG",
+    "healthyLifeExp": 57.48175702,
+    "lifeExp": 65.48786529
+  },
+  "PRY": {
+    "name": "Paraguay",
+    "iso3": "PRY",
+    "healthyLifeExp": 60.87813875,
+    "lifeExp": 70.27080999
+  },
+  "PER": {
+    "name": "Peru",
+    "iso3": "PER",
+    "healthyLifeExp": 62.98693141,
+    "lifeExp": 71.66727055
+  },
+  "PHL": {
+    "name": "Philippines",
+    "iso3": "PHL",
+    "healthyLifeExp": 58.76780317,
+    "lifeExp": 66.40834182
+  },
+  "POL": {
+    "name": "Poland",
+    "iso3": "POL",
+    "healthyLifeExp": 65.52082086,
+    "lifeExp": 75.4021086
+  },
+  "PRT": {
+    "name": "Portugal",
+    "iso3": "PRT",
+    "healthyLifeExp": 69.51926959,
+    "lifeExp": 81.17961003
+  },
+  "PRI": {
+    "name": "Puerto Rico",
+    "iso3": "PRI",
+    "healthyLifeExp": 68.82376354,
+    "lifeExp": 79.90294803
+  },
+  "QAT": {
+    "name": "Qatar",
+    "iso3": "QAT",
+    "healthyLifeExp": 66.20630321,
+    "lifeExp": 76.7101384
+  },
+  "AMR": {
+    "name": "Region of the Americas",
+    "iso3": "AMR",
+    "healthyLifeExp": 63.24845715,
+    "lifeExp": 74.11268797
+  },
+  "KOR": {
+    "name": "Republic of Korea",
+    "iso3": "KOR",
+    "healthyLifeExp": 72.45058607,
+    "lifeExp": 83.79982334
+  },
+  "MDA": {
+    "name": "Republic of Moldova",
+    "iso3": "MDA",
+    "healthyLifeExp": 61.21177955,
+    "lifeExp": 69.55780877
+  },
+  "ROU": {
+    "name": "Romania",
+    "iso3": "ROU",
+    "healthyLifeExp": 63.8471267,
+    "lifeExp": 72.76430945
+  },
+  "RUS": {
+    "name": "Russian Federation",
+    "iso3": "RUS",
+    "healthyLifeExp": 60.93955704,
+    "lifeExp": 70.017337
+  },
+  "RWA": {
+    "name": "Rwanda",
+    "iso3": "RWA",
+    "healthyLifeExp": 58.71232412,
+    "lifeExp": 67.54213882
+  },
+  "LCA": {
+    "name": "Saint Lucia",
+    "iso3": "LCA",
+    "healthyLifeExp": 61.76200255,
+    "lifeExp": 71.1130421
+  },
+  "VCT": {
+    "name": "Saint Vincent and the Grenadines",
+    "iso3": "VCT",
+    "healthyLifeExp": 62.87965073,
+    "lifeExp": 72.55709418
+  },
+  "WSM": {
+    "name": "Samoa",
+    "iso3": "WSM",
+    "healthyLifeExp": 61.57028355,
+    "lifeExp": 70.27372108
+  },
+  "STP": {
+    "name": "Sao Tome and Principe",
+    "iso3": "STP",
+    "healthyLifeExp": 62.44256326,
+    "lifeExp": 71.17810896
+  },
+  "SAU": {
+    "name": "Saudi Arabia",
+    "iso3": "SAU",
+    "healthyLifeExp": 65.64451254,
+    "lifeExp": 76.42921259
+  },
+  "SEN": {
+    "name": "Senegal",
+    "iso3": "SEN",
+    "healthyLifeExp": 58.90300084,
+    "lifeExp": 67.79198263
+  },
+  "SRB": {
+    "name": "Serbia",
+    "iso3": "SRB",
+    "healthyLifeExp": 63.87476741,
+    "lifeExp": 72.80891574
+  },
+  "SYC": {
+    "name": "Seychelles",
+    "iso3": "SYC",
+    "healthyLifeExp": 64.72145007,
+    "lifeExp": 74.01196664
+  },
+  "SLE": {
+    "name": "Sierra Leone",
+    "iso3": "SLE",
+    "healthyLifeExp": 53.12722422,
+    "lifeExp": 61.0228635
+  },
+  "SGP": {
+    "name": "Singapore",
+    "iso3": "SGP",
+    "healthyLifeExp": 73.64695048,
+    "lifeExp": 83.85708962
+  },
+  "SVK": {
+    "name": "Slovakia",
+    "iso3": "SVK",
+    "healthyLifeExp": 64.94128359,
+    "lifeExp": 74.50941328
+  },
+  "SVN": {
+    "name": "Slovenia",
+    "iso3": "SVN",
+    "healthyLifeExp": 69.35553821,
+    "lifeExp": 80.41495666
+  },
+  "SLB": {
+    "name": "Solomon Islands",
+    "iso3": "SLB",
+    "healthyLifeExp": 57.36717644,
+    "lifeExp": 64.79245685
+  },
+  "SOM": {
+    "name": "Somalia",
+    "iso3": "SOM",
+    "healthyLifeExp": 47.42338531,
+    "lifeExp": 53.95143945
+  },
+  "ZAF": {
+    "name": "South Africa",
+    "iso3": "ZAF",
+    "healthyLifeExp": 52.75708232,
+    "lifeExp": 61.49918805
+  },
+  "SSD": {
+    "name": "South Sudan",
+    "iso3": "SSD",
+    "healthyLifeExp": 50.53001725,
+    "lifeExp": 58.57353884
+  },
+  "SEAR": {
+    "name": "South-East Asia Region",
+    "iso3": "SEAR",
+    "healthyLifeExp": 59.36918773,
+    "lifeExp": 68.36682977
+  },
+  "ESP": {
+    "name": "Spain",
+    "iso3": "ESP",
+    "healthyLifeExp": 71.10701546,
+    "lifeExp": 82.66267258
+  },
+  "LKA": {
+    "name": "Sri Lanka",
+    "iso3": "LKA",
+    "healthyLifeExp": 66.72826261,
+    "lifeExp": 77.22895472
+  },
+  "SDN": {
+    "name": "Sudan",
+    "iso3": "SDN",
+    "healthyLifeExp": 58.53978678,
+    "lifeExp": 67.58515204
+  },
+  "SUR": {
+    "name": "Suriname",
+    "iso3": "SUR",
+    "healthyLifeExp": 60.30026042,
+    "lifeExp": 69.78412349
+  },
+  "SWE": {
+    "name": "Sweden",
+    "iso3": "SWE",
+    "healthyLifeExp": 71.11832049,
+    "lifeExp": 82.6649092
+  },
+  "CHE": {
+    "name": "Switzerland",
+    "iso3": "CHE",
+    "healthyLifeExp": 71.14915936,
+    "lifeExp": 83.32795777
+  },
+  "SYR": {
+    "name": "Syrian Arab Republic",
+    "iso3": "SYR",
+    "healthyLifeExp": 62.27065324,
+    "lifeExp": 72.43803165
+  },
+  "TJK": {
+    "name": "Tajikistan",
+    "iso3": "TJK",
+    "healthyLifeExp": 63.0851038,
+    "lifeExp": 71.814877
+  },
+  "THA": {
+    "name": "Thailand",
+    "iso3": "THA",
+    "healthyLifeExp": 65.75672573,
+    "lifeExp": 75.29014364
+  },
+  "TLS": {
+    "name": "Timor-Leste",
+    "iso3": "TLS",
+    "healthyLifeExp": 59.53126836,
+    "lifeExp": 67.99671222
+  },
+  "TGO": {
+    "name": "Togo",
+    "iso3": "TGO",
+    "healthyLifeExp": 55.84901463,
+    "lifeExp": 63.86461122
+  },
+  "TON": {
+    "name": "Tonga",
+    "iso3": "TON",
+    "healthyLifeExp": 63.78331133,
+    "lifeExp": 72.72088222
+  },
+  "TTO": {
+    "name": "Trinidad and Tobago",
+    "iso3": "TTO",
+    "healthyLifeExp": 61.94469938,
+    "lifeExp": 71.70712647
+  },
+  "TUN": {
+    "name": "Tunisia",
+    "iso3": "TUN",
+    "healthyLifeExp": 63.57980464,
+    "lifeExp": 74.06842662
+  },
+  "TUR": {
+    "name": "T\u00fcrkiye",
+    "iso3": "TUR",
+    "healthyLifeExp": 65.20501151,
+    "lifeExp": 75.27238945
+  },
+  "TKM": {
+    "name": "Turkmenistan",
+    "iso3": "TKM",
+    "healthyLifeExp": 60.82372958,
+    "lifeExp": 69.12049331
+  },
+  "UGA": {
+    "name": "Uganda",
+    "iso3": "UGA",
+    "healthyLifeExp": 57.22439375,
+    "lifeExp": 65.98577935
+  },
+  "UKR": {
+    "name": "Ukraine",
+    "iso3": "UKR",
+    "healthyLifeExp": 61.55215691,
+    "lifeExp": 70.90674708
+  },
+  "ARE": {
+    "name": "United Arab Emirates",
+    "iso3": "ARE",
+    "healthyLifeExp": 67.27370093,
+    "lifeExp": 78.30645695
+  },
+  "GBR": {
+    "name": "United Kingdom",
+    "iso3": "GBR",
+    "healthyLifeExp": 68.63631371,
+    "lifeExp": 80.10062783
+  },
+  "TZA": {
+    "name": "United Republic of Tanzania",
+    "iso3": "TZA",
+    "healthyLifeExp": 58.07286825,
+    "lifeExp": 66.8101483
+  },
+  "USA": {
+    "name": "United States of America",
+    "iso3": "USA",
+    "healthyLifeExp": 63.91495735,
+    "lifeExp": 76.37368104
+  },
+  "URY": {
+    "name": "Uruguay",
+    "iso3": "URY",
+    "healthyLifeExp": 64.9870654,
+    "lifeExp": 74.98295244
+  },
+  "UZB": {
+    "name": "Uzbekistan",
+    "iso3": "UZB",
+    "healthyLifeExp": 63.3588737,
+    "lifeExp": 72.18877681
+  },
+  "VUT": {
+    "name": "Vanuatu",
+    "iso3": "VUT",
+    "healthyLifeExp": 58.6825513,
+    "lifeExp": 66.3483713
+  },
+  "VEN": {
+    "name": "Venezuela (Bolivarian Republic of)",
+    "iso3": "VEN",
+    "healthyLifeExp": 62.04615924,
+    "lifeExp": 71.22082891
+  },
+  "VNM": {
+    "name": "Viet Nam",
+    "iso3": "VNM",
+    "healthyLifeExp": 65.35112469,
+    "lifeExp": 73.7965773
+  },
+  "WPR": {
+    "name": "Western Pacific Region",
+    "iso3": "WPR",
+    "healthyLifeExp": 68.17250306,
+    "lifeExp": 77.41814299
+  },
+  "YEM": {
+    "name": "Yemen",
+    "iso3": "YEM",
+    "healthyLifeExp": 56.46367823,
+    "lifeExp": 65.76206783
+  },
+  "ZMB": {
+    "name": "Zambia",
+    "iso3": "ZMB",
+    "healthyLifeExp": 52.97009434,
+    "lifeExp": 60.96884286
+  },
+  "ZWE": {
+    "name": "Zimbabwe",
+    "iso3": "ZWE",
+    "healthyLifeExp": 51.24891236,
+    "lifeExp": 58.48102238
+  }
+}
