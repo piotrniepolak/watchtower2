@@ -109,20 +109,18 @@ Provide analysis in JSON format:
   "scenario": "escalation|de-escalation|stalemate|resolution",
   "probability": 0-100,
   "timeframe": "specific timeframe like '3-6 months', '1-2 years'",
-  "narrative": "detailed 3-4 sentence prediction story based on current developments",
+  "narrative": "brief prediction story",
   "keyFactors": ["factor1", "factor2", "factor3"],
-  "economicImpact": "economic implications description based on current trends",
+  "economicImpact": "economic implications",
   "defenseStockImpact": {
-    "affected": ["stock symbols that would be most affected"],
+    "affected": ["stock symbols"],
     "direction": "positive|negative|neutral",
     "magnitude": "low|medium|high"
   },
   "geopoliticalImplications": ["implication1", "implication2"],
-  "riskFactors": ["risk1", "risk2", "risk3"],
+  "riskFactors": ["risk1", "risk2"],
   "mitigationStrategies": ["strategy1", "strategy2"]
-}
-
-Use the current events and recent developments to make realistic, data-driven predictions. Focus on what is actually happening now rather than historical patterns alone.`;
+}`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini", // Using faster mini model for quicker responses
