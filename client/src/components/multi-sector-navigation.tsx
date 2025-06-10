@@ -1,5 +1,4 @@
 import { Search, Bell, X, User, Star, LogOut, LogIn, UserPlus, ChevronDown, Activity, TrendingUp, BarChart3, FileText, BookOpen, Target, Shield, Pill, Zap, Home } from "lucide-react";
-import { Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +37,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
       { key: "dashboard", label: "Dashboard", href: "/" },
       { key: "conflicts", label: "Conflicts", href: "/conflicts" },
       { key: "markets", label: "Markets", href: "/markets" },
+      { key: "analysis", label: "AI Analysis", href: "/analysis" },
       { key: "reports", label: "Reports", href: "/reports" },
       { key: "learning", label: "Learning", href: "/learning" }
     ]
@@ -203,19 +203,6 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
                 >
                   <Home className="h-3 w-3" />
                   <span>Home</span>
-                </Link>
-
-                {/* AI Analysis tab - universal across all sectors */}
-                <Link 
-                  href="/analysis" 
-                  className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center space-x-1 ${
-                    isActive("/analysis") 
-                      ? "bg-blue-100 text-blue-700" 
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Brain className="h-3 w-3" />
-                  <span>AI Analysis</span>
                 </Link>
 
                 {config.navigation.map((navItem) => (

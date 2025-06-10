@@ -8,7 +8,7 @@ import { userQuizResponses, users, dailyQuizzes, discussions } from "@shared/sch
 import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
-import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline, generateSectorPredictions, generateSectorMarketAnalysis } from "./ai-analysis";
+import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
@@ -1851,24 +1851,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Analysis endpoints
   app.get('/api/analysis/predictions', async (req, res) => {
     try {
-      console.log('=== PREDICTIONS REQUEST ===');
-      console.log('Raw URL:', req.url);
-      console.log('Query object:', JSON.stringify(req.query, null, 2));
-      
       if (!process.env.OPENAI_API_KEY) {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
-      const sector = req.query.sector as string || 'defense';
-      console.log(`✓ Parsed predictions sector: "${sector}"`);
-      
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
-      
-      console.log(`✓ Calling generateSectorPredictions with sector: "${sector}"`);
-      const predictions = await generateSectorPredictions(sector, conflicts, stocks);
-      console.log(`✓ Predictions generated for ${sector}, count: ${predictions.length}`);
-      
+      const predictions = await generateConflictPredictions(conflicts, stocks);
       res.json(predictions);
     } catch (error) {
       console.error('Error generating predictions:', error);
@@ -1878,25 +1867,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/analysis/market', async (req, res) => {
     try {
-      console.log('=== MARKET ANALYSIS REQUEST ===');
-      console.log('Raw URL:', req.url);
-      console.log('Query object:', JSON.stringify(req.query, null, 2));
-      
       if (!process.env.OPENAI_API_KEY) {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
-      const sector = req.query.sector as string || 'defense';
-      console.log(`✓ Parsed sector: "${sector}"`);
-      
       const stocks = await storage.getStocks();
       const conflicts = await storage.getConflicts();
       const correlationEvents = await storage.getCorrelationEvents();
-      
-      console.log(`✓ Calling generateSectorMarketAnalysis with sector: "${sector}"`);
-      const analysis = await generateSectorMarketAnalysis(sector, stocks, conflicts, correlationEvents);
-      console.log(`✓ Analysis complete for ${sector}, sentiment: ${analysis.overallSentiment}`);
-      
+      const analysis = await generateMarketAnalysis(stocks, conflicts, correlationEvents);
       res.json(analysis);
     } catch (error) {
       console.error('Error generating market analysis:', error);
