@@ -131,7 +131,8 @@ export default function Analysis() {
   const hasApiData = predictions && marketAnalysis && Array.isArray(predictions) && predictions.length > 0;
   const isApiUnavailable = !predictionsLoading && !marketLoading && !hasApiData;
 
-  if (predictionsLoading || marketLoading) {
+  // Show full page loading only on initial load when both are loading
+  if (predictionsLoading && marketLoading) {
     return (
       <div className="min-h-screen bg-slate-50">
         <MultiSectorNavigation 
