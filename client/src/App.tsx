@@ -8,7 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import EnhancedMultiSectorDashboard from "@/components/enhanced-multi-sector-dashboard";
 import Conflicts from "@/pages/conflicts";
 import Markets from "@/pages/markets";
-import Analysis from "@/pages/analysis";
+
 import Reports from "@/pages/reports";
 import DedicatedWatchlist from "@/pages/dedicated-watchlist";
 import Privacy from "@/pages/privacy";
@@ -47,7 +47,7 @@ function Router() {
       <Route path="/dashboard" component={EnhancedMultiSectorDashboard} />
       <Route path="/conflicts" component={Conflicts} />
       <Route path="/markets" component={Markets} />
-      <Route path="/analysis" component={Analysis} />
+
       <Route path="/reports" component={Reports} />
       <Route path="/watchlist" component={DedicatedWatchlist} />
       <Route path="/learning" component={Learning} />

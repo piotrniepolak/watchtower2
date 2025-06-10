@@ -527,12 +527,10 @@ export default function Home() {
                       <div className="text-xs text-slate-600">{marketAnalysis.investmentImplications?.length || 0} factors</div>
                     </div>
                   </div>
-                  <Link href="/analysis">
-                    <Button variant="outline" size="sm">
-                      <Brain className="h-4 w-4 mr-2" />
-                      Full Analysis
-                    </Button>
-                  </Link>
+                  <Button variant="outline" size="sm" disabled className="opacity-50">
+                    <Brain className="h-4 w-4 mr-2" />
+                    AI Analysis Active
+                  </Button>
                 </div>
               </div>
             )}
