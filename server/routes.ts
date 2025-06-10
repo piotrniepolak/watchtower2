@@ -1105,12 +1105,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validSectors = ['defense', 'health', 'energy'];
       const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
       
-      console.log(`🔍 AI Predictions (legacy) - Sector: "${sector}"`);
+      console.log(`🔍 LEGACY API ENDPOINT CALLED - URL: ${req.url}`);
+      console.log(`🔍 Legacy sector param: "${sectorParam}" -> validated: "${sector}"`);
       
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
       
       const predictions = await generateSectorPredictions(sector, conflicts, stocks);
+      console.log(`✅ Legacy endpoint generated ${predictions.length} predictions for ${sector} sector`);
       res.json(predictions);
     } catch (error) {
       console.error("Error generating conflict predictions:", error);
@@ -1877,6 +1879,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
+      
+      // FORCE HEALTH SECTOR FOR TESTING
+      if (req.url?.includes('sector=health')) {
+        console.log(`🚨 FORCING HEALTH SECTOR - Original: "${sector}" -> Forced: "health"`);
+        const forceHealthSector = 'health';
+        const predictions = await generateSectorPredictions(forceHealthSector, conflicts, stocks);
+        console.log(`✅ Generated ${predictions.length} HEALTH predictions for testing`);
+        return res.json(predictions);
+      }
       
       const predictions = await generateSectorPredictions(sector, conflicts, stocks);
       console.log(`✅ Generated ${predictions.length} predictions for ${sector} sector`);
