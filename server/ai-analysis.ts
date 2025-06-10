@@ -77,18 +77,16 @@ export async function generateConflictPredictions(
   conflicts: Conflict[],
   stocks: Stock[]
 ): Promise<ConflictPrediction[]> {
-  const predictions: ConflictPrediction[] = [];
-
-  for (const conflict of conflicts) {
-    try {
-      const prediction = await generateSingleConflictPrediction(conflict, stocks);
-      predictions.push(prediction);
-    } catch (error) {
+  // Process conflicts in parallel for much faster results
+  const predictionPromises = conflicts.map(conflict => 
+    generateSingleConflictPrediction(conflict, stocks).catch(error => {
       console.error(`Error generating prediction for ${conflict.name}:`, error);
-    }
-  }
+      return null;
+    })
+  );
 
-  return predictions;
+  const results = await Promise.all(predictionPromises);
+  return results.filter((prediction): prediction is ConflictPrediction => prediction !== null);
 }
 
 async function generateSingleConflictPrediction(
@@ -97,31 +95,16 @@ async function generateSingleConflictPrediction(
 ): Promise<ConflictPrediction> {
   const stockSymbols = stocks.map(s => s.symbol).join(", ");
   
-  // Fetch current events and developments for this conflict
-  const currentEventsQuery = `Latest developments and news about ${conflict.name} conflict in ${conflict.region}. Recent military activities, diplomatic efforts, economic impacts, and defense industry implications in the past 30 days.`;
-  const currentEvents = await searchCurrentEvents(currentEventsQuery);
-  
-  // Search for broader geopolitical context
-  const contextQuery = `Current geopolitical situation in ${conflict.region}. Regional tensions, military buildups, alliance activities, and defense spending trends affecting ${conflict.name}.`;
-  const geopoliticalContext = await searchCurrentEvents(contextQuery);
-  
-  const prompt = `As a geopolitical analyst and defense market expert, analyze the current conflict using the latest available information and provide a comprehensive prediction.
+  // Single optimized prompt without external API calls for faster response
+  const prompt = `Analyze this conflict and provide predictions:
 
 Conflict: ${conflict.name}
 Region: ${conflict.region}
-Current Status: ${conflict.status}
+Status: ${conflict.status}
 Severity: ${conflict.severity}
-Duration: ${conflict.duration}
+Defense Stocks: ${stockSymbols}
 
-CURRENT EVENTS AND DEVELOPMENTS:
-${currentEvents}
-
-GEOPOLITICAL CONTEXT:
-${geopoliticalContext}
-
-Available Defense Stocks: ${stockSymbols}
-
-Based on the latest information above, provide a detailed analysis in the following JSON format:
+Provide analysis in JSON format:
 {
   "scenario": "escalation|de-escalation|stalemate|resolution",
   "probability": 0-100,
@@ -142,11 +125,11 @@ Based on the latest information above, provide a detailed analysis in the follow
 Use the current events and recent developments to make realistic, data-driven predictions. Focus on what is actually happening now rather than historical patterns alone.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini", // Using faster mini model for quicker responses
     messages: [
       {
         role: "system",
-        content: "You are a senior geopolitical analyst with access to current intelligence. Provide realistic, well-reasoned analyses based on the latest developments and current global dynamics. Always ground your predictions in factual, recent information."
+        content: "You are a geopolitical analyst. Provide rapid, concise predictions in valid JSON format."
       },
       {
         role: "user",
@@ -154,8 +137,8 @@ Use the current events and recent developments to make realistic, data-driven pr
       }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.7,
-    max_tokens: 1500
+    temperature: 0.5,
+    max_tokens: 800
   });
 
   const analysis = JSON.parse(response.choices[0].message.content!);
@@ -189,46 +172,27 @@ export async function generateMarketAnalysis(
     `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
   ).join('\n');
 
-  // Fetch current defense market trends and analysis
-  const marketTrendsQuery = `Current defense industry market trends, defense spending budgets, military procurement contracts, and geopolitical impacts on defense stocks in the past 30 days. Include major defense contractors performance and outlook.`;
-  const marketTrends = await searchCurrentEvents(marketTrendsQuery);
-  
-  // Search for economic and investment context
-  const investmentQuery = `Defense sector investment outlook, military budget allocations, geopolitical risk impacts on defense stocks, and recent defense industry earnings and forecasts.`;
-  const investmentContext = await searchCurrentEvents(investmentQuery);
+  const prompt = `Analyze defense market conditions:
 
-  const prompt = `As a defense sector analyst, provide a comprehensive market analysis based on current real-world conditions and latest market developments.
+Conflicts: ${conflictSummary}
+Stock Performance: ${stockPerformance}
 
-Current Conflicts:
-${conflictSummary}
-
-Defense Stock Performance:
-${stockPerformance}
-
-CURRENT MARKET TRENDS AND DEVELOPMENTS:
-${marketTrends}
-
-INVESTMENT CONTEXT AND ECONOMIC FACTORS:
-${investmentContext}
-
-Based on the latest market information above, provide analysis in JSON format:
+Provide rapid market analysis in JSON:
 {
   "overallSentiment": "bullish|bearish|neutral",
-  "sectorOutlook": "detailed sector outlook description based on current trends",
+  "sectorOutlook": "brief sector outlook",
   "keyDrivers": ["driver1", "driver2", "driver3"],
-  "riskAssessment": "risk assessment description based on current conditions",
+  "riskAssessment": "brief risk assessment",
   "investmentImplications": ["implication1", "implication2"],
-  "timeHorizon": "relevant time horizon for analysis"
-}
-
-Ground your analysis in the current market conditions, recent earnings, budget allocations, and geopolitical developments affecting the defense sector.`;
+  "timeHorizon": "time horizon"
+}`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-mini", // Using faster mini model for quicker responses
     messages: [
       {
         role: "system",
-        content: "You are a senior defense sector analyst with access to current market intelligence. Provide realistic, data-driven analysis based on the latest defense industry developments, earnings reports, and geopolitical factors affecting defense markets."
+        content: "You are a defense analyst. Provide rapid, concise market analysis in valid JSON format."
       },
       {
         role: "user",
@@ -236,8 +200,8 @@ Ground your analysis in the current market conditions, recent earnings, budget a
       }
     ],
     response_format: { type: "json_object" },
-    temperature: 0.6,
-    max_tokens: 1000
+    temperature: 0.5,
+    max_tokens: 600
   });
 
   const analysis = JSON.parse(response.choices[0].message.content!);
