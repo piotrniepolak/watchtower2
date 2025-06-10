@@ -1851,26 +1851,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Analysis endpoints
   app.get('/api/analysis/predictions', async (req, res) => {
     try {
-      console.log('\n=== PREDICTIONS REQUEST ===');
-      console.log('Raw URL:', req.url);
-      console.log('Query object:', JSON.stringify(req.query, null, 2));
-      console.log('Sector parameter:', req.query.sector);
-      
       if (!process.env.OPENAI_API_KEY) {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
-      const sectorParam = req.query.sector;
-      const sector = (typeof sectorParam === 'string' && ['defense', 'health', 'energy'].includes(sectorParam)) ? sectorParam : 'defense';
-      console.log(`✓ Raw sector param: "${sectorParam}", Final parsed sector: "${sector}"`);
+      const sectorParam = req.query.sector as string;
+      const validSectors = ['defense', 'health', 'energy'];
+      const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
+      
+      console.log(`🔍 AI Predictions Request - URL: ${req.url}`);
+      console.log(`🔍 Sector param: "${sectorParam}" -> validated: "${sector}"`);
       
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
       
-      console.log(`✓ About to call generateSectorPredictions with sector: "${sector}"`);
       const predictions = await generateSectorPredictions(sector, conflicts, stocks);
-      console.log(`✓ Predictions complete for ${sector}, count: ${predictions.length}`);
-      console.log('=== END PREDICTIONS REQUEST ===\n');
+      console.log(`✅ Generated ${predictions.length} predictions for ${sector} sector`);
       
       res.json(predictions);
     } catch (error) {

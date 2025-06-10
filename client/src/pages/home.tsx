@@ -33,34 +33,36 @@ export default function Home() {
   });
 
   // Fetch AI analysis data based on selected sector
-  const { data: predictions = [], isLoading: predictionsLoading, refetch: refetchPredictions } = useQuery({
+  const { data: predictions = [], isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions", selectedSector],
     queryFn: async () => {
       console.log(`Frontend: Fetching predictions for sector: ${selectedSector}`);
-      const response = await fetch(`/api/analysis/predictions?sector=${selectedSector}&t=${Date.now()}`);
+      const response = await fetch(`/api/analysis/predictions?sector=${selectedSector}&cache=${Date.now()}`);
       if (!response.ok) throw new Error('Failed to fetch predictions');
       return response.json();
     },
-    enabled: !!selectedSector,
+    enabled: !!selectedSector && selectedSector !== '',
     staleTime: 0,
     gcTime: 0,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
+    retry: false,
   });
 
-  const { data: marketAnalysis, isLoading: marketLoading, refetch: refetchMarket } = useQuery({
+  const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
     queryKey: ["/api/analysis/market", selectedSector],
     queryFn: async () => {
       console.log(`Frontend: Fetching market analysis for sector: ${selectedSector}`);
-      const response = await fetch(`/api/analysis/market?sector=${selectedSector}&t=${Date.now()}`);
+      const response = await fetch(`/api/analysis/market?sector=${selectedSector}&cache=${Date.now()}`);
       if (!response.ok) throw new Error('Failed to fetch market analysis');
       return response.json();
     },
-    enabled: !!selectedSector,
+    enabled: !!selectedSector && selectedSector !== '',
     staleTime: 0,
     gcTime: 0,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
+    retry: false,
   });
 
   const sectors = [
@@ -363,12 +365,12 @@ export default function Home() {
                 <span className="text-sm font-medium text-slate-700">Sector:</span>
                 <Select value={selectedSector} onValueChange={(value) => {
                   console.log(`Frontend: Switching to sector: ${value}`);
+                  
+                  // Clear all existing cache for AI analysis
+                  queryClient.removeQueries({ queryKey: ["/api/analysis/predictions"] });
+                  queryClient.removeQueries({ queryKey: ["/api/analysis/market"] });
+                  
                   setSelectedSector(value);
-                  // Force immediate refetch for the new sector
-                  setTimeout(() => {
-                    refetchPredictions();
-                    refetchMarket();
-                  }, 100);
                 }}>
                   <SelectTrigger className="w-48">
                     <SelectValue>
