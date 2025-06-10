@@ -113,9 +113,10 @@ export async function generateSectorPredictions(
 
 export async function generateConflictPredictions(
   conflicts: Conflict[],
-  stocks: Stock[]
+  stocks: Stock[],
+  sector: string = 'defense'
 ): Promise<ConflictPrediction[]> {
-  return generateSectorPredictions('defense', conflicts, stocks);
+  return generateSectorPredictions(sector, conflicts, stocks);
 }
 
 async function generateHealthPredictions(stocks: Stock[]): Promise<ConflictPrediction[]> {
