@@ -16,7 +16,7 @@ import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
 import { healthOpportunityService } from "./health-opportunity-service";
-import { getWHOStatisticalData } from "@shared/who-data";
+import { generateAuthenticWHOData } from "@shared/who-data";
 
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
@@ -1828,6 +1828,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error voting on discussion:", error);
       res.status(500).json({ error: "Failed to vote on discussion" });
+    }
+  });
+
+  // WHO Statistical Data API endpoint
+  app.get('/api/who-data', async (req, res) => {
+    try {
+      console.log('WHO data API endpoint called');
+      const whoData = generateAuthenticWHOData();
+      
+      // Convert object to array format expected by frontend
+      const countriesArray = Object.entries(whoData).map(([iso3, data]) => ({
+        name: data.name,
+        iso3,
+        indicators: data.indicators
+      }));
+      
+      console.log(`Returning ${countriesArray.length} countries with WHO data`);
+      res.json(countriesArray);
+    } catch (error) {
+      console.error('Error fetching WHO data:', error);
+      res.status(500).json({ 
+        error: 'Failed to load WHO Statistical Annex data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
