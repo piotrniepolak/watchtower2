@@ -153,10 +153,7 @@ export function generateAuthenticWHOData() {
     };
   });
   
-  return {
-    healthIndicators,
-    countries: countriesWithScores
-  };
+  return countriesWithScores;
 }
 
 function generateComprehensiveHealthData() {
