@@ -229,7 +229,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Link href={`/?sector=${sector.key}`}>
+                  <Link href={sector.key === 'defense' ? '/' : sector.key === 'health' ? '/?sector=health' : '/?sector=energy'}>
                     <Button className={`w-full bg-gradient-to-r ${sector.color} text-white hover:opacity-90`}>
                       Explore {sector.name}
                     </Button>
