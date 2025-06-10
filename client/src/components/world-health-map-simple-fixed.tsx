@@ -6,6 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
+import { scaleLinear } from "d3-scale";
 import { generateAuthenticWHOData } from "../../../shared/who-data";
 import TopOpportunityList from "./top-opportunity-list";
 
@@ -68,17 +70,19 @@ const getAllWHOIndicators = (): string[] => {
   ];
 };
 
-// Color scale utility for health scores with 5 categories (20-point ranges)
-const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
+// Color scale for health scores using D3 scale
+const colorScale = scaleLinear<string>()
+  .domain([0, 25, 50, 75, 100])
+  .range(['#7f1d1d', '#dc2626', '#f59e0b', '#10b981', '#065f46']);
+
+// Get country color based on health score
+const getCountryColor = (healthScore: number | undefined): string => {
   if (!healthScore) return '#E5E7EB'; // Gray for no data
-  
-  // 5 categories with 20-point ranges
-  if (healthScore >= 80) return '#065f46'; // Dark green (80-100)
-  if (healthScore >= 60) return '#10b981'; // Green (60-79)
-  if (healthScore >= 40) return '#f59e0b'; // Amber (40-59)
-  if (healthScore >= 20) return '#dc2626'; // Red (20-39)
-  return '#7f1d1d'; // Dark red (0-19)
+  return colorScale(healthScore);
 };
+
+// World map data URL
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface HealthIndicator {
   lifeExpectancy: number;
@@ -119,7 +123,6 @@ const useWHOStatisticalData = () => {
 export default function WorldHealthMapSimpleFixed() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
 
   const whoStatisticalData = useWHOStatisticalData();
 
@@ -261,22 +264,43 @@ export default function WorldHealthMapSimpleFixed() {
     return { healthData: healthMap, scoreRange };
   }, [whoStatisticalData.data]);
 
-  // Simple world map SVG paths (major countries only)
-  const countryPaths = {
-    USA: "M158 206c2-1 4-2 6-2 3 0 5 1 7 3l8 6c2 2 3 4 2 7-1 2-3 4-6 4h-12c-3 0-5-2-6-4-1-3 0-6 2-8l-1-6z",
-    JPN: "M830 220c3-2 7-1 9 2 1 2 1 5-1 7l-6 4c-2 1-5 1-7-1-2-2-2-5 0-7l5-5z", 
-    CHN: "M780 180c8-3 15-2 22 2 5 3 8 8 7 13-1 4-4 7-8 8l-18 3c-5 1-10-1-13-5-3-4-2-9 2-12l8-9z",
-    GBR: "M480 140c2-1 4 0 5 2 1 1 1 3 0 4l-3 2c-1 1-3 1-4 0-1-1-1-3 0-4l2-4z",
-    DEU: "M520 160c3-1 6 0 8 2 2 2 2 5 1 7l-4 3c-2 1-5 1-7-1-2-2-2-5 0-7l2-4z",
-    FRA: "M500 180c4-2 8-1 11 2 2 2 3 5 2 8l-5 4c-3 2-7 2-10 0-3-2-3-6-1-9l3-5z",
-    IND: "M720 260c6-3 12-2 17 2 4 3 6 8 5 12-1 4-4 7-8 8l-15 2c-4 1-9-1-12-4-3-3-3-8 0-11l13-9z",
-    BRA: "M280 340c7-4 15-3 21 2 5 4 8 10 6 16-2 5-6 9-12 10l-20 3c-6 1-12-2-15-7-3-5-2-11 2-15l18-9z",
-    AUS: "M820 420c8-4 17-3 24 3 6 5 9 12 7 19-2 6-7 11-14 12l-25 4c-7 1-14-2-18-8-4-6-3-13 3-18l23-12z",
-    RUS: "M580 80c12-6 26-5 37 3 9 6 15 16 14 26-1 8-6 15-14 19l-35 15c-8 3-17 2-24-3-7-5-11-13-10-21 1-8 6-15 14-19l18-20z"
+  // Country code mapping for WHO data to ISO3 codes
+  const countryCodeMapping: Record<string, string> = {
+    'USA': 'United States',
+    'JPN': 'Japan', 
+    'CHN': 'China',
+    'GBR': 'United Kingdom',
+    'DEU': 'Germany',
+    'FRA': 'France',
+    'IND': 'India',
+    'BRA': 'Brazil',
+    'AUS': 'Australia',
+    'RUS': 'Russia',
+    'CAN': 'Canada',
+    'MEX': 'Mexico',
+    'ARG': 'Argentina',
+    'ZAF': 'South Africa',
+    'EGY': 'Egypt',
+    'NGA': 'Nigeria',
+    'KEN': 'Kenya',
+    'ETH': 'Ethiopia',
+    'THA': 'Thailand',
+    'VNM': 'Vietnam',
+    'IDN': 'Indonesia',
+    'MYS': 'Malaysia',
+    'PHL': 'Philippines',
+    'KOR': 'South Korea',
+    'IRN': 'Iran'
   };
 
-  const handleCountryClick = (countryCode: string) => {
-    const countryData = healthData.get(countryCode);
+  const handleCountryClick = (geo: any) => {
+    const countryName = geo.properties.NAME || geo.properties.NAME_EN;
+    // Find country data by name
+    const countryData = Array.from(healthData.values()).find(country => 
+      country.name === countryName || 
+      Object.values(countryCodeMapping).includes(countryName)
+    );
+    
     if (countryData) {
       setSelectedCountry(countryData);
     }
@@ -317,61 +341,88 @@ export default function WorldHealthMapSimpleFixed() {
         </CardHeader>
         <CardContent>
           <div className="relative w-full h-96 bg-blue-50 rounded-lg overflow-hidden">
-            <svg
-              ref={svgRef}
-              viewBox="0 0 1000 500"
-              className="w-full h-full cursor-pointer"
+            <ComposableMap
+              projectionConfig={{
+                scale: 140,
+                center: [0, 20]
+              }}
+              width={1000}
+              height={400}
+              className="w-full h-full"
             >
-              {Object.entries(countryPaths).map(([countryCode, path]) => {
-                const countryData = healthData.get(countryCode);
-                const isHovered = hoveredCountry === countryCode;
-                const color = getCountryColor(countryData?.healthScore, scoreRange);
-                
-                return (
-                  <path
-                    key={countryCode}
-                    d={path}
-                    fill={color}
-                    stroke="#fff"
-                    strokeWidth="1"
-                    className="transition-all duration-200 hover:stroke-2 hover:stroke-blue-500"
-                    style={{
-                      filter: isHovered ? 'brightness(1.1)' : 'none',
-                      transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-                      transformOrigin: 'center'
-                    }}
-                    onClick={() => handleCountryClick(countryCode)}
-                    onMouseEnter={() => setHoveredCountry(countryCode)}
-                    onMouseLeave={() => setHoveredCountry(null)}
-                  />
-                );
-              })}
-            </svg>
+              <ZoomableGroup zoom={1}>
+                <Geographies geography={geoUrl}>
+                  {({ geographies }) =>
+                    geographies.map((geo) => {
+                      const countryName = geo.properties.NAME || geo.properties.NAME_EN;
+                      const countryData = Array.from(healthData.values()).find(country => 
+                        country.name === countryName || 
+                        Object.values(countryCodeMapping).includes(countryName)
+                      );
+                      
+                      const isHovered = hoveredCountry === countryName;
+                      const fillColor = getCountryColor(countryData?.healthScore);
+                      
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          fill={fillColor}
+                          stroke="#fff"
+                          strokeWidth={0.5}
+                          style={{
+                            default: { outline: "none" },
+                            hover: { 
+                              outline: "none",
+                              filter: "brightness(1.1)",
+                              stroke: "#2563eb",
+                              strokeWidth: 1
+                            },
+                            pressed: { outline: "none" }
+                          }}
+                          onClick={() => handleCountryClick(geo)}
+                          onMouseEnter={() => setHoveredCountry(countryName)}
+                          onMouseLeave={() => setHoveredCountry(null)}
+                        />
+                      );
+                    })
+                  }
+                </Geographies>
+              </ZoomableGroup>
+            </ComposableMap>
             
             {/* Legend */}
             <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg">
               <div className="text-xs font-semibold text-gray-700 mb-2">Health Score</div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-3 bg-red-800 rounded"></div>
-                <span className="text-xs text-gray-600">Low</span>
-                <div className="w-4 h-3 bg-yellow-500 rounded"></div>
-                <span className="text-xs text-gray-600">Medium</span>
-                <div className="w-4 h-3 bg-green-600 rounded"></div>
-                <span className="text-xs text-gray-600">High</span>
+                <div className="w-4 h-3" style={{backgroundColor: '#7f1d1d'}}></div>
+                <span className="text-xs text-gray-600">0-25</span>
+                <div className="w-4 h-3" style={{backgroundColor: '#dc2626'}}></div>
+                <span className="text-xs text-gray-600">25-50</span>
+                <div className="w-4 h-3" style={{backgroundColor: '#f59e0b'}}></div>
+                <span className="text-xs text-gray-600">50-75</span>
+                <div className="w-4 h-3" style={{backgroundColor: '#10b981'}}></div>
+                <span className="text-xs text-gray-600">75-100</span>
               </div>
             </div>
           </div>
           
           {/* Hover Info */}
-          {hoveredCountry && healthData.get(hoveredCountry) && (
+          {hoveredCountry && (
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">
-                  {healthData.get(hoveredCountry)?.name}
-                </h3>
-                <Badge variant="outline" className="bg-white">
-                  Score: {healthData.get(hoveredCountry)?.healthScore}
-                </Badge>
+                <h3 className="font-semibold text-gray-800">{hoveredCountry}</h3>
+                {Array.from(healthData.values()).find(country => 
+                  country.name === hoveredCountry || 
+                  Object.values(countryCodeMapping).includes(hoveredCountry)
+                ) && (
+                  <Badge variant="outline" className="bg-white">
+                    Score: {Array.from(healthData.values()).find(country => 
+                      country.name === hoveredCountry || 
+                      Object.values(countryCodeMapping).includes(hoveredCountry)
+                    )?.healthScore}
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-gray-600 mt-1">
                 Click to view detailed WHO health indicators
