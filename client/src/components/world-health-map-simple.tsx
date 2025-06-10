@@ -9760,20 +9760,10 @@ function calculateWHOHealthScore(
     validIndicators++;
   });
   
-  // Scale to 0-100 and adjust for missing indicators
-  const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
-  const rawScore = totalScore * 100 * adjustmentFactor;
+  // Simple average of normalized values, scaled to 0-100
+  const healthScore = (totalScore / validIndicators) * 100;
   
-  // Calibrate score to 0-100 range based on true observed range from corrected WHO data
-  // Console shows actual range: approximately 19.4-100
-  const observedMin = 19.4;
-  const observedMax = 100;
-  const observedRange = observedMax - observedMin;
-  
-  // Apply linear transformation to use full 0-100 scale: newScore = ((rawScore - observedMin) / observedRange) * 100
-  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - observedMin) / observedRange) * 100));
-  
-  return calibratedScore;
+  return healthScore;
 }
 
 // Generate authentic WHO Statistical Annex data for all 195 UN member countries
@@ -10904,7 +10894,7 @@ export default function WorldHealthMapSimple() {
                   <strong>Data Source:</strong> WHO Statistical Annex with corrected disaggregation extraction ensuring proper country-level aggregates (both-sexes combined, not subgroup-specific values).
                 </p>
                 <p className="text-xs text-gray-600">
-                  <strong>Health Score:</strong> Calculated from 55 authentic WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Score calibrated to full 0-100 scale based on observed 19.4-100 range from corrected data.
+                  <strong>Health Score:</strong> Simple average of normalized WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Direct 0-100 scaling without calibration or missing data adjustments.
                 </p>
               </div>
             </div>
