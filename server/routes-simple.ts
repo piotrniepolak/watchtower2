@@ -8,6 +8,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { conflictTimelineService } from "./conflict-timeline-service";
+import { generateAuthenticWHOData } from "@shared/who-data";
 
 // import { healthService } from "./health-service";
 // import { energyService } from "./energy-service";
@@ -1125,6 +1126,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error calculating energy correlations:', error);
       res.status(500).json({ error: 'Failed to calculate energy correlations' });
+    }
+  });
+
+  // WHO Statistical Data API endpoint
+  app.get('/api/who-data', async (req, res) => {
+    try {
+      console.log('WHO data API endpoint called');
+      const whoData = generateAuthenticWHOData();
+      
+      // Convert object to array format expected by frontend
+      const countriesArray = Object.entries(whoData).map(([iso3, data]) => ({
+        name: data.name,
+        iso3,
+        indicators: data.indicators
+      }));
+      
+      console.log(`Returning ${countriesArray.length} countries with WHO data`);
+      res.json(countriesArray);
+    } catch (error) {
+      console.error('Error fetching WHO data:', error);
+      res.status(500).json({ 
+        error: 'Failed to load WHO Statistical Annex data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
