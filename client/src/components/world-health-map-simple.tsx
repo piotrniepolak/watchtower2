@@ -9764,13 +9764,14 @@ function calculateWHOHealthScore(
   const adjustmentFactor = healthIndicators.length / Math.max(1, validIndicators);
   const rawScore = totalScore * 100 * adjustmentFactor;
   
-  // Calibrate score to 0-100 range where original min=28 maps to 0 and max=69 maps to 100
-  const originalMin = 28;
-  const originalMax = 69;
-  const originalRange = originalMax - originalMin;
+  // Calibrate score to 0-100 range based on corrected WHO data distribution
+  // After disaggregation correction, health scores range approximately 12-96
+  const correctedMin = 12;
+  const correctedMax = 96;
+  const correctedRange = correctedMax - correctedMin;
   
-  // Apply linear transformation: newScore = ((rawScore - originalMin) / originalRange) * 100
-  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - originalMin) / originalRange) * 100));
+  // Apply linear transformation: newScore = ((rawScore - correctedMin) / correctedRange) * 100
+  const calibratedScore = Math.max(0, Math.min(100, ((rawScore - correctedMin) / correctedRange) * 100));
   
   return calibratedScore;
 }
@@ -10848,33 +10849,63 @@ export default function WorldHealthMapSimple() {
                 </div>
               </div>
 
-              {/* Key Summary Indicators */}
+              {/* Key Summary Indicators - Using Corrected WHO Statistical Annex Data */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-700">Life Expectancy</h4>
-                  <p className="text-xl font-bold text-green-600">{selectedCountry.indicators.lifeExpectancy.toFixed(1)} years</p>
+                  <p className="text-xl font-bold text-green-600">
+                    {selectedCountry.allWHOIndicators['Life expectancy at birth (years)']?.toFixed(1) || 'N/A'} years
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-sm text-gray-700">Infant Mortality</h4>
-                  <p className="text-xl font-bold text-red-600">{selectedCountry.indicators.infantMortality.toFixed(1)} per 1,000</p>
+                  <h4 className="font-semibold text-sm text-gray-700">Under-5 Mortality</h4>
+                  <p className="text-xl font-bold text-red-600">
+                    {selectedCountry.allWHOIndicators['Under-five mortality rate (per 1000 live births)']?.toFixed(1) || 'N/A'} per 1,000
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-700">DTP3 Vaccine Coverage</h4>
-                  <p className="text-xl font-bold text-blue-600">{selectedCountry.indicators.vaccinesCoverage}%</p>
+                  <p className="text-xl font-bold text-blue-600">
+                    {selectedCountry.allWHOIndicators['Diphtheria-tetanus-pertussis (DTP3) immunization coverage among 1-year-olds (%)']?.toFixed(0) || 'N/A'}%
+                  </p>
                 </div>
                 
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-700">UHC Service Coverage</h4>
-                  <p className="text-xl font-bold text-purple-600">{selectedCountry.indicators.healthcareAccess}</p>
+                  <p className="text-xl font-bold text-purple-600">
+                    {selectedCountry.allWHOIndicators['UHC: Service coverage index']?.toFixed(0) || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Additional WHO Key Indicators */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm text-gray-700">Maternal Mortality</h4>
+                  <p className="text-lg font-bold text-orange-600">
+                    {selectedCountry.allWHOIndicators['Maternal mortality ratio (per 100 000 live births)']?.toFixed(1) || 'N/A'} per 100,000
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm text-gray-700">Skilled Birth Attendance</h4>
+                  <p className="text-lg font-bold text-teal-600">
+                    {selectedCountry.allWHOIndicators['Proportion of births attended by skilled health personnel (%)']?.toFixed(0) || 'N/A'}%
+                  </p>
                 </div>
               </div>
 
               {/* Data Sources */}
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Methodology</h4>
-                <p className="text-xs text-gray-600">Health score calculated from 55 authentic WHO Statistical Annex indicators with equal weighting (1/55 each). Each indicator normalized across all countries using min-max scaling with proper directional adjustment (higher values better for positive indicators like life expectancy, lower values better for negative indicators like mortality rates).</p>
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">Data Integrity & Methodology</h4>
+                <p className="text-xs text-gray-600 mb-2">
+                  <strong>Data Source:</strong> WHO Statistical Annex with corrected disaggregation extraction ensuring proper country-level aggregates (both-sexes combined, not subgroup-specific values).
+                </p>
+                <p className="text-xs text-gray-600">
+                  <strong>Health Score:</strong> Calculated from 55 authentic WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Score calibrated to 12-96 range based on corrected data distribution.
+                </p>
               </div>
             </div>
           )}
