@@ -9758,7 +9758,15 @@ function calculateWHOHealthScore(
   });
   
   // Simple average of normalized values, scaled to 0-100
-  const healthScore = (totalScore / validIndicators) * 100;
+  const rawScore = (totalScore / validIndicators) * 100;
+  
+  // Calibrate to full 0-100 range based on observed distribution
+  const observedMin = 32.9;
+  const observedMax = 67.5;
+  const calibratedScore = ((rawScore - observedMin) / (observedMax - observedMin)) * 100;
+  
+  // Ensure score stays within 0-100 bounds
+  const healthScore = Math.max(0, Math.min(100, calibratedScore));
   
   return healthScore;
 }
@@ -10891,7 +10899,7 @@ export default function WorldHealthMapSimple() {
                   <strong>Data Source:</strong> WHO Statistical Annex with corrected disaggregation extraction ensuring proper country-level aggregates (both-sexes combined, not subgroup-specific values).
                 </p>
                 <p className="text-xs text-gray-600">
-                  <strong>Health Score:</strong> Simple average of normalized WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Direct 0-100 scaling without calibration or missing data adjustments.
+                  <strong>Health Score:</strong> Simple average of normalized WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Calibrated to full 0-100 scale where 32.9 (worst) = 0 and 67.5 (best) = 100.
                 </p>
               </div>
             </div>
