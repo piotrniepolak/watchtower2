@@ -80,7 +80,12 @@ export async function generateSectorPredictions(
 ): Promise<ConflictPrediction[]> {
   console.log(`generateSectorPredictions called with sector: ${sector}`);
   
-  if (sector === 'defense') {
+  // Validate sector parameter
+  const validSectors = ['defense', 'health', 'energy'];
+  const normalizedSector = validSectors.includes(sector) ? sector : 'defense';
+  console.log(`Validated sector: ${normalizedSector} (original: ${sector})`);
+  
+  if (normalizedSector === 'defense') {
     console.log('Generating defense predictions');
     // Process conflicts in parallel for defense sector
     const predictionPromises = conflicts.map(conflict => 
@@ -92,15 +97,15 @@ export async function generateSectorPredictions(
 
     const results = await Promise.all(predictionPromises);
     return results.filter((prediction): prediction is ConflictPrediction => prediction !== null);
-  } else if (sector === 'health') {
+  } else if (normalizedSector === 'health') {
     console.log('Generating health predictions');
     return generateHealthPredictions(stocks);
-  } else if (sector === 'energy') {
+  } else if (normalizedSector === 'energy') {
     console.log('Generating energy predictions');
     return generateEnergyPredictions(stocks);
   }
   
-  console.log(`Unknown sector ${sector}, returning empty array`);
+  console.log(`Unknown sector ${normalizedSector}, returning empty array`);
   return [];
 }
 

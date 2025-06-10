@@ -1860,8 +1860,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
-      const sector = (req.query.sector as string) || 'defense';
-      console.log(`✓ Final parsed sector: "${sector}"`);
+      const sectorParam = req.query.sector;
+      const sector = (typeof sectorParam === 'string' && ['defense', 'health', 'energy'].includes(sectorParam)) ? sectorParam : 'defense';
+      console.log(`✓ Raw sector param: "${sectorParam}", Final parsed sector: "${sector}"`);
       
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
@@ -1888,8 +1889,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
-      const sector = req.query.sector as string || 'defense';
-      console.log(`✓ Parsed sector: "${sector}"`);
+      const sectorParam = req.query.sector;
+      const sector = (typeof sectorParam === 'string' && ['defense', 'health', 'energy'].includes(sectorParam)) ? sectorParam : 'defense';
+      console.log(`✓ Raw sector param: "${sectorParam}", Final parsed sector: "${sector}"`);
       
       const stocks = await storage.getStocks();
       const conflicts = await storage.getConflicts();
