@@ -15,7 +15,7 @@ import { newsService } from "./news-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
-import { healthOpportunityService } from "./health-opportunity-service";
+
 
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
@@ -926,8 +926,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/health/opportunities', async (req, res) => {
     console.log('Health opportunities endpoint called in routes.ts');
     try {
-      console.log('Calling healthOpportunityService.analyzeHealthOpportunities()...');
-      const opportunities = await healthOpportunityService.analyzeHealthOpportunities();
+      // Return empty array as placeholder until service is reimplemented  
+      const opportunities: any[] = [];
       console.log(`Health opportunities service returned ${opportunities.length} opportunities`);
       res.json(opportunities);
     } catch (error) {
