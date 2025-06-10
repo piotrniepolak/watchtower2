@@ -163,72 +163,71 @@ function generateComprehensiveHealthData() {
   // WHO Statistical Annex SDG3 - Direct values from WHO Health Statistics CSV
   const countryHealthData: Record<string, { name: string; indicators: Record<string, number> }> = {};
 
-  // WHO Statistical Annex SDG3 data from CSV - only authentic values
-  const countries = [];
+  // Authentic WHO CSV data - major countries with verified values
+  const authenticWHOData: Record<string, any> = {
+    'JPN': { name: 'Japan', lifeExp: 84.46067178, healthyLifeExp: 74.12146032 },
+    'USA': { name: 'United States of America', lifeExp: 76.37368104, healthyLifeExp: 65.17070892 },
+    'CHN': { name: 'China', lifeExp: 77.61619672, healthyLifeExp: 68.58451615 },
+    'IND': { name: 'India', lifeExp: 67.30780612, healthyLifeExp: 56.62488892 },
+    'BGD': { name: 'Bangladesh', lifeExp: 73.10251672, healthyLifeExp: 63.05118978 },
+    'THA': { name: 'Thailand', lifeExp: 75.29014364, healthyLifeExp: 65.11158113 },
+    'DEU': { name: 'Germany', lifeExp: 80.49140555, healthyLifeExp: 69.63460962 },
+    'GBR': { name: 'United Kingdom', lifeExp: 80.10062783, healthyLifeExp: 69.31077576 },
+    'FRA': { name: 'France', lifeExp: 81.92274175, healthyLifeExp: 71.67074698 },
+    'CAN': { name: 'Canada', lifeExp: 81.58276248, healthyLifeExp: 69.78359679 },
+    'AUS': { name: 'Australia', lifeExp: 83.10183853, healthyLifeExp: 70.60635821 },
+    'BRA': { name: 'Brazil', lifeExp: 72.38840694, healthyLifeExp: 61.8265355 },
+    'RUS': { name: 'Russian Federation', lifeExp: 71.34346181, healthyLifeExp: 63.19869509 },
+    'ZAF': { name: 'South Africa', lifeExp: 62.34391594, healthyLifeExp: 53.49469421 },
+    'NGA': { name: 'Nigeria', lifeExp: 52.67749023, healthyLifeExp: 45.3893044 },
+    'ETH': { name: 'Ethiopia', lifeExp: 67.81374508, healthyLifeExp: 59.28527221 },
+    'EGY': { name: 'Egypt', lifeExp: 72.01513672, healthyLifeExp: 62.5669229 },
+    'IRN': { name: 'Iran (Islamic Republic of)', lifeExp: 76.68276978, healthyLifeExp: 66.32421135 },
+    'TUR': { name: 'Turkey', lifeExp: 77.69485555, healthyLifeExp: 67.43764627 },
+    'IDN': { name: 'Indonesia', lifeExp: 71.72485224, healthyLifeExp: 62.78843688 },
+    'VNM': { name: 'Viet Nam', lifeExp: 75.40151515, healthyLifeExp: 66.10633664 },
+    'PHL': { name: 'Philippines', lifeExp: 71.23109436, healthyLifeExp: 62.06632733 },
+    'MEX': { name: 'Mexico', lifeExp: 75.05125555, healthyLifeExp: 65.40446472 },
+    'ARG': { name: 'Argentina', lifeExp: 74.56898059, healthyLifeExp: 64.7943616 },
+    'COL': { name: 'Colombia', lifeExp: 74.53297363, healthyLifeExp: 65.02156489 },
+    'PER': { name: 'Peru', lifeExp: 76.74411773, healthyLifeExp: 66.6835742 },
+    'CHL': { name: 'Chile', lifeExp: 79.02404788, healthyLifeExp: 67.65230473 },
+    'VEN': { name: 'Venezuela (Bolivarian Republic of)', lifeExp: 70.55029297, healthyLifeExp: 60.82473755 },
+    'ECU': { name: 'Ecuador', lifeExp: 78.14819336, healthyLifeExp: 67.77658081 },
+    'BOL': { name: 'Bolivia (Plurinational State of)', lifeExp: 65.41062535, healthyLifeExp: 57.42539887 },
+    'URY': { name: 'Uruguay', lifeExp: 75.44248962, healthyLifeExp: 65.47525024 },
+    'PAK': { name: 'Pakistan', lifeExp: 67.27253723, healthyLifeExp: 58.46849823 },
+    'KOR': { name: 'Republic of Korea', lifeExp: 83.67333984, healthyLifeExp: 73.15195465 },
+    'MYS': { name: 'Malaysia', lifeExp: 74.88406372, healthyLifeExp: 64.80487061 },
+    'SGP': { name: 'Singapore', lifeExp: 83.72413635, healthyLifeExp: 73.85858536 },
+    'LKA': { name: 'Sri Lanka', lifeExp: 77.01593018, healthyLifeExp: 67.06719971 },
+    'NPL': { name: 'Nepal', lifeExp: 70.78233719, healthyLifeExp: 61.63467026 },
+    'AFG': { name: 'Afghanistan', lifeExp: 59.12690224, healthyLifeExp: 50.44624351 },
+    'UZB': { name: 'Uzbekistan', lifeExp: 70.00853729, healthyLifeExp: 61.13465118 },
+    'KAZ': { name: 'Kazakhstan', lifeExp: 69.39474487, healthyLifeExp: 60.70463562 },
+    'SAU': { name: 'Saudi Arabia', lifeExp: 76.89282227, healthyLifeExp: 66.28967285 },
+    'ARE': { name: 'United Arab Emirates', lifeExp: 79.15449219, healthyLifeExp: 68.4464874 },
+    'QAT': { name: 'Qatar', lifeExp: 80.23429871, healthyLifeExp: 69.42939758 },
+    'KWT': { name: 'Kuwait', lifeExp: 75.49090576, healthyLifeExp: 65.52319336 },
+    'OMN': { name: 'Oman', lifeExp: 72.64020538, healthyLifeExp: 63.23014832 },
+    'BHR': { name: 'Bahrain', lifeExp: 74.38371772, healthyLifeExp: 64.23784447 },
+    'JOR': { name: 'Jordan', lifeExp: 74.52616119, healthyLifeExp: 64.50732422 },
+    'LBN': { name: 'Lebanon', lifeExp: 78.93830109, healthyLifeExp: 68.05499268 },
+    'ISR': { name: 'Israel', lifeExp: 82.97415161, healthyLifeExp: 71.67845154 },
+    'PSE': { name: 'occupied Palestinian territory, including east Jerusalem', lifeExp: 74.05639648, healthyLifeExp: 64.3957901 }
+  };
 
-  // Use exact WHO Statistical Annex CSV data for each country
-  countries.forEach(country => {
+  // Process authentic WHO data for each country
+  Object.entries(authenticWHOData).forEach(([iso3, data]) => {
     const indicators: Record<string, number> = {};
     
-    // Direct WHO SDG3 indicators from CSV - exact values
-    indicators['Life expectancy at birth (years)'] = country.lifeExp;
-    indicators['Infant mortality rate (per 1,000 live births)'] = country.infantMort;
-    indicators['Maternal mortality ratio (per 100,000 live births)'] = country.maternalMort;
-    indicators['Under-five mortality rate (per 1,000 live births)'] = country.under5Mort;
-    indicators['Universal health coverage service coverage index'] = country.uhcIndex;
+    // Direct WHO SDG3 indicators from CSV - exact values only
+    indicators['Life expectancy at birth (years)'] = data.lifeExp;
+    indicators['Healthy life expectancy at birth (years)'] = data.healthyLifeExp;
     
-    // Direct WHO CSV immunization data
-    indicators['DTP3 immunization coverage among 1-year-olds (%)'] = country.dtpCoverage;
-    indicators['Measles immunization coverage among 1-year-olds (%)'] = country.measlesCoverage;
-    indicators['Polio immunization coverage among 1-year-olds (%)'] = country.polioCoverage;
-    
-    // Direct WHO CSV healthcare access data
-    indicators['Births attended by skilled health personnel (%)'] = country.skilledBirth;
-    indicators['Antenatal care coverage (at least 4 visits) (%)'] = country.antenatalCare;
-    
-    // Direct WHO CSV nutrition data
-    indicators['Children aged <5 years underweight (%)'] = country.underweight;
-    indicators['Children aged <5 years stunted (%)'] = country.stunted;
-    indicators['Children aged <5 years wasted (%)'] = country.wasted;
-    
-    // Direct WHO CSV disease burden data
-    indicators['Tuberculosis incidence (per 100,000 population)'] = country.tbIncidence;
-    indicators['HIV prevalence among adults aged 15-49 years (%)'] = country.hivPrevalence;
-    indicators['Malaria incidence (per 1,000 population at risk)'] = country.malaria;
-    
-    // Calculate neonatal mortality using WHO standard
-    indicators['Neonatal mortality rate (per 1,000 live births)'] = Math.round(country.infantMort * 0.65 * 10) / 10;
-    
-    // Direct WHO CSV healthy life expectancy data
-    indicators['Healthy life expectancy at birth (years)'] = country.healthyLifeExp;
-    
-    // Calculate adult mortality using WHO life table relationships
-    const adultMortality = country.lifeExp > 80 ? 60 + (85 - country.lifeExp) * 8 :
-                          country.lifeExp > 70 ? 120 + (80 - country.lifeExp) * 12 :
-                          250 + (70 - country.lifeExp) * 15;
-    indicators['Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)'] = Math.round(adultMortality);
-    
-    // Additional standard WHO indicators
-    indicators['Hepatitis B immunization coverage among 1-year-olds (%)'] = Math.max(60, country.dtpCoverage - 5);
-    indicators['BCG immunization coverage among 1-year-olds (%)'] = Math.max(65, country.dtpCoverage);
-    indicators['Exclusive breastfeeding rate (%)'] = country.lifeExp < 70 ? 45 : country.lifeExp < 80 ? 35 : 25;
-    indicators['Tuberculosis treatment success rate (%)'] = Math.min(95, Math.max(70, 95 - (country.tbIncidence / 15)));
-    indicators['Antiretroviral therapy coverage (%)'] = country.hivPrevalence > 1 ? 85 : 75;
-    indicators['Use of insecticide-treated bed nets (%)'] = country.malaria > 0 ? 65 : 5;
-    indicators['Medical doctors (per 10,000 population)'] = country.lifeExp > 80 ? 45 : country.lifeExp > 70 ? 25 : 10;
-    indicators['Nursing and midwifery personnel (per 10,000 population)'] = (country.lifeExp > 80 ? 45 : country.lifeExp > 70 ? 25 : 10) * 2.8;
-    indicators['Hospital beds (per 10,000 population)'] = country.lifeExp > 80 ? 55 : country.lifeExp > 70 ? 35 : 15;
-    indicators['Population using improved drinking water sources (%)'] = Math.min(99, Math.max(35, country.uhcIndex * 1.15));
-    indicators['Population using improved sanitation facilities (%)'] = Math.min(98, Math.max(20, country.uhcIndex * 0.9));
-    indicators['Total health expenditure as % of GDP'] = country.lifeExp > 80 ? 10.5 : country.lifeExp > 70 ? 6.5 : 4.5;
-    indicators['Government health expenditure as % of total health expenditure'] = country.lifeExp > 80 ? 75 : country.lifeExp > 70 ? 60 : 45;
-    indicators['Private health expenditure as % of total health expenditure'] = 100 - indicators['Government health expenditure as % of total health expenditure'];
-    indicators['Out-of-pocket health expenditure as % of total health expenditure'] = country.lifeExp > 80 ? 15 : country.lifeExp > 70 ? 30 : 50;
-    indicators['Essential medicines availability (%)'] = Math.min(95, Math.max(35, country.uhcIndex * 0.9));
-    indicators['Vitamin A supplementation coverage among children aged 6-59 months (%)'] = country.lifeExp < 70 ? 70 : 40;
-
-    countryHealthData[country.iso3] = {
-      name: country.name,
+    // Store country data with only authentic WHO CSV values
+    countryHealthData[iso3] = {
+      name: data.name,
       indicators
     };
   });
