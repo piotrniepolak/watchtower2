@@ -9,64 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import TopOpportunityList from "./top-opportunity-list";
 
 
-// Complete WHO Statistical Annex SDG3 Indicator Categories
-const getAllWHOIndicators = (): string[] => {
-  return [
-    // Core SDG3 Health Indicators
-    'Life expectancy at birth (years)',
-    'Healthy life expectancy at birth (years)',
-    'Infant mortality rate (per 1,000 live births)',
-    'Maternal mortality ratio (per 100,000 live births)',
-    'Neonatal mortality rate (per 1,000 live births)',
-    'Under-five mortality rate (per 1,000 live births)',
-    'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
-    
-    // Universal Health Coverage
-    'Universal health coverage service coverage index',
-    
-    // Healthcare Access & Quality
-    'Births attended by skilled health personnel (%)',
-    'Antenatal care coverage (at least 4 visits) (%)',
-    
-    // Immunization Coverage
-    'DTP3 immunization coverage among 1-year-olds (%)',
-    'Measles immunization coverage among 1-year-olds (%)',
-    'Polio immunization coverage among 1-year-olds (%)',
-    'Hepatitis B immunization coverage among 1-year-olds (%)',
-    'BCG immunization coverage among 1-year-olds (%)',
-    
-    // Nutrition & Child Health
-    'Children aged <5 years underweight (%)',
-    'Children aged <5 years stunted (%)',
-    'Children aged <5 years wasted (%)',
-    'Exclusive breastfeeding rate (%)',
-    'Vitamin A supplementation coverage among children aged 6-59 months (%)',
-    
-    // Disease Burden & Prevention
-    'HIV prevalence among adults aged 15-49 years (%)',
-    'Antiretroviral therapy coverage (%)',
-    'Tuberculosis incidence (per 100,000 population)',
-    'Tuberculosis treatment success rate (%)',
-    'Malaria incidence (per 1,000 population at risk)',
-    'Use of insecticide-treated bed nets (%)',
-    
-    // Healthcare Infrastructure
-    'Medical doctors (per 10,000 population)',
-    'Nursing and midwifery personnel (per 10,000 population)',
-    'Hospital beds (per 10,000 population)',
-    
-    // Water, Sanitation & Environment
-    'Population using improved drinking water sources (%)',
-    'Population using improved sanitation facilities (%)',
-    
-    // Health Financing
-    'Total health expenditure as % of GDP',
-    'Government health expenditure as % of total health expenditure',
-    'Private health expenditure as % of total health expenditure',
-    'Out-of-pocket health expenditure as % of total health expenditure',
-    'Essential medicines availability (%)'
-  ];
-};
+
 
 // Color scale utility for health scores with 5 categories (20-point ranges)
 const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
@@ -109,8 +52,8 @@ const useWHOStatisticalData = () => {
   return useQuery({
     queryKey: ['who-statistical-annex'],
     queryFn: async () => {
-      // Use authentic WHO Global Health Observatory data structure
-      // This matches the actual WHO Statistical Annex format with 36+ health indicators
+      // Import the authentic WHO data with 55 indicators from shared module
+      const { generateAuthenticWHOData } = await import('../../../shared/who-data');
       return generateAuthenticWHOData();
     },
     staleTime: 60 * 60 * 1000, // Cache for 1 hour
