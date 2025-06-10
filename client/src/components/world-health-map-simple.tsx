@@ -164,7 +164,7 @@ const useWHOStatisticalData = () => {
     healthIndicators,
     countries
   };
-}
+};
 
 // Determine if indicator is positive-direction (higher = better)
 function isPositiveDirection(indicator: string): boolean {
