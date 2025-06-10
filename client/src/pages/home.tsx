@@ -33,26 +33,34 @@ export default function Home() {
   });
 
   // Fetch AI analysis data based on selected sector
-  const { data: predictions = [], isLoading: predictionsLoading } = useQuery({
+  const { data: predictions = [], isLoading: predictionsLoading, refetch: refetchPredictions } = useQuery({
     queryKey: ["/api/analysis/predictions", selectedSector],
-    queryFn: () => {
+    queryFn: async () => {
       console.log(`Frontend: Fetching predictions for sector: ${selectedSector}`);
-      return fetch(`/api/analysis/predictions?sector=${selectedSector}`).then(res => res.json());
+      const response = await fetch(`/api/analysis/predictions?sector=${selectedSector}&t=${Date.now()}`);
+      if (!response.ok) throw new Error('Failed to fetch predictions');
+      return response.json();
     },
     enabled: !!selectedSector,
-    staleTime: 0, // Force fresh requests
-    gcTime: 0, // Don't cache results (v5 syntax)
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
+  const { data: marketAnalysis, isLoading: marketLoading, refetch: refetchMarket } = useQuery({
     queryKey: ["/api/analysis/market", selectedSector],
-    queryFn: () => {
+    queryFn: async () => {
       console.log(`Frontend: Fetching market analysis for sector: ${selectedSector}`);
-      return fetch(`/api/analysis/market?sector=${selectedSector}`).then(res => res.json());
+      const response = await fetch(`/api/analysis/market?sector=${selectedSector}&t=${Date.now()}`);
+      if (!response.ok) throw new Error('Failed to fetch market analysis');
+      return response.json();
     },
     enabled: !!selectedSector,
-    staleTime: 0, // Force fresh requests
-    gcTime: 0, // Don't cache results (v5 syntax)
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   const sectors = [
@@ -356,9 +364,11 @@ export default function Home() {
                 <Select value={selectedSector} onValueChange={(value) => {
                   console.log(`Frontend: Switching to sector: ${value}`);
                   setSelectedSector(value);
-                  // Force invalidate and refetch for the new sector
-                  queryClient.invalidateQueries({ queryKey: ["/api/analysis/predictions"] });
-                  queryClient.invalidateQueries({ queryKey: ["/api/analysis/market"] });
+                  // Force immediate refetch for the new sector
+                  setTimeout(() => {
+                    refetchPredictions();
+                    refetchMarket();
+                  }, 100);
                 }}>
                   <SelectTrigger className="w-48">
                     <SelectValue>
