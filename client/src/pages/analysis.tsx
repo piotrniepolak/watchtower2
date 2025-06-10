@@ -715,7 +715,7 @@ export default function Analysis() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Target className="w-5 h-5 mr-2" />
-{getSectorStorylineTitle(selectedSector)}
+                  {getSectorStorylineTitle(selectedSector)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -756,10 +756,10 @@ export default function Analysis() {
                       <div className="text-center">
                         <Brain className="w-8 h-8 text-blue-600 animate-pulse mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                          Generating Conflict Storyline
+                          {selectedSector === 'health' ? 'Generating Health Crisis Storyline' : selectedSector === 'energy' ? 'Generating Energy Market Storyline' : 'Generating Conflict Storyline'}
                         </h3>
                         <p className="text-slate-600">
-                          AI is analyzing the conflict and creating detailed scenarios. This comprehensive analysis may take 30-60 seconds to complete.
+                          {selectedSector === 'health' ? 'AI is analyzing health trends and creating detailed pharmaceutical market scenarios. This comprehensive analysis may take 30-60 seconds to complete.' : selectedSector === 'energy' ? 'AI is analyzing energy markets and creating detailed oil price volatility scenarios. This comprehensive analysis may take 30-60 seconds to complete.' : 'AI is analyzing the conflict and creating detailed scenarios. This comprehensive analysis may take 30-60 seconds to complete.'}
                         </p>
                       </div>
                     </CardContent>
