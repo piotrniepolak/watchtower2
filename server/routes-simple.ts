@@ -8,7 +8,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { conflictTimelineService } from "./conflict-timeline-service";
-import { healthOpportunityService } from "./health-opportunity-service";
+
 // import { healthService } from "./health-service";
 // import { energyService } from "./energy-service";
 import { getSector, getActiveSectors } from "@shared/sectors";
