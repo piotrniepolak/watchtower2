@@ -446,6 +446,9 @@ export default function Analysis() {
                         <span className="text-sm font-semibold text-slate-900">{prediction.probability}%</span>
                       </div>
                       <Progress value={prediction.probability} className="h-2" />
+                      <p className="text-xs text-slate-500 mt-2">
+                        This percentage represents the AI's confidence level in this scenario outcome based on current geopolitical factors, historical patterns, and available intelligence data.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
