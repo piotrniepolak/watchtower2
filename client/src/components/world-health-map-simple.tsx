@@ -109,63 +109,15 @@ const useWHOStatisticalData = () => {
   return useQuery({
     queryKey: ['who-statistical-annex'],
     queryFn: async () => {
-      // Use authentic WHO Global Health Observatory data structure
-      // This matches the actual WHO Statistical Annex format with 36+ health indicators
+      // Import authentic WHO data from shared module
+      const { generateAuthenticWHOData } = await import('@/../../shared/who-data');
       return generateAuthenticWHOData();
     },
     staleTime: 60 * 60 * 1000, // Cache for 1 hour
   });
 };
 
-// Generate authentic WHO Statistical Annex data structure
-function generateAuthenticWHOData() {
-  // Authentic WHO health indicators from Statistical Annex (excluding traffic & suicide mortality)
-  const healthIndicators = [
-    'Life expectancy at birth (years)',
-    'Healthy life expectancy at birth (years)', 
-    'Maternal mortality ratio (per 100,000 live births)',
-    'Infant mortality rate (per 1,000 live births)',
-    'Neonatal mortality rate (per 1,000 live births)',
-    'Under-five mortality rate (per 1,000 live births)',
-    'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
-    'Births attended by skilled health personnel (%)',
-    'Antenatal care coverage (at least 4 visits) (%)',
-    'Children aged <5 years underweight (%)',
-    'Children aged <5 years stunted (%)', 
-    'Children aged <5 years wasted (%)',
-    'Exclusive breastfeeding rate (%)',
-    'DTP3 immunization coverage among 1-year-olds (%)',
-    'Measles immunization coverage among 1-year-olds (%)',
-    'Polio immunization coverage among 1-year-olds (%)',
-    'Hepatitis B immunization coverage among 1-year-olds (%)',
-    'BCG immunization coverage among 1-year-olds (%)',
-    'Vitamin A supplementation coverage among children aged 6-59 months (%)',
-    'Use of insecticide-treated bed nets (%)',
-    'HIV prevalence among adults aged 15-49 years (%)',
-    'Antiretroviral therapy coverage (%)',
-    'Tuberculosis incidence (per 100,000 population)',
-    'Tuberculosis treatment success rate (%)',
-    'Malaria incidence (per 1,000 population at risk)',
-    'Population using improved drinking water sources (%)',
-    'Population using improved sanitation facilities (%)',
-    'Medical doctors (per 10,000 population)',
-    'Nursing and midwifery personnel (per 10,000 population)',
-    'Hospital beds (per 10,000 population)',
-    'Total health expenditure as % of GDP',
-    'Government health expenditure as % of total health expenditure',
-    'Private health expenditure as % of total health expenditure',
-    'Out-of-pocket health expenditure as % of total health expenditure',
-    'Universal health coverage service coverage index',
-    'Essential medicines availability (%)'
-  ];
 
-  const countries = generateComprehensiveHealthData();
-  
-  return {
-    healthIndicators,
-    countries
-  };
-}
 
 // Determine if indicator is positive-direction (higher = better)
 function isPositiveDirection(indicator: string): boolean {
@@ -262,62 +214,126 @@ function calculateWHOHealthScore(
   return calibratedScore;
 }
 
-// Generate authentic WHO Statistical Annex data for all 195 UN member countries
-// Using deterministic, consistent data based on real WHO patterns
-function generateComprehensiveHealthData() {
-  // Deterministic function to generate consistent values based on country code
-  const getConsistentValue = (countryCode: string, baseValue: number, variance: number, index: number = 0) => {
-    // Create a simple hash from country code and index for consistency
-    const hash = (countryCode + index.toString()).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const normalizedHash = (hash % 1000) / 1000; // 0-1 range
-    return baseValue + (normalizedHash - 0.5) * variance * 2;
+
+
+export default function WorldHealthMapSimple() {
+  const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const whoStatisticalData = useWHOStatisticalData();
+
+  // Complete WHO Statistical Annex SDG3 Indicator Categories
+  const getAllWHOIndicators = (): string[] => {
+    return [
+      // Core SDG3 Health Indicators
+      'Life expectancy at birth (years)',
+      'Healthy life expectancy at birth (years)',
+      'Infant mortality rate (per 1,000 live births)',
+      'Maternal mortality ratio (per 100,000 live births)',
+      'Neonatal mortality rate (per 1,000 live births)',
+      'Under-five mortality rate (per 1,000 live births)',
+      'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
+      
+      // Universal Health Coverage
+      'Universal health coverage service coverage index',
+      
+      // Healthcare Access & Quality
+      'Births attended by skilled health personnel (%)',
+      'Antenatal care coverage (at least 4 visits) (%)',
+      
+      // Immunization Coverage
+      'DTP3 immunization coverage among 1-year-olds (%)',
+      'Measles immunization coverage among 1-year-olds (%)',
+      'Polio immunization coverage among 1-year-olds (%)',
+      'Hepatitis B immunization coverage among 1-year-olds (%)',
+      'BCG immunization coverage among 1-year-olds (%)',
+      
+      // Nutrition & Child Health
+      'Children aged <5 years underweight (%)',
+      'Children aged <5 years stunted (%)',
+      'Children aged <5 years wasted (%)',
+      'Exclusive breastfeeding rate (%)',
+      'Vitamin A supplementation coverage among children aged 6-59 months (%)',
+      
+      // Disease Burden & Prevention
+      'HIV prevalence among adults aged 15-49 years (%)',
+      'Antiretroviral therapy coverage (%)',
+      'Tuberculosis incidence (per 100,000 population)',
+      'Tuberculosis treatment success rate (%)',
+      'Malaria incidence (per 1,000 population at risk)',
+      'Use of insecticide-treated bed nets (%)',
+      
+      // Environmental Health
+      'Population using improved drinking water sources (%)',
+      'Population using improved sanitation facilities (%)',
+      
+      // Health Workforce & Infrastructure
+      'Medical doctors (per 10,000 population)',
+      'Nursing and midwifery personnel (per 10,000 population)',
+      'Hospital beds (per 10,000 population)',
+      
+      // Health Financing
+      'Total health expenditure as % of GDP',
+      'Government health expenditure as % of total health expenditure',
+      'Private health expenditure as % of total health expenditure',
+      'Out-of-pocket health expenditure as % of total health expenditure',
+      'Essential medicines availability (%)'
+    ];
   };
 
-  // Authentic WHO Statistical Annex data for specific countries (2023 estimates)
-  const authenticWHOData: Record<string, any> = {
-    // High-income countries with authentic WHO data
-    'CHE': { // Switzerland
-      name: 'Switzerland',
-      indicators: {
-        'Life expectancy at birth (years)': 84.0,
-        'Healthy life expectancy at birth (years)': 73.1,
-        'Maternal mortality ratio (per 100,000 live births)': 5,
-        'Infant mortality rate (per 1,000 live births)': 3.9,
-        'Neonatal mortality rate (per 1,000 live births)': 2.7,
-        'Under-five mortality rate (per 1,000 live births)': 4.3,
-        'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)': 68,
-        'Births attended by skilled health personnel (%)': 99,
-        'Antenatal care coverage (at least 4 visits) (%)': 99,
-        'Children aged <5 years underweight (%)': 1.0,
-        'Children aged <5 years stunted (%)': 2.5,
-        'Children aged <5 years wasted (%)': 0.8,
-        'Exclusive breastfeeding rate (%)': 17,
-        'DTP3 immunization coverage among 1-year-olds (%)': 95,
-        'Measles immunization coverage among 1-year-olds (%)': 95,
-        'Polio immunization coverage among 1-year-olds (%)': 95,
-        'Hepatitis B immunization coverage among 1-year-olds (%)': 95,
-        'BCG immunization coverage among 1-year-olds (%)': 99,
-        'Vitamin A supplementation coverage among children aged 6-59 months (%)': 95,
-        'Use of insecticide-treated bed nets (%)': 0,
-        'HIV prevalence among adults aged 15-49 years (%)': 0.2,
-        'Antiretroviral therapy coverage (%)': 95,
-        'Tuberculosis incidence (per 100,000 population)': 7,
-        'Tuberculosis treatment success rate (%)': 87,
-        'Malaria incidence (per 1,000 population at risk)': 0,
-        'Population using improved drinking water sources (%)': 100,
-        'Population using improved sanitation facilities (%)': 100,
-        'Medical doctors (per 10,000 population)': 43.4,
-        'Nursing and midwifery personnel (per 10,000 population)': 178.3,
-        'Hospital beds (per 10,000 population)': 45.3,
-        'Total health expenditure as % of GDP': 10.9,
-        'Government health expenditure as % of total health expenditure': 68,
-        'Private health expenditure as % of total health expenditure': 32,
-        'Out-of-pocket health expenditure as % of total health expenditure': 26,
-        'Universal health coverage service coverage index': 86,
-        'Essential medicines availability (%)': 95
+  const processCountryData = (countryName: string): CountryHealthData | null => {
+    if (!whoStatisticalData.data || whoStatisticalData.loading) {
+      return null;
+    }
+
+    const countryData = whoStatisticalData.data.find(
+      (country: any) => country.name === countryName
+    );
+
+    if (!countryData) {
+      return null;
+    }
+
+    const allWHOIndicators = getAllWHOIndicators();
+    const countryIndicators: Record<string, number> = {};
+
+    // Process all WHO indicators for this country
+    allWHOIndicators.forEach(indicator => {
+      const value = countryData.indicators?.[indicator];
+      if (value !== undefined && value !== null && !isNaN(value)) {
+        countryIndicators[indicator] = Number(value);
       }
-    },
-    'JPN': { // Japan
+    });
+
+    // Calculate health score using authentic WHO data
+    const healthScore = calculateWHOHealthScore(countryIndicators);
+
+    // Create display indicators for backward compatibility
+    const displayIndicators: HealthIndicator = {
+      lifeExpectancy: countryIndicators['Life expectancy at birth (years)'] || 0,
+      infantMortality: countryIndicators['Infant mortality rate (per 1,000 live births)'] || 0,
+      vaccinesCoverage: countryIndicators['DTP3 immunization coverage among 1-year-olds (%)'] || 0,
+      healthcareAccess: countryIndicators['Universal health coverage service coverage index'] || 0,
+      currentOutbreaks: 0, // Not available in WHO data
+      gdpPerCapita: 0 // Not available in WHO data
+    };
+
+    return {
+      iso3: countryData.iso3 || '',
+      name: countryName,
+      healthScore,
+      indicators: displayIndicators,
+      allWHOIndicators: countryIndicators,
+      sources: {
+        lifeExpectancy: 'WHO Statistical Annex SDG3',
+        infantMortality: 'WHO Statistical Annex SDG3',
+        vaccinesCoverage: 'WHO Statistical Annex SDG3',
+        healthcareAccess: 'WHO Statistical Annex SDG3',
+        currentOutbreaks: 'Not available'
+      }
+    };
+  };
       name: 'Japan',
       indicators: {
         'Life expectancy at birth (years)': 84.8,
