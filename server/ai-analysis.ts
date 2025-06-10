@@ -78,7 +78,10 @@ export async function generateSectorPredictions(
   conflicts: Conflict[],
   stocks: Stock[]
 ): Promise<ConflictPrediction[]> {
+  console.log(`generateSectorPredictions called with sector: ${sector}`);
+  
   if (sector === 'defense') {
+    console.log('Generating defense predictions');
     // Process conflicts in parallel for defense sector
     const predictionPromises = conflicts.map(conflict => 
       generateSingleConflictPrediction(conflict, stocks).catch(error => {
@@ -90,11 +93,14 @@ export async function generateSectorPredictions(
     const results = await Promise.all(predictionPromises);
     return results.filter((prediction): prediction is ConflictPrediction => prediction !== null);
   } else if (sector === 'health') {
+    console.log('Generating health predictions');
     return generateHealthPredictions(stocks);
   } else if (sector === 'energy') {
+    console.log('Generating energy predictions');
     return generateEnergyPredictions(stocks);
   }
   
+  console.log(`Unknown sector ${sector}, returning empty array`);
   return [];
 }
 
@@ -109,10 +115,11 @@ async function generateHealthPredictions(stocks: Stock[]): Promise<ConflictPredi
   const healthStocks = stocks.filter(s => s.sector === 'Healthcare');
   
   const healthTopics = [
-    "Global Pandemic Preparedness",
-    "Drug Price Regulation",
-    "Vaccine Manufacturing Capacity",
-    "Healthcare Infrastructure Expansion"
+    "Global Pandemic Preparedness and Biosecurity",
+    "Pharmaceutical Pricing and Regulatory Changes", 
+    "mRNA Technology and Next-Gen Vaccines",
+    "AI-Driven Drug Discovery and Development",
+    "Healthcare Infrastructure and Digital Health"
   ];
 
   const predictionPromises = healthTopics.map(async (topic, index) => {

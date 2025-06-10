@@ -1851,14 +1851,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Analysis endpoints
   app.get('/api/analysis/predictions', async (req, res) => {
     try {
+      console.log('=== PREDICTIONS REQUEST ===');
+      console.log('Raw URL:', req.url);
+      console.log('Query object:', JSON.stringify(req.query, null, 2));
+      
       if (!process.env.OPENAI_API_KEY) {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
       const sector = req.query.sector as string || 'defense';
+      console.log(`✓ Parsed predictions sector: "${sector}"`);
+      
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
+      
+      console.log(`✓ Calling generateSectorPredictions with sector: "${sector}"`);
       const predictions = await generateSectorPredictions(sector, conflicts, stocks);
+      console.log(`✓ Predictions generated for ${sector}, count: ${predictions.length}`);
+      
       res.json(predictions);
     } catch (error) {
       console.error('Error generating predictions:', error);

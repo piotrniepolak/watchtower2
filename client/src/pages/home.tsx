@@ -40,7 +40,7 @@ export default function Home() {
     },
     enabled: !!selectedSector,
     staleTime: 0, // Force fresh requests
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results (v5 syntax)
   });
 
   const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
@@ -51,7 +51,7 @@ export default function Home() {
     },
     enabled: !!selectedSector,
     staleTime: 0, // Force fresh requests
-    cacheTime: 0, // Don't cache results
+    gcTime: 0, // Don't cache results (v5 syntax)
   });
 
   const sectors = [
