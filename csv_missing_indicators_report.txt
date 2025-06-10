@@ -1,0 +1,26 @@
+=== CSV MISSING DATA REPORT ===
+
+AUS (Australia):
+  - New HIV infections (per 1000 uninfected population)
+  Total missing: 1
+
+CAN (Canada):
+  - New HIV infections (per 1000 uninfected population)
+  Total missing: 1
+
+CHN (China):
+  - New HIV infections (per 1000 uninfected population)
+  Total missing: 1
+
+DEU (Germany):
+  - New HIV infections (per 1000 uninfected population)
+  Total missing: 1
+
+RUS (Russian Federation):
+  - New HIV infections (per 1000 uninfected population)
+  Total missing: 1
+
+USA (United States of America):
+  - New HIV infections (per 1000 uninfected population)
+  Total missing: 1
+
