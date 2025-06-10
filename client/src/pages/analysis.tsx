@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import {
   Users,
   DollarSign,
   Shield,
-  Zap
+  Zap,
+  Pill
 } from "lucide-react";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 
@@ -66,7 +67,7 @@ interface ConflictStoryline {
 
 export default function Analysis() {
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
-  const [selectedSector, setSelectedSector] = useState<'defense' | 'healthcare' | 'energy'>('defense');
+  const [selectedSector, setSelectedSector] = useState<'defense' | 'health' | 'energy'>('defense');
 
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions"],
