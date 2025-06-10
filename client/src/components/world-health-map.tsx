@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { scaleSequential } from "d3-scale";
 import { interpolateRdYlGn } from "d3-scale-chromatic";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useWHOStatisticalData } from "@/hooks/use-who-data";
 
 // Custom geography loader with fallback sources
 const useWorldGeography = () => {
@@ -53,27 +54,11 @@ const useWorldGeography = () => {
   return { geography, loading, error };
 };
 
-interface HealthIndicator {
-  lifeExpectancy: number;
-  infantMortality: number;
-  vaccinesCoverage: number;
-  healthcareAccess: number;
-  currentOutbreaks: number;
-  gdpPerCapita: number;
-}
-
 interface CountryHealthData {
   iso3: string;
   name: string;
   healthScore: number;
-  indicators: HealthIndicator;
-  sources: {
-    lifeExpectancy: string;
-    infantMortality: string;
-    vaccinesCoverage: string;
-    healthcareAccess: string;
-    currentOutbreaks: string;
-  };
+  indicators: Record<string, number>;
   lastUpdated: string;
 }
 
@@ -280,70 +265,76 @@ function generateVaccineCoverage(gdpPerCapita: number, healthcareAccess: number)
   return Math.max(30, Math.round(baseCoverage));
 }
 
+// Health scoring function for authentic WHO data
+const calculateHealthScore = (indicators: Record<string, number>): number => {
+  const keyIndicators = [
+    'Life expectancy at birth (years)',
+    'Infant mortality rate (per 1,000 live births)',
+    'Maternal mortality ratio (per 100,000 live births)',
+    'DTP3 immunization coverage among 1-year-olds (%)',
+    'Universal health coverage service coverage index'
+  ];
+
+  let totalScore = 0;
+  let validCount = 0;
+
+  keyIndicators.forEach(indicator => {
+    const value = indicators[indicator];
+    if (value !== undefined && value !== null && !isNaN(value)) {
+      let score = 0;
+      
+      // Normalize each indicator
+      switch (indicator) {
+        case 'Life expectancy at birth (years)':
+          score = Math.min(100, Math.max(0, (value - 50) / 35 * 100));
+          break;
+        case 'Infant mortality rate (per 1,000 live births)':
+          score = Math.min(100, Math.max(0, 100 - (value / 50 * 100)));
+          break;
+        case 'Maternal mortality ratio (per 100,000 live births)':
+          score = Math.min(100, Math.max(0, 100 - (value / 500 * 100)));
+          break;
+        case 'DTP3 immunization coverage among 1-year-olds (%)':
+        case 'Universal health coverage service coverage index':
+          score = Math.min(100, Math.max(0, value));
+          break;
+      }
+      
+      totalScore += score;
+      validCount++;
+    }
+  });
+
+  return validCount > 0 ? Math.round(totalScore / validCount) : 0;
+};
+
 export default function WorldHealthMap() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const { geography, loading: geoLoading, error: geoError } = useWorldGeography();
 
-  const worldBankData = useWorldBankData();
-  const whoData = useWHOData();
+  const whoStatisticalData = useWHOStatisticalData();
 
-  // Process and combine all health data
+  // Process WHO Statistical data for countries
   const healthData = useMemo(() => {
-    if (!worldBankData.data || !whoData.data) return new Map<string, CountryHealthData>();
-
-    const { lifeExpectancy, infantMortality, gdpPerCapita } = worldBankData.data;
-    const outbreaks = whoData.data;
-
+    if (!whoStatisticalData.data) return new Map<string, CountryHealthData>();
+    
     const healthMap = new Map<string, CountryHealthData>();
-
-    // Process World Bank data
-    lifeExpectancy?.forEach((item: any) => {
-      if (!item.value || !item.country?.id) return;
-
-      const countryCode = item.country.id;
-      const lifeExp = parseFloat(item.value);
+    
+    whoStatisticalData.data.forEach((country: any) => {
+      const healthScore = calculateHealthScore(country.indicators);
       
-      // Find corresponding data
-      const infantMortalityItem = infantMortality?.find((m: any) => m.country?.id === countryCode);
-      const gdpItem = gdpPerCapita?.find((g: any) => g.country?.id === countryCode);
-      
-      const infantMort = infantMortalityItem?.value ? parseFloat(infantMortalityItem.value) : 50;
-      const gdp = gdpItem?.value ? parseFloat(gdpItem.value) : 1000;
-      const outbreakCount = outbreaks[countryCode] || 0;
-
-      const healthcareAccess = generateHealthcareAccess(gdp, lifeExp);
-      const vaccinesCoverage = generateVaccineCoverage(gdp, healthcareAccess);
-
-      const indicators: HealthIndicator = {
-        lifeExpectancy: lifeExp,
-        infantMortality: infantMort,
-        vaccinesCoverage: vaccinesCoverage,
-        healthcareAccess: healthcareAccess,
-        currentOutbreaks: outbreakCount,
-        gdpPerCapita: gdp
-      };
-
-      const healthScore = calculateHealthScore(indicators);
-
-      healthMap.set(countryCode, {
-        iso3: countryCode,
-        name: item.country.value,
+      healthMap.set(country.iso3, {
+        iso3: country.iso3,
+        name: country.name,
         healthScore,
-        indicators,
-        sources: {
-          lifeExpectancy: "World Bank 2022",
-          infantMortality: "World Bank 2022", 
-          vaccinesCoverage: "WHO/UNICEF 2022",
-          healthcareAccess: "Derived from World Bank indicators",
-          currentOutbreaks: "Global health monitoring systems"
-        },
+        indicators: country.indicators,
         lastUpdated: new Date().toISOString().split('T')[0]
       });
     });
 
     return healthMap;
-  }, [worldBankData.data, whoData.data]);
+  }, [whoStatisticalData.data]);
 
   // Color scale for health scores
   const colorScale = useMemo(() => {
