@@ -34,14 +34,24 @@ export default function Home() {
   // Fetch AI analysis data based on selected sector
   const { data: predictions = [], isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions", selectedSector],
-    queryFn: () => fetch(`/api/analysis/predictions?sector=${selectedSector}`).then(res => res.json()),
+    queryFn: () => {
+      console.log(`Frontend: Fetching predictions for sector: ${selectedSector}`);
+      return fetch(`/api/analysis/predictions?sector=${selectedSector}`).then(res => res.json());
+    },
     enabled: !!selectedSector,
+    staleTime: 0, // Force fresh requests
+    cacheTime: 0, // Don't cache results
   });
 
   const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
     queryKey: ["/api/analysis/market", selectedSector],
-    queryFn: () => fetch(`/api/analysis/market?sector=${selectedSector}`).then(res => res.json()),
+    queryFn: () => {
+      console.log(`Frontend: Fetching market analysis for sector: ${selectedSector}`);
+      return fetch(`/api/analysis/market?sector=${selectedSector}`).then(res => res.json());
+    },
     enabled: !!selectedSector,
+    staleTime: 0, // Force fresh requests
+    cacheTime: 0, // Don't cache results
   });
 
   const sectors = [

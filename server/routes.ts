@@ -1868,17 +1868,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/analysis/market', async (req, res) => {
     try {
+      console.log('=== MARKET ANALYSIS REQUEST ===');
+      console.log('Raw URL:', req.url);
+      console.log('Query object:', JSON.stringify(req.query, null, 2));
+      
       if (!process.env.OPENAI_API_KEY) {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
       const sector = req.query.sector as string || 'defense';
-      console.log(`Market analysis requested for sector: ${sector}`);
+      console.log(`✓ Parsed sector: "${sector}"`);
+      
       const stocks = await storage.getStocks();
       const conflicts = await storage.getConflicts();
       const correlationEvents = await storage.getCorrelationEvents();
+      
+      console.log(`✓ Calling generateSectorMarketAnalysis with sector: "${sector}"`);
       const analysis = await generateSectorMarketAnalysis(sector, stocks, conflicts, correlationEvents);
-      console.log(`Market analysis generated for ${sector}, sentiment: ${analysis.overallSentiment}`);
+      console.log(`✓ Analysis complete for ${sector}, sentiment: ${analysis.overallSentiment}`);
+      
       res.json(analysis);
     } catch (error) {
       console.error('Error generating market analysis:', error);
