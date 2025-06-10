@@ -714,13 +714,33 @@ export default function Analysis() {
                               {/* Circles for different outcome types */}
                               {(storyline as ConflictStoryline).possibleOutcomes.slice(0, 4).map((outcome, index) => {
                                 const positions = [
-                                  { cx: 175, cy: 150, labelX: 175, labelY: 250, color: "#3b82f6" }, // Blue - bottom left
-                                  { cx: 325, cy: 150, labelX: 325, labelY: 250, color: "#ef4444" }, // Red - bottom right  
-                                  { cx: 250, cy: 220, labelX: 250, labelY: 320, color: "#10b981" }, // Green - bottom center
-                                  { cx: 250, cy: 100, labelX: 250, labelY: 50, color: "#f59e0b" },  // Orange - top center
+                                  { cx: 200, cy: 140, labelX: 120, labelY: 80, color: "#3b82f6" }, // Blue - top left overlapping
+                                  { cx: 300, cy: 140, labelX: 380, labelY: 80, color: "#ef4444" }, // Red - top right overlapping
+                                  { cx: 200, cy: 200, labelX: 120, labelY: 260, color: "#10b981" }, // Green - bottom left overlapping
+                                  { cx: 300, cy: 200, labelX: 380, labelY: 260, color: "#f59e0b" },  // Orange - bottom right overlapping
                                 ];
                                 const pos = positions[index];
-                                const radius = Math.max(45, Math.min(70, outcome.probability * 0.9));
+                                const radius = Math.max(55, Math.min(85, outcome.probability * 1.2 + 20));
+                                
+                                // Helper function to wrap text
+                                const wrapText = (text: string, maxWidth: number) => {
+                                  const words = text.split(' ');
+                                  const lines = [];
+                                  let currentLine = '';
+                                  
+                                  for (const word of words) {
+                                    if ((currentLine + word).length <= maxWidth) {
+                                      currentLine += (currentLine ? ' ' : '') + word;
+                                    } else {
+                                      if (currentLine) lines.push(currentLine);
+                                      currentLine = word;
+                                    }
+                                  }
+                                  if (currentLine) lines.push(currentLine);
+                                  return lines;
+                                };
+                                
+                                const wrappedText = wrapText(outcome.scenario, 15);
                                 
                                 return (
                                   <g key={index}>
@@ -730,38 +750,38 @@ export default function Analysis() {
                                       cy={pos.cy}
                                       r={radius}
                                       fill={pos.color}
-                                      fillOpacity="0.25"
+                                      fillOpacity="0.2"
                                       stroke={pos.color}
-                                      strokeWidth="2.5"
+                                      strokeWidth="3"
                                     />
                                     
                                     {/* Probability percentage in center of circle */}
                                     <text
                                       x={pos.cx}
-                                      y={pos.cy + 4}
+                                      y={pos.cy + 6}
                                       textAnchor="middle"
-                                      className="text-lg font-bold fill-slate-800"
+                                      className="text-xl font-bold fill-slate-800"
                                     >
                                       {outcome.probability}%
                                     </text>
                                     
-                                    {/* Scenario name outside circle */}
-                                    <text
-                                      x={pos.labelX}
-                                      y={pos.labelY}
-                                      textAnchor="middle"
-                                      className="text-sm font-semibold fill-slate-700"
-                                    >
-                                      {outcome.scenario.length > 20 ? 
-                                        `${outcome.scenario.substring(0, 20)}...` : 
-                                        outcome.scenario
-                                      }
-                                    </text>
+                                    {/* Scenario name outside circle - wrapped text */}
+                                    {wrappedText.map((line, lineIndex) => (
+                                      <text
+                                        key={lineIndex}
+                                        x={pos.labelX}
+                                        y={pos.labelY + (lineIndex * 12)}
+                                        textAnchor="middle"
+                                        className="text-xs font-semibold fill-slate-700"
+                                      >
+                                        {line}
+                                      </text>
+                                    ))}
                                     
                                     {/* Timeline below scenario name */}
                                     <text
                                       x={pos.labelX}
-                                      y={pos.labelY + 15}
+                                      y={pos.labelY + (wrappedText.length * 12) + 8}
                                       textAnchor="middle"
                                       className="text-xs fill-slate-500"
                                     >
