@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, Lightbulb, TrendingDown } from "lucide-react";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 
@@ -17,6 +17,7 @@ interface SectorMetrics {
 
 export default function Home() {
   const [selectedSector, setSelectedSector] = useState("defense");
+  const queryClient = useQueryClient();
   
   // Fetch global metrics for overview
   const { data: globalMetrics } = useQuery({
@@ -352,7 +353,13 @@ export default function Home() {
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-sm font-medium text-slate-700">Sector:</span>
-                <Select value={selectedSector} onValueChange={setSelectedSector}>
+                <Select value={selectedSector} onValueChange={(value) => {
+                  console.log(`Frontend: Switching to sector: ${value}`);
+                  setSelectedSector(value);
+                  // Force invalidate and refetch for the new sector
+                  queryClient.invalidateQueries({ queryKey: ["/api/analysis/predictions"] });
+                  queryClient.invalidateQueries({ queryKey: ["/api/analysis/market"] });
+                }}>
                   <SelectTrigger className="w-48">
                     <SelectValue>
                       <div className="flex items-center space-x-2">
