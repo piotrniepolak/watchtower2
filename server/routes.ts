@@ -1860,6 +1860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
       
       console.log(`🔍 AI Predictions Request - URL: ${req.url}`);
+      console.log(`🔍 Raw query object:`, JSON.stringify(req.query, null, 2));
       console.log(`🔍 Sector param: "${sectorParam}" -> validated: "${sector}"`);
       
       const conflicts = await storage.getConflicts();

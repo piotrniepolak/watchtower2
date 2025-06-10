@@ -70,12 +70,22 @@ export default function Analysis() {
   const [selectedSector, setSelectedSector] = useState<string>('defense');
 
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
-    queryKey: ["/api/analysis/predictions"],
+    queryKey: ["/api/analysis/predictions", selectedSector],
+    queryFn: async () => {
+      const response = await fetch(`/api/analysis/predictions?sector=${selectedSector}`);
+      if (!response.ok) throw new Error('Failed to fetch predictions');
+      return response.json();
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
-    queryKey: ["/api/analysis/market"],
+    queryKey: ["/api/analysis/market", selectedSector],
+    queryFn: async () => {
+      const response = await fetch(`/api/analysis/market?sector=${selectedSector}`);
+      if (!response.ok) throw new Error('Failed to fetch market analysis');
+      return response.json();
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
