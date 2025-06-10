@@ -11,28 +11,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useWHOStatisticalData } from "@/hooks/use-who-data";
 import { feature } from "topojson-client";
 
-// Hook to load the same topology data used before data corrections
-const useWorldGeography = () => {
-  return useQuery({
-    queryKey: ['/api/world-topology'],
-    queryFn: async () => {
-      try {
-        // Use the exact same topology sources from the original working map
-        const response = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json");
-        if (!response.ok) {
-          throw new Error(`Failed to load topology: ${response.status}`);
-        }
-        const topology = await response.json();
-        return topology;
-      } catch (error) {
-        console.error('Topology loading error:', error);
-        throw error;
-      }
-    },
-    staleTime: 1000 * 60 * 60 * 24, // Cache for 24 hours
-    retry: 2,
-  });
-};
+// Use the original world map geography without external dependencies
+const geoUrl = "https://raw.githubusercontent.com/deldersveld/topojson/master/world-countries-110m.json";
 
 interface CountryHealthData {
   iso3: string;
@@ -98,23 +78,7 @@ const calculateHealthScore = (indicators: Record<string, number>): number => {
 export default function WorldHealthMapRestored() {
   const [selectedCountry, setSelectedCountry] = useState<CountryHealthData | null>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
-  const topologyQuery = useWorldGeography();
-
   const whoStatisticalData = useWHOStatisticalData();
-
-  // Convert topology to GeoJSON for react-simple-maps
-  const worldGeography = useMemo(() => {
-    if (!topologyQuery.data) return null;
-    
-    try {
-      // Convert topology to GeoJSON using topojson-client
-      const geoData = feature(topologyQuery.data, topologyQuery.data.objects.countries);
-      return geoData;
-    } catch (error) {
-      console.error('Error converting topology to GeoJSON:', error);
-      return null;
-    }
-  }, [topologyQuery.data]);
 
   // Process WHO Statistical data for countries
   const healthData = useMemo(() => {
@@ -161,7 +125,7 @@ export default function WorldHealthMapRestored() {
   // Map opacity based on data loading
   const mapOpacity = healthData.size > 0 ? 1 : 0.7;
 
-  if (whoStatisticalData.loading || topologyQuery.isLoading) {
+  if (whoStatisticalData.loading) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -244,7 +208,7 @@ export default function WorldHealthMapRestored() {
                   height={500}
                   className="w-full h-full"
                 >
-                  <Geographies geography={geography || undefined}>
+                  <Geographies geography={geoUrl}>
                     {({ geographies }) => {
                       if (!geographies || geographies.length === 0) {
                         return (
