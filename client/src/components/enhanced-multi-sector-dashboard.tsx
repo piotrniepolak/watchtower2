@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -30,7 +31,17 @@ interface StockData {
 }
 
 export default function EnhancedMultiSectorDashboard({ defaultSector = "defense" }: EnhancedMultiSectorDashboardProps) {
+  const [location] = useLocation();
   const [currentSector, setCurrentSector] = useState(defaultSector);
+
+  // Read sector from URL search parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sectorParam = urlParams.get('sector');
+    if (sectorParam && ['defense', 'health', 'energy'].includes(sectorParam)) {
+      setCurrentSector(sectorParam);
+    }
+  }, [location]);
 
   // Fetch sector-specific data
   const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery<StockData[]>({
