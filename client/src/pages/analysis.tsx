@@ -176,6 +176,23 @@ export default function Analysis() {
           </TabsList>
 
           <TabsContent value="predictions" className="space-y-6">
+            {/* Loading Message */}
+            {!isApiUnavailable && predictionsLoading && (
+              <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-blue-800">
+                    <Brain className="w-5 h-5 mr-2 animate-pulse" />
+                    AI Analysis in Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-blue-700 text-sm">
+                    Please wait while our AI system analyzes current conflicts and generates predictions. This process may take 30-60 seconds to complete.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* API Status Banner */}
             {isApiUnavailable && (
               <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
@@ -435,6 +452,23 @@ export default function Analysis() {
           </TabsContent>
 
           <TabsContent value="market" className="space-y-6">
+            {/* Loading Message */}
+            {!isApiUnavailable && marketLoading && (
+              <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center text-blue-800">
+                    <BarChart3 className="w-5 h-5 mr-2 animate-pulse" />
+                    AI Market Analysis in Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-blue-700 text-sm">
+                    Our AI is analyzing market conditions and generating comprehensive sector insights. This detailed analysis may take 30-60 seconds to complete.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {isApiUnavailable && (
               <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
                 <CardHeader>
@@ -609,7 +643,7 @@ export default function Analysis() {
                           Generating Conflict Storyline
                         </h3>
                         <p className="text-slate-600">
-                          AI is analyzing the conflict and creating detailed scenarios...
+                          AI is analyzing the conflict and creating detailed scenarios. This comprehensive analysis may take 30-60 seconds to complete.
                         </p>
                       </div>
                     </CardContent>
