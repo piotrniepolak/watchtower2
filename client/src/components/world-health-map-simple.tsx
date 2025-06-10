@@ -9732,7 +9732,8 @@ function normalizeIndicator(
 function calculateWHOHealthScore(
   countryIndicators: Record<string, number>,
   allCountriesData: Record<string, any>,
-  healthIndicators: string[]
+  healthIndicators: string[],
+  globalScoreRange?: { min: number; max: number }
 ): number {
   if (Object.keys(countryIndicators).length === 0) return 0;
   
@@ -9760,15 +9761,14 @@ function calculateWHOHealthScore(
   // Simple average of normalized values, scaled to 0-100
   const rawScore = (totalScore / validIndicators) * 100;
   
-  // Calibrate to full 0-100 range based on observed distribution
-  const observedMin = 32.9;
-  const observedMax = 67.5;
-  const calibratedScore = ((rawScore - observedMin) / (observedMax - observedMin)) * 100;
+  // If global range provided, calibrate to full 0-100 range
+  if (globalScoreRange) {
+    const { min: observedMin, max: observedMax } = globalScoreRange;
+    const calibratedScore = ((rawScore - observedMin) / (observedMax - observedMin)) * 100;
+    return Math.max(0, Math.min(100, calibratedScore));
+  }
   
-  // Ensure score stays within 0-100 bounds
-  const healthScore = Math.max(0, Math.min(100, calibratedScore));
-  
-  return healthScore;
+  return rawScore;
 }
 
 // Generate authentic WHO Statistical Annex data for all 195 UN member countries
@@ -10441,14 +10441,34 @@ export default function WorldHealthMapSimple() {
 
     console.log(`Processing authentic WHO data for ${Object.keys(countries).length} countries with ${healthIndicators.length} indicators`);
 
+    // First pass: calculate raw scores to determine actual range
+    const rawScores: number[] = [];
     Object.entries(countries).forEach(([countryCode, countryData]: [string, any]) => {
-      const { name, indicators: countryIndicators } = countryData;
-      
-      // Calculate comprehensive health score from all 55 authentic WHO indicators
-      const healthScore = calculateWHOHealthScore(
+      const { indicators: countryIndicators } = countryData;
+      const rawScore = calculateWHOHealthScore(
         countryIndicators, 
         countries, 
         healthIndicators
+      );
+      rawScores.push(rawScore);
+    });
+
+    // Determine actual score range for calibration
+    const actualRange = {
+      min: Math.min(...rawScores),
+      max: Math.max(...rawScores)
+    };
+
+    // Second pass: calculate calibrated scores
+    Object.entries(countries).forEach(([countryCode, countryData]: [string, any]) => {
+      const { name, indicators: countryIndicators } = countryData;
+      
+      // Calculate comprehensive health score with calibration
+      const healthScore = calculateWHOHealthScore(
+        countryIndicators, 
+        countries, 
+        healthIndicators,
+        actualRange
       );
       scores.push(healthScore);
 
@@ -10899,7 +10919,7 @@ export default function WorldHealthMapSimple() {
                   <strong>Data Source:</strong> WHO Statistical Annex with corrected disaggregation extraction ensuring proper country-level aggregates (both-sexes combined, not subgroup-specific values).
                 </p>
                 <p className="text-xs text-gray-600">
-                  <strong>Health Score:</strong> Simple average of normalized WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Calibrated to full 0-100 scale where 32.9 (worst) = 0 and 67.5 (best) = 100.
+                  <strong>Health Score:</strong> Simple average of normalized WHO indicators with equal weighting. Min-max normalization applied with directional adjustment. Dynamically calibrated to full 0-100 scale based on actual global distribution.
                 </p>
               </div>
             </div>
