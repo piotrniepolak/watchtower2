@@ -69,6 +69,39 @@ export default function Analysis() {
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
   const [selectedSector, setSelectedSector] = useState<string>('defense');
 
+  // Dynamic sector text helpers
+  const getSectorStockImpactTitle = (sector: string) => {
+    switch (sector) {
+      case 'health': return 'Healthcare Stock Impact';
+      case 'energy': return 'Energy Stock Impact';
+      default: return 'Defense Stock Impact';
+    }
+  };
+
+  const getSectorAnalysisTitle = (sector: string) => {
+    switch (sector) {
+      case 'health': return 'Health Crisis Predictions';
+      case 'energy': return 'Energy Market Predictions';
+      default: return 'Conflict Predictions';
+    }
+  };
+
+  const getSectorLoadingMessage = (sector: string) => {
+    switch (sector) {
+      case 'health': return 'Analyzing global health trends and pharmaceutical market dynamics...';
+      case 'energy': return 'Processing energy market data and oil price volatility patterns...';
+      default: return 'Generating conflict predictions and market insights...';
+    }
+  };
+
+  const getSectorStorylineTitle = (sector: string) => {
+    switch (sector) {
+      case 'health': return 'Health Crisis Storylines';
+      case 'energy': return 'Energy Market Storylines';
+      default: return 'Conflict Storylines';
+    }
+  };
+
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions", selectedSector],
     queryFn: async () => {
@@ -155,7 +188,7 @@ export default function Analysis() {
             <div className="text-center">
               <Brain className="w-12 h-12 text-blue-600 animate-pulse mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-slate-900 mb-2">AI Analysis in Progress</h2>
-              <p className="text-slate-600 mb-2">Generating conflict predictions and market insights...</p>
+              <p className="text-slate-600 mb-2">{getSectorLoadingMessage(selectedSector)}</p>
               <p className="text-slate-500 text-sm">This process may take 30-60 seconds to complete.</p>
             </div>
           </div>
@@ -273,7 +306,7 @@ export default function Analysis() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     {getSentimentIcon((marketAnalysis as MarketAnalysis).overallSentiment)}
-                    <span className="ml-2">Defense Sector Outlook</span>
+                    <span className="ml-2">{selectedSector === 'health' ? 'Healthcare Sector Outlook' : selectedSector === 'energy' ? 'Energy Sector Outlook' : 'Defense Sector Outlook'}</span>
                     <Badge variant="outline" className="ml-auto">
                       {(marketAnalysis as MarketAnalysis).timeHorizon}
                     </Badge>
