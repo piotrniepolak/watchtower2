@@ -10659,7 +10659,13 @@ export default function WorldHealthMapSimple() {
               const color = getCountryColor(countryData.healthScore, scoreRange);
               pathElement.setAttribute('fill', color);
               pathElement.setAttribute('data-country', countryName || '');
+              pathElement.setAttribute('data-health-score', countryData.healthScore.toString());
               pathElement.setAttribute('style', 'cursor: pointer; transition: opacity 0.2s;');
+              
+              // Debug logging for key countries
+              if (['JPN', 'CHE', 'CAF', 'SOM'].includes(countryName || '')) {
+                console.log(`${countryName}: Health Score = ${countryData.healthScore.toFixed(1)}, Color = ${color}`);
+              }
               
               // Add interaction handlers
               pathElement.addEventListener('click', () => {
