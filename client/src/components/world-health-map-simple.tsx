@@ -9,6 +9,65 @@ import { useQuery } from "@tanstack/react-query";
 import TopOpportunityList from "./top-opportunity-list";
 
 
+// Complete WHO Statistical Annex SDG3 Indicator Categories
+const getAllWHOIndicators = (): string[] => {
+  return [
+    // Core SDG3 Health Indicators
+    'Life expectancy at birth (years)',
+    'Healthy life expectancy at birth (years)',
+    'Infant mortality rate (per 1,000 live births)',
+    'Maternal mortality ratio (per 100,000 live births)',
+    'Neonatal mortality rate (per 1,000 live births)',
+    'Under-five mortality rate (per 1,000 live births)',
+    'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
+    
+    // Universal Health Coverage
+    'Universal health coverage service coverage index',
+    
+    // Healthcare Access & Quality
+    'Births attended by skilled health personnel (%)',
+    'Antenatal care coverage (at least 4 visits) (%)',
+    
+    // Immunization Coverage
+    'DTP3 immunization coverage among 1-year-olds (%)',
+    'Measles immunization coverage among 1-year-olds (%)',
+    'Polio immunization coverage among 1-year-olds (%)',
+    'Hepatitis B immunization coverage among 1-year-olds (%)',
+    'BCG immunization coverage among 1-year-olds (%)',
+    
+    // Nutrition & Child Health
+    'Children aged <5 years underweight (%)',
+    'Children aged <5 years stunted (%)',
+    'Children aged <5 years wasted (%)',
+    'Exclusive breastfeeding rate (%)',
+    'Vitamin A supplementation coverage among children aged 6-59 months (%)',
+    
+    // Disease Burden & Prevention
+    'HIV prevalence among adults aged 15-49 years (%)',
+    'Antiretroviral therapy coverage (%)',
+    'Tuberculosis incidence (per 100,000 population)',
+    'Tuberculosis treatment success rate (%)',
+    'Malaria incidence (per 1,000 population at risk)',
+    'Use of insecticide-treated bed nets (%)',
+    
+    // Healthcare Infrastructure
+    'Medical doctors (per 10,000 population)',
+    'Nursing and midwifery personnel (per 10,000 population)',
+    'Hospital beds (per 10,000 population)',
+    
+    // Water, Sanitation & Environment
+    'Population using improved drinking water sources (%)',
+    'Population using improved sanitation facilities (%)',
+    
+    // Health Financing
+    'Total health expenditure as % of GDP',
+    'Government health expenditure as % of total health expenditure',
+    'Private health expenditure as % of total health expenditure',
+    'Out-of-pocket health expenditure as % of total health expenditure',
+    'Essential medicines availability (%)'
+  ];
+};
+
 // Color scale utility for health scores with 5 categories (20-point ranges)
 const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
   if (!healthScore) return '#E5E7EB'; // Gray for no data
@@ -802,6 +861,65 @@ export default function WorldHealthMapSimple() {
 
   const whoStatisticalData = useWHOStatisticalData();
 
+  // Complete WHO Statistical Annex SDG3 Indicator Categories
+  const getAllWHOIndicators = (): string[] => {
+    return [
+      // Core SDG3 Health Indicators
+      'Life expectancy at birth (years)',
+      'Healthy life expectancy at birth (years)',
+      'Infant mortality rate (per 1,000 live births)',
+      'Maternal mortality ratio (per 100,000 live births)',
+      'Neonatal mortality rate (per 1,000 live births)',
+      'Under-five mortality rate (per 1,000 live births)',
+      'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
+      
+      // Universal Health Coverage
+      'Universal health coverage service coverage index',
+      
+      // Healthcare Access & Quality
+      'Births attended by skilled health personnel (%)',
+      'Antenatal care coverage (at least 4 visits) (%)',
+      
+      // Immunization Coverage
+      'DTP3 immunization coverage among 1-year-olds (%)',
+      'Measles immunization coverage among 1-year-olds (%)',
+      'Polio immunization coverage among 1-year-olds (%)',
+      'Hepatitis B immunization coverage among 1-year-olds (%)',
+      'BCG immunization coverage among 1-year-olds (%)',
+      
+      // Nutrition & Child Health
+      'Children aged <5 years underweight (%)',
+      'Children aged <5 years stunted (%)',
+      'Children aged <5 years wasted (%)',
+      'Exclusive breastfeeding rate (%)',
+      'Vitamin A supplementation coverage among children aged 6-59 months (%)',
+      
+      // Disease Burden & Prevention
+      'HIV prevalence among adults aged 15-49 years (%)',
+      'Antiretroviral therapy coverage (%)',
+      'Tuberculosis incidence (per 100,000 population)',
+      'Tuberculosis treatment success rate (%)',
+      'Malaria incidence (per 1,000 population at risk)',
+      'Use of insecticide-treated bed nets (%)',
+      
+      // Healthcare Infrastructure
+      'Medical doctors (per 10,000 population)',
+      'Nursing and midwifery personnel (per 10,000 population)',
+      'Hospital beds (per 10,000 population)',
+      
+      // Water, Sanitation & Environment
+      'Population using improved drinking water sources (%)',
+      'Population using improved sanitation facilities (%)',
+      
+      // Health Financing
+      'Total health expenditure as % of GDP',
+      'Government health expenditure as % of total health expenditure',
+      'Private health expenditure as % of total health expenditure',
+      'Out-of-pocket health expenditure as % of total health expenditure',
+      'Essential medicines availability (%)'
+    ];
+  };
+
   // Process WHO Statistical Annex data
   const { healthData, scoreRange } = useMemo(() => {
     if (!whoStatisticalData.data) return { healthData: new Map<string, CountryHealthData>(), scoreRange: { min: 0, max: 100 } };
@@ -1180,18 +1298,38 @@ export default function WorldHealthMapSimple() {
                 </Badge>
               </div>
 
-              {/* All WHO Indicators */}
+              {/* Complete WHO Statistical Annex Data */}
               <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm text-gray-700 mb-3">All 36 WHO Statistical Annex Indicators Used in Score Calculation</h4>
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  {Object.entries(selectedCountry.allWHOIndicators).map(([indicator, value]) => (
-                    <div key={indicator} className="flex justify-between items-center py-1 border-b border-blue-100">
-                      <span className="text-gray-700 flex-1 mr-2">{indicator}</span>
-                      <span className="font-semibold text-blue-700 text-right">
-                        {typeof value === 'number' ? value.toFixed(1) : value}
-                      </span>
-                    </div>
-                  ))}
+                <h4 className="font-semibold text-sm text-gray-700 mb-3">WHO Statistical Annex SDG3 Health Indicators</h4>
+                <div className="grid grid-cols-1 gap-1 text-xs max-h-64 overflow-y-auto">
+                  {getAllWHOIndicators().map((indicator) => {
+                    const value = selectedCountry.allWHOIndicators[indicator];
+                    const hasData = value !== undefined && value !== null;
+                    
+                    let displayValue = 'no data';
+                    if (hasData) {
+                      if (typeof value === 'number') {
+                        displayValue = value % 1 === 0 ? value.toString() : value.toFixed(1);
+                      } else {
+                        displayValue = String(value);
+                      }
+                    }
+                    
+                    return (
+                      <div key={indicator} className="flex justify-between items-center py-1.5 px-2 bg-white rounded border border-blue-100 hover:bg-blue-25">
+                        <span className="text-gray-700 flex-1 mr-2 leading-tight">{indicator}</span>
+                        <span className={`font-semibold text-right min-w-16 ${hasData ? 'text-blue-700' : 'text-gray-400 italic'}`}>
+                          {displayValue}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 pt-2 border-t border-blue-200">
+                  <p className="text-xs text-gray-600">
+                    <strong>Source:</strong> WHO Statistical Annex SDG3 Health Data • 
+                    <strong>Coverage:</strong> {Object.keys(selectedCountry.allWHOIndicators).length} of {getAllWHOIndicators().length} indicators available
+                  </p>
                 </div>
               </div>
 
