@@ -9739,9 +9739,6 @@ function calculateWHOHealthScore(
   let totalScore = 0;
   let validIndicators = 0;
   
-  // Equal weight for each indicator
-  const weight = 1 / healthIndicators.length;
-  
   healthIndicators.forEach(indicator => {
     const value = countryIndicators[indicator];
     if (value === undefined || isNaN(value)) return;
@@ -9756,7 +9753,7 @@ function calculateWHOHealthScore(
     const isPositive = isPositiveDirection(indicator);
     const normalizedValue = normalizeIndicator(allValues, value, isPositive);
     
-    totalScore += normalizedValue * weight;
+    totalScore += normalizedValue;
     validIndicators++;
   });
   
