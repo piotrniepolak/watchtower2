@@ -465,7 +465,7 @@ export default function Analysis() {
                         <div>
                           <h4 className="font-semibold text-slate-900 mb-2 flex items-center">
                             <TrendingUp className="w-4 h-4 mr-2" />
-                            Defense Stock Impact
+                            {getSectorStockImpactTitle(selectedSector)}
                           </h4>
                           <div className="bg-slate-50 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
@@ -541,19 +541,19 @@ export default function Analysis() {
                         <ul className="text-xs text-slate-600 space-y-1">
                           <li className="flex items-start">
                             <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                            <span><strong>Current Intelligence:</strong> Recent diplomatic activities, military movements, and political developments</span>
+                            <span><strong>Current Intelligence:</strong> {selectedSector === 'health' ? 'Recent health trends, pharmaceutical developments, and regulatory changes' : selectedSector === 'energy' ? 'Recent energy market trends, oil price movements, and geopolitical factors' : 'Recent diplomatic activities, military movements, and political developments'}</span>
                           </li>
                           <li className="flex items-start">
                             <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                            <span><strong>Historical Analysis:</strong> Similar conflict patterns and their outcomes over the past decades</span>
+                            <span><strong>Historical Analysis:</strong> {selectedSector === 'health' ? 'Similar health crisis patterns and pharmaceutical market responses over past decades' : selectedSector === 'energy' ? 'Historical energy market cycles and price volatility patterns over past decades' : 'Similar conflict patterns and their outcomes over the past decades'}</span>
                           </li>
                           <li className="flex items-start">
                             <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                            <span><strong>Economic Indicators:</strong> Defense spending trends, market volatility, and resource allocation patterns</span>
+                            <span><strong>Economic Indicators:</strong> {selectedSector === 'health' ? 'Healthcare spending trends, pharmaceutical market volatility, and R&D investment patterns' : selectedSector === 'energy' ? 'Energy sector investment trends, commodity price volatility, and infrastructure spending patterns' : 'Defense spending trends, market volatility, and resource allocation patterns'}</span>
                           </li>
                           <li className="flex items-start">
                             <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                            <span><strong>Regional Stability:</strong> Alliance dynamics, neighboring country responses, and international pressure</span>
+                            <span><strong>Regional Stability:</strong> {selectedSector === 'health' ? 'Global health system resilience, international cooperation, and regulatory harmonization' : selectedSector === 'energy' ? 'Regional energy security, supply chain stability, and international cooperation agreements' : 'Alliance dynamics, neighboring country responses, and international pressure'}</span>
                           </li>
                         </ul>
                         <p className="text-xs text-slate-500 mt-2">
@@ -715,7 +715,7 @@ export default function Analysis() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Target className="w-5 h-5 mr-2" />
-                  Select Conflict for Storyline Analysis
+{getSectorStorylineTitle(selectedSector)}
                 </CardTitle>
               </CardHeader>
               <CardContent>
