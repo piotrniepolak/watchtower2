@@ -1101,10 +1101,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-powered conflict prediction routes
   app.get("/api/ai/predictions", async (req, res) => {
     try {
+      const sectorParam = req.query.sector as string;
+      const validSectors = ['defense', 'health', 'energy'];
+      const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
+      
+      console.log(`🔍 AI Predictions (legacy) - Sector: "${sector}"`);
+      
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
       
-      const predictions = await generateConflictPredictions(conflicts, stocks);
+      const predictions = await generateSectorPredictions(sector, conflicts, stocks);
       res.json(predictions);
     } catch (error) {
       console.error("Error generating conflict predictions:", error);
@@ -1114,11 +1120,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/ai/market-analysis", async (req, res) => {
     try {
+      const sectorParam = req.query.sector as string;
+      const validSectors = ['defense', 'health', 'energy'];
+      const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
+      
+      console.log(`🔍 AI Market Analysis (legacy) - Sector: "${sector}"`);
+      
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
-      const predictions = await generateConflictPredictions(conflicts, stocks);
+      const predictions = await generateSectorPredictions(sector, conflicts, stocks);
       
-      const marketAnalysis = await generateMarketAnalysis(conflicts, stocks, predictions);
+      const marketAnalysis = await generateSectorMarketAnalysis(sector, stocks, conflicts, []);
       res.json(marketAnalysis);
     } catch (error) {
       console.error("Error generating market analysis:", error);
