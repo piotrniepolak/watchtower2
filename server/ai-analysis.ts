@@ -118,27 +118,27 @@ async function generateHealthPredictions(stocks: Stock[]): Promise<ConflictPredi
   const predictionPromises = healthTopics.map(async (topic, index) => {
     const stockSymbols = healthStocks.map(s => s.symbol).join(", ");
     
-    const prompt = `Analyze this healthcare topic and provide predictions:
+    const prompt = `Analyze this pharmaceutical and healthcare market topic:
 
 Topic: ${topic}
-Healthcare Stocks: ${stockSymbols}
+Healthcare Companies: ${stockSymbols}
 
-Provide analysis in JSON format:
+Generate market predictions in JSON format:
 {
   "scenario": "growth|decline|stability|disruption",
   "probability": 0-100,
-  "timeframe": "specific timeframe like '6-12 months', '1-3 years'",
-  "narrative": "brief prediction story about healthcare developments",
-  "keyFactors": ["factor1", "factor2", "factor3"],
-  "economicImpact": "economic implications for healthcare sector",
+  "timeframe": "specific timeframe like '6-18 months', '2-4 years'",
+  "narrative": "concise prediction about pharmaceutical market developments and healthcare trends",
+  "keyFactors": ["regulatory factor", "market driver", "technology factor"],
+  "economicImpact": "economic implications for pharmaceutical and healthcare sectors",
   "defenseStockImpact": {
-    "affected": ["stock symbols"],
+    "affected": ["relevant healthcare stock symbols"],
     "direction": "positive|negative|neutral",
     "magnitude": "low|medium|high"
   },
-  "geopoliticalImplications": ["implication1", "implication2"],
-  "riskFactors": ["risk1", "risk2"],
-  "mitigationStrategies": ["strategy1", "strategy2"]
+  "geopoliticalImplications": ["global health policy impact", "international market effect"],
+  "riskFactors": ["regulatory risk", "market risk"],
+  "mitigationStrategies": ["strategic approach", "risk management"]
 }`;
 
     const response = await openai.chat.completions.create({
@@ -169,7 +169,11 @@ Provide analysis in JSON format:
       narrative: analysis.narrative,
       keyFactors: analysis.keyFactors,
       economicImpact: analysis.economicImpact,
-      defenseStockImpact: analysis.defenseStockImpact,
+      defenseStockImpact: {
+        affected: healthStocks.map(s => s.symbol),
+        direction: analysis.defenseStockImpact?.direction || "positive",
+        magnitude: analysis.defenseStockImpact?.magnitude || "medium"
+      },
       geopoliticalImplications: analysis.geopoliticalImplications,
       riskFactors: analysis.riskFactors,
       mitigationStrategies: analysis.mitigationStrategies
@@ -193,27 +197,27 @@ async function generateEnergyPredictions(stocks: Stock[]): Promise<ConflictPredi
   const predictionPromises = energyTopics.map(async (topic, index) => {
     const stockSymbols = energyStocks.map(s => s.symbol).join(", ");
     
-    const prompt = `Analyze this energy sector topic and provide predictions:
+    const prompt = `Analyze this energy market topic and generate predictions:
 
 Topic: ${topic}
-Energy Stocks: ${stockSymbols}
+Energy Companies: ${stockSymbols}
 
-Provide analysis in JSON format:
+Generate energy market predictions in JSON format:
 {
   "scenario": "bullish|bearish|volatile|transition",
   "probability": 0-100,
-  "timeframe": "specific timeframe like '3-9 months', '1-2 years'",
-  "narrative": "brief prediction story about energy market developments",
-  "keyFactors": ["factor1", "factor2", "factor3"],
-  "economicImpact": "economic implications for energy sector",
+  "timeframe": "specific timeframe like '4-12 months', '1-3 years'",
+  "narrative": "concise prediction about oil, gas, and renewable energy market developments",
+  "keyFactors": ["supply/demand factor", "regulatory change", "technology advancement"],
+  "economicImpact": "economic implications for energy and commodity markets",
   "defenseStockImpact": {
-    "affected": ["stock symbols"],
+    "affected": ["relevant energy stock symbols"],
     "direction": "positive|negative|neutral",
     "magnitude": "low|medium|high"
   },
-  "geopoliticalImplications": ["implication1", "implication2"],
-  "riskFactors": ["risk1", "risk2"],
-  "mitigationStrategies": ["strategy1", "strategy2"]
+  "geopoliticalImplications": ["energy security impact", "international trade effect"],
+  "riskFactors": ["commodity price risk", "regulatory risk"],
+  "mitigationStrategies": ["portfolio diversification", "risk hedging"]
 }`;
 
     const response = await openai.chat.completions.create({
@@ -244,7 +248,11 @@ Provide analysis in JSON format:
       narrative: analysis.narrative,
       keyFactors: analysis.keyFactors,
       economicImpact: analysis.economicImpact,
-      defenseStockImpact: analysis.defenseStockImpact,
+      defenseStockImpact: {
+        affected: energyStocks.map(s => s.symbol),
+        direction: analysis.defenseStockImpact?.direction || "positive",
+        magnitude: analysis.defenseStockImpact?.magnitude || "medium"
+      },
       geopoliticalImplications: analysis.geopoliticalImplications,
       riskFactors: analysis.riskFactors,
       mitigationStrategies: analysis.mitigationStrategies

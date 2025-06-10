@@ -414,7 +414,7 @@ export default function Home() {
                       <div>
                         <h4 className="font-medium text-slate-900 mb-2">Key Drivers</h4>
                         <div className="space-y-1">
-                          {marketAnalysis.keyDrivers?.slice(0, 3).map((driver, index) => (
+                          {marketAnalysis.keyDrivers?.slice(0, 3).map((driver: string, index: number) => (
                             <div key={index} className="flex items-center text-sm text-slate-600">
                               <div className="w-1 h-1 bg-blue-500 rounded-full mr-2"></div>
                               {driver}
@@ -446,7 +446,7 @@ export default function Home() {
                     </div>
                   ) : predictions && predictions.length > 0 ? (
                     <div className="space-y-4">
-                      {predictions.slice(0, 2).map((prediction, index) => (
+                      {predictions.slice(0, 2).map((prediction: any, index: number) => (
                         <div key={index} className="border-l-4 border-indigo-500 pl-4">
                           <div className="flex items-center justify-between mb-2">
                             <h4 className="font-medium text-slate-900 text-sm">{prediction.conflictName}</h4>
