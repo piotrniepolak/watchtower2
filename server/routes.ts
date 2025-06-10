@@ -8,7 +8,7 @@ import { userQuizResponses, users, dailyQuizzes, discussions } from "@shared/sch
 import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
-import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline } from "./ai-analysis";
+import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline, generateSectorPredictions, generateSectorMarketAnalysis } from "./ai-analysis";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
@@ -1855,9 +1855,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
+      const sector = req.query.sector as string || 'defense';
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
-      const predictions = await generateConflictPredictions(conflicts, stocks);
+      const predictions = await generateSectorPredictions(sector, conflicts, stocks);
       res.json(predictions);
     } catch (error) {
       console.error('Error generating predictions:', error);
@@ -1871,10 +1872,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
       }
       
+      const sector = req.query.sector as string || 'defense';
       const stocks = await storage.getStocks();
       const conflicts = await storage.getConflicts();
       const correlationEvents = await storage.getCorrelationEvents();
-      const analysis = await generateMarketAnalysis(stocks, conflicts, correlationEvents);
+      const analysis = await generateSectorMarketAnalysis(sector, stocks, conflicts, correlationEvents);
       res.json(analysis);
     } catch (error) {
       console.error('Error generating market analysis:', error);
