@@ -95,44 +95,63 @@ function calculateWHOHealthScore(
 }
 
 export function generateAuthenticWHOData() {
-  // Authentic WHO health indicators from Statistical Annex (excluding traffic & suicide mortality)
+  // Authentic WHO health indicators from Statistical Annex CSV data - 55 indicators
   const healthIndicators = [
+    'Adolescent birth rate (per 1000 women aged 10-14 years)',
+    'Adolescent birth rate (per 1000 women aged 15-19 years)',
+    'Age-standardized mortality rate attributed to household and ambient air pollution  (per 100 000 population)',
+    'Age-standardized prevalence of tobacco use among persons 15 years and older  (%)',
+    'Amount of water- and sanitation-related official development assistance that is part of a government-coordinated spending plan (constant 2020 US$ millions)',
+    'Annual mean concentrations of fine particulate matter (PM2.5) in urban areas (µg/m3)',
+    'Average of 15 International Health Regulations core capacity scores',
+    'Contact coverage of treatment services for alcohol use disorders (%)',
+    'Contact coverage of treatment services for drug use disorders (%)',
+    'Density of dentists (per 10 000 population)',
+    'Density of medical doctors (per 10 000 population)',
+    'Density of nursing and midwifery personnel (per 10 000 population)',
+    'Density of pharmacists (per 10 000 population)',
+    'Diphtheria-tetanus-pertussis (DTP3) immunization coverage among 1-year-olds (%)',
+    'Domestic general government health expenditure (GGHE-D) as percentage of general government expenditure (GGE) (%)',
+    'Healthy life expectancy at birth (years)',
+    'Hepatitis B surface antigen (HBsAg) prevalence among children under 5 years (%)',
+    'Human papillomavirus (HPV) immunization coverage estimates among 15 year-old girls (%)',
     'Life expectancy at birth (years)',
-    'Healthy life expectancy at birth (years)', 
-    'Maternal mortality ratio (per 100,000 live births)',
-    'Infant mortality rate (per 1,000 live births)',
-    'Neonatal mortality rate (per 1,000 live births)',
-    'Under-five mortality rate (per 1,000 live births)',
-    'Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)',
-    'Births attended by skilled health personnel (%)',
-    'Antenatal care coverage (at least 4 visits) (%)',
-    'Children aged <5 years underweight (%)',
-    'Children aged <5 years stunted (%)', 
-    'Children aged <5 years wasted (%)',
-    'Exclusive breastfeeding rate (%)',
-    'DTP3 immunization coverage among 1-year-olds (%)',
-    'Measles immunization coverage among 1-year-olds (%)',
-    'Polio immunization coverage among 1-year-olds (%)',
-    'Hepatitis B immunization coverage among 1-year-olds (%)',
-    'BCG immunization coverage among 1-year-olds (%)',
-    'Vitamin A supplementation coverage among children aged 6-59 months (%)',
-    'Use of insecticide-treated bed nets (%)',
-    'HIV prevalence among adults aged 15-49 years (%)',
-    'Antiretroviral therapy coverage (%)',
-    'Tuberculosis incidence (per 100,000 population)',
-    'Tuberculosis treatment success rate (%)',
-    'Malaria incidence (per 1,000 population at risk)',
-    'Population using improved drinking water sources (%)',
-    'Population using improved sanitation facilities (%)',
-    'Medical doctors (per 10,000 population)',
-    'Nursing and midwifery personnel (per 10,000 population)',
-    'Hospital beds (per 10,000 population)',
-    'Total health expenditure as % of GDP',
-    'Government health expenditure as % of total health expenditure',
-    'Private health expenditure as % of total health expenditure',
-    'Out-of-pocket health expenditure as % of total health expenditure',
-    'Universal health coverage service coverage index',
-    'Essential medicines availability (%)'
+    'Malaria incidence (per 1000 population at risk)',
+    'Maternal mortality ratio (per 100 000 live births)',
+    'Measles-containing-vaccine second-dose (MCV2) immunization coverage by the locally recommended age (%)',
+    'Mortality rate attributed to exposure to unsafe WASH services (per 100 000 population)',
+    'Mortality rate due to homicide (per 100 000 population)',
+    'Mortality rate from unintentional poisoning (per 100 000 population)',
+    'Neonatal mortality rate (per 1000 live births)',
+    'New HIV infections (per 1000 uninfected population)',
+    'Percentage of bloodstream infection due to Escherichia coli resistant to 3rd-generation cephalosporin (%)',
+    'Percentage of bloodstream infections due methicillin-resistant Staphylococcus aureus (%)',
+    'Pneumococcal conjugate 3rd dose (PCV3) immunization coverage  among 1-year olds (%)',
+    'Population with household expenditures on health > 10% of total household expenditure or income (%)',
+    'Population with household expenditures on health > 25% of total household expenditure or income (%)',
+    'Prevalence of anaemia in women of reproductive age (15-49 years) (%)',
+    'Prevalence of overweight in children under 5 (%)',
+    'Prevalence of stunting in children under 5 (%)',
+    'Prevalence of wasting in children under 5 (%)',
+    'Probability of dying from any of CVD, cancer, diabetes, CRD between age 30 and exact age 70 (%)',
+    'Proportion of births attended by skilled health personnel (%)',
+    'Proportion of ever-partnered women and girls aged 15-49 years subjected to physical and/or sexual violence by a current or former intimate partner in the previous 12 months (%)',
+    'Proportion of ever-partnered women and girls aged 15-49 years subjected to physical and/or sexual violence by a current or former intimate partner in their lifetime (%)',
+    'Proportion of health facilities with a core set of relevant essential medicines available and affordable on a sustainable basis (%)',
+    'Proportion of population using a hand-washing facility with soap and water (%)',
+    'Proportion of population using safely-managed drinking-water services (%)',
+    'Proportion of population using safely-managed sanitation services (%)',
+    'Proportion of population with primary reliance on clean fuels and technology (%)',
+    'Proportion of safely treated domestic wastewater flows (%)',
+    'Proportion of women of reproductive age who have their need for family planning satisfied with modern methods (%)',
+    'Reported number of people requiring interventions against NTDs',
+    'Road traffic mortality rate (per 100 000 population)',
+    'Suicide mortality rate (per 100 000 population)',
+    'Total alcohol per capita (≥ 15 years of age) consumption (litres of pure alcohol)',
+    'Total net official development assistance to medical research and basic health sectors per capita (US$), by recipient country',
+    'Tuberculosis incidence (per 100 000 population)',
+    'UHC: Service coverage index',
+    'Under-five mortality rate (per 1000 live births)',
   ];
 
   const countries = generateComprehensiveHealthData();
@@ -160,144 +179,7 @@ export function generateAuthenticWHOData() {
 }
 
 function generateComprehensiveHealthData() {
-  // WHO Statistical Annex SDG3 - Direct values from WHO Health Statistics CSV
   const countryHealthData: Record<string, { name: string; indicators: Record<string, number> }> = {};
-
-  // Authentic WHO Statistical Annex SDG3 data - 2023 official figures
-  const countries = [
-    // High-income countries - WHO Statistical Annex exact values
-    { iso3: 'JPN', name: 'Japan', lifeExp: 84.5, healthyLifeExp: 74.1, infantMort: 1.9, maternalMort: 4, under5Mort: 2.5, uhcIndex: 85, 
-      dtpCoverage: 96, measlesCoverage: 96, polioCoverage: 96, skilledBirth: 100, antenatalCare: 99,
-      underweight: 1.4, stunted: 7.0, wasted: 1.9, tbIncidence: 10, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'CHE', name: 'Switzerland', lifeExp: 84.0, healthyLifeExp: 73.1, infantMort: 3.9, maternalMort: 5, under5Mort: 4.3, uhcIndex: 86,
-      dtpCoverage: 95, measlesCoverage: 95, polioCoverage: 95, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.0, stunted: 2.5, wasted: 0.8, tbIncidence: 7, hivPrevalence: 0.2, malaria: 0 },
-    { iso3: 'USA', name: 'United States', lifeExp: 78.9, healthyLifeExp: 68.5, infantMort: 5.8, maternalMort: 19, under5Mort: 6.5, uhcIndex: 78,
-      dtpCoverage: 91, measlesCoverage: 91, polioCoverage: 93, skilledBirth: 99, antenatalCare: 98,
-      underweight: 1.3, stunted: 2.1, wasted: 0.5, tbIncidence: 2.4, hivPrevalence: 0.3, malaria: 0 },
-    { iso3: 'GBR', name: 'United Kingdom', lifeExp: 81.1, healthyLifeExp: 70.1, infantMort: 4.3, maternalMort: 10, under5Mort: 4.9, uhcIndex: 82,
-      dtpCoverage: 95, measlesCoverage: 95, polioCoverage: 95, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.1, stunted: 2.3, wasted: 0.8, tbIncidence: 8.2, hivPrevalence: 0.2, malaria: 0 },
-    { iso3: 'DEU', name: 'Germany', lifeExp: 80.9, healthyLifeExp: 70.0, infantMort: 3.4, maternalMort: 7, under5Mort: 4.0, uhcIndex: 85,
-      dtpCoverage: 95, measlesCoverage: 97, polioCoverage: 95, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.1, stunted: 1.8, wasted: 0.5, tbIncidence: 6.5, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'FRA', name: 'France', lifeExp: 82.5, healthyLifeExp: 71.7, infantMort: 3.8, maternalMort: 8, under5Mort: 4.2, uhcIndex: 84,
-      dtpCoverage: 98, measlesCoverage: 90, polioCoverage: 98, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.0, stunted: 2.8, wasted: 1.0, tbIncidence: 6.8, hivPrevalence: 0.2, malaria: 0 },
-    { iso3: 'CAN', name: 'Canada', lifeExp: 82.1, healthyLifeExp: 71.0, infantMort: 4.5, maternalMort: 10, under5Mort: 5.0, uhcIndex: 83,
-      dtpCoverage: 84, measlesCoverage: 89, polioCoverage: 93, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.2, stunted: 2.4, wasted: 0.7, tbIncidence: 4.7, hivPrevalence: 0.2, malaria: 0 },
-    
-    // Upper-middle income countries - WHO Statistical Annex data
-    { iso3: 'CHN', name: 'China', lifeExp: 78.2, healthyLifeExp: 68.7, infantMort: 6.8, maternalMort: 29, under5Mort: 7.5, uhcIndex: 79,
-      dtpCoverage: 99, measlesCoverage: 99, polioCoverage: 99, skilledBirth: 100, antenatalCare: 95,
-      underweight: 1.9, stunted: 4.4, wasted: 1.6, tbIncidence: 55, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'THA', name: 'Thailand', lifeExp: 77.2, healthyLifeExp: 67.6, infantMort: 8.1, maternalMort: 37, under5Mort: 8.9, uhcIndex: 80,
-      dtpCoverage: 99, measlesCoverage: 98, polioCoverage: 99, skilledBirth: 99, antenatalCare: 98,
-      underweight: 6.7, stunted: 10.5, wasted: 5.6, tbIncidence: 153, hivPrevalence: 1.1, malaria: 0 },
-    { iso3: 'BRA', name: 'Brazil', lifeExp: 75.9, healthyLifeExp: 66.2, infantMort: 13.4, maternalMort: 60, under5Mort: 14.9, uhcIndex: 73,
-      dtpCoverage: 84, measlesCoverage: 93, polioCoverage: 84, skilledBirth: 99, antenatalCare: 97,
-      underweight: 2.2, stunted: 6.4, wasted: 1.3, tbIncidence: 46, hivPrevalence: 0.4, malaria: 138 },
-    { iso3: 'RUS', name: 'Russia', lifeExp: 72.6, healthyLifeExp: 63.2, infantMort: 4.9, maternalMort: 16, under5Mort: 5.7, uhcIndex: 75,
-      dtpCoverage: 97, measlesCoverage: 98, polioCoverage: 97, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.3, stunted: 2.8, wasted: 1.5, tbIncidence: 53, hivPrevalence: 1.2, malaria: 0 },
-    { iso3: 'TUR', name: 'Turkey', lifeExp: 77.7, healthyLifeExp: 67.4, infantMort: 9.7, maternalMort: 17, under5Mort: 10.9, uhcIndex: 76,
-      dtpCoverage: 98, measlesCoverage: 96, polioCoverage: 98, skilledBirth: 97, antenatalCare: 97,
-      underweight: 1.5, stunted: 6.0, wasted: 1.8, tbIncidence: 13, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'MEX', name: 'Mexico', lifeExp: 75.1, healthyLifeExp: 65.4, infantMort: 12.1, maternalMort: 33, under5Mort: 13.6, uhcIndex: 74,
-      dtpCoverage: 88, measlesCoverage: 96, polioCoverage: 88, skilledBirth: 96, antenatalCare: 94,
-      underweight: 3.2, stunted: 13.6, wasted: 1.6, tbIncidence: 22, hivPrevalence: 0.2, malaria: 0 },
-    
-    // Lower-middle income countries - WHO Statistical Annex data
-    { iso3: 'IND', name: 'India', lifeExp: 69.7, healthyLifeExp: 60.9, infantMort: 28.3, maternalMort: 103, under5Mort: 32.1, uhcIndex: 61,
-      dtpCoverage: 91, measlesCoverage: 95, polioCoverage: 91, skilledBirth: 81, antenatalCare: 58,
-      underweight: 31.7, stunted: 34.7, wasted: 17.3, tbIncidence: 199, hivPrevalence: 0.2, malaria: 1.9 },
-    { iso3: 'BGD', name: 'Bangladesh', lifeExp: 72.6, healthyLifeExp: 63.1, infantMort: 26.9, maternalMort: 173, under5Mort: 31.2, uhcIndex: 62,
-      dtpCoverage: 98, measlesCoverage: 97, polioCoverage: 98, skilledBirth: 50, antenatalCare: 47,
-      underweight: 22.6, stunted: 28.0, wasted: 9.8, tbIncidence: 364, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'IDN', name: 'Indonesia', lifeExp: 71.7, healthyLifeExp: 62.8, infantMort: 20.4, maternalMort: 177, under5Mort: 23.5, uhcIndex: 65,
-      dtpCoverage: 93, measlesCoverage: 95, polioCoverage: 93, skilledBirth: 93, antenatalCare: 96,
-      underweight: 17.7, stunted: 24.4, wasted: 7.7, tbIncidence: 354, hivPrevalence: 0.4, malaria: 32 },
-    { iso3: 'PHL', name: 'Philippines', lifeExp: 71.2, healthyLifeExp: 62.1, infantMort: 22.2, maternalMort: 121, under5Mort: 26.2, uhcIndex: 61,
-      dtpCoverage: 73, measlesCoverage: 95, polioCoverage: 95, skilledBirth: 84, antenatalCare: 96,
-      underweight: 19.1, stunted: 28.8, wasted: 5.4, tbIncidence: 554, hivPrevalence: 0.2, malaria: 18 },
-    { iso3: 'VNM', name: 'Vietnam', lifeExp: 75.4, healthyLifeExp: 66.1, infantMort: 16.5, maternalMort: 43, under5Mort: 18.6, uhcIndex: 73,
-      dtpCoverage: 98, measlesCoverage: 97, polioCoverage: 98, skilledBirth: 94, antenatalCare: 87,
-      underweight: 11.5, stunted: 19.6, wasted: 4.5, tbIncidence: 176, hivPrevalence: 0.3, malaria: 0 },
-    { iso3: 'EGY', name: 'Egypt', lifeExp: 72.0, healthyLifeExp: 62.6, infantMort: 17.9, maternalMort: 37, under5Mort: 20.5, uhcIndex: 68,
-      dtpCoverage: 97, measlesCoverage: 95, polioCoverage: 97, skilledBirth: 92, antenatalCare: 90,
-      underweight: 7.0, stunted: 14.2, wasted: 9.5, tbIncidence: 15, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'UKR', name: 'Ukraine', lifeExp: 72.1, healthyLifeExp: 63.0, infantMort: 7.3, maternalMort: 19, under5Mort: 8.2, uhcIndex: 72,
-      dtpCoverage: 79, measlesCoverage: 91, polioCoverage: 79, skilledBirth: 99, antenatalCare: 99,
-      underweight: 1.9, stunted: 7.9, wasted: 2.1, tbIncidence: 83, hivPrevalence: 0.9, malaria: 0 },
-    { iso3: 'PAK', name: 'Pakistan', lifeExp: 67.3, healthyLifeExp: 58.5, infantMort: 57.2, maternalMort: 140, under5Mort: 67.2, uhcIndex: 45,
-      dtpCoverage: 66, measlesCoverage: 61, polioCoverage: 75, skilledBirth: 69, antenatalCare: 86,
-      underweight: 23.1, stunted: 37.6, wasted: 7.1, tbIncidence: 610, hivPrevalence: 0.2, malaria: 18 },
-    
-    // Low-income countries - WHO Statistical Annex data
-    { iso3: 'NGA', name: 'Nigeria', lifeExp: 54.7, healthyLifeExp: 47.8, infantMort: 104.3, maternalMort: 917, under5Mort: 117.2, uhcIndex: 42,
-      dtpCoverage: 57, measlesCoverage: 54, polioCoverage: 68, skilledBirth: 43, antenatalCare: 67,
-      underweight: 18.4, stunted: 31.5, wasted: 6.5, tbIncidence: 219, hivPrevalence: 1.4, malaria: 226 },
-    { iso3: 'TCD', name: 'Chad', lifeExp: 54.2, healthyLifeExp: 47.4, infantMort: 72.1, maternalMort: 1140, under5Mort: 113.8, uhcIndex: 35,
-      dtpCoverage: 35, measlesCoverage: 41, polioCoverage: 49, skilledBirth: 24, antenatalCare: 54,
-      underweight: 29.2, stunted: 39.9, wasted: 13.0, tbIncidence: 132, hivPrevalence: 1.6, malaria: 365 },
-    { iso3: 'AFG', name: 'Afghanistan', lifeExp: 64.8, healthyLifeExp: 56.3, infantMort: 106.0, maternalMort: 638, under5Mort: 60.3, uhcIndex: 32,
-      dtpCoverage: 66, measlesCoverage: 71, polioCoverage: 74, skilledBirth: 59, antenatalCare: 59,
-      underweight: 19.1, stunted: 38.2, wasted: 5.1, tbIncidence: 189, hivPrevalence: 0.1, malaria: 0 },
-    { iso3: 'ETH', name: 'Ethiopia', lifeExp: 67.8, healthyLifeExp: 59.3, infantMort: 35.8, maternalMort: 267, under5Mort: 55.0, uhcIndex: 41,
-      dtpCoverage: 76, measlesCoverage: 69, polioCoverage: 85, skilledBirth: 55, antenatalCare: 74,
-      underweight: 21.1, stunted: 36.8, wasted: 7.2, tbIncidence: 240, hivPrevalence: 0.9, malaria: 87 }
-  ];
-
-  // Use exact WHO Statistical Annex CSV data for each country
-  countries.forEach(country => {
-    const indicators: Record<string, number> = {};
-    
-    // Direct WHO SDG3 indicators from CSV - exact values
-    indicators['Life expectancy at birth (years)'] = country.lifeExp;
-    indicators['Infant mortality rate (per 1,000 live births)'] = country.infantMort;
-    indicators['Maternal mortality ratio (per 100,000 live births)'] = country.maternalMort;
-    indicators['Under-five mortality rate (per 1,000 live births)'] = country.under5Mort;
-    indicators['Universal health coverage service coverage index'] = country.uhcIndex;
-    
-    // Direct WHO CSV immunization data
-    indicators['DTP3 immunization coverage among 1-year-olds (%)'] = country.dtpCoverage;
-    indicators['Measles immunization coverage among 1-year-olds (%)'] = country.measlesCoverage;
-    indicators['Polio immunization coverage among 1-year-olds (%)'] = country.polioCoverage;
-    
-    // Direct WHO CSV healthcare access data
-    indicators['Births attended by skilled health personnel (%)'] = country.skilledBirth;
-    indicators['Antenatal care coverage (at least 4 visits) (%)'] = country.antenatalCare;
-    
-    // Direct WHO CSV nutrition data
-    indicators['Children aged <5 years underweight (%)'] = country.underweight;
-    indicators['Children aged <5 years stunted (%)'] = country.stunted;
-    indicators['Children aged <5 years wasted (%)'] = country.wasted;
-    
-    // Direct WHO CSV disease burden data
-    indicators['Tuberculosis incidence (per 100,000 population)'] = country.tbIncidence;
-    indicators['HIV prevalence among adults aged 15-49 years (%)'] = country.hivPrevalence;
-    indicators['Malaria incidence (per 1,000 population at risk)'] = country.malaria;
-    
-    // Calculate neonatal mortality using WHO standard
-    indicators['Neonatal mortality rate (per 1,000 live births)'] = Math.round(country.infantMort * 0.65 * 10) / 10;
-    
-    // Direct WHO CSV healthy life expectancy data
-    indicators['Healthy life expectancy at birth (years)'] = country.healthyLifeExp;
-    
-    // Calculate adult mortality using WHO life table relationships
-    const adultMortality = country.lifeExp > 80 ? 60 + (85 - country.lifeExp) * 8 :
-                          country.lifeExp > 70 ? 120 + (80 - country.lifeExp) * 12 :
-                          250 + (70 - country.lifeExp) * 15;
-    indicators['Adult mortality rate (probability of dying between 15 and 60 years per 1,000 population)'] = Math.round(adultMortality);
-    
-    // Additional standard WHO indicators
-    indicators['Hepatitis B immunization coverage among 1-year-olds (%)'] = Math.max(60, country.dtpCoverage - 5);
-    indicators['BCG immunization coverage among 1-year-olds (%)'] = Math.max(65, country.dtpCoverage);
-    indicators['Exclusive breastfeeding rate (%)'] = country.lifeExp < 70 ? 45 : country.lifeExp < 80 ? 35 : 25;
-    indicators['Tuberculosis treatment success rate (%)'] = Math.min(95, Math.max(70, 95 - (country.tbIncidence / 15)));
-    indicators['Antiretroviral therapy coverage (%)'] = country.hivPrevalence > 1 ? 85 : 75;
-    indicators['Use of insecticide-treated bed nets (%)'] = country.malaria > 0 ? 65 : 5;
     indicators['Medical doctors (per 10,000 population)'] = country.lifeExp > 80 ? 45 : country.lifeExp > 70 ? 25 : 10;
     indicators['Nursing and midwifery personnel (per 10,000 population)'] = (country.lifeExp > 80 ? 45 : country.lifeExp > 70 ? 25 : 10) * 2.8;
     indicators['Hospital beds (per 10,000 population)'] = country.lifeExp > 80 ? 55 : country.lifeExp > 70 ? 35 : 15;
