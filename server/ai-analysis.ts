@@ -73,20 +73,186 @@ export interface MarketAnalysis {
   timeHorizon: string;
 }
 
+export async function generateSectorPredictions(
+  sector: string,
+  conflicts: Conflict[],
+  stocks: Stock[]
+): Promise<ConflictPrediction[]> {
+  if (sector === 'defense') {
+    // Process conflicts in parallel for defense sector
+    const predictionPromises = conflicts.map(conflict => 
+      generateSingleConflictPrediction(conflict, stocks).catch(error => {
+        console.error(`Error generating prediction for ${conflict.name}:`, error);
+        return null;
+      })
+    );
+
+    const results = await Promise.all(predictionPromises);
+    return results.filter((prediction): prediction is ConflictPrediction => prediction !== null);
+  } else if (sector === 'health') {
+    return generateHealthPredictions(stocks);
+  } else if (sector === 'energy') {
+    return generateEnergyPredictions(stocks);
+  }
+  
+  return [];
+}
+
 export async function generateConflictPredictions(
   conflicts: Conflict[],
   stocks: Stock[]
 ): Promise<ConflictPrediction[]> {
-  // Process conflicts in parallel for much faster results
-  const predictionPromises = conflicts.map(conflict => 
-    generateSingleConflictPrediction(conflict, stocks).catch(error => {
-      console.error(`Error generating prediction for ${conflict.name}:`, error);
-      return null;
-    })
-  );
+  return generateSectorPredictions('defense', conflicts, stocks);
+}
+
+async function generateHealthPredictions(stocks: Stock[]): Promise<ConflictPrediction[]> {
+  const healthStocks = stocks.filter(s => s.sector === 'Healthcare');
+  
+  const healthTopics = [
+    "Global Pandemic Preparedness",
+    "Drug Price Regulation",
+    "Vaccine Manufacturing Capacity",
+    "Healthcare Infrastructure Expansion"
+  ];
+
+  const predictionPromises = healthTopics.map(async (topic, index) => {
+    const stockSymbols = healthStocks.map(s => s.symbol).join(", ");
+    
+    const prompt = `Analyze this healthcare topic and provide predictions:
+
+Topic: ${topic}
+Healthcare Stocks: ${stockSymbols}
+
+Provide analysis in JSON format:
+{
+  "scenario": "growth|decline|stability|disruption",
+  "probability": 0-100,
+  "timeframe": "specific timeframe like '6-12 months', '1-3 years'",
+  "narrative": "brief prediction story about healthcare developments",
+  "keyFactors": ["factor1", "factor2", "factor3"],
+  "economicImpact": "economic implications for healthcare sector",
+  "defenseStockImpact": {
+    "affected": ["stock symbols"],
+    "direction": "positive|negative|neutral",
+    "magnitude": "low|medium|high"
+  },
+  "geopoliticalImplications": ["implication1", "implication2"],
+  "riskFactors": ["risk1", "risk2"],
+  "mitigationStrategies": ["strategy1", "strategy2"]
+}`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a healthcare industry analyst specializing in pharmaceutical markets and global health trends."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 1000
+    });
+
+    const analysis = JSON.parse(response.choices[0].message.content!);
+
+    return {
+      conflictId: index + 100,
+      conflictName: topic,
+      scenario: analysis.scenario,
+      probability: analysis.probability,
+      timeframe: analysis.timeframe,
+      narrative: analysis.narrative,
+      keyFactors: analysis.keyFactors,
+      economicImpact: analysis.economicImpact,
+      defenseStockImpact: analysis.defenseStockImpact,
+      geopoliticalImplications: analysis.geopoliticalImplications,
+      riskFactors: analysis.riskFactors,
+      mitigationStrategies: analysis.mitigationStrategies
+    };
+  });
 
   const results = await Promise.all(predictionPromises);
-  return results.filter((prediction): prediction is ConflictPrediction => prediction !== null);
+  return results;
+}
+
+async function generateEnergyPredictions(stocks: Stock[]): Promise<ConflictPrediction[]> {
+  const energyStocks = stocks.filter(s => s.sector === 'Energy');
+  
+  const energyTopics = [
+    "Oil Price Volatility",
+    "Green Energy Transition",
+    "Natural Gas Infrastructure",
+    "Carbon Tax Regulations"
+  ];
+
+  const predictionPromises = energyTopics.map(async (topic, index) => {
+    const stockSymbols = energyStocks.map(s => s.symbol).join(", ");
+    
+    const prompt = `Analyze this energy sector topic and provide predictions:
+
+Topic: ${topic}
+Energy Stocks: ${stockSymbols}
+
+Provide analysis in JSON format:
+{
+  "scenario": "bullish|bearish|volatile|transition",
+  "probability": 0-100,
+  "timeframe": "specific timeframe like '3-9 months', '1-2 years'",
+  "narrative": "brief prediction story about energy market developments",
+  "keyFactors": ["factor1", "factor2", "factor3"],
+  "economicImpact": "economic implications for energy sector",
+  "defenseStockImpact": {
+    "affected": ["stock symbols"],
+    "direction": "positive|negative|neutral",
+    "magnitude": "low|medium|high"
+  },
+  "geopoliticalImplications": ["implication1", "implication2"],
+  "riskFactors": ["risk1", "risk2"],
+  "mitigationStrategies": ["strategy1", "strategy2"]
+}`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are an energy sector analyst specializing in oil, gas, and renewable energy markets."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 1000
+    });
+
+    const analysis = JSON.parse(response.choices[0].message.content!);
+
+    return {
+      conflictId: index + 200,
+      conflictName: topic,
+      scenario: analysis.scenario,
+      probability: analysis.probability,
+      timeframe: analysis.timeframe,
+      narrative: analysis.narrative,
+      keyFactors: analysis.keyFactors,
+      economicImpact: analysis.economicImpact,
+      defenseStockImpact: analysis.defenseStockImpact,
+      geopoliticalImplications: analysis.geopoliticalImplications,
+      riskFactors: analysis.riskFactors,
+      mitigationStrategies: analysis.mitigationStrategies
+    };
+  });
+
+  const results = await Promise.all(predictionPromises);
+  return results;
 }
 
 async function generateSingleConflictPrediction(
@@ -157,7 +323,33 @@ Provide analysis in JSON format:
   };
 }
 
+export async function generateSectorMarketAnalysis(
+  sector: string,
+  stocks: Stock[],
+  conflicts: Conflict[],
+  correlationEvents: any[]
+): Promise<MarketAnalysis> {
+  if (sector === 'defense') {
+    return generateDefenseMarketAnalysis(stocks, conflicts, correlationEvents);
+  } else if (sector === 'health') {
+    return generateHealthMarketAnalysis(stocks);
+  } else if (sector === 'energy') {
+    return generateEnergyMarketAnalysis(stocks);
+  }
+  
+  // Default to defense analysis
+  return generateDefenseMarketAnalysis(stocks, conflicts, correlationEvents);
+}
+
 export async function generateMarketAnalysis(
+  stocks: Stock[],
+  conflicts: Conflict[],
+  correlationEvents: any[]
+): Promise<MarketAnalysis> {
+  return generateSectorMarketAnalysis('defense', stocks, conflicts, correlationEvents);
+}
+
+async function generateDefenseMarketAnalysis(
   stocks: Stock[],
   conflicts: Conflict[],
   correlationEvents: any[]
@@ -191,6 +383,106 @@ Provide rapid market analysis in JSON:
       {
         role: "system",
         content: "You are a defense analyst. Provide rapid, concise market analysis in valid JSON format."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.5,
+    max_tokens: 600
+  });
+
+  const analysis = JSON.parse(response.choices[0].message.content!);
+
+  return {
+    overallSentiment: analysis.overallSentiment,
+    sectorOutlook: analysis.sectorOutlook,
+    keyDrivers: analysis.keyDrivers,
+    riskAssessment: analysis.riskAssessment,
+    investmentImplications: analysis.investmentImplications,
+    timeHorizon: analysis.timeHorizon
+  };
+}
+
+async function generateHealthMarketAnalysis(stocks: Stock[]): Promise<MarketAnalysis> {
+  const healthStocks = stocks.filter(s => s.sector === 'Healthcare');
+  
+  const stockPerformance = healthStocks.map(s => 
+    `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
+  ).join('\n');
+
+  const prompt = `Analyze healthcare market conditions:
+
+Healthcare Stock Performance: ${stockPerformance}
+
+Provide rapid market analysis in JSON:
+{
+  "overallSentiment": "bullish|bearish|neutral",
+  "sectorOutlook": "brief healthcare sector outlook",
+  "keyDrivers": ["driver1", "driver2", "driver3"],
+  "riskAssessment": "brief risk assessment for healthcare",
+  "investmentImplications": ["implication1", "implication2"],
+  "timeHorizon": "time horizon"
+}`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: "You are a healthcare analyst specializing in pharmaceutical markets. Provide rapid, concise market analysis in valid JSON format."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.5,
+    max_tokens: 600
+  });
+
+  const analysis = JSON.parse(response.choices[0].message.content!);
+
+  return {
+    overallSentiment: analysis.overallSentiment,
+    sectorOutlook: analysis.sectorOutlook,
+    keyDrivers: analysis.keyDrivers,
+    riskAssessment: analysis.riskAssessment,
+    investmentImplications: analysis.investmentImplications,
+    timeHorizon: analysis.timeHorizon
+  };
+}
+
+async function generateEnergyMarketAnalysis(stocks: Stock[]): Promise<MarketAnalysis> {
+  const energyStocks = stocks.filter(s => s.sector === 'Energy');
+  
+  const stockPerformance = energyStocks.map(s => 
+    `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
+  ).join('\n');
+
+  const prompt = `Analyze energy market conditions:
+
+Energy Stock Performance: ${stockPerformance}
+
+Provide rapid market analysis in JSON:
+{
+  "overallSentiment": "bullish|bearish|neutral",
+  "sectorOutlook": "brief energy sector outlook",
+  "keyDrivers": ["driver1", "driver2", "driver3"],
+  "riskAssessment": "brief risk assessment for energy",
+  "investmentImplications": ["implication1", "implication2"],
+  "timeHorizon": "time horizon"
+}`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      {
+        role: "system",
+        content: "You are an energy analyst specializing in oil, gas, and renewable energy. Provide rapid, concise market analysis in valid JSON format."
       },
       {
         role: "user",
