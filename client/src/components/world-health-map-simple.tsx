@@ -228,7 +228,7 @@ function generateAuthenticWHODataWith55Indicators() {
       name: 'China',
       indicators: {
         'Adolescent birth rate (per 1000 women aged 10-14 years)': 0.29,
-        'Adolescent birth rate (per 1000 women aged 15-19 years)': 6.1,
+        'Adolescent birth rate (per 1000 women aged 15-19 years)': 6.070000,
         'Age-standardized mortality rate attributed to household and ambient air pollution  (per 100 000 population)': 93.18,
         'Age-standardized prevalence of tobacco use among persons 15 years and older  (%)': 23.4,
         'Annual mean concentrations of fine particulate matter (PM2.5) in urban areas (µg/m3)': 38.15,
