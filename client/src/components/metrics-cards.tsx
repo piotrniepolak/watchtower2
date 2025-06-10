@@ -1,10 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, DollarSign, Link } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, TrendingUp, DollarSign, Link, ChevronDown, ChevronUp, Calculator } from "lucide-react";
 import { useRealTimeStocks } from "@/hooks/useRealTimeStocks";
+import { useState } from "react";
 import type { Conflict } from "@shared/schema";
 
 export default function MetricsCards() {
+  const [isDefenseIndexExpanded, setIsDefenseIndexExpanded] = useState(false);
+  
   const { data: metrics, isLoading } = useQuery({
     queryKey: ["/api/metrics"],
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
@@ -139,34 +144,94 @@ export default function MetricsCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-      {metricCards.map((metric, index) => (
-          <Card key={index} className="shadow-sm border border-slate-200 dark:border-slate-700">
+    <div className="space-y-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {metricCards.map((metric, index) => (
+            <Card key={index} className="shadow-sm border border-slate-200 dark:border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between mb-3 gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight break-words">
+                      {metric.title}
+                    </p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-1 leading-tight break-all">
+                      {metric.value}
+                    </p>
+                  </div>
+                  <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <metric.icon className={`h-5 w-5 ${metric.iconColor}`} />
+                  </div>
+                </div>
+                <div className="flex items-start text-xs gap-1">
+                  <span className={`${metric.changeColor} font-medium break-words`}>
+                    {metric.change}
+                  </span>
+                  <span className="text-slate-600 dark:text-slate-400 break-words">
+                    {metric.changeText}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+      </div>
+
+      {/* Defense Index Calculation Explanation */}
+      <Collapsible open={isDefenseIndexExpanded} onOpenChange={setIsDefenseIndexExpanded}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full text-xs">
+            <Calculator className="w-4 h-4 mr-2" />
+            How Defense Index is Calculated
+            {isDefenseIndexExpanded ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-3">
+          <Card className="shadow-sm border border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-3 gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight break-words">
-                    {metric.title}
-                  </p>
-                  <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-1 leading-tight break-all">
-                    {metric.value}
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Real-Time Yahoo Finance Data</h4>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    The Defense Index updates every 30 seconds using live stock prices from Yahoo Finance API for accurate market tracking.
                   </p>
                 </div>
-                <div className={`w-10 h-10 ${metric.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                  <metric.icon className={`h-5 w-5 ${metric.iconColor}`} />
+
+                <div>
+                  <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Weighted Portfolio Calculation</h4>
+                  <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">Major Defense Stocks (Market Cap Weighted):</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>• LMT (Lockheed Martin): 20%</div>
+                      <div>• RTX (Raytheon): 18%</div>
+                      <div>• NOC (Northrop Grumman): 15%</div>
+                      <div>• BA (Boeing Defense): 15%</div>
+                      <div>• GD (General Dynamics): 12%</div>
+                      <div>• LHX (L3Harris): 8%</div>
+                      <div>• HII (Huntington Ingalls): 6%</div>
+                      <div>• LDOS (Leidos): 3%</div>
+                      <div>• KTOS (Kratos): 2%</div>
+                      <div>• AVAV (AeroVironment): 1%</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start text-xs gap-1">
-                <span className={`${metric.changeColor} font-medium break-words`}>
-                  {metric.change}
-                </span>
-                <span className="text-slate-600 dark:text-slate-400 break-words">
-                  {metric.changeText}
-                </span>
+
+                <div>
+                  <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">Formula</h4>
+                  <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg font-mono text-xs">
+                    Index Value = Σ (Normalized Stock Price × Weight) / Total Weight
+                    <br />
+                    Change % = Σ (Stock Change % × Weight) / Total Weight
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  {isConnected ? 'Live data connected' : 'Connecting to live data...'}
+                </div>
               </div>
             </CardContent>
           </Card>
-        ))}
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
