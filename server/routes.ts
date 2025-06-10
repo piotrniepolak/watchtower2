@@ -1098,27 +1098,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI-powered conflict prediction routes
-  app.get("/api/ai/predictions", async (req, res) => {
-    try {
-      const sectorParam = req.query.sector as string;
-      const validSectors = ['defense', 'health', 'energy'];
-      const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
-      
-      console.log(`🔍 LEGACY API ENDPOINT CALLED - URL: ${req.url}`);
-      console.log(`🔍 Legacy sector param: "${sectorParam}" -> validated: "${sector}"`);
-      
-      const conflicts = await storage.getConflicts();
-      const stocks = await storage.getStocks();
-      
-      const predictions = await generateSectorPredictions(sector, conflicts, stocks);
-      console.log(`✅ Legacy endpoint generated ${predictions.length} predictions for ${sector} sector`);
-      res.json(predictions);
-    } catch (error) {
-      console.error("Error generating conflict predictions:", error);
-      res.status(500).json({ error: "Failed to generate predictions" });
-    }
-  });
+  // REMOVED LEGACY ENDPOINT - ALL REQUESTS NOW GO THROUGH /api/analysis/predictions
 
   app.get("/api/ai/market-analysis", async (req, res) => {
     try {
@@ -1864,6 +1844,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI Analysis endpoints
   app.get('/api/analysis/predictions', async (req, res) => {
+    console.log(`🔥 PREDICTIONS ENDPOINT HIT - Method: ${req.method}, URL: ${req.url}`);
+    console.log(`🔥 Query params:`, JSON.stringify(req.query, null, 2));
+    
     try {
       if (!process.env.OPENAI_API_KEY) {
         return res.status(503).json({ message: 'OpenAI API key not configured' });
