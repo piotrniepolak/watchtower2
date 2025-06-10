@@ -102,6 +102,34 @@ export default function Analysis() {
     }
   };
 
+  const getSectorScenarios = (sector: string) => {
+    switch (sector) {
+      case 'health':
+        return [
+          { id: 100, name: 'Global Pandemic Preparedness', region: 'Global Health' },
+          { id: 101, name: 'Pharmaceutical Supply Chain Crisis', region: 'Global Healthcare' },
+          { id: 102, name: 'Antimicrobial Resistance Surge', region: 'Global Health Security' },
+          { id: 103, name: 'Vaccine Distribution Inequality', region: 'Public Health' },
+          { id: 104, name: 'Healthcare Worker Shortage Crisis', region: 'Healthcare Infrastructure' }
+        ];
+      case 'energy':
+        return [
+          { id: 200, name: 'Oil Price Volatility', region: 'Global Energy Markets' },
+          { id: 201, name: 'Renewable Energy Transition Disruption', region: 'Energy Infrastructure' },
+          { id: 202, name: 'Natural Gas Supply Chain Crisis', region: 'Energy Security' },
+          { id: 203, name: 'Grid Modernization Challenges', region: 'Energy Infrastructure' },
+          { id: 204, name: 'Carbon Pricing Policy Shifts', region: 'Energy Policy' }
+        ];
+      default:
+        return conflicts as any[] || [];
+    }
+  };
+
+  // Reset storyline selection when sector changes
+  useEffect(() => {
+    setSelectedConflictId(null);
+  }, [selectedSector]);
+
   const { data: predictions, isLoading: predictionsLoading } = useQuery({
     queryKey: ["/api/analysis/predictions", selectedSector],
     queryFn: async () => {
@@ -725,12 +753,12 @@ export default function Analysis() {
                     onValueChange={(value) => setSelectedConflictId(parseInt(value))}
                   >
                     <SelectTrigger className="w-full max-w-md">
-                      <SelectValue placeholder="Choose a conflict to analyze..." />
+                      <SelectValue placeholder={selectedSector === 'health' ? 'Choose a health crisis to analyze...' : selectedSector === 'energy' ? 'Choose an energy scenario to analyze...' : 'Choose a conflict to analyze...'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {(conflicts as any[] || []).map((conflict: any) => (
-                        <SelectItem key={conflict.id} value={conflict.id.toString()}>
-                          {conflict.name} - {conflict.region}
+                      {getSectorScenarios(selectedSector).map((scenario: any) => (
+                        <SelectItem key={scenario.id} value={scenario.id.toString()}>
+                          {scenario.name} - {scenario.region}
                         </SelectItem>
                       ))}
                     </SelectContent>
