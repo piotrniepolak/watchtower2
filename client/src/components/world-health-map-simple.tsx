@@ -6,7 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity, Heart, Shield, AlertTriangle, ExternalLink, TrendingUp, TrendingDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import WhoHealthOpportunityAnalysis from "./who-health-opportunity-analysis";
+import TopOpportunityList from "./top-opportunity-list";
+
 
 // Color scale utility for health scores with 5 categories (20-point ranges)
 const getCountryColor = (healthScore: number | undefined, scoreRange: { min: number; max: number }): string => {
@@ -1149,8 +1150,8 @@ export default function WorldHealthMapSimple() {
         </CardContent>
       </Card>
 
-      {/* Health Opportunity Analysis */}
-      <WhoHealthOpportunityAnalysis />
+      {/* Health vs Wealth Opportunity Analysis */}
+      <TopOpportunityList />
 
       {/* Country Detail Modal */}
       <Dialog open={!!selectedCountry} onOpenChange={() => setSelectedCountry(null)}>

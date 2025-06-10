@@ -1,0 +1,52 @@
+You are extending the PharmaWatch Dashboard in React with a new “Health-vs-Wealth Opportunity” analysis tool. Use the existing WHO composite health scores (pulled from the global map’s click data) and combine them with GDP per capita data (World Bank or IMF API) to rank all 175 countries by “opportunity” (low health score + high GDP per capita). Then display the top 10 in a special widget and wire up detailed drill-downs.  
+
+**Requirements:**  
+
+1. **Data Inputs**  
+   - **Health score**: reuse `healthScoresByIso[ISO]` from the existing map data—do not recalculate.  
+   - **GDP per capita**: fetch the latest values for all countries from the World Bank API (`/v2/country/all/indicator/NY.GDP.PCAP.CD`) or another verified data source.  
+
+2. **Compute Opportunity Metric**  
+   - For each country \(c\):  
+     \[
+       \text{opportunity}_c 
+       = 
+       \frac{\max(\text{GDPpc}) - \text{GDPpc}_c}{\max(\text{GDPpc}) - \min(\text{GDPpc})}
+       \;+\;
+       \frac{\max(\text{HS}) - \text{HS}_c}{\max(\text{HS}) - \min(\text{HS})}
+     \]  
+     - Normalize both GDPpc and health score (HS) to [0,1], then sum so that high‐GDP+low‐HS yields the highest opportunity.  
+   - Rank all 175 countries by descending `opportunity_c`.  
+
+3. **Top-10 Opportunity Widget**  
+   - Create a new component `<TopOpportunityList>` positioned below the map.  
+   - Display the top 10 countries in order (1 → 10) with:  
+     - Country name  
+     - Health score  
+     - GDP per capita  
+     - Composite “opportunity” metric value (0–2 scale)  
+   - Style it as an interactive list or card deck.  
+
+4. **Drill-down on Click**  
+   - When any country in the Top-10 list is clicked:  
+     1. **Show a modal** titled “[Country Name] — Health vs. Wealth Opportunity Details.”  
+     2. **List key health challenges** for that country:  
+        - Current disease outbreaks (pull from your existing outbreaks data store)  
+        - Chronic condition prevalence (e.g. asthma, diabetes) from your healthScores metadata  
+        - Other untreated common diseases (from the same source)  
+     3. **List pharmaceutical companies operating in that country**:  
+        - For each company, display its name, stock ticker, and real‐time share price (via your finance API).  
+        - Make each company row clickable to show a mini‐profile popup with a sparkline of recent price performance.  
+
+5. **Implementation Details**  
+   - **Data fetching**: do one fetch for all GDP per capita values, one for health (already loaded), and one for finance tickers for the top-10 companies after the user drills in.  
+   - **State management**: store `opportunityRankings` in context or a global store so the Top-10 list and map share the same data.  
+   - **Performance**: fetch GDP and finance data once on dashboard load or on demand for the Top-10 list.  
+   - **Styling**: match your existing dashboard theme. Use cards or a table with alternating row shading.  
+
+**Deliverable:**  
+A code diff or updated React components that:  
+- Computes and ranks all 175 countries by this new opportunity metric.  
+- Renders a Top-10 “Opportunity” widget on the Pharma Markets page.  
+- Wires up click handlers to open detailed modals showing health challenges and pharma companies with live tickers and prices.  
+- Reuses existing health score data and finance modules without recalculating health scores.  
