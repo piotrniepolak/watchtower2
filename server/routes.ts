@@ -52,6 +52,15 @@ const isAuthenticated = async (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add comprehensive request logging middleware
+  app.use((req, res, next) => {
+    if (req.url.includes('/api/analysis')) {
+      console.log(`🔥 GLOBAL MIDDLEWARE - ${req.method} ${req.url}`);
+      console.log(`🔥 Query:`, JSON.stringify(req.query, null, 2));
+    }
+    next();
+  });
+
   // Enable sessions
   app.use(sessionConfig);
 
