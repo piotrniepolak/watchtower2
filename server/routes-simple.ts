@@ -1234,6 +1234,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Health vs Wealth Opportunity Analysis endpoint
+  app.get('/api/health/wealth-opportunities', async (req, res) => {
+    try {
+      const { healthWealthOpportunityService } = await import('./health-wealth-opportunity-service');
+      const opportunities = await healthWealthOpportunityService.calculateOpportunityRankings();
+      res.json(opportunities);
+    } catch (error) {
+      console.error('Error calculating health vs wealth opportunities:', error);
+      res.status(500).json({ error: 'Failed to calculate opportunity rankings' });
+    }
+  });
+
   // Energy sector API endpoints  
   app.get('/api/sectors/energy/events', async (req, res) => {
     try {

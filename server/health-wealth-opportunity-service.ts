@@ -237,7 +237,7 @@ export class HealthWealthOpportunityService {
     console.log(`Health score range: ${minHealth.toFixed(1)} - ${maxHealth.toFixed(1)}`);
     console.log(`GDP range: $${minGDP} - $${maxGDP}`);
 
-    const opportunities = countryHealthScores.map((country, index) => {
+    const opportunities = await Promise.all(countryHealthScores.map(async (country, index) => {
       const gdpPerCapita = this.gdpData[country.iso3];
       
       // Calculate normalized scores (0-1)
@@ -246,6 +246,8 @@ export class HealthWealthOpportunityService {
       
       // Opportunity score: sum of normalized inverse values (higher GDP + lower health = higher opportunity)
       const opportunityScore = normalizedGDPInverse + normalizedHealthInverse;
+      
+      const companies = await this.getPharmaCompanies(country.iso3);
       
       return {
         name: country.name,
@@ -256,9 +258,9 @@ export class HealthWealthOpportunityService {
         rank: 0, // Will be set after sorting
         healthChallenges: this.getHealthChallenges(country.iso3, country.healthScore),
         diseases: this.getChronicDiseases(country.iso3, country.healthScore),
-        companies: this.getPharmaCompanies(country.iso3)
+        companies
       };
-    });
+    }));
 
     // Sort by opportunity score (descending) and assign ranks
     opportunities.sort((a, b) => b.opportunityScore - a.opportunityScore);
@@ -300,10 +302,10 @@ export class HealthWealthOpportunityService {
       .map((country: any) => {
         if (!country.indicators) return 0;
         const countryValidIndicators = Object.entries(country.indicators).filter(([_, value]) => 
-          typeof value === 'number' && !isNaN(value) && value > 0
+          typeof value === 'number' && !isNaN(value as number) && (value as number) > 0
         );
         if (countryValidIndicators.length === 0) return 0;
-        const countryTotal = countryValidIndicators.reduce((sum, [_, value]) => sum + value, 0);
+        const countryTotal = countryValidIndicators.reduce((sum, [_, value]) => sum + (value as number), 0);
         return countryTotal / countryValidIndicators.length;
       })
       .filter(score => score > 0);
@@ -366,30 +368,26 @@ export class HealthWealthOpportunityService {
     return diseases.slice(0, diseaseCount);
   }
 
-  private getPharmaCompanies(iso3: string): PharmaCompany[] {
-    // Get actual pharmaceutical companies with real stock data
-    const allCompanies = [
-      { name: 'Pfizer Inc.', ticker: 'PFE' },
-      { name: 'Johnson & Johnson', ticker: 'JNJ' },
-      { name: 'Moderna Inc.', ticker: 'MRNA' },
-      { name: 'Novavax Inc.', ticker: 'NVAX' },
-      { name: 'Gilead Sciences', ticker: 'GILD' },
-      { name: 'Regeneron Pharmaceuticals', ticker: 'REGN' },
-      { name: 'Amgen Inc.', ticker: 'AMGN' },
-      { name: 'Biogen Inc.', ticker: 'BIIB' },
-      { name: 'Vertex Pharmaceuticals', ticker: 'VRTX' },
-      { name: 'Bristol Myers Squibb', ticker: 'BMY' }
-    ];
+  private async getPharmaCompanies(iso3: string): Promise<PharmaCompany[]> {
+    // Get actual pharmaceutical companies with real stock data from database
+    const { storage } = await import('./storage');
+    const allStocks = await storage.getStocks();
+    
+    // Filter for healthcare sector stocks
+    const pharmaCompanies = allStocks.filter(stock => 
+      stock.sector === 'Healthcare' && ['PFE', 'JNJ', 'MRNA', 'NVAX', 'GILD', 'REGN', 'AMGN', 'BIIB', 'VRTX', 'BMY'].includes(stock.symbol)
+    );
 
     // Return 3-5 companies for each country
     const companyCount = Math.floor(Math.random() * 3) + 3;
-    const selectedCompanies = allCompanies.slice(0, companyCount);
+    const selectedCompanies = pharmaCompanies.slice(0, Math.min(companyCount, pharmaCompanies.length));
 
-    return selectedCompanies.map(company => ({
-      ...company,
-      price: this.getRandomPrice(50, 500),
-      change: this.getRandomChange(),
-      changePercent: this.getRandomChangePercent(),
+    return selectedCompanies.map(stock => ({
+      name: stock.name,
+      ticker: stock.symbol,
+      price: stock.price,
+      change: stock.change,
+      changePercent: stock.changePercent,
       sparkline: this.generateSparkline()
     }));
   }
