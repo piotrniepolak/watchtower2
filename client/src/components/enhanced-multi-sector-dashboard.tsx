@@ -13,7 +13,7 @@ import EnhancedChartsSection from "@/components/enhanced-charts-section";
 import DailyNews from "@/components/daily-news";
 import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
-import WorldHealthMap from "@/components/world-health-map";
+import WorldHealthMapRestored from "@/components/world-health-map-restored";
 
 interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
@@ -152,7 +152,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             Real-time global health monitoring with comprehensive WHO indicators and pharmaceutical market insights
           </p>
         </div>
-        <WorldHealthMap />
+        <WorldHealthMapRestored />
       </div>
 
       {/* Health-specific content */}
