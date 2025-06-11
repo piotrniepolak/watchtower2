@@ -6,8 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal } from 'lucide-react';
+import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal, Play, CheckCircle, Lock, Star, Award, BookOpen, Users, Zap, Shield, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Conflict, Stock } from '@shared/schema';
 
 interface QuizQuestion {
   id: number;
@@ -52,6 +53,34 @@ interface UserStats {
   totalQuestions: number;
 }
 
+interface LearningModule {
+  id: string;
+  title: string;
+  description: string;
+  icon: any;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  estimatedTime: string;
+  points: number;
+  steps: LearningStep[];
+}
+
+interface LearningStep {
+  type: 'lesson' | 'quiz' | 'scenario';
+  title: string;
+  content?: string;
+  questions?: LearningQuestion[];
+}
+
+interface LearningQuestion {
+  id: string;
+  type: 'multiple-choice' | 'true-false' | 'scenario';
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  points: number;
+}
+
 interface LearningHubProps {}
 
 export function LearningHub({}: LearningHubProps) {
@@ -65,8 +94,25 @@ export function LearningHub({}: LearningHubProps) {
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
   const [answers, setAnswers] = useState<number[]>([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  
+  // Interactive Learning Module States
+  const [activeModule, setActiveModule] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [moduleAnswers, setModuleAnswers] = useState<Record<string, any>>({});
+  const [moduleScore, setModuleScore] = useState(0);
+  const [showModuleResults, setShowModuleResults] = useState(false);
+  const [completedModules, setCompletedModules] = useState<string[]>([]);
 
   const queryClient = useQueryClient();
+
+  // Fetch live data for dynamic module content
+  const { data: conflicts } = useQuery({
+    queryKey: ["/api/conflicts"],
+  });
+
+  const { data: stocks } = useQuery({
+    queryKey: ["/api/stocks"],
+  });
 
   const sectorConfig = {
     defense: {
@@ -93,6 +139,444 @@ export function LearningHub({}: LearningHubProps) {
   };
 
   const config = sectorConfig[learningSelectedSector as keyof typeof sectorConfig] || sectorConfig.defense;
+
+  // Generate dynamic learning modules based on live data
+  const getLearningModules = (): LearningModule[] => {
+    const activeConflicts = (conflicts as Conflict[] || []).filter(c => c.status === "Active");
+    const defensiveStocks = (stocks as Stock[] || []).filter(s => s.sector === 'Defense').slice(0, 5);
+    const healthStocks = (stocks as Stock[] || []).filter(s => s.sector === 'Healthcare').slice(0, 5);
+    const energyStocks = (stocks as Stock[] || []).filter(s => s.sector === 'Energy').slice(0, 5);
+
+    const modules: { [key: string]: LearningModule[] } = {
+      defense: [
+        {
+          id: 'geo-basics',
+          title: 'Geopolitical Fundamentals',
+          description: 'Master the core principles of conflict analysis and geopolitical intelligence',
+          icon: Shield,
+          difficulty: 'beginner',
+          estimatedTime: '15 min',
+          points: 100,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Understanding Conflict Analysis',
+              content: `
+                <h3>Core Principles of Geopolitical Analysis</h3>
+                <p>Geopolitical analysis examines how geography, politics, and economics interact to shape global events.</p>
+                <ul>
+                  <li><strong>Geographic Factors:</strong> Location, resources, borders, strategic positioning</li>
+                  <li><strong>Political Dynamics:</strong> Government stability, alliances, internal conflicts</li>
+                  <li><strong>Economic Influence:</strong> Trade relationships, resource dependencies, market access</li>
+                  <li><strong>Historical Context:</strong> Past conflicts, cultural tensions, unresolved disputes</li>
+                </ul>
+                <h4>Current Global Context</h4>
+                <p>ConflictWatch currently monitors <strong>${activeConflicts.length} active conflicts</strong> across ${new Set(activeConflicts.map(c => c.region)).size} major regions.</p>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Knowledge Check',
+              questions: [
+                {
+                  id: 'q1',
+                  type: 'multiple-choice',
+                  question: `Based on current data, how many active conflicts is ConflictWatch monitoring?`,
+                  options: [
+                    (activeConflicts.length - 2).toString(),
+                    (activeConflicts.length - 1).toString(),
+                    activeConflicts.length.toString(),
+                    (activeConflicts.length + 1).toString()
+                  ],
+                  correctAnswer: activeConflicts.length.toString(),
+                  explanation: `ConflictWatch currently monitors ${activeConflicts.length} active conflicts globally, providing real-time analysis of ongoing geopolitical situations.`,
+                  points: 25
+                },
+                {
+                  id: 'q2',
+                  type: 'multiple-choice',
+                  question: 'Which factor is NOT a core component of geopolitical analysis?',
+                  options: ['Geographic positioning', 'Cultural preferences', 'Economic dependencies', 'Historical context'],
+                  correctAnswer: 'Cultural preferences',
+                  explanation: 'While culture influences geopolitics, individual cultural preferences are less significant than geographic, economic, and historical factors in conflict analysis.',
+                  points: 25
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'defense-markets',
+          title: 'Defense Market Intelligence',
+          description: 'Analyze how conflicts drive defense contractor performance and market dynamics',
+          icon: Target,
+          difficulty: 'intermediate',
+          estimatedTime: '20 min',
+          points: 150,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Defense Market Dynamics',
+              content: `
+                <h3>How Conflicts Drive Defense Markets</h3>
+                <p>Defense contractor stocks respond to geopolitical events through several mechanisms:</p>
+                <h4>Current Market Status</h4>
+                <ul>
+                  <li><strong>Companies Tracked:</strong> ${defensiveStocks.length} major contractors</li>
+                  <li><strong>Top Performer:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "N/A"}</li>
+                  <li><strong>High Volatility Stocks:</strong> ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} showing >1% movement</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Market Analysis Exercise',
+              content: `
+                <h3>Real-World Defense Stock Analysis</h3>
+                <p>Using current market data, analyze this scenario:</p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <p><strong>Top Defense Stock:</strong> ${defensiveStocks[0]?.symbol || "LMT"} - ${defensiveStocks[0]?.changePercent?.toFixed(2) || "0.00"}%</p>
+                  <p><strong>Market Volatility:</strong> ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 2).length} stocks showing >2% movement</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 's1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary driver of defense contractor stock performance?',
+                  options: ['Consumer demand', 'Government contracts', 'Trade agreements', 'Commercial markets'],
+                  correctAnswer: 'Government contracts',
+                  explanation: 'Defense contractors primarily rely on government contracts and military spending programs.',
+                  points: 50
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      health: [
+        {
+          id: 'health-analytics',
+          title: 'Global Health Data Analysis',
+          description: 'Master WHO health indicators and pharmaceutical market intelligence',
+          icon: Activity,
+          difficulty: 'beginner',
+          estimatedTime: '18 min',
+          points: 120,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'WHO Health Indicators',
+              content: `
+                <h3>Understanding Global Health Metrics</h3>
+                <p>WHO collects comprehensive health data across 195 countries, covering:</p>
+                <ul>
+                  <li><strong>Life Expectancy:</strong> Average lifespan by country and demographic</li>
+                  <li><strong>Disease Burden:</strong> Mortality rates, morbidity patterns</li>
+                  <li><strong>Healthcare Access:</strong> System capacity and coverage metrics</li>
+                  <li><strong>Health Expenditure:</strong> Spending as percentage of GDP</li>
+                </ul>
+                <h4>Pharmaceutical Market Context</h4>
+                <p>Current healthcare stocks tracked: <strong>${healthStocks.length}</strong> major companies</p>
+                <p>Top performer: <strong>${healthStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "PFE"}</strong></p>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Health Data Mastery',
+              questions: [
+                {
+                  id: 'h1',
+                  type: 'multiple-choice',
+                  question: 'Which organization provides the most comprehensive global health statistics?',
+                  options: ['CDC', 'WHO', 'NIH', 'FDA'],
+                  correctAnswer: 'WHO',
+                  explanation: 'The World Health Organization (WHO) maintains the most comprehensive global health database covering 195 countries.',
+                  points: 30
+                },
+                {
+                  id: 'h2',
+                  type: 'multiple-choice',
+                  question: 'What does life expectancy primarily measure?',
+                  options: ['Quality of life', 'Average lifespan', 'Healthcare costs', 'Disease rates'],
+                  correctAnswer: 'Average lifespan',
+                  explanation: 'Life expectancy measures the average number of years a person is expected to live based on current mortality rates.',
+                  points: 30
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'pharma-pipeline',
+          title: 'Drug Development Pipeline',
+          description: 'Navigate clinical trials, regulatory pathways, and biotech investments',
+          icon: Brain,
+          difficulty: 'advanced',
+          estimatedTime: '25 min',
+          points: 200,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Clinical Trial Phases',
+              content: `
+                <h3>Understanding Drug Development</h3>
+                <p>The pharmaceutical development process involves multiple phases:</p>
+                <ul>
+                  <li><strong>Preclinical:</strong> Laboratory and animal testing</li>
+                  <li><strong>Phase I:</strong> Safety testing in small human groups</li>
+                  <li><strong>Phase II:</strong> Efficacy testing in larger groups</li>
+                  <li><strong>Phase III:</strong> Large-scale comparative studies</li>
+                  <li><strong>FDA Review:</strong> Regulatory approval process</li>
+                </ul>
+                <h4>Investment Implications</h4>
+                <p>Success rates vary dramatically by phase, with only ~12% of drugs reaching market approval.</p>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Biotech Investment Analysis',
+              content: `
+                <h3>Pipeline Valuation Exercise</h3>
+                <p>Analyze this biotech scenario:</p>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <p><strong>Company:</strong> ${healthStocks[0]?.symbol || "MRNA"}</p>
+                  <p><strong>Performance:</strong> ${healthStocks[0]?.changePercent?.toFixed(2) || "2.4"}%</p>
+                  <p><strong>Phase III Trial:</strong> Results expected Q2 2025</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'p1',
+                  type: 'multiple-choice',
+                  question: 'What percentage of drugs typically succeed from Phase I to market approval?',
+                  options: ['50%', '25%', '12%', '5%'],
+                  correctAnswer: '12%',
+                  explanation: 'Approximately 12% of drugs that enter Phase I clinical trials eventually receive FDA approval.',
+                  points: 60
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      energy: [
+        {
+          id: 'energy-markets',
+          title: 'Energy Market Fundamentals',
+          description: 'Master commodity trading, price dynamics, and energy security analysis',
+          icon: Zap,
+          difficulty: 'beginner',
+          estimatedTime: '16 min',
+          points: 110,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Energy Commodity Basics',
+              content: `
+                <h3>Understanding Energy Markets</h3>
+                <p>Energy markets encompass multiple commodities with distinct characteristics:</p>
+                <ul>
+                  <li><strong>Crude Oil:</strong> Global benchmark pricing, geopolitical sensitivity</li>
+                  <li><strong>Natural Gas:</strong> Regional markets, seasonal demand patterns</li>
+                  <li><strong>Coal:</strong> Power generation, environmental considerations</li>
+                  <li><strong>Uranium:</strong> Nuclear fuel cycle, long-term contracts</li>
+                </ul>
+                <h4>Current Market Context</h4>
+                <p>Energy stocks tracked: <strong>${energyStocks.length}</strong> major companies</p>
+                <p>Sector leader: <strong>${energyStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "XOM"}</strong></p>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Energy Market Knowledge',
+              questions: [
+                {
+                  id: 'e1',
+                  type: 'multiple-choice',
+                  question: 'Which energy commodity is most sensitive to geopolitical events?',
+                  options: ['Natural gas', 'Crude oil', 'Coal', 'Uranium'],
+                  correctAnswer: 'Crude oil',
+                  explanation: 'Crude oil prices are highly sensitive to geopolitical events due to concentrated production in politically unstable regions.',
+                  points: 35
+                },
+                {
+                  id: 'e2',
+                  type: 'multiple-choice',
+                  question: 'What drives seasonal demand patterns in natural gas?',
+                  options: ['Industrial production', 'Heating and cooling', 'Transportation', 'Agriculture'],
+                  correctAnswer: 'Heating and cooling',
+                  explanation: 'Natural gas demand peaks during winter heating season and summer cooling season in many regions.',
+                  points: 35
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'renewable-transition',
+          title: 'Green Energy Transition',
+          description: 'Analyze clean technology adoption, carbon markets, and sustainable investments',
+          icon: Sparkles,
+          difficulty: 'intermediate',
+          estimatedTime: '22 min',
+          points: 160,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Clean Energy Economics',
+              content: `
+                <h3>The Renewable Energy Revolution</h3>
+                <p>The global energy transition involves multiple technology pathways:</p>
+                <ul>
+                  <li><strong>Solar Power:</strong> Photovoltaic and thermal technologies</li>
+                  <li><strong>Wind Energy:</strong> Onshore and offshore installations</li>
+                  <li><strong>Energy Storage:</strong> Battery systems and grid integration</li>
+                  <li><strong>Hydrogen:</strong> Green hydrogen production and applications</li>
+                </ul>
+                <h4>Investment Landscape</h4>
+                <p>Renewable energy now accounts for approximately 22% of global energy consumption.</p>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'ESG Investment Analysis',
+              content: `
+                <h3>Sustainable Energy Portfolio</h3>
+                <p>Evaluate this clean energy investment scenario:</p>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                  <p><strong>Clean Energy Stock:</strong> ${energyStocks.find(s => s.symbol === 'NEE')?.symbol || "NEE"}</p>
+                  <p><strong>Performance:</strong> ${energyStocks.find(s => s.symbol === 'NEE')?.changePercent?.toFixed(2) || "0.41"}%</p>
+                  <p><strong>Focus:</strong> Renewable energy infrastructure</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'r1',
+                  type: 'multiple-choice',
+                  question: 'What percentage of global energy consumption comes from renewables?',
+                  options: ['15%', '22%', '30%', '40%'],
+                  correctAnswer: '22%',
+                  explanation: 'Renewable energy accounts for approximately 22% of global energy consumption as of 2024.',
+                  points: 55
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    return modules[learningSelectedSector] || modules.defense;
+  };
+
+  // Module navigation handlers
+  const handleModuleStart = (moduleId: string) => {
+    setActiveModule(moduleId);
+    setCurrentStep(0);
+    setModuleAnswers({});
+    setModuleScore(0);
+    setShowModuleResults(false);
+  };
+
+  const handleModuleAnswer = (questionId: string, answer: string) => {
+    setModuleAnswers(prev => ({ ...prev, [questionId]: answer }));
+  };
+
+  const handleStepNext = () => {
+    const currentModule = getLearningModules().find(m => m.id === activeModule);
+    if (currentModule && currentStep < currentModule.steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      // Module completed
+      handleModuleComplete();
+    }
+  };
+
+  const handleModuleComplete = () => {
+    const currentModule = getLearningModules().find(m => m.id === activeModule);
+    if (currentModule) {
+      // Calculate score
+      let totalScore = 0;
+      currentModule.steps.forEach(step => {
+        if (step.questions) {
+          step.questions.forEach(question => {
+            if (moduleAnswers[question.id] === question.correctAnswer) {
+              totalScore += question.points;
+            }
+          });
+        }
+      });
+      setModuleScore(totalScore);
+      setShowModuleResults(true);
+      setCompletedModules(prev => [...prev, activeModule!]);
+    }
+  };
+
+  const handleModuleClose = () => {
+    setActiveModule(null);
+    setCurrentStep(0);
+    setModuleAnswers({});
+    setModuleScore(0);
+    setShowModuleResults(false);
+  };
+
+  const renderModuleContent = (step: LearningStep) => {
+    if (step.type === 'lesson' && step.content) {
+      return (
+        <div 
+          className="prose prose-sm max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: step.content }}
+        />
+      );
+    }
+
+    if (step.type === 'quiz' || step.type === 'scenario') {
+      return (
+        <div className="space-y-6">
+          {step.questions?.map((question, qIndex) => (
+            <div key={question.id} className="space-y-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-medium text-base mb-3">{question.question}</h4>
+                <div className="space-y-2">
+                  {question.options.map((option, oIndex) => (
+                    <button
+                      key={oIndex}
+                      onClick={() => handleModuleAnswer(question.id, option)}
+                      className={cn(
+                        "w-full p-3 text-left rounded-lg border transition-colors",
+                        moduleAnswers[question.id] === option
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:bg-muted/50"
+                      )}
+                    >
+                      <span className="font-medium mr-2">{String.fromCharCode(65 + oIndex)}.</span>
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                {moduleAnswers[question.id] && (
+                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>Explanation:</strong> {question.explanation}
+                    </p>
+                    <div className="flex items-center mt-2">
+                      <Award className="h-4 w-4 text-yellow-600 mr-1" />
+                      <span className="text-xs text-yellow-700 dark:text-yellow-300">
+                        {moduleAnswers[question.id] === question.correctAnswer ? `+${question.points}` : '0'} points
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   // Generate new quiz mutation
   const generateQuizMutation = useMutation({
@@ -235,6 +719,146 @@ export function LearningHub({}: LearningHubProps) {
     );
   }
 
+  // If viewing a specific learning module
+  if (activeModule) {
+    const currentModuleData = getLearningModules().find(m => m.id === activeModule);
+    if (!currentModuleData) return null;
+
+    const currentStepData = currentModuleData.steps[currentStep];
+    const isLastStep = currentStep === currentModuleData.steps.length - 1;
+    const canProceed = currentStepData.type === 'lesson' || 
+      (currentStepData.questions && currentStepData.questions.every(q => moduleAnswers[q.id]));
+
+    if (showModuleResults) {
+      const maxPoints = currentModuleData.steps.reduce((total, step) => {
+        return total + (step.questions?.reduce((stepTotal, q) => stepTotal + q.points, 0) || 0);
+      }, 0);
+      const percentage = Math.round((moduleScore / maxPoints) * 100);
+
+      return (
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Trophy className="h-5 w-5 text-yellow-600" />
+                <CardTitle>Module Complete!</CardTitle>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleModuleClose}>
+                <ChevronUp className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">
+                <Crown className="h-10 w-10 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold">{moduleScore} / {maxPoints} Points</h3>
+                <p className="text-muted-foreground">Performance: {percentage}%</p>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all duration-1000"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <Medal className="h-6 w-6 mx-auto mb-2 text-primary" />
+                <p className="font-medium">{currentModuleData.title}</p>
+                <p className="text-sm text-muted-foreground">Completed</p>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <Star className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
+                <p className="font-medium">{currentModuleData.difficulty.charAt(0).toUpperCase() + currentModuleData.difficulty.slice(1)}</p>
+                <p className="text-sm text-muted-foreground">Difficulty</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button onClick={handleModuleClose} className="flex-1">
+                Return to Hub
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  const modules = getLearningModules();
+                  const currentIndex = modules.findIndex(m => m.id === activeModule);
+                  const nextModule = modules[currentIndex + 1];
+                  if (nextModule) {
+                    handleModuleStart(nextModule.id);
+                  }
+                }}
+                className="flex-1"
+                disabled={!getLearningModules().find((m, i) => i > getLearningModules().findIndex(mod => mod.id === activeModule))}
+              >
+                Next Module
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <currentModuleData.icon className="h-5 w-5 text-primary" />
+              <CardTitle>{currentModuleData.title}</CardTitle>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleModuleClose}>
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
+          <CardDescription>{currentModuleData.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Progress indicator */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Step {currentStep + 1} of {currentModuleData.steps.length}</span>
+              <span>{currentStepData.title}</span>
+            </div>
+            <Progress value={((currentStep + 1) / currentModuleData.steps.length) * 100} />
+          </div>
+
+          {/* Step content */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              {currentStepData.type === 'lesson' && <BookOpen className="h-5 w-5" />}
+              {currentStepData.type === 'quiz' && <Brain className="h-5 w-5" />}
+              {currentStepData.type === 'scenario' && <Users className="h-5 w-5" />}
+              {currentStepData.title}
+            </h3>
+            {renderModuleContent(currentStepData)}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-between pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep(prev => prev - 1)}
+              disabled={currentStep === 0}
+            >
+              Previous
+            </Button>
+            <Button 
+              onClick={isLastStep ? handleModuleComplete : handleStepNext}
+              disabled={!canProceed}
+            >
+              {isLastStep ? 'Complete Module' : 'Next Step'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className={cn("mb-6", config.borderColor)}>
       <CardHeader className="pb-4">
@@ -245,7 +869,7 @@ export function LearningHub({}: LearningHubProps) {
             </div>
             <div>
               <CardTitle className="text-lg">Learning Hub</CardTitle>
-              <CardDescription>Test your knowledge across sectors</CardDescription>
+              <CardDescription>Interactive step-by-step learning across sectors</CardDescription>
             </div>
           </div>
           <Button 
