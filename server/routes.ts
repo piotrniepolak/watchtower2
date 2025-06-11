@@ -2640,6 +2640,45 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
       res.status(500).json({ message: 'Failed to fetch stats' });
     }
   });
+
+  // Daily Questions API
+  app.get("/api/daily-questions/:sector", async (req, res) => {
+    try {
+      const { sector } = req.params;
+      const { date } = req.query as { date?: string };
+      
+      const question = await storage.getDailyQuestion(sector, date as string);
+      if (!question) {
+        return res.status(404).json({ message: "No daily question found" });
+      }
+      
+      res.json(question);
+    } catch (error) {
+      console.error("Error fetching daily question:", error);
+      res.status(500).json({ message: "Failed to fetch daily question" });
+    }
+  });
+
+  app.post("/api/daily-questions/generate", async (req, res) => {
+    try {
+      const { dailyQuestionService } = await import("./daily-question-service");
+      await dailyQuestionService.generateQuestionsNow();
+      res.json({ message: "Daily questions generated successfully" });
+    } catch (error) {
+      console.error("Error generating daily questions:", error);
+      res.status(500).json({ message: "Failed to generate daily questions" });
+    }
+  });
+
+  app.get("/api/daily-questions", async (req, res) => {
+    try {
+      const questions = await storage.getActiveDailyQuestions();
+      res.json(questions);
+    } catch (error) {
+      console.error("Error fetching active daily questions:", error);
+      res.status(500).json({ message: "Failed to fetch daily questions" });
+    }
+  });
   
   return httpServer;
 }

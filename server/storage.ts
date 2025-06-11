@@ -1498,6 +1498,42 @@ export class MemStorage implements IStorage {
       rank: index + 1
     }));
   }
+
+  // Daily Questions Implementation
+  async getDailyQuestion(sector: string, date?: string): Promise<DailyQuestion | undefined> {
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const [question] = await db
+      .select()
+      .from(dailyQuestions)
+      .where(and(
+        eq(dailyQuestions.sector, sector),
+        eq(dailyQuestions.generatedDate, targetDate),
+        eq(dailyQuestions.isActive, true)
+      ))
+      .orderBy(desc(dailyQuestions.createdAt))
+      .limit(1);
+    return question;
+  }
+
+  async createDailyQuestion(question: InsertDailyQuestion): Promise<DailyQuestion> {
+    const [newQuestion] = await db.insert(dailyQuestions).values(question).returning();
+    return newQuestion;
+  }
+
+  async getActiveDailyQuestions(): Promise<DailyQuestion[]> {
+    return await db
+      .select()
+      .from(dailyQuestions)
+      .where(eq(dailyQuestions.isActive, true))
+      .orderBy(desc(dailyQuestions.createdAt));
+  }
+
+  async deactivateDailyQuestion(id: number): Promise<void> {
+    await db
+      .update(dailyQuestions)
+      .set({ isActive: false })
+      .where(eq(dailyQuestions.id, id));
+  }
 }
 
 export const storage = new DatabaseStorage();
