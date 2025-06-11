@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal, Play, CheckCircle, Lock, Star, Award, BookOpen, Users, Zap, Shield, Activity, AlertTriangle, DollarSign, Globe, TrendingUp, Leaf } from 'lucide-react';
+import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal, Play, CheckCircle, Lock, Star, Award, BookOpen, Users, Zap, Shield, Activity, AlertTriangle, DollarSign, Globe, TrendingUp, Leaf, Smartphone, Dna } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conflict, Stock } from '@shared/schema';
 
@@ -1981,89 +1981,6 @@ export function LearningHub({}: LearningHubProps) {
             }
           ]
         }
-                  type: 'multiple-choice',
-                  question: 'What percentage of drugs typically succeed from Phase I to market approval?',
-                  options: ['50%', '25%', '12%', '5%'],
-                  correctAnswer: '12%',
-                  explanation: 'Approximately 12% of drugs that enter Phase I clinical trials eventually receive FDA approval.',
-                  points: 60
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 'regulatory-environment',
-          title: 'Healthcare Regulatory Framework',
-          description: 'Navigate FDA approval processes and compliance requirements',
-          icon: Shield,
-          difficulty: 'intermediate',
-          points: 165,
-          steps: [
-            {
-              type: 'lesson',
-              title: 'Regulatory Pathways',
-              content: `
-                <h3>Healthcare Regulation Landscape</h3>
-                <p>Understanding regulatory frameworks is crucial for healthcare investments:</p>
-                <ul>
-                  <li><strong>FDA Approval Process:</strong> Standard vs expedited pathways</li>
-                  <li><strong>EMA Compliance:</strong> European regulatory requirements</li>
-                  <li><strong>Patent Protection:</strong> Intellectual property considerations</li>
-                  <li><strong>Generic Competition:</strong> Patent cliff analysis</li>
-                </ul>
-              `
-            }
-          ]
-        },
-        {
-          id: 'market-access',
-          title: 'Global Market Access Strategy',
-          description: 'Analyze pricing strategies and market penetration across regions',
-          icon: Target,
-          difficulty: 'advanced',
-          points: 190,
-          steps: [
-            {
-              type: 'lesson',
-              title: 'Market Access Fundamentals',
-              content: `
-                <h3>Global Healthcare Markets</h3>
-                <p>Market access varies significantly across healthcare systems:</p>
-                <ul>
-                  <li><strong>Pricing Strategies:</strong> Value-based vs cost-plus models</li>
-                  <li><strong>Reimbursement:</strong> Insurance coverage and government programs</li>
-                  <li><strong>Market Size:</strong> Patient population and addressable markets</li>
-                  <li><strong>Competitive Landscape:</strong> Existing treatments and emerging therapies</li>
-                </ul>
-              `
-            }
-          ]
-        },
-        {
-          id: 'digital-health',
-          title: 'Digital Health Innovation',
-          description: 'Explore telemedicine, AI diagnostics, and health technology trends',
-          icon: Brain,
-          difficulty: 'intermediate',
-          points: 155,
-          steps: [
-            {
-              type: 'lesson',
-              title: 'Digital Transformation',
-              content: `
-                <h3>Healthcare Technology Revolution</h3>
-                <p>Digital health is transforming healthcare delivery and investment opportunities:</p>
-                <ul>
-                  <li><strong>Telemedicine:</strong> Remote patient care and monitoring</li>
-                  <li><strong>AI Diagnostics:</strong> Machine learning in medical imaging</li>
-                  <li><strong>Wearable Technology:</strong> Continuous health monitoring</li>
-                  <li><strong>Electronic Health Records:</strong> Data integration and interoperability</li>
-                </ul>
-              `
-            }
-          ]
-        }
       ],
       energy: [
         {
@@ -2088,8 +2005,7 @@ export function LearningHub({}: LearningHubProps) {
                   <li><strong>Uranium:</strong> Nuclear fuel cycle, long-term contracts</li>
                 </ul>
                 <h4>Current Market Context</h4>
-                <p>Energy stocks tracked: <strong>${energyStocks.length}</strong> major companies</p>
-                <p>Sector leader: <strong>${energyStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "XOM"}</strong></p>
+                <p>Energy markets are highly dynamic, influenced by supply-demand fundamentals, geopolitical events, and seasonal patterns.</p>
               `
             },
             {
