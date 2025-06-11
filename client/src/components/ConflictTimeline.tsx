@@ -43,9 +43,9 @@ const cleanEventDescription = (description: string) => {
     .replace(/^[^a-zA-Z]*/, '') // Remove non-letter characters from start
     .trim();
   
-  // If description is empty or too short, provide a fallback
+  // If description is empty or too short, skip this event
   if (cleaned.length < 10) {
-    cleaned = "Military activity reported in the region";
+    return "";
   }
   
   return cleaned;
@@ -206,13 +206,18 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
             </p>
           </div>
         ) : (
-          <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className="h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <div className="relative px-4 pb-4">
               {/* Timeline line */}
               <div className="absolute left-8 top-0 bottom-0 w-px bg-border" />
               
-              <div className="space-y-4">
-              {(timeline as TimelineEvent[]).map((event: TimelineEvent, index: number) => (
+              <div className="space-y-3">
+              {(timeline as TimelineEvent[])
+                .filter((event: TimelineEvent) => {
+                  const cleanedDescription = cleanEventDescription(event.eventDescription);
+                  return cleanedDescription.length > 0; // Only show events with valid descriptions
+                })
+                .map((event: TimelineEvent, index: number) => (
                 <div key={event.id} className="relative flex gap-3">
                   {/* Timeline dot */}
                   <div className={`
