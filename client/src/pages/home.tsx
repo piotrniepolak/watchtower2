@@ -265,79 +265,69 @@ export default function Home() {
           })}
         </div>
 
-        {/* Sector Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        {/* Sector Cards - Compact */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-12">
           {sectors.map((sector) => {
             const IconComponent = sector.icon;
             return (
               <Card key={sector.key} className={`${sector.borderColor} border-2 hover:shadow-lg transition-shadow`}>
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`bg-gradient-to-r ${sector.color} text-white p-3 rounded-lg`}>
-                      <IconComponent className="h-8 w-8" />
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className={`bg-gradient-to-r ${sector.color} text-white p-2 rounded-lg flex-shrink-0`}>
+                      <IconComponent className="h-5 w-5" />
                     </div>
-                    <Badge variant="outline" className={sector.textColor}>
-                      {sector.key.charAt(0).toUpperCase() + sector.key.slice(1)}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-xl">{sector.name}</CardTitle>
-                  <CardDescription className="text-base">
-                    {sector.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 mb-6">
-                    {sector.features.map((feature, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${sector.color}`}></div>
-                        <span className="text-sm text-slate-600">{feature}</span>
-                      </div>
-                    ))}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-slate-900 text-sm truncate">{sector.name}</h3>
+                      <p className="text-xs text-slate-600 truncate">{sector.description}</p>
+                    </div>
                   </div>
                   
-                  <div className={`${sector.bgColor} p-3 rounded-lg mb-4`}>
-                    <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex space-x-4 text-xs">
                       {sector.key === 'defense' && (
                         <>
-                          <div>
-                            <div className="text-lg font-semibold text-slate-900">{sector.stats.conflicts}</div>
-                            <div className="text-xs text-slate-600">Active Conflicts</div>
+                          <div className="text-center">
+                            <div className="font-semibold text-slate-900">{sector.stats.conflicts}</div>
+                            <div className="text-slate-600">Conflicts</div>
                           </div>
-                          <div>
-                            <div className="text-lg font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-xs text-slate-600">Defense Stocks</div>
+                          <div className="text-center">
+                            <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
+                            <div className="text-slate-600">Stocks</div>
                           </div>
                         </>
                       )}
                       {sector.key === 'health' && (
                         <>
-                          <div>
-                            <div className="text-lg font-semibold text-slate-900">{sector.stats.countries}</div>
-                            <div className="text-xs text-slate-600">Countries</div>
+                          <div className="text-center">
+                            <div className="font-semibold text-slate-900">{sector.stats.countries}</div>
+                            <div className="text-slate-600">Countries</div>
                           </div>
-                          <div>
-                            <div className="text-lg font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-xs text-slate-600">Health Stocks</div>
+                          <div className="text-center">
+                            <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
+                            <div className="text-slate-600">Stocks</div>
                           </div>
                         </>
                       )}
                       {sector.key === 'energy' && (
                         <>
-                          <div>
-                            <div className="text-lg font-semibold text-slate-900">{sector.stats.commodities}</div>
-                            <div className="text-xs text-slate-600">Commodities</div>
+                          <div className="text-center">
+                            <div className="font-semibold text-slate-900">{sector.stats.commodities}</div>
+                            <div className="text-slate-600">Commodities</div>
                           </div>
-                          <div>
-                            <div className="text-lg font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-xs text-slate-600">Energy Stocks</div>
+                          <div className="text-center">
+                            <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
+                            <div className="text-slate-600">Stocks</div>
                           </div>
                         </>
                       )}
                     </div>
+                    <Badge variant="outline" className={`${sector.textColor} text-xs`}>
+                      {sector.key.charAt(0).toUpperCase() + sector.key.slice(1)}
+                    </Badge>
                   </div>
 
                   <Link href={sector.key === 'defense' ? '/' : sector.key === 'health' ? '/?sector=health' : '/?sector=energy'}>
-                    <Button className={`w-full bg-gradient-to-r ${sector.color} text-white hover:opacity-90`}>
+                    <Button size="sm" className={`w-full bg-gradient-to-r ${sector.color} text-white hover:opacity-90 text-xs`}>
                       Explore {sector.name}
                     </Button>
                   </Link>
