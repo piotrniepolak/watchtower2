@@ -1873,6 +1873,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //   console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
   // }
 
+  // Chat endpoints
+  app.get('/api/chat/messages', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const sector = req.query.sector as string;
+      
+      const messages = await storage.getChatMessages(limit, sector);
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+      res.status(500).json({ error: 'Failed to fetch chat messages' });
+    }
+  });
+
+  app.post('/api/chat/messages', async (req, res) => {
+    try {
+      const { username, message, sector } = req.body;
+      
+      if (!username || !message) {
+        return res.status(400).json({ error: 'Username and message are required' });
+      }
+
+      const newMessage = await storage.createChatMessage({
+        username,
+        message,
+        sector: sector || null,
+        isSystem: false
+      });
+
+      res.json(newMessage);
+    } catch (error) {
+      console.error('Error creating chat message:', error);
+      res.status(500).json({ error: 'Failed to create chat message' });
+    }
+  });
+
 
 
   // AI Analysis endpoints

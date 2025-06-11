@@ -1,12 +1,13 @@
 import { 
   conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
-  discussions, discussionReplies, discussionVotes,
+  discussions, discussionReplies, discussionVotes, chatMessages,
   type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
   type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser,
-  type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote
+  type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote,
+  type ChatMessage, type InsertChatMessage
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, gt } from "drizzle-orm";
+import { eq, and, desc, asc, gt, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -59,6 +60,10 @@ export interface IStorage {
   
   // Quiz Leaderboard
   getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]>;
+  
+  // Chat Messages
+  getChatMessages(limit?: number, sector?: string): Promise<ChatMessage[]>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1334,6 +1339,23 @@ export class MemStorage implements IStorage {
         })
         .where(eq(discussionReplies.id, replyId));
     }
+  }
+
+  // Chat Messages
+  async getChatMessages(limit: number = 50, sector?: string): Promise<ChatMessage[]> {
+    let query = db.select().from(chatMessages).orderBy(desc(chatMessages.timestamp)).limit(limit);
+    
+    if (sector) {
+      query = query.where(eq(chatMessages.sector, sector));
+    }
+    
+    const messages = await query;
+    return messages.reverse(); // Return in chronological order
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [newMessage] = await db.insert(chatMessages).values(message).returning();
+    return newMessage;
   }
 }
 

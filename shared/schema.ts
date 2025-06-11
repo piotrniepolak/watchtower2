@@ -44,6 +44,15 @@ export const correlationEvents = pgTable("correlation_events", {
   severity: integer("severity").notNull(), // 1-10 scale
 });
 
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  message: text("message").notNull(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  sector: text("sector"), // Optional: defense, health, energy
+  isSystem: boolean("is_system").default(false),
+});
+
 // Session storage table for Replit Auth
 export const sessions = pgTable(
   "sessions",
@@ -203,6 +212,11 @@ export type DailyQuiz = typeof dailyQuizzes.$inferSelect;
 
 export type InsertUserQuizResponse = z.infer<typeof insertUserQuizResponseSchema>;
 export type UserQuizResponse = typeof userQuizResponses.$inferSelect;
+
+// Chat Message Schema
+export const insertChatMessageSchema = createInsertSchema(chatMessages);
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
 
 export interface QuizQuestion {
   id: string;
