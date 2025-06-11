@@ -1933,65 +1933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //   console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
   // }
 
-  // Chat endpoints
-  app.get('/api/chat/messages', async (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 50;
-      const sector = req.query.sector as string;
-      
-      console.log('Chat messages request - limit:', limit, 'sector:', sector);
-      
-      // Direct database query to fix the method binding issue
-      const { chatMessages } = await import('@shared/schema');
-      const { desc, eq } = await import('drizzle-orm');
-      
-      let messages;
-      if (sector) {
-        console.log('Querying with sector filter:', sector);
-        messages = await db.select().from(chatMessages)
-          .where(eq(chatMessages.sector, sector))
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
-      } else {
-        console.log('Querying all messages');
-        messages = await db.select().from(chatMessages)
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
-      }
-      
-      console.log('Query result:', messages.length, 'messages found');
-      res.json(messages.reverse()); // Return in chronological order
-    } catch (error) {
-      console.error('Error fetching chat messages:', error);
-      res.status(500).json({ error: 'Failed to fetch chat messages' });
-    }
-  });
 
-  app.post('/api/chat/messages', async (req, res) => {
-    try {
-      const { username, message, sector } = req.body;
-      
-      if (!username || !message) {
-        return res.status(400).json({ error: 'Username and message are required' });
-      }
-
-      // Direct database insertion to fix the method binding issue
-      const messageToInsert = {
-        username,
-        message,
-        sector: sector || null,
-        isSystem: false,
-      };
-      
-      const { chatMessages } = await import('@shared/schema');
-      const [newMessage] = await db.insert(chatMessages).values(messageToInsert).returning();
-
-      res.json(newMessage);
-    } catch (error) {
-      console.error('Error creating chat message:', error);
-      res.status(500).json({ error: 'Failed to create chat message' });
-    }
-  });
 
 
 
