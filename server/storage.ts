@@ -1361,10 +1361,18 @@ export class MemStorage implements IStorage {
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     try {
-      const [newMessage] = await db.insert(chatMessages).values(message).returning();
+      const messageToInsert = {
+        username: message.username,
+        message: message.message,
+        sector: message.sector || null,
+        isSystem: message.isSystem || false,
+      };
+      
+      const [newMessage] = await db.insert(chatMessages).values(messageToInsert).returning();
       return newMessage;
     } catch (error) {
       console.error('Error creating chat message:', error);
+      console.error('Message data:', message);
       throw error;
     }
   }
