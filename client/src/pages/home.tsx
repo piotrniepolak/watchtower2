@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, Lightbulb, TrendingDown, Clock, DollarSign, User } from "lucide-react";
+import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, Lightbulb, TrendingDown, Clock, DollarSign, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -63,6 +63,7 @@ interface ConflictStoryline {
 export default function Home() {
   const [selectedSector, setSelectedSector] = useState("defense");
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
+  const [isAIAnalysisExpanded, setIsAIAnalysisExpanded] = useState(false);
   const queryClient = useQueryClient();
   
   // Fetch global metrics for overview
@@ -369,16 +370,30 @@ export default function Home() {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-slate-700">Sector:</span>
-                <Select value={selectedSector} onValueChange={(value) => {
-                  console.log(`Frontend: Switching to sector: ${value}`);
-                  
-                  // Clear all existing cache for AI analysis
-                  queryClient.removeQueries({ queryKey: ["/api/analysis/predictions"] });
-                  queryClient.removeQueries({ queryKey: ["/api/analysis/market"] });
-                  
-                  setSelectedSector(value);
-                }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsAIAnalysisExpanded(!isAIAnalysisExpanded)}
+                  className="p-2"
+                >
+                  {isAIAnalysisExpanded ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </Button>
+                {isAIAnalysisExpanded && (
+                  <>
+                    <span className="text-sm font-medium text-slate-700">Sector:</span>
+                    <Select value={selectedSector} onValueChange={(value) => {
+                      console.log(`Frontend: Switching to sector: ${value}`);
+                      
+                      // Clear all existing cache for AI analysis
+                      queryClient.removeQueries({ queryKey: ["/api/analysis/predictions"] });
+                      queryClient.removeQueries({ queryKey: ["/api/analysis/market"] });
+                      
+                      setSelectedSector(value);
+                    }}>
                   <SelectTrigger className="w-48">
                     <SelectValue>
                       <div className="flex items-center space-x-2">
@@ -414,10 +429,13 @@ export default function Home() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                  </>
+                )}
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          {isAIAnalysisExpanded && (
+            <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Market Analysis */}
               <Card className="bg-white/70 backdrop-blur">
@@ -881,6 +899,7 @@ export default function Home() {
               </div>
             )}
           </CardContent>
+          )}
         </Card>
 
         {/* Community Chat Section */}
