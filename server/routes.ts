@@ -1770,21 +1770,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Querying with sector filter:', sector);
         // Handle "general" sector by filtering for null values in database
         if (sector === 'general') {
-          messages = await db.select().from(chatMessages)
+          const rawMessages = await db.select().from(chatMessages)
             .where(isNull(chatMessages.sector))
             .orderBy(desc(chatMessages.timestamp))
             .limit(limit);
+          
+          // Add reply counts manually
+          messages = await Promise.all(rawMessages.map(async (msg) => {
+            const { count } = await import('drizzle-orm');
+            const replyCountResult = await db.select({ count: count() }).from(chatMessages)
+              .where(eq(chatMessages.replyToId, msg.id));
+            return {
+              ...msg,
+              replyCount: replyCountResult[0]?.count || 0
+            };
+          }));
         } else {
-          messages = await db.select().from(chatMessages)
+          const rawMessages = await db.select().from(chatMessages)
             .where(eq(chatMessages.sector, sector))
             .orderBy(desc(chatMessages.timestamp))
             .limit(limit);
+          
+          // Add reply counts manually
+          messages = await Promise.all(rawMessages.map(async (msg) => {
+            const { count } = await import('drizzle-orm');
+            const replyCountResult = await db.select({ count: count() }).from(chatMessages)
+              .where(eq(chatMessages.replyToId, msg.id));
+            return {
+              ...msg,
+              replyCount: replyCountResult[0]?.count || 0
+            };
+          }));
         }
       } else {
         console.log('Querying all messages');
-        messages = await db.select().from(chatMessages)
+        const rawMessages = await db.select().from(chatMessages)
           .orderBy(desc(chatMessages.timestamp))
           .limit(limit);
+        
+        // Add reply counts manually
+        messages = await Promise.all(rawMessages.map(async (msg) => {
+          const { count } = await import('drizzle-orm');
+          const replyCountResult = await db.select({ count: count() }).from(chatMessages)
+            .where(eq(chatMessages.replyToId, msg.id));
+          return {
+            ...msg,
+            replyCount: replyCountResult[0]?.count || 0
+          };
+        }));
       }
       
       console.log('Query result:', messages.length, 'messages found');

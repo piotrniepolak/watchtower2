@@ -111,6 +111,9 @@ export function CommunityChat() {
     onSuccess: () => {
       setMessage("");
       setReplyingTo(null);
+      // Clear replies cache to force refresh
+      setReplies({});
+      setExpandedThreads(new Set());
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
     },
   });
@@ -363,24 +366,26 @@ export function CommunityChat() {
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Daily Discussion</span>
-                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full">
-                    {getSectorLabel(chatSector)}
-                  </span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Daily Discussion</span>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full">
+                      {getSectorLabel(chatSector)}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => replyToDailyQuestion(dailyQuestion.id)}
+                  >
+                    <Reply className="w-3 h-3 mr-1" />
+                    Reply
+                  </Button>
                 </div>
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                   {dailyQuestion.question}
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3 h-7 px-3 text-xs"
-                  onClick={() => replyToDailyQuestion(dailyQuestion.id)}
-                >
-                  <Reply className="w-3 h-3 mr-1" />
-                  Reply to Question
-                </Button>
               </div>
             </div>
           </div>
