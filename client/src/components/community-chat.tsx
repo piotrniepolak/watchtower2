@@ -85,11 +85,74 @@ export function CommunityChat() {
     });
   };
 
-  const handleUsernameChange = () => {
-    if (tempUsername.trim()) {
-      setUsername(tempUsername.trim());
-      localStorage.setItem('chatUsername', tempUsername.trim());
+  const checkUsernameAvailability = async (usernameToCheck: string) => {
+    if (!usernameToCheck.trim() || usernameToCheck.length < 2 || usernameToCheck.length > 30) {
+      return { available: false, reason: 'Username must be 2-30 characters' };
+    }
+    
+    try {
+      const response = await fetch(`/api/chat/username/${encodeURIComponent(usernameToCheck.trim())}/available`);
+      if (!response.ok) throw new Error('Failed to check username availability');
+      return response.json();
+    } catch (error) {
+      return { available: false, reason: 'Error checking username availability' };
+    }
+  };
+
+  const registerUsername = async (usernameToRegister: string) => {
+    try {
+      const response = await fetch('/api/chat/username/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: usernameToRegister.trim() }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to register username');
+      }
+      
+      return response.json();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleUsernameChange = async () => {
+    const trimmedUsername = tempUsername.trim();
+    
+    if (!trimmedUsername) {
+      setUsernameError('Username cannot be empty');
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    setUsernameError('');
+
+    try {
+      // Check if username is available
+      const availability = await checkUsernameAvailability(trimmedUsername);
+      
+      if (!availability.available) {
+        setUsernameError(availability.reason || 'Username is not available');
+        setIsCheckingUsername(false);
+        return;
+      }
+
+      // Register the username
+      await registerUsername(trimmedUsername);
+      
+      // Update local state
+      setUsername(trimmedUsername);
+      localStorage.setItem('chatUsername', trimmedUsername);
       setShowUsernameInput(false);
+      setUsernameError('');
+    } catch (error: any) {
+      setUsernameError(error.message || 'Failed to update username');
+    } finally {
+      setIsCheckingUsername(false);
     }
   };
 
@@ -205,39 +268,61 @@ export function CommunityChat() {
         {/* Username Display/Edit */}
         <div className="mb-3">
           {showUsernameInput ? (
-            <div className="flex items-center space-x-2">
-              <Input
-                value={tempUsername}
-                onChange={(e) => setTempUsername(e.target.value)}
-                placeholder="Enter username"
-                className="flex-1 h-8 text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleUsernameChange();
-                  if (e.key === 'Escape') {
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Input
+                  value={tempUsername}
+                  onChange={(e) => {
+                    setTempUsername(e.target.value);
+                    setUsernameError(''); // Clear error when typing
+                  }}
+                  placeholder="Enter username (2-30 characters)"
+                  className={`flex-1 h-8 text-sm ${usernameError ? 'border-red-500' : ''}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !isCheckingUsername) handleUsernameChange();
+                    if (e.key === 'Escape') {
+                      setTempUsername(username);
+                      setShowUsernameInput(false);
+                      setUsernameError('');
+                    }
+                  }}
+                  disabled={isCheckingUsername}
+                  autoFocus
+                />
+                <Button 
+                  size="sm" 
+                  onClick={handleUsernameChange} 
+                  className="h-8 px-3"
+                  disabled={isCheckingUsername || !tempUsername.trim()}
+                >
+                  {isCheckingUsername ? 'Checking...' : 'Save'}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => {
                     setTempUsername(username);
                     setShowUsernameInput(false);
-                  }
-                }}
-                autoFocus
-              />
-              <Button size="sm" onClick={handleUsernameChange} className="h-8 px-3">
-                Save
-              </Button>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={() => {
-                  setTempUsername(username);
-                  setShowUsernameInput(false);
-                }}
-                className="h-8 px-3"
-              >
-                Cancel
-              </Button>
+                    setUsernameError('');
+                  }}
+                  className="h-8 px-3"
+                  disabled={isCheckingUsername}
+                >
+                  Cancel
+                </Button>
+              </div>
+              {usernameError && (
+                <div className="text-xs text-red-500 px-1">
+                  {usernameError}
+                </div>
+              )}
             </div>
           ) : (
             <button
-              onClick={() => setShowUsernameInput(true)}
+              onClick={() => {
+                setShowUsernameInput(true);
+                setUsernameError('');
+              }}
               className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
             >
               Posting as: <span className="font-medium">{username}</span> (click to change)
