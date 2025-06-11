@@ -9,6 +9,7 @@ import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
 import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline, generateSectorPredictions, generateSectorMarketAnalysis, generateSectorStorylines } from "./ai-analysis";
+import { perplexityService } from "./perplexity-service";
 import { DatabaseStorage } from "./storage";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
@@ -2210,6 +2211,191 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
     } catch (error) {
       console.error('Error in AI support chat:', error);
       res.status(500).json({ message: 'I apologize for the technical issue. Please try again in a moment.' });
+    }
+  });
+
+  // Learning Module API Routes
+  
+  // Get daily quiz for sector
+  app.get('/api/learning/daily-quiz/:sector', async (req, res) => {
+    try {
+      const { sector } = req.params;
+      const validSectors = ['defense', 'health', 'energy'];
+      
+      if (!validSectors.includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector' });
+      }
+
+      // Try to get existing quiz for today
+      let quiz = await storage.getRandomQuizQuestion(sector);
+      
+      if (!quiz) {
+        // Generate new quiz using Perplexity
+        const generatedQuiz = await perplexityService.generateQuiz({
+          sector,
+          difficulty: 'medium'
+        });
+
+        // Save to database
+        quiz = await storage.createQuizQuestion({
+          question: generatedQuiz.question,
+          options: generatedQuiz.options,
+          correctAnswer: generatedQuiz.correctAnswer,
+          explanation: generatedQuiz.explanation,
+          sector,
+          difficulty: 'medium',
+          source: generatedQuiz.source,
+          tags: generatedQuiz.tags
+        });
+      }
+
+      res.json(quiz);
+    } catch (error) {
+      console.error('Error fetching daily quiz:', error);
+      res.status(500).json({ message: 'Failed to fetch quiz' });
+    }
+  });
+
+  // Generate new quiz question
+  app.post('/api/learning/generate-quiz', async (req, res) => {
+    try {
+      const { sector, difficulty = 'medium' } = req.body;
+      const validSectors = ['defense', 'health', 'energy'];
+      const validDifficulties = ['easy', 'medium', 'hard'];
+      
+      if (!validSectors.includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector' });
+      }
+      
+      if (!validDifficulties.includes(difficulty)) {
+        return res.status(400).json({ message: 'Invalid difficulty' });
+      }
+
+      // Generate new quiz using Perplexity
+      const generatedQuiz = await perplexityService.generateQuiz({
+        sector,
+        difficulty
+      });
+
+      // Save to database
+      const quiz = await storage.createQuizQuestion({
+        question: generatedQuiz.question,
+        options: generatedQuiz.options,
+        correctAnswer: generatedQuiz.correctAnswer,
+        explanation: generatedQuiz.explanation,
+        sector,
+        difficulty,
+        source: generatedQuiz.source,
+        tags: generatedQuiz.tags
+      });
+
+      res.json(quiz);
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      res.status(500).json({ message: 'Failed to generate quiz' });
+    }
+  });
+
+  // Submit quiz response
+  app.post('/api/learning/submit-response', async (req, res) => {
+    try {
+      const { questionId, selectedAnswer, isCorrect, timeSpent, sector } = req.body;
+      const user = req.session?.user;
+
+      if (!user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      // Create quiz response
+      await storage.createQuizResponse({
+        userId: user.id,
+        questionId,
+        selectedAnswer,
+        isCorrect,
+        timeSpent,
+        sector
+      });
+
+      // Update learning stats
+      const currentStats = await storage.getLearningStats(user.id, sector);
+      const today = new Date().toISOString().split('T')[0];
+      
+      let newStreak = 1;
+      if (currentStats?.lastQuizDate) {
+        const lastQuizDate = new Date(currentStats.lastQuizDate);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (lastQuizDate.toDateString() === yesterday.toDateString()) {
+          newStreak = (currentStats.streak || 0) + 1;
+        } else if (lastQuizDate.toDateString() !== new Date().toDateString()) {
+          newStreak = 1;
+        } else {
+          newStreak = currentStats.streak || 1;
+        }
+      }
+
+      const scorePoints = isCorrect ? (timeSpent < 30000 ? 15 : timeSpent < 60000 ? 10 : 5) : 0;
+      
+      await storage.updateLearningStats(user.id, sector, {
+        totalScore: (currentStats?.totalScore || 0) + scorePoints,
+        streak: newStreak,
+        correctAnswers: (currentStats?.correctAnswers || 0) + (isCorrect ? 1 : 0),
+        totalQuestions: (currentStats?.totalQuestions || 0) + 1,
+        lastQuizDate: new Date(today)
+      });
+
+      res.json({ success: true, pointsEarned: scorePoints });
+    } catch (error) {
+      console.error('Error submitting quiz response:', error);
+      res.status(500).json({ message: 'Failed to submit response' });
+    }
+  });
+
+  // Get leaderboard
+  app.get('/api/learning/leaderboard/:sector', async (req, res) => {
+    try {
+      const { sector } = req.params;
+      const validSectors = ['defense', 'health', 'energy'];
+      
+      if (!validSectors.includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector' });
+      }
+
+      const leaderboard = await storage.getLeaderboard(sector);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ message: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  // Get user learning stats
+  app.get('/api/learning/user-stats/:sector', async (req, res) => {
+    try {
+      const { sector } = req.params;
+      const user = req.session?.user;
+
+      if (!user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const validSectors = ['defense', 'health', 'energy'];
+      
+      if (!validSectors.includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector' });
+      }
+
+      const stats = await storage.getLearningStats(user.id, sector);
+      res.json(stats || {
+        totalScore: 0,
+        streak: 0,
+        correctAnswers: 0,
+        totalQuestions: 0
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      res.status(500).json({ message: 'Failed to fetch stats' });
     }
   });
   

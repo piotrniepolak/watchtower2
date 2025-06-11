@@ -74,13 +74,18 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
   });
 
   // Fetch leaderboard
-  const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery({
+  const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery<LeaderboardEntry[]>({
     queryKey: ["/api/learning/leaderboard", selectedSector],
     enabled: isExpanded,
   });
 
   // Fetch user stats
-  const { data: userStats } = useQuery({
+  const { data: userStats } = useQuery<{
+    totalScore: number;
+    streak: number;
+    correctAnswers: number;
+    totalQuestions: number;
+  }>({
     queryKey: ["/api/learning/user-stats", selectedSector],
     enabled: isExpanded,
   });
@@ -88,13 +93,15 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
   // Submit quiz response mutation
   const submitResponseMutation = useMutation({
     mutationFn: async (response: QuizResponse) => {
-      return apiRequest('/api/learning/submit-response', {
+      const result = await fetch('/api/learning/submit-response', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...response,
           sector: selectedSector
         })
       });
+      return result.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/learning/leaderboard"] });
@@ -105,12 +112,14 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
   // Generate new quiz mutation
   const generateQuizMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/learning/generate-quiz', {
+      const result = await fetch('/api/learning/generate-quiz', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sector: selectedSector })
       });
+      return result.json();
     },
-    onSuccess: (newQuiz) => {
+    onSuccess: (newQuiz: QuizQuestion) => {
       setCurrentQuiz(newQuiz);
       setSelectedAnswer(null);
       setShowResult(false);
