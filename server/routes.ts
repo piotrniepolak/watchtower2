@@ -1879,7 +1879,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50;
       const sector = req.query.sector as string;
       
-      const messages = await storage.getChatMessages(limit, sector);
+      // Create a new DatabaseStorage instance to ensure methods are available
+      const dbStorage = new DatabaseStorage();
+      const messages = await dbStorage.getChatMessages(limit, sector);
       res.json(messages);
     } catch (error) {
       console.error('Error fetching chat messages:', error);
@@ -1895,7 +1897,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Username and message are required' });
       }
 
-      const newMessage = await storage.createChatMessage({
+      // Create a new DatabaseStorage instance to ensure methods are available
+      const dbStorage = new DatabaseStorage();
+      const newMessage = await dbStorage.createChatMessage({
         username,
         message,
         sector: sector || null,

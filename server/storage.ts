@@ -1361,6 +1361,8 @@ export class MemStorage implements IStorage {
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     try {
+      console.log('Creating chat message with data:', message);
+      
       const messageToInsert = {
         username: message.username,
         message: message.message,
@@ -1368,11 +1370,20 @@ export class MemStorage implements IStorage {
         isSystem: message.isSystem || false,
       };
       
+      console.log('Inserting message:', messageToInsert);
       const [newMessage] = await db.insert(chatMessages).values(messageToInsert).returning();
+      console.log('Created message:', newMessage);
       return newMessage;
     } catch (error) {
-      console.error('Error creating chat message:', error);
-      console.error('Message data:', message);
+      console.error('Detailed error creating chat message:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('Original message data:', message);
+      console.error('Processed message data:', {
+        username: message.username,
+        message: message.message,
+        sector: message.sector || null,
+        isSystem: message.isSystem || false,
+      });
       throw error;
     }
   }
