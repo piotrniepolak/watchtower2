@@ -65,6 +65,23 @@ export interface IStorage {
   // Chat Messages
   getChatMessages(limit?: number, sector?: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+
+  // Learning Module
+  createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion>;
+  getQuizQuestion(id: number): Promise<QuizQuestion | undefined>;
+  getRandomQuizQuestion(sector: string): Promise<QuizQuestion | undefined>;
+  createQuizResponse(response: InsertQuizResponse): Promise<QuizResponse>;
+  getLearningStats(userId: string, sector: string): Promise<LearningStats | undefined>;
+  updateLearningStats(userId: string, sector: string, stats: Partial<InsertLearningStats>): Promise<LearningStats>;
+  getLeaderboard(sector: string): Promise<Array<{
+    id: number;
+    username: string;
+    totalScore: number;
+    streak: number;
+    sector: string;
+    lastQuizDate: string;
+    rank: number;
+  }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1387,6 +1404,93 @@ export class MemStorage implements IStorage {
       });
       throw error;
     }
+  }
+
+  // Learning Module Implementation
+  async createQuizQuestion(question: InsertQuizQuestion): Promise<QuizQuestion> {
+    const [newQuestion] = await db.insert(quizQuestions).values(question).returning();
+    return newQuestion;
+  }
+
+  async getQuizQuestion(id: number): Promise<QuizQuestion | undefined> {
+    const [question] = await db.select().from(quizQuestions).where(eq(quizQuestions.id, id));
+    return question;
+  }
+
+  async getRandomQuizQuestion(sector: string): Promise<QuizQuestion | undefined> {
+    const questions = await db
+      .select()
+      .from(quizQuestions)
+      .where(and(eq(quizQuestions.sector, sector), eq(quizQuestions.isActive, true)))
+      .orderBy(sql`RANDOM()`)
+      .limit(1);
+    return questions[0];
+  }
+
+  async createQuizResponse(response: InsertQuizResponse): Promise<QuizResponse> {
+    const [newResponse] = await db.insert(quizResponses).values(response).returning();
+    return newResponse;
+  }
+
+  async getLearningStats(userId: string, sector: string): Promise<LearningStats | undefined> {
+    const [stats] = await db
+      .select()
+      .from(learningStats)
+      .where(and(eq(learningStats.userId, userId), eq(learningStats.sector, sector)));
+    return stats;
+  }
+
+  async updateLearningStats(userId: string, sector: string, updates: Partial<InsertLearningStats>): Promise<LearningStats> {
+    // Try to update existing stats first
+    const [updatedStats] = await db
+      .update(learningStats)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(learningStats.userId, userId), eq(learningStats.sector, sector)))
+      .returning();
+
+    if (updatedStats) {
+      return updatedStats;
+    }
+
+    // If no existing stats, create new ones
+    const [newStats] = await db.insert(learningStats).values({
+      userId,
+      sector,
+      ...updates
+    }).returning();
+    return newStats;
+  }
+
+  async getLeaderboard(sector: string): Promise<Array<{
+    id: number;
+    username: string;
+    totalScore: number;
+    streak: number;
+    sector: string;
+    lastQuizDate: string;
+    rank: number;
+  }>> {
+    const results = await db
+      .select({
+        id: learningStats.id,
+        username: users.username,
+        totalScore: learningStats.totalScore,
+        streak: learningStats.streak,
+        sector: learningStats.sector,
+        lastQuizDate: learningStats.lastQuizDate
+      })
+      .from(learningStats)
+      .innerJoin(users, eq(learningStats.userId, users.id))
+      .where(eq(learningStats.sector, sector))
+      .orderBy(desc(learningStats.totalScore), desc(learningStats.streak))
+      .limit(50);
+
+    return results.map((result, index) => ({
+      ...result,
+      username: result.username || 'Anonymous',
+      lastQuizDate: result.lastQuizDate?.toISOString() || '',
+      rank: index + 1
+    }));
   }
 }
 
