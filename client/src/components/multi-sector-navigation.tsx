@@ -205,18 +205,7 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
                   <span>Home</span>
                 </Link>
 
-                {/* AI Analysis tab - universal across all sectors */}
-                <Link 
-                  href="/analysis" 
-                  className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center space-x-1 ${
-                    isActive("/analysis") 
-                      ? "bg-blue-100 text-blue-700" 
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Brain className="h-3 w-3" />
-                  <span>AI Analysis</span>
-                </Link>
+
 
                 {config.navigation.map((navItem) => (
                   <Link 

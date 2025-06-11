@@ -383,35 +383,7 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Call to Action */}
-        <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">
-            Ready to explore sector-specific intelligence?
-          </h2>
-          <p className="text-slate-600 mb-6">
-            Choose a sector above to dive into detailed analytics and insights
-          </p>
-          <div className="flex justify-center space-x-4">
-            <Link href="/?sector=defense">
-              <Button variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-                <Shield className="h-4 w-4 mr-2" />
-                Defense Analytics
-              </Button>
-            </Link>
-            <Link href="/?sector=health">
-              <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
-                <Pill className="h-4 w-4 mr-2" />
-                Health Intelligence
-              </Button>
-            </Link>
-            <Link href="/?sector=energy">
-              <Button variant="outline" className="border-orange-300 text-orange-700 hover:bg-orange-50">
-                <Zap className="h-4 w-4 mr-2" />
-                Energy Insights
-              </Button>
-            </Link>
-          </div>
-        </div>
+
 
         {/* AI Analysis Section */}
         <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
