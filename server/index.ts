@@ -82,5 +82,7 @@ app.use((req, res, next) => {
     stockService.startRealTimeUpdates();
     // Start real-time conflict timeline updates
     conflictTimelineService.startRealTimeUpdates();
+    // Start automated daily questions
+    dailyQuestionService.scheduleNextGeneration();
   });
 })();

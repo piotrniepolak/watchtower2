@@ -1521,11 +1521,15 @@ export class MemStorage implements IStorage {
   }
 
   async getActiveDailyQuestions(): Promise<DailyQuestion[]> {
+    const today = new Date().toISOString().split('T')[0];
     return await db
       .select()
       .from(dailyQuestions)
-      .where(eq(dailyQuestions.isActive, true))
-      .orderBy(desc(dailyQuestions.createdAt));
+      .where(and(
+        eq(dailyQuestions.generatedDate, today),
+        eq(dailyQuestions.isActive, true)
+      ))
+      .orderBy(dailyQuestions.sector);
   }
 
   async deactivateDailyQuestion(id: number): Promise<void> {
