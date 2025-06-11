@@ -164,6 +164,19 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         </Card>
       </div>
 
+      {/* Market Overview Section */}
+      <div className="w-full mb-8">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Healthcare Market Performance
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Real-time performance of pharmaceutical and healthcare stocks
+          </p>
+        </div>
+        <EnhancedChartsSection />
+      </div>
+
       {/* Global Health Map Section */}
       <div className="w-full mb-8">
         <div className="mb-4">
@@ -295,6 +308,19 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             <p className="text-xs text-muted-foreground">Industry estimate</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Market Overview Section */}
+      <div className="w-full mb-8">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Energy Market Performance
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Real-time performance of oil, gas, and energy stocks
+          </p>
+        </div>
+        <EnhancedChartsSection />
       </div>
 
       {/* Energy-specific content */}
