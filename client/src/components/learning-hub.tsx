@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal, Play, CheckCircle, Lock, Star, Award, BookOpen, Users, Zap, Shield, Activity, AlertTriangle, DollarSign } from 'lucide-react';
+import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal, Play, CheckCircle, Lock, Star, Award, BookOpen, Users, Zap, Shield, Activity, AlertTriangle, DollarSign, Globe, TrendingUp, Leaf } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conflict, Stock } from '@shared/schema';
 
@@ -530,7 +530,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Master commodity trading, price dynamics, and energy security analysis',
           icon: Zap,
           difficulty: 'beginner',
-          estimatedTime: '16 min',
+
           points: 110,
           steps: [
             {
@@ -624,6 +624,78 @@ export function LearningHub({}: LearningHubProps) {
                   points: 55
                 }
               ]
+            }
+          ]
+        },
+        {
+          id: 'geopolitical-energy',
+          title: 'Energy Geopolitics & Security',
+          description: 'Analyze global energy dependencies, pipeline politics, and supply chain risks',
+          icon: Shield,
+          difficulty: 'advanced',
+          points: 185,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Energy Security Fundamentals',
+              content: `
+                <h3>Global Energy Dependencies</h3>
+                <p>Energy security involves strategic considerations beyond market dynamics:</p>
+                <ul>
+                  <li><strong>Supply Chain Resilience:</strong> Critical infrastructure protection</li>
+                  <li><strong>Resource Nationalism:</strong> Government control over energy assets</li>
+                  <li><strong>Pipeline Politics:</strong> Strategic transit routes and chokepoints</li>
+                  <li><strong>Energy Diplomacy:</strong> International cooperation and sanctions</li>
+                </ul>
+              `
+            }
+          ]
+        },
+        {
+          id: 'energy-trading',
+          title: 'Commodity Trading & Derivatives',
+          description: 'Master oil futures, natural gas contracts, and energy hedging strategies',
+          icon: Target,
+          difficulty: 'advanced',
+          points: 195,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Energy Derivatives Markets',
+              content: `
+                <h3>Trading Energy Commodities</h3>
+                <p>Energy trading involves sophisticated financial instruments:</p>
+                <ul>
+                  <li><strong>Crude Oil Futures:</strong> WTI and Brent benchmark contracts</li>
+                  <li><strong>Natural Gas Contracts:</strong> Henry Hub and regional pricing</li>
+                  <li><strong>Refined Products:</strong> Gasoline and heating oil futures</li>
+                  <li><strong>Power Markets:</strong> Electricity trading and grid balancing</li>
+                </ul>
+              `
+            }
+          ]
+        },
+        {
+          id: 'carbon-markets',
+          title: 'Carbon Credits & Climate Finance',
+          description: 'Navigate emissions trading, carbon offsets, and green finance mechanisms',
+          icon: Sparkles,
+          difficulty: 'intermediate',
+          points: 170,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Carbon Market Dynamics',
+              content: `
+                <h3>Climate Finance Innovation</h3>
+                <p>Carbon markets create financial incentives for emissions reduction:</p>
+                <ul>
+                  <li><strong>Cap-and-Trade Systems:</strong> EU ETS and California programs</li>
+                  <li><strong>Carbon Offset Projects:</strong> Forestry, renewable energy, and efficiency</li>
+                  <li><strong>Green Bonds:</strong> Climate-focused debt instruments</li>
+                  <li><strong>ESG Integration:</strong> Environmental criteria in investment decisions</li>
+                </ul>
+              `
             }
           ]
         }
