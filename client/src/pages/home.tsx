@@ -920,6 +920,82 @@ export default function Home() {
         <div className="mt-6">
           <CommunityChat />
         </div>
+
+        {/* Meet the Team Section */}
+        <div className="mt-8 border-t border-slate-200 pt-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Meet the Team</h2>
+            <p className="text-slate-600">The experts behind Watchtower's intelligence platform</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Piotrek Polak */}
+            <div className="text-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center">
+                  <User className="h-12 w-12 text-slate-500" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-1">Piotrek Polak</h3>
+              <p className="text-blue-600 font-medium mb-3">Co-Founder and Director of ConflictWatch</p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                A prominent figure in the Polish defense sector, Piotrek has had a longstanding fascination with the intersection of global safety and personal investment. Holding a bachelors degree in engineering from the flagship Purdue University, he now heads the team responsible for curating the ConflictWatch portion of this website.
+              </p>
+            </div>
+
+            {/* Atlas Loutfi */}
+            <div className="text-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-teal-600 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="https://media.licdn.com/dms/image/v2/D4E03AQFhgW7DVDC9KA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1689098934806?e=1740614400&v=beta&t=vJLCmjXqFJQjZp1_2kTrzWnm9nkQ-LQ6Ub6TBKZe6rE"
+                    alt="Atlas Loutfi"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to icon if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<div class="flex items-center justify-center w-full h-full"><svg class="h-12 w-12 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>';
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-1">Atlas Loutfi</h3>
+              <p className="text-green-600 font-medium mb-3">Co-Founder and Director of PharmaWatch</p>
+              <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                With two decades of geopolitical experience, Atlas developed a keen interest in the health challenges faced within the developed and developing world alike, and the potential for financial gain while addressing these key issues. Holding a bachelors degree in pharmaceutical sciences from the flagship Purdue University, he now heads the team responsible for curating the PharmaWatch portion of this website.
+              </p>
+              <a 
+                href="https://www.linkedin.com/in/atlas-loutfi" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors text-sm"
+              >
+                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clipRule="evenodd" />
+                </svg>
+                LinkedIn Profile
+              </a>
+            </div>
+
+            {/* Third Team Member Placeholder */}
+            <div className="text-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-orange-600 to-red-600 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center">
+                  <User className="h-12 w-12 text-slate-500" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-1">Coming Soon</h3>
+              <p className="text-orange-600 font-medium mb-3">Director of EnergyWatch</p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                We're expanding our team to include energy sector expertise. Stay tuned for updates on our newest team member who will lead our energy intelligence initiatives.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
