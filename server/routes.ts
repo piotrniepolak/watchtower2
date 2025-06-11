@@ -1331,6 +1331,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get conflict timeline
+  app.get('/api/conflicts/:id/timeline', async (req, res) => {
+    try {
+      const conflictId = parseInt(req.params.id);
+      const { conflictTimelineService } = await import('./conflict-timeline-service');
+      const timeline = await conflictTimelineService.getConflictTimeline(conflictId);
+      res.json(timeline);
+    } catch (error) {
+      console.error('Error fetching conflict timeline:', error);
+      res.status(500).json({ error: 'Failed to fetch timeline' });
+    }
+  });
+
   // Timeline update endpoint
   app.post('/api/conflicts/:id/update-timeline', async (req, res) => {
     // Ensure JSON response headers are set early
