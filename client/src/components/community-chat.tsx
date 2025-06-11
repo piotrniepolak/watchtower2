@@ -17,6 +17,16 @@ interface ChatMessage {
   isSystem: boolean;
 }
 
+interface DailyQuestion {
+  id: number;
+  sector: string;
+  question: string;
+  context: string;
+  generatedDate: string;
+  discussionId: number;
+  isActive: boolean;
+}
+
 interface CommunityChatProps {}
 
 export function CommunityChat() {
@@ -50,6 +60,18 @@ export function CommunityChat() {
     },
     refetchInterval: 5000, // Poll every 5 seconds for new messages
     staleTime: 0,
+  });
+
+  // Fetch daily question for current sector
+  const { data: dailyQuestion } = useQuery({
+    queryKey: ["/api/daily-questions", chatSector],
+    queryFn: async () => {
+      if (chatSector === "general") return null;
+      const response = await fetch(`/api/daily-questions/${chatSector}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    staleTime: 60000, // Cache for 1 minute
   });
 
   // Send message mutation
@@ -282,6 +304,28 @@ export function CommunityChat() {
         {/* Messages Area */}
         <div className="flex-1 min-h-0 mb-4">
           <ScrollArea className="h-full pr-4">
+            {/* Daily Question Display */}
+            {dailyQuestion && chatSector !== "general" && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Daily Discussion</span>
+                      <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full">
+                        {getSectorLabel(chatSector)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                      {dailyQuestion.question}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
                 <div className="text-slate-500">Loading messages...</div>

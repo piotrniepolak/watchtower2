@@ -2645,9 +2645,20 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
   app.get("/api/daily-questions/:sector", async (req, res) => {
     try {
       const { sector } = req.params;
-      const { date } = req.query as { date?: string };
+      const targetDate = new Date().toISOString().split('T')[0];
       
-      const question = await storage.getDailyQuestion(sector, date as string);
+      // Query database directly since storage method has issues
+      const [question] = await db
+        .select()
+        .from(dailyQuestions)
+        .where(and(
+          eq(dailyQuestions.sector, sector),
+          eq(dailyQuestions.generatedDate, targetDate),
+          eq(dailyQuestions.isActive, true)
+        ))
+        .orderBy(desc(dailyQuestions.createdAt))
+        .limit(1);
+        
       if (!question) {
         return res.status(404).json({ message: "No daily question found" });
       }
