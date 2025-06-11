@@ -233,10 +233,10 @@ export default function Home() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-slate-900 mb-4">
-            Multi-Sector Intelligence Platform
+            Watchtower
           </h1>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Transforming complex global data into actionable insights through AI-driven analysis 
+            Multi-Sector Intelligence Platform transforming complex global data into actionable insights through AI-driven analysis 
             across defense, health, and energy sectors
           </p>
         </div>
@@ -671,9 +671,9 @@ export default function Home() {
                         
                         {selectedSector === 'defense' && conflicts && conflicts.length > 0 && (
                           <Select 
-                            value={selectedConflictId?.toString() || "all"} 
+                            value={selectedConflictId?.toString() || conflicts.filter((c: any) => c.status === 'Active')[0]?.id.toString()} 
                             onValueChange={(value) => {
-                              const newId = value === "all" ? null : parseInt(value);
+                              const newId = parseInt(value);
                               setSelectedConflictId(newId);
                               // Clear storylines cache when conflict changes
                               queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
@@ -684,21 +684,12 @@ export default function Home() {
                                 <div className="flex items-center space-x-2">
                                   <Shield className="w-4 h-4" />
                                   <span>
-                                    {selectedConflictId === null 
-                                      ? "All Conflicts" 
-                                      : conflicts.find((c: any) => c.id === selectedConflictId)?.name || "Select Conflict"
-                                    }
+                                    {conflicts.find((c: any) => c.id === selectedConflictId)?.name || "Select Conflict"}
                                   </span>
                                 </div>
                               </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">
-                                <div className="flex items-center space-x-2">
-                                  <Globe className="w-4 h-4" />
-                                  <span>All Conflicts</span>
-                                </div>
-                              </SelectItem>
                               {conflicts.filter((c: any) => c.status === 'Active').map((conflict: any) => (
                                 <SelectItem key={conflict.id} value={conflict.id.toString()}>
                                   <div className="flex items-center space-x-2">
