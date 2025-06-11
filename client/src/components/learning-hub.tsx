@@ -59,7 +59,6 @@ interface LearningModule {
   description: string;
   icon: any;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
-  estimatedTime: string;
   points: number;
   steps: LearningStep[];
 }
@@ -155,7 +154,6 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Master the core principles of conflict analysis and geopolitical intelligence',
           icon: Shield,
           difficulty: 'beginner',
-          estimatedTime: '15 min',
           points: 100,
           steps: [
             {
@@ -211,7 +209,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Analyze how conflicts drive defense contractor performance and market dynamics',
           icon: Target,
           difficulty: 'intermediate',
-          estimatedTime: '20 min',
+
           points: 150,
           steps: [
             {
@@ -247,9 +245,100 @@ export function LearningHub({}: LearningHubProps) {
                   options: ['Consumer demand', 'Government contracts', 'Trade agreements', 'Commercial markets'],
                   correctAnswer: 'Government contracts',
                   explanation: 'Defense contractors primarily rely on government contracts and military spending programs.',
-                  points: 50
                 }
               ]
+            }
+          ]
+        },
+        {
+          id: 'risk-assessment',
+          title: 'Conflict Risk Assessment',
+          description: 'Master techniques for evaluating escalation risks and investment implications',
+          icon: AlertTriangle,
+          difficulty: 'intermediate',
+          points: 175,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Risk Evaluation Framework',
+              content: `
+                <h3>Systematic Risk Assessment</h3>
+                <p>Professional conflict analysis uses structured methodologies to evaluate risks:</p>
+                <ul>
+                  <li><strong>Escalation Indicators:</strong> Troop movements, diplomatic breaks, sanctions</li>
+                  <li><strong>Economic Impact:</strong> Trade disruption, resource access, supply chains</li>
+                  <li><strong>Regional Spillover:</strong> Alliance obligations, refugee flows, proxy involvement</li>
+                  <li><strong>Timeline Analysis:</strong> Short-term volatility vs long-term structural shifts</li>
+                </ul>
+                <h4>Current Risk Landscape</h4>
+                <p>Active high-risk regions: <strong>${new Set(activeConflicts.filter(c => c.severity === 'High').map(c => c.region)).size}</strong></p>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Risk Assessment Skills',
+              questions: [
+                {
+                  id: 'r1',
+                  type: 'multiple-choice',
+                  question: 'What is the most reliable early indicator of conflict escalation?',
+                  options: ['Media reports', 'Troop movements', 'Economic sanctions', 'Diplomatic protests'],
+                  correctAnswer: 'Troop movements',
+                  explanation: 'Military deployments and troop movements are concrete, observable actions that indicate serious escalation potential.'
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'procurement-cycles',
+          title: 'Defense Procurement Analysis',
+          description: 'Understand government contracting cycles and their market impact',
+          icon: DollarSign,
+          difficulty: 'advanced',
+          points: 200,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Procurement Fundamentals',
+              content: `
+                <h3>Government Defense Contracting</h3>
+                <p>Defense procurement follows predictable patterns that drive stock performance:</p>
+                <ul>
+                  <li><strong>Budget Cycles:</strong> Annual appropriations and multi-year programs</li>
+                  <li><strong>Contract Types:</strong> Fixed-price, cost-plus, indefinite delivery</li>
+                  <li><strong>Competitive Dynamics:</strong> Prime contractors vs subcontractors</li>
+                  <li><strong>Program Lifecycle:</strong> R&D, production, sustainment phases</li>
+                </ul>
+                <h4>Market Impact Analysis</h4>
+                <p>Defense stocks show correlation with contract announcements and budget approvals.</p>
+              `
+            }
+          ]
+        },
+        {
+          id: 'strategic-intelligence',
+          title: 'Strategic Intelligence Integration',
+          description: 'Combine multiple intelligence sources for comprehensive conflict analysis',
+          icon: Brain,
+          difficulty: 'advanced',
+          points: 225,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Intelligence Synthesis',
+              content: `
+                <h3>Multi-Source Analysis</h3>
+                <p>Professional intelligence analysis combines diverse information streams:</p>
+                <ul>
+                  <li><strong>Open Source:</strong> Media, academic research, government reports</li>
+                  <li><strong>Economic Indicators:</strong> Trade flows, commodity prices, currency movements</li>
+                  <li><strong>Satellite Intelligence:</strong> Military buildups, infrastructure changes</li>
+                  <li><strong>Social Indicators:</strong> Public sentiment, protest activity, migration patterns</li>
+                </ul>
+                <h4>Integration Framework</h4>
+                <p>Effective analysis requires systematic correlation of multiple data streams.</p>
+              `
             }
           ]
         }
@@ -1063,10 +1152,7 @@ export function LearningHub({}: LearningHubProps) {
                         <Badge className={cn("text-xs", difficultyColor[module.difficulty])}>
                           {module.difficulty.charAt(0).toUpperCase() + module.difficulty.slice(1)}
                         </Badge>
-                        <div className="flex items-center text-muted-foreground">
-                          <Timer className="h-3 w-3 mr-1" />
-                          {module.estimatedTime}
-                        </div>
+
                         <div className="flex items-center text-muted-foreground">
                           <Award className="h-3 w-3 mr-1" />
                           {module.points} pts
