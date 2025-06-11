@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill, Reply, Star } from "lucide-react";
+import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill, Reply, Star, GraduationCap } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -99,16 +99,18 @@ export function CommunityChat() {
     staleTime: 60000, // Cache for 1 minute
   });
 
-  // Fetch user badges
-  const { data: userBadges = [] } = useQuery({
-    queryKey: ["/api/users/badges", username],
-    queryFn: async () => {
-      const response = await fetch(`/api/users/${username}/badges`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    staleTime: 300000, // Cache for 5 minutes
-  });
+  // Fetch badges for all users (cached per user)
+  const useUserBadges = (targetUsername: string) => {
+    return useQuery({
+      queryKey: ["/api/users/badges", targetUsername],
+      queryFn: async () => {
+        const response = await fetch(`/api/users/${targetUsername}/badges`);
+        if (!response.ok) return [];
+        return response.json();
+      },
+      staleTime: 300000, // Cache for 5 minutes
+    });
+  };
 
   // Track user visit on component mount
   useEffect(() => {
@@ -591,6 +593,9 @@ export function CommunityChat() {
                   const isExpanded = expandedThreads.has(msg.id);
                   const totalReplies = msg.replyCount || 0;
                   
+                  // Get badges for this message's user
+                  const { data: messageBadges = [] } = useUserBadges(msg.username);
+                  
                   return (
                     <div key={msg.id} className="group">
                       {/* Main Message */}
@@ -629,9 +634,9 @@ export function CommunityChat() {
                                         ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
                                         : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
                                     }`}>
-                                      <coFounderInfo.icon className={`w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`} />
-                                      <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[80px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`}>
-                                        {coFounderInfo.sector === 'health' ? 'PharmaWatch' : 'ConflictWatch'}
+                                      {coFounderInfo.icon && <coFounderInfo.icon className={`w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`} />}
+                                      <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[120px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`}>
+                                        {coFounderInfo.sector === 'health' ? 'PharmaWatch Director' : 'ConflictWatch Director'}
                                       </span>
                                     </div>
                                   </div>
@@ -639,12 +644,24 @@ export function CommunityChat() {
                               )}
                               
                               {/* Early Supporter Badge */}
-                              {userBadges.some((badge: Badge) => badge.type === 'early_supporter') && (
+                              {messageBadges.some((badge: any) => badge.type === 'early_supporter') && (
                                 <div className="group/supporter relative">
                                   <div className="flex items-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 px-1 py-0.5 rounded-full border border-yellow-200 dark:border-yellow-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
                                     <Star className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
                                     <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[100px] group-hover/supporter:ml-1">
                                       Early Supporter
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Learning Completionist Badge */}
+                              {messageBadges.some((badge: any) => badge.type === 'learning_completionist') && (
+                                <div className="group/learner relative">
+                                  <div className="flex items-center bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 px-1 py-0.5 rounded-full border border-purple-200 dark:border-purple-700 cursor-pointer transition-all duration-200 group-hover/learner:px-2">
+                                    <GraduationCap className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/learner:opacity-100 group-hover/learner:max-w-[130px] group-hover/learner:ml-1">
+                                      Learning Completionist
                                     </span>
                                   </div>
                                 </div>

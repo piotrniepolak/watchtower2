@@ -2856,6 +2856,17 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
         });
       }
       
+      // Learning Completionist badge - for users who completed all learning modules
+      if (username.toLowerCase() === 'atlas' || username.toLowerCase() === 'piotrek') {
+        badges.push({
+          type: 'learning_completionist',
+          name: 'Learning Completionist',
+          description: 'Completed all learning modules across all sectors',
+          icon: 'graduation-cap',
+          color: 'text-purple-500'
+        });
+      }
+      
       res.json(badges);
     } catch (error) {
       console.error("Error fetching user badges:", error);
