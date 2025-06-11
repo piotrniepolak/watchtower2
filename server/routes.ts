@@ -1826,6 +1826,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get replies for a specific message
+  app.get('/api/chat/messages/:messageId/replies', async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+      
+      if (!messageId) {
+        return res.status(400).json({ error: 'Invalid message ID' });
+      }
+
+      const { chatMessages } = await import('@shared/schema');
+      const { eq, desc } = await import('drizzle-orm');
+      
+      const replies = await db.select().from(chatMessages)
+        .where(eq(chatMessages.replyToId, messageId))
+        .orderBy(desc(chatMessages.timestamp));
+      
+      res.json(replies);
+    } catch (error) {
+      console.error('Error fetching message replies:', error);
+      res.status(500).json({ error: 'Failed to fetch replies' });
+    }
+  });
+
   // Chat API routes (generic category-based discussions)
   app.get('/api/chat/:category', async (req, res) => {
     try {

@@ -372,6 +372,15 @@ export function CommunityChat() {
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                   {dailyQuestion.question}
                 </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 h-7 px-3 text-xs"
+                  onClick={() => replyToDailyQuestion(dailyQuestion.id)}
+                >
+                  <Reply className="w-3 h-3 mr-1" />
+                  Reply to Question
+                </Button>
               </div>
             </div>
           </div>
@@ -394,10 +403,15 @@ export function CommunityChat() {
               </div>
             ) : (
               <div className="space-y-3">
-                {messages.map((msg: ChatMessage) => {
+                {messages.filter(msg => !msg.replyToId).map((msg: ChatMessage) => {
                   const coFounderInfo = getCoFounderInfo(msg.username);
+                  const messageReplies = replies[msg.id] || [];
+                  const isExpanded = expandedThreads.has(msg.id);
+                  const totalReplies = msg.replyCount || 0;
+                  
                   return (
                     <div key={msg.id} className="group">
+                      {/* Main Message */}
                       <div className="flex items-start space-x-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0 ${
                           coFounderInfo.isCoFounder 
@@ -458,9 +472,78 @@ export function CommunityChat() {
                               <Reply className="w-3 h-3 mr-1" />
                               Reply
                             </Button>
+                            {totalReplies > 0 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                onClick={() => toggleThread(msg.id)}
+                              >
+                                <MessageCircle className="w-3 h-3 mr-1" />
+                                {totalReplies} {totalReplies === 1 ? 'reply' : 'replies'}
+                                <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Threaded Replies */}
+                      {totalReplies > 0 && isExpanded && (
+                        <div className="ml-11 mt-3 space-y-3 border-l-2 border-slate-200 dark:border-slate-700 pl-4">
+                          {messageReplies.map((reply: ChatMessage) => {
+                            const replyCoFounderInfo = getCoFounderInfo(reply.username);
+                            return (
+                              <div key={reply.id} className="group">
+                                <div className="flex items-start space-x-3">
+                                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 ${
+                                    replyCoFounderInfo.isCoFounder 
+                                      ? replyCoFounderInfo.sector === 'health' 
+                                        ? 'bg-gradient-to-br from-green-500 to-teal-600' 
+                                        : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                                      : 'bg-gradient-to-br from-slate-400 to-slate-600'
+                                  }`}>
+                                    {reply.username.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-2 mb-1 flex-wrap">
+                                      <span className="font-medium text-slate-900 dark:text-slate-100 text-xs">
+                                        {reply.username}
+                                      </span>
+                                      {replyCoFounderInfo.isCoFounder && (
+                                        <div className="flex items-center space-x-1">
+                                          <Crown className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                                          <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Co-Founder</span>
+                                        </div>
+                                      )}
+                                      {reply.username === username && (
+                                        <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
+                                      )}
+                                      <span className="text-xs text-slate-500">
+                                        {formatTimestamp(reply.timestamp)}
+                                      </span>
+                                    </div>
+                                    <div className="text-slate-700 dark:text-slate-300 text-xs leading-relaxed break-words">
+                                      {reply.message}
+                                    </div>
+                                    <div className="flex items-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                                        onClick={() => setReplyingTo({ id: msg.id, username: reply.username })}
+                                      >
+                                        <Reply className="w-2.5 h-2.5 mr-1" />
+                                        Reply
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
