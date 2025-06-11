@@ -654,36 +654,165 @@ export default function Home() {
                     </TabsContent>
 
                     <TabsContent value="storylines" className="h-[320px] overflow-y-auto space-y-4">
-                      {/* Conflict Selection for Defense Sector */}
-                      {selectedSector === 'defense' && conflicts && conflicts.length > 0 && (
-                        <div className="mb-4 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border border-red-200">
-                          <div className="flex items-center mb-2">
-                            <Shield className="h-4 w-4 text-red-600 mr-2" />
-                            <span className="text-sm font-medium text-red-800">Select Conflict for Analysis</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button 
-                              variant={selectedConflictId === null ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setSelectedConflictId(null)}
-                              className="text-xs"
-                            >
-                              All Conflicts
-                            </Button>
-                            {conflicts.filter((c: any) => c.status === 'Active').slice(0, 3).map((conflict: any) => (
-                              <Button
-                                key={conflict.id}
-                                variant={selectedConflictId === conflict.id ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setSelectedConflictId(conflict.id)}
-                                className="text-xs"
-                              >
-                                {conflict.name.length > 20 ? conflict.name.substring(0, 20) + '...' : conflict.name}
-                              </Button>
-                            ))}
+                      {/* Universal Dropdown Selection for All Sectors */}
+                      <div className="mb-4 p-3 bg-gradient-to-r from-slate-50 to-blue-50 rounded-lg border border-slate-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            {selectedSector === 'defense' && <Shield className="h-4 w-4 text-blue-600 mr-2" />}
+                            {selectedSector === 'health' && <Pill className="h-4 w-4 text-green-600 mr-2" />}
+                            {selectedSector === 'energy' && <Zap className="h-4 w-4 text-orange-600 mr-2" />}
+                            <span className="text-sm font-medium text-slate-800">
+                              {selectedSector === 'defense' && 'Select Conflict for Analysis'}
+                              {selectedSector === 'health' && 'Select Health Focus Area'}
+                              {selectedSector === 'energy' && 'Select Energy Focus Area'}
+                            </span>
                           </div>
                         </div>
-                      )}
+                        
+                        {selectedSector === 'defense' && conflicts && conflicts.length > 0 && (
+                          <Select 
+                            value={selectedConflictId?.toString() || "all"} 
+                            onValueChange={(value) => {
+                              const newId = value === "all" ? null : parseInt(value);
+                              setSelectedConflictId(newId);
+                              // Clear storylines cache when conflict changes
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Shield className="w-4 h-4" />
+                                  <span>
+                                    {selectedConflictId === null 
+                                      ? "All Conflicts" 
+                                      : conflicts.find((c: any) => c.id === selectedConflictId)?.name || "Select Conflict"
+                                    }
+                                  </span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>All Conflicts</span>
+                                </div>
+                              </SelectItem>
+                              {conflicts.filter((c: any) => c.status === 'Active').map((conflict: any) => (
+                                <SelectItem key={conflict.id} value={conflict.id.toString()}>
+                                  <div className="flex items-center space-x-2">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    <span>{conflict.name}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        
+                        {selectedSector === 'health' && (
+                          <Select 
+                            value={selectedConflictId?.toString() || "global"} 
+                            onValueChange={(value) => {
+                              const newId = value === "global" ? null : parseInt(value);
+                              setSelectedConflictId(newId);
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Pill className="w-4 h-4" />
+                                  <span>
+                                    {selectedConflictId === null ? "Global Health Trends" : 
+                                     selectedConflictId === 1 ? "Pandemic Preparedness" :
+                                     selectedConflictId === 2 ? "Healthcare Innovation" :
+                                     selectedConflictId === 3 ? "Drug Development" : "Select Focus Area"}
+                                  </span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>Global Health Trends</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="1">
+                                <div className="flex items-center space-x-2">
+                                  <Shield className="w-4 h-4" />
+                                  <span>Pandemic Preparedness</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="2">
+                                <div className="flex items-center space-x-2">
+                                  <Target className="w-4 h-4" />
+                                  <span>Healthcare Innovation</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="3">
+                                <div className="flex items-center space-x-2">
+                                  <Activity className="w-4 h-4" />
+                                  <span>Drug Development</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        
+                        {selectedSector === 'energy' && (
+                          <Select 
+                            value={selectedConflictId?.toString() || "global"} 
+                            onValueChange={(value) => {
+                              const newId = value === "global" ? null : parseInt(value);
+                              setSelectedConflictId(newId);
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Zap className="w-4 h-4" />
+                                  <span>
+                                    {selectedConflictId === null ? "Global Energy Markets" : 
+                                     selectedConflictId === 1 ? "Renewable Transition" :
+                                     selectedConflictId === 2 ? "Oil & Gas Markets" :
+                                     selectedConflictId === 3 ? "Energy Security" : "Select Focus Area"}
+                                  </span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>Global Energy Markets</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="1">
+                                <div className="flex items-center space-x-2">
+                                  <Zap className="w-4 h-4" />
+                                  <span>Renewable Transition</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="2">
+                                <div className="flex items-center space-x-2">
+                                  <BarChart3 className="w-4 h-4" />
+                                  <span>Oil & Gas Markets</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="3">
+                                <div className="flex items-center space-x-2">
+                                  <Shield className="w-4 h-4" />
+                                  <span>Energy Security</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
 
                       {storylinesLoading ? (
                         <div className="flex items-center justify-center h-32">
