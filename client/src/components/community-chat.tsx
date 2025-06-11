@@ -116,6 +116,9 @@ export function CommunityChat() {
       // Clear replies cache to force refresh
       setReplies({});
       setExpandedThreads(new Set());
+      // Clear daily question replies to force refresh
+      setDailyQuestionReplies([]);
+      setShowDailyQuestionReplies(false);
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
     },
   });
@@ -124,6 +127,25 @@ export function CommunityChat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Fetch daily question replies when daily question changes
+  useEffect(() => {
+    const fetchDailyQuestionReplies = async () => {
+      if (dailyQuestion?.id) {
+        try {
+          const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies`);
+          if (response.ok) {
+            const replies = await response.json();
+            setDailyQuestionReplies(replies);
+          }
+        } catch (error) {
+          console.error('Failed to fetch daily question replies:', error);
+        }
+      }
+    };
+
+    fetchDailyQuestionReplies();
+  }, [dailyQuestion?.id]);
 
   // WebSocket connection for real-time updates
   useEffect(() => {
@@ -198,6 +220,25 @@ export function CommunityChat() {
 
   const replyToDailyQuestion = (questionId: number) => {
     setReplyingTo({ id: questionId, username: "Daily Question" });
+  };
+
+  const toggleDailyQuestionReplies = async () => {
+    if (!dailyQuestion) return;
+    
+    if (!showDailyQuestionReplies) {
+      // Fetch daily question replies
+      try {
+        const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies`);
+        if (response.ok) {
+          const replies = await response.json();
+          setDailyQuestionReplies(replies);
+        }
+      } catch (error) {
+        console.error('Failed to fetch daily question replies:', error);
+      }
+    }
+    
+    setShowDailyQuestionReplies(!showDailyQuestionReplies);
   };
 
   const checkUsernameAvailability = async (usernameToCheck: string) => {
@@ -388,8 +429,65 @@ export function CommunityChat() {
                 <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                   {dailyQuestion.question}
                 </p>
+                
+                {/* Daily Question Replies Toggle */}
+                {dailyQuestionReplies.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2 h-6 px-2 text-xs text-slate-600 dark:text-slate-400"
+                    onClick={toggleDailyQuestionReplies}
+                  >
+                    <MessageCircle className="w-3 h-3 mr-1" />
+                    {dailyQuestionReplies.length} {dailyQuestionReplies.length === 1 ? 'reply' : 'replies'}
+                    <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${showDailyQuestionReplies ? 'rotate-180' : ''}`} />
+                  </Button>
+                )}
               </div>
             </div>
+            
+            {/* Daily Question Replies */}
+            {showDailyQuestionReplies && dailyQuestionReplies.length > 0 && (
+              <div className="mt-3 ml-11 space-y-3 border-l-2 border-blue-200 dark:border-blue-700 pl-4">
+                {dailyQuestionReplies.map((reply) => {
+                  const replyCoFounderInfo = getCoFounderInfo(reply.username);
+                  return (
+                    <div key={reply.id} className="group">
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 ${
+                          replyCoFounderInfo.isCoFounder 
+                            ? replyCoFounderInfo.sector === 'health' 
+                              ? 'bg-gradient-to-br from-green-500 to-teal-600' 
+                              : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                            : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                        }`}>
+                          {reply.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="font-medium text-slate-900 dark:text-slate-100 text-xs">
+                              {reply.username}
+                            </span>
+                            {replyCoFounderInfo.isCoFounder && (
+                              <div className="flex items-center space-x-1">
+                                <Crown className="w-2.5 h-2.5 text-amber-500" />
+                                <span className="text-xs text-amber-600 dark:text-amber-400">Co-Founder</span>
+                              </div>
+                            )}
+                            <span className="text-xs text-slate-500">
+                              {formatTimestamp(reply.timestamp)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                            {reply.message}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
