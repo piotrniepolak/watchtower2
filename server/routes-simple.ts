@@ -1145,12 +1145,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generic sector metrics endpoint
   app.get('/api/sectors/:sectorKey/metrics', async (req, res) => {
     try {
+      console.log(`🔥 SECTOR METRICS REQUEST: ${req.params.sectorKey}`);
       const sector = getSector(req.params.sectorKey);
       if (!sector) {
+        console.log(`❌ Sector not found: ${req.params.sectorKey}`);
         return res.status(404).json({ error: 'Sector not found' });
       }
 
       const stocks = await storage.getStocks();
+      console.log(`📊 Total stocks in database: ${stocks.length}`);
       
       // Map sector keys to database sector names
       const sectorMapping: Record<string, string> = {
@@ -1161,6 +1164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const dbSectorName = sectorMapping[req.params.sectorKey];
       const sectorStocks = stocks.filter(stock => stock.sector === dbSectorName);
+      console.log(`🎯 ${req.params.sectorKey} stocks found: ${sectorStocks.length}`);
 
       const avgChange = sectorStocks.length > 0 ? 
         sectorStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sectorStocks.length : 0;
