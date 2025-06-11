@@ -48,7 +48,7 @@ export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   username: text("username").notNull(),
   message: text("message").notNull(),
-  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  timestamp: timestamp("timestamp").defaultNow(),
   sector: text("sector"), // Optional: defense, health, energy
   isSystem: boolean("is_system").default(false),
 });
@@ -214,7 +214,10 @@ export type InsertUserQuizResponse = z.infer<typeof insertUserQuizResponseSchema
 export type UserQuizResponse = typeof userQuizResponses.$inferSelect;
 
 // Chat Message Schema
-export const insertChatMessageSchema = createInsertSchema(chatMessages);
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  timestamp: true,
+});
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
