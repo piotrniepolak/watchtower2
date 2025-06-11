@@ -352,45 +352,6 @@ export default function Home() {
           })}
         </div>
 
-        {/* Features Overview */}
-        <Card className="mb-12">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Target className="h-6 w-6 text-blue-600" />
-              <span>Platform Capabilities</span>
-            </CardTitle>
-            <CardDescription>
-              Advanced analytics and intelligence across multiple sectors
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="bg-blue-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                  <BarChart3 className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Real-time Analytics</h3>
-                <p className="text-sm text-slate-600">Live data processing and visualization from multiple sources</p>
-              </div>
-              <div className="text-center">
-                <div className="bg-green-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                  <Activity className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="font-semibold mb-2">AI-Powered Insights</h3>
-                <p className="text-sm text-slate-600">Machine learning algorithms for predictive analysis</p>
-              </div>
-              <div className="text-center">
-                <div className="bg-purple-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                  <Globe className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Global Coverage</h3>
-                <p className="text-sm text-slate-600">Comprehensive data from 195+ countries worldwide</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-
 
         {/* AI Analysis Section */}
         <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
