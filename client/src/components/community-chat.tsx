@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill } from "lucide-react";
+import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill, Reply } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -15,6 +15,8 @@ interface ChatMessage {
   timestamp: string;
   sector?: string;
   isSystem: boolean;
+  replyToId?: number;
+  replyToUser?: string;
 }
 
 interface DailyQuestion {
@@ -46,6 +48,7 @@ export function CommunityChat() {
   const [usernameError, setUsernameError] = useState<string>("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [onlineCount, setOnlineCount] = useState(0);
+  const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -67,7 +70,14 @@ export function CommunityChat() {
     queryKey: ["/api/daily-questions", chatSector],
     queryFn: async () => {
       if (chatSector === "general") return null;
-      const response = await fetch(`/api/daily-questions/${chatSector}`);
+      // Map frontend sector names to backend sector names
+      const sectorMapping: { [key: string]: string } = {
+        'health': 'healthcare',
+        'defense': 'defense',
+        'energy': 'energy'
+      };
+      const backendSector = sectorMapping[chatSector] || chatSector;
+      const response = await fetch(`/api/daily-questions/${backendSector}`);
       if (!response.ok) return null;
       return response.json();
     },
@@ -238,7 +248,8 @@ export function CommunityChat() {
   const getSectorLabel = (sector: string) => {
     switch (sector) {
       case 'defense': return 'ConflictWatch';
-      case 'health': return 'HealthWatch';
+      case 'health': return 'PharmaWatch';
+      case 'healthcare': return 'PharmaWatch';
       case 'energy': return 'EnergyWatch';
       default: return 'General';
     }
