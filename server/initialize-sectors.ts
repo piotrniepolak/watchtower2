@@ -60,8 +60,7 @@ export async function initializeAllSectorStocks() {
       changePercent: (Math.random() - 0.5) * 10,
       volume: Math.floor(Math.random() * 10000000) + 500000,
       marketCap: `$${(Math.random() * 500 + 10).toFixed(1)}B`,
-      sector: stock.sector,
-      lastUpdated: new Date()
+      sector: stock.sector
     });
   }
 

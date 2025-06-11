@@ -339,27 +339,36 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5 text-red-600" />
-              <span>Top Energy Performers</span>
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <span>Energy Market Trends</span>
             </CardTitle>
-            <CardDescription>Energy stocks most affected by regulatory changes</CardDescription>
+            <CardDescription>Key trends affecting energy sector performance</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sectorStocks.slice(0, 5).map((stock, index: number) => (
-                <div key={stock.symbol} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{stock.symbol}</p>
-                    <p className="text-sm text-muted-foreground">{stock.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">${stock.price}</p>
-                    <p className={`text-sm ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Oil Price Volatility</p>
+                  <p className="text-sm text-muted-foreground">WTI Crude fluctuations</p>
                 </div>
-              ))}
+                <Badge variant="secondary">Moderate</Badge>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Renewable Energy Growth</p>
+                  <p className="text-sm text-muted-foreground">Solar and wind expansion</p>
+                </div>
+                <Badge variant="default">Rising</Badge>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Natural Gas Demand</p>
+                  <p className="text-sm text-muted-foreground">Industrial consumption</p>
+                </div>
+                <Badge variant="outline">Stable</Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
