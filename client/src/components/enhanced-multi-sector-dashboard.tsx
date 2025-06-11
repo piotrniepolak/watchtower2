@@ -229,33 +229,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-              <span>Top Pharma Performers</span>
-            </CardTitle>
-            <CardDescription>Healthcare stocks with highest correlation to health events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {sectorStocks.slice(0, 5).map((stock, index: number) => (
-                <div key={stock.symbol} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{stock.symbol}</p>
-                    <p className="text-sm text-muted-foreground">{stock.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">${stock.price}</p>
-                    <p className={`text-sm ${stock.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
     </div>
   );

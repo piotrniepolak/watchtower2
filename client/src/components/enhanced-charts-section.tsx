@@ -6,7 +6,11 @@ import CompanyLogo from "./company-logo";
 import GeopoliticalLoader from "@/components/geopolitical-loader";
 import { useState } from "react";
 
-export default function EnhancedChartsSection() {
+interface EnhancedChartsSectionProps {
+  sector?: string;
+}
+
+function EnhancedChartsSection({ sector = "defense" }: EnhancedChartsSectionProps) {
   const [expandedStock, setExpandedStock] = useState<string | null>(null);
   
   const { data: stocks, isLoading: stocksLoading } = useQuery({
