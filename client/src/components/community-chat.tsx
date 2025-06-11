@@ -107,8 +107,9 @@ export function CommunityChat() {
     // Debug: log the username being checked
     console.log('Getting badges for username:', targetUsername);
     
-    // Check for Atlas and Piotrek (case-sensitive)
-    if (targetUsername === 'Atlas' || targetUsername === 'Piotrek' || targetUsername === 'polakp') {
+    // Check for Atlas, Piotrek, and polakp (including variations)
+    if (targetUsername === 'Atlas' || targetUsername === 'Atlas Loutfi' || 
+        targetUsername === 'Piotrek' || targetUsername === 'polakp') {
       console.log('Adding early supporter and learning badges for:', targetUsername);
       badges.push(
         { type: 'early_supporter', name: 'Early Supporter', icon: 'Star', color: 'text-yellow-600' },
