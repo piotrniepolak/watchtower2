@@ -1666,14 +1666,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if username has been used in previous messages
-      console.log('Checking for existing messages with username:', username);
       const existingMessage = await db.select().from(chatMessages)
         .where(eq(chatMessages.username, username))
         .limit(1);
       
-      console.log('Found existing messages:', existingMessage.length);
       if (existingMessage.length > 0) {
-        console.log('Username found in messages:', existingMessage[0].username);
         return res.json({ 
           available: false, 
           reason: 'Username has been used by another user' 
