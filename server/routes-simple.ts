@@ -941,24 +941,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat API routes
-  app.get('/api/chat/messages', async (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 30;
-      const sector = req.query.sector as string || 'general';
-      
-      console.log('Chat messages request - limit:', limit, 'sector:', sector);
-      
-      // Use storage to get chat messages
-      const messages = await storage.getChatMessages(limit, sector);
-      
-      console.log('Query result:', messages.length, 'messages found');
-      res.json(messages);
-    } catch (error) {
-      console.error('Error fetching chat messages:', error);
-      res.status(500).json({ error: 'Failed to fetch messages' });
-    }
-  });
-
   app.get('/api/chat/:category', async (req, res) => {
     try {
       const category = req.params.category || 'general';
@@ -971,13 +953,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Expires': '0'
       });
       
-      // Redirect to proper endpoint
-      const messages = await db.select().from(chatMessages)
-        .where(eq(chatMessages.sector, category === 'general' ? null : category))
-        .orderBy(desc(chatMessages.timestamp))
-        .limit(limit);
-      
-      res.json(messages.reverse());
+      const messages = await storage.getDiscussions(limit, 0, category);
+      res.json(messages);
     } catch (error) {
       console.error("Error fetching chat messages:", error);
       res.status(500).json({ error: "Failed to fetch messages" });
@@ -1168,15 +1145,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generic sector metrics endpoint
   app.get('/api/sectors/:sectorKey/metrics', async (req, res) => {
     try {
-      console.log(`🔥 SECTOR METRICS REQUEST: ${req.params.sectorKey}`);
       const sector = getSector(req.params.sectorKey);
       if (!sector) {
-        console.log(`❌ Sector not found: ${req.params.sectorKey}`);
         return res.status(404).json({ error: 'Sector not found' });
       }
 
       const stocks = await storage.getStocks();
-      console.log(`📊 Total stocks in database: ${stocks.length}`);
       
       // Map sector keys to database sector names
       const sectorMapping: Record<string, string> = {
@@ -1187,7 +1161,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const dbSectorName = sectorMapping[req.params.sectorKey];
       const sectorStocks = stocks.filter(stock => stock.sector === dbSectorName);
-      console.log(`🎯 ${req.params.sectorKey} stocks found: ${sectorStocks.length}`);
 
       const avgChange = sectorStocks.length > 0 ? 
         sectorStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sectorStocks.length : 0;

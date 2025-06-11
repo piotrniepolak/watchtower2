@@ -33,15 +33,14 @@ import CaseStudies from "@/pages/case-studies";
 import Trends from "@/pages/trends";
 import MarketAnalysis from "@/pages/market-analysis";
 import Home from "@/pages/home";
-import StreamlinedHome from "@/pages/streamlined-home";
 
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={StreamlinedHome} />
-      <Route path="/home" component={StreamlinedHome} />
+      <Route path="/" component={Home} />
+      <Route path="/home" component={Home} />
       <Route path="/landing" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />

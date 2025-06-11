@@ -1372,30 +1372,14 @@ export class MemStorage implements IStorage {
   // Chat Messages
   async getChatMessages(limit: number = 50, sector?: string): Promise<ChatMessage[]> {
     try {
-      let messages;
+      let query = db.select().from(chatMessages).orderBy(desc(chatMessages.timestamp)).limit(limit);
       
-      if (sector === 'general') {
-        // For general chat, get messages with null sector
-        messages = await db.select().from(chatMessages)
-          .where(and(
-            eq(chatMessages.sector, null as any),
-            eq(chatMessages.dailyQuestionId, null as any)
-          ))
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
-      } else if (sector) {
-        // For specific sectors
-        messages = await db.select().from(chatMessages)
-          .where(eq(chatMessages.sector, sector))
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
-      } else {
-        // Default: get all messages
-        messages = await db.select().from(chatMessages)
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
+      if (sector) {
+        const messages = await query.where(eq(chatMessages.sector, sector));
+        return messages.reverse();
       }
       
+      const messages = await query;
       return messages.reverse(); // Return in chronological order
     } catch (error) {
       console.error('Error fetching chat messages:', error);
