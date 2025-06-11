@@ -1650,17 +1650,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ available: false, reason: 'Username is reserved' });
       }
       
-      const { chatUsers } = await import('@shared/schema');
+      const { chatUsers, chatMessages } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
       
+      // Check if username is already registered
       const existingUser = await db.select().from(chatUsers)
         .where(eq(chatUsers.username, username))
         .limit(1);
       
-      const available = existingUser.length === 0;
+      if (existingUser.length > 0) {
+        return res.json({ 
+          available: false, 
+          reason: 'Username is already taken' 
+        });
+      }
+      
+      // Check if username has been used in previous messages
+      console.log('Checking for existing messages with username:', username);
+      const existingMessage = await db.select().from(chatMessages)
+        .where(eq(chatMessages.username, username))
+        .limit(1);
+      
+      console.log('Found existing messages:', existingMessage.length);
+      if (existingMessage.length > 0) {
+        console.log('Username found in messages:', existingMessage[0].username);
+        return res.json({ 
+          available: false, 
+          reason: 'Username has been used by another user' 
+        });
+      }
+      
       res.json({ 
-        available, 
-        reason: available ? null : 'Username is already taken' 
+        available: true, 
+        reason: null 
       });
     } catch (error) {
       console.error('Error checking username availability:', error);
