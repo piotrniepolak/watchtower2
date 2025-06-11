@@ -158,9 +158,24 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               </div>
             </Link>
 
+            {/* Home button - positioned between logo and sector selector */}
+            <div className="ml-6">
+              <Link 
+                href="/home" 
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center space-x-2 ${
+                  isActive("/home") 
+                    ? "bg-blue-100 text-blue-700" 
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                }`}
+              >
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+            </div>
+
             {/* Sector Selector - Only show on dashboard */}
             {location === "/" && (
-              <div className="ml-6">
+              <div className="ml-4">
                 <Select value={currentSector} onValueChange={onSectorChange}>
                   <SelectTrigger className="w-36 h-8 text-xs border-slate-300">
                     <SelectValue />
@@ -192,21 +207,6 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
             {/* Navigation links */}
             <div className="hidden md:block ml-8">
               <div className="flex items-center space-x-6">
-                {/* Home tab - always visible */}
-                <Link 
-                  href="/home" 
-                  className={`px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center space-x-1 ${
-                    isActive("/home") 
-                      ? "bg-blue-100 text-blue-700" 
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                >
-                  <Home className="h-3 w-3" />
-                  <span>Home</span>
-                </Link>
-
-
-
                 {config.navigation.map((navItem) => (
                   <Link 
                     key={navItem.key}
