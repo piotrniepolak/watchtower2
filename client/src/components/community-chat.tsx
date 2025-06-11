@@ -86,7 +86,13 @@ export function CommunityChat() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async (messageData: { username: string; message: string; sector?: string }) => {
+    mutationFn: async (messageData: { 
+      username: string; 
+      message: string; 
+      sector?: string;
+      replyToId?: number;
+      replyToUser?: string;
+    }) => {
       const response = await fetch("/api/chat/messages", {
         method: "POST",
         headers: {
@@ -99,6 +105,7 @@ export function CommunityChat() {
     },
     onSuccess: () => {
       setMessage("");
+      setReplyingTo(null);
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
     },
   });
@@ -149,6 +156,8 @@ export function CommunityChat() {
       username,
       message: message.trim(),
       sector: chatSector,
+      replyToId: replyingTo?.id,
+      replyToUser: replyingTo?.username,
     });
   };
 
@@ -312,30 +321,31 @@ export function CommunityChat() {
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-4 pt-0 min-h-0">
+        {/* Sticky Daily Question Display */}
+        {dailyQuestion && chatSector !== "general" && (
+          <div className="sticky top-0 z-10 mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-lg shadow-sm">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Daily Discussion</span>
+                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full">
+                    {getSectorLabel(chatSector)}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                  {dailyQuestion.question}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Messages Area */}
         <div className="flex-1 min-h-0 mb-4">
           <ScrollArea className="h-full pr-4">
-            {/* Daily Question Display */}
-            {dailyQuestion && chatSector !== "general" && (
-              <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Daily Discussion</span>
-                      <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full">
-                        {getSectorLabel(chatSector)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                      {dailyQuestion.question}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
@@ -394,8 +404,26 @@ export function CommunityChat() {
                               {formatTimestamp(msg.timestamp)}
                             </span>
                           </div>
+                          {msg.replyToId && (
+                            <div className="mb-2 p-2 bg-slate-100 dark:bg-slate-800 rounded border-l-2 border-blue-400">
+                              <span className="text-xs text-slate-600 dark:text-slate-400">
+                                Replying to @{msg.replyToUser}
+                              </span>
+                            </div>
+                          )}
                           <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed break-words">
                             {msg.message}
+                          </div>
+                          <div className="flex items-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                              onClick={() => setReplyingTo({ id: msg.id, username: msg.username })}
+                            >
+                              <Reply className="w-3 h-3 mr-1" />
+                              Reply
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -472,6 +500,28 @@ export function CommunityChat() {
             </button>
           )}
         </div>
+
+        {/* Reply Indicator */}
+        {replyingTo && (
+          <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Reply className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">
+                  Replying to @{replyingTo.username}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                onClick={() => setReplyingTo(null)}
+              >
+                ×
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Message Input */}
         <div className="flex items-center space-x-2">
