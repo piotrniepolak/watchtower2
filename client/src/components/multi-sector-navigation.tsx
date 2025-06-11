@@ -35,7 +35,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Shield,
     color: "from-blue-600 to-purple-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/" },
+      { key: "dashboard", label: "Dashboard", href: "/dashboard?sector=defense" },
       { key: "conflicts", label: "Conflicts", href: "/conflicts" },
       { key: "markets", label: "Markets", href: "/markets" },
       { key: "reports", label: "Reports", href: "/reports" },
@@ -49,7 +49,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Pill,
     color: "from-green-600 to-teal-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/" },
+      { key: "dashboard", label: "Dashboard", href: "/dashboard?sector=health" },
       { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
       { key: "pharma", label: "Pharma Markets", href: "/pharma" },
       { key: "research", label: "Research Intel", href: "/research" },
@@ -63,7 +63,7 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Zap,
     color: "from-orange-600 to-red-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/" },
+      { key: "dashboard", label: "Dashboard", href: "/dashboard?sector=energy" },
       { key: "regulations", label: "Regulations", href: "/regulations" },
       { key: "commodities", label: "Commodities", href: "/commodities" },
       { key: "analysis", label: "Market Analysis", href: "/market-analysis" },
