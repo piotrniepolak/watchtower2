@@ -1,6 +1,6 @@
 import { 
   conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
-  discussions, discussionReplies, discussionVotes, chatMessages, quizQuestions, quizResponses, learningStats, dailyQuestions,
+  discussions, discussionReplies, discussionVotes, chatMessages, quizQuestions, quizResponses, learningStats, dailyQuestions, userVisits,
   type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
   type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser,
   type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote,

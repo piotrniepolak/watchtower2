@@ -89,6 +89,16 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const userVisits = pgTable("user_visits", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  firstVisit: timestamp("first_visit").notNull(),
+  lastVisit: timestamp("last_visit").notNull(),
+  visitCount: integer("visit_count").notNull().default(1),
+}, (table) => ({
+  usernameIdx: index("user_visits_username_idx").on(table.username),
+}));
+
 export const stockWatchlists = pgTable("stock_watchlists", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").references(() => users.id).notNull(),
@@ -133,6 +143,10 @@ export const insertStockWatchlistSchema = createInsertSchema(stockWatchlists).om
 export const insertConflictWatchlistSchema = createInsertSchema(conflictWatchlists).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertUserVisitSchema = createInsertSchema(userVisits).omit({
+  id: true,
 });
 
 // Relations
