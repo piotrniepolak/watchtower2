@@ -104,13 +104,9 @@ export function CommunityChat() {
     // Default badges for specific users
     const badges = [];
     
-    // Debug: log the username being checked
-    console.log('Getting badges for username:', targetUsername);
-    
     // Check for Atlas, Piotrek, and polakp (including variations)
     if (targetUsername === 'Atlas' || targetUsername === 'Atlas Loutfi' || 
         targetUsername === 'Piotrek' || targetUsername === 'polakp') {
-      console.log('Adding early supporter and learning badges for:', targetUsername);
       badges.push(
         { type: 'early_supporter', name: 'Early Supporter', icon: 'Star', color: 'text-yellow-600' },
         { type: 'learning_completionist', name: 'Learning Completionist', icon: 'GraduationCap', color: 'text-purple-600' }
@@ -120,7 +116,6 @@ export function CommunityChat() {
     // Add sector-specific badges based on co-founder status
     const coFounderInfo = getCoFounderInfo(targetUsername);
     if (coFounderInfo.isCoFounder) {
-      console.log('Adding sector director badge for:', targetUsername);
       badges.push({
         type: 'sector_director',
         name: coFounderInfo.sector === 'health' ? 'PharmaWatch Director' : 'ConflictWatch Director',
@@ -128,8 +123,6 @@ export function CommunityChat() {
         color: coFounderInfo.color
       });
     }
-    
-    console.log('Final badges for', targetUsername, ':', badges);
     return badges;
   };
 
@@ -648,15 +641,15 @@ export function CommunityChat() {
                                       </span>
                                     </div>
                                   </div>
-                                  {/* Sector Badge */}
-                                  <div className="group/sector relative">
-                                    <div className={`flex items-center px-1 py-0.5 rounded-full border cursor-pointer transition-all duration-200 group-hover/sector:px-2 ${
+                                  {/* Sector Badge - Always Expanded */}
+                                  <div className="relative">
+                                    <div className={`flex items-center px-2 py-0.5 rounded-full border ${
                                       coFounderInfo.sector === 'health' 
                                         ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
                                         : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
                                     }`}>
                                       {coFounderInfo.icon && React.createElement(coFounderInfo.icon, { className: `w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}` })}
-                                      <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[120px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`}>
+                                      <span className={`text-xs font-medium ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`}>
                                         {coFounderInfo.sector === 'health' ? 'PharmaWatch Director' : 'ConflictWatch Director'}
                                       </span>
                                     </div>
@@ -671,8 +664,8 @@ export function CommunityChat() {
                                     <div key={badgeIndex} className="group/supporter relative">
                                       <div className="flex items-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 px-1 py-0.5 rounded-full border border-yellow-200 dark:border-yellow-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
                                         <Star className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
-                                        <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[100px] group-hover/supporter:ml-1">
-                                          Early Supporter
+                                        <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[80px] group-hover/supporter:ml-1 leading-tight">
+                                          Early<br />Supporter
                                         </span>
                                       </div>
                                     </div>
