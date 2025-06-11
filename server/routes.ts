@@ -1770,8 +1770,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Querying with sector filter:', sector);
         // Handle "general" sector by filtering for null values in database
         if (sector === 'general') {
+          const { and } = await import('drizzle-orm');
           const rawMessages = await db.select().from(chatMessages)
-            .where(isNull(chatMessages.sector))
+            .where(and(
+              isNull(chatMessages.sector),
+              isNull(chatMessages.dailyQuestionId) // Exclude daily question replies
+            ))
             .orderBy(desc(chatMessages.timestamp))
             .limit(limit);
           
@@ -1786,8 +1790,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             };
           }));
         } else {
+          const { and } = await import('drizzle-orm');
           const rawMessages = await db.select().from(chatMessages)
-            .where(eq(chatMessages.sector, sector))
+            .where(and(
+              eq(chatMessages.sector, sector),
+              isNull(chatMessages.dailyQuestionId) // Exclude daily question replies
+            ))
             .orderBy(desc(chatMessages.timestamp))
             .limit(limit);
           
@@ -1805,6 +1813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         console.log('Querying all messages');
         const rawMessages = await db.select().from(chatMessages)
+          .where(isNull(chatMessages.dailyQuestionId)) // Exclude daily question replies
           .orderBy(desc(chatMessages.timestamp))
           .limit(limit);
         
