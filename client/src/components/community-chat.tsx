@@ -104,7 +104,12 @@ export function CommunityChat() {
     // Default badges for specific users
     const badges = [];
     
-    if (targetUsername === 'Atlas' || targetUsername === 'Piotrek') {
+    // Debug: log the username being checked
+    console.log('Getting badges for username:', targetUsername);
+    
+    // Check for Atlas and Piotrek (case-sensitive)
+    if (targetUsername === 'Atlas' || targetUsername === 'Piotrek' || targetUsername === 'polakp') {
+      console.log('Adding early supporter and learning badges for:', targetUsername);
       badges.push(
         { type: 'early_supporter', name: 'Early Supporter', icon: 'Star', color: 'text-yellow-600' },
         { type: 'learning_completionist', name: 'Learning Completionist', icon: 'GraduationCap', color: 'text-purple-600' }
@@ -114,6 +119,7 @@ export function CommunityChat() {
     // Add sector-specific badges based on co-founder status
     const coFounderInfo = getCoFounderInfo(targetUsername);
     if (coFounderInfo.isCoFounder) {
+      console.log('Adding sector director badge for:', targetUsername);
       badges.push({
         type: 'sector_director',
         name: coFounderInfo.sector === 'health' ? 'PharmaWatch Director' : 'ConflictWatch Director',
@@ -122,6 +128,7 @@ export function CommunityChat() {
       });
     }
     
+    console.log('Final badges for', targetUsername, ':', badges);
     return badges;
   };
 
@@ -656,29 +663,36 @@ export function CommunityChat() {
                                 </>
                               )}
                               
-                              {/* Early Supporter Badge */}
-                              {messageBadges.some((badge: any) => badge.type === 'early_supporter') && (
-                                <div className="group/supporter relative">
-                                  <div className="flex items-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 px-1 py-0.5 rounded-full border border-yellow-200 dark:border-yellow-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
-                                    <Star className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
-                                    <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[100px] group-hover/supporter:ml-1">
-                                      Early Supporter
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Learning Completionist Badge */}
-                              {messageBadges.some((badge: any) => badge.type === 'learning_completionist') && (
-                                <div className="group/learner relative">
-                                  <div className="flex items-center bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 px-1 py-0.5 rounded-full border border-purple-200 dark:border-purple-700 cursor-pointer transition-all duration-200 group-hover/learner:px-2">
-                                    <GraduationCap className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                                    <span className="text-xs font-medium text-purple-700 dark:text-purple-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/learner:opacity-100 group-hover/learner:max-w-[130px] group-hover/learner:ml-1">
-                                      Learning Completionist
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
+                              {/* Dynamic Badge Rendering */}
+                              {messageBadges.map((badge: any, badgeIndex: number) => {
+                                if (badge.type === 'early_supporter') {
+                                  return (
+                                    <div key={badgeIndex} className="group/supporter relative">
+                                      <div className="flex items-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 px-1 py-0.5 rounded-full border border-yellow-200 dark:border-yellow-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
+                                        <Star className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
+                                        <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[100px] group-hover/supporter:ml-1">
+                                          Early Supporter
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                
+                                if (badge.type === 'learning_completionist') {
+                                  return (
+                                    <div key={badgeIndex} className="group/learner relative">
+                                      <div className="flex items-center bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 px-1 py-0.5 rounded-full border border-purple-200 dark:border-purple-700 cursor-pointer transition-all duration-200 group-hover/learner:px-2">
+                                        <GraduationCap className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                                        <span className="text-xs font-medium text-purple-700 dark:text-purple-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/learner:opacity-100 group-hover/learner:max-w-[130px] group-hover/learner:ml-1">
+                                          Learning Completionist
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                
+                                return null;
+                              })}
                             </div>
                             {msg.username === username && (
                               <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
