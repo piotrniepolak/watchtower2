@@ -154,7 +154,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Master the core principles of conflict analysis and geopolitical intelligence',
           icon: Shield,
           difficulty: 'beginner',
-          points: 100,
+          points: 500,
           steps: [
             {
               type: 'lesson',
@@ -173,11 +173,36 @@ export function LearningHub({}: LearningHubProps) {
               `
             },
             {
+              type: 'lesson',
+              title: 'Geographic Intelligence',
+              content: `
+                <h3>Strategic Geography Assessment</h3>
+                <p>Geographic positioning determines conflict dynamics and strategic importance:</p>
+                <ul>
+                  <li><strong>Chokepoints:</strong> Straits, canals, mountain passes that control movement</li>
+                  <li><strong>Resource Distribution:</strong> Oil, gas, minerals, water, arable land</li>
+                  <li><strong>Border Dynamics:</strong> Natural barriers, artificial boundaries, disputed territories</li>
+                  <li><strong>Climate Factors:</strong> Weather patterns, natural disasters, environmental stress</li>
+                </ul>
+                <h4>Modern Implications</h4>
+                <p>Geographic advantages translate directly to economic and military power in contemporary conflicts.</p>
+              `
+            },
+            {
               type: 'quiz',
-              title: 'Knowledge Check',
+              title: 'Geographic Intelligence Quiz',
               questions: [
                 {
                   id: 'q1',
+                  type: 'multiple-choice',
+                  question: 'What are strategic chokepoints?',
+                  options: ['Trade agreements', 'Geographic bottlenecks controlling movement', 'Military alliances', 'Economic sanctions'],
+                  correctAnswer: 'Geographic bottlenecks controlling movement',
+                  explanation: 'Strategic chokepoints are narrow geographic passages that control the movement of ships, goods, or military forces.',
+                  points: 50
+                },
+                {
+                  id: 'q2',
                   type: 'multiple-choice',
                   question: `Based on current data, how many active conflicts is ConflictWatch monitoring?`,
                   options: [
@@ -188,16 +213,120 @@ export function LearningHub({}: LearningHubProps) {
                   ],
                   correctAnswer: activeConflicts.length.toString(),
                   explanation: `ConflictWatch currently monitors ${activeConflicts.length} active conflicts globally, providing real-time analysis of ongoing geopolitical situations.`,
-                  points: 25
+                  points: 50
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Political Dynamics Analysis',
+              content: `
+                <h3>Government Stability Assessment</h3>
+                <p>Political structures directly impact conflict probability and duration:</p>
+                <ul>
+                  <li><strong>Regime Types:</strong> Democratic, authoritarian, hybrid systems</li>
+                  <li><strong>Leadership Stability:</strong> Electoral cycles, succession planning, coups</li>
+                  <li><strong>Institutional Strength:</strong> Military, judiciary, bureaucracy effectiveness</li>
+                  <li><strong>Civil Society:</strong> Media freedom, protest movements, opposition groups</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Stability Assessment Exercise',
+              content: `
+                <h3>Real-World Analysis</h3>
+                <p>Analyze political stability factors in current conflict zones:</p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <p><strong>Active Regions:</strong> ${new Set(activeConflicts.map(c => c.region)).size} major areas</p>
+                  <p><strong>Conflict Types:</strong> Territorial, ethnic, resource-based disputes</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 's1',
+                  type: 'multiple-choice',
+                  question: 'Which factor is most predictive of conflict escalation?',
+                  options: ['Economic recession', 'Leadership transitions', 'Natural disasters', 'All of the above'],
+                  correctAnswer: 'All of the above',
+                  explanation: 'Economic stress, leadership instability, and natural disasters all increase conflict probability.',
+                  points: 75
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Economic Intelligence',
+              content: `
+                <h3>Economic Warfare and Dependencies</h3>
+                <p>Economic factors often drive and sustain modern conflicts:</p>
+                <ul>
+                  <li><strong>Resource Wars:</strong> Competition for oil, gas, minerals, water</li>
+                  <li><strong>Trade Dependencies:</strong> Supply chain vulnerabilities, embargo effects</li>
+                  <li><strong>Financial Warfare:</strong> Sanctions, asset freezes, banking restrictions</li>
+                  <li><strong>Currency Conflicts:</strong> Exchange rate manipulation, reserve diversification</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Economic Intelligence Assessment',
+              questions: [
+                {
+                  id: 'e1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary goal of economic sanctions?',
+                  options: ['Military deterrence', 'Behavior modification', 'Resource acquisition', 'Alliance building'],
+                  correctAnswer: 'Behavior modification',
+                  explanation: 'Economic sanctions aim to change behavior by imposing economic costs on target countries.',
+                  points: 60
                 },
                 {
-                  id: 'q2',
+                  id: 'e2',
                   type: 'multiple-choice',
-                  question: 'Which factor is NOT a core component of geopolitical analysis?',
-                  options: ['Geographic positioning', 'Cultural preferences', 'Economic dependencies', 'Historical context'],
-                  correctAnswer: 'Cultural preferences',
-                  explanation: 'While culture influences geopolitics, individual cultural preferences are less significant than geographic, economic, and historical factors in conflict analysis.',
-                  points: 25
+                  question: 'Which economic factor most commonly triggers resource conflicts?',
+                  options: ['Inflation', 'Unemployment', 'Resource scarcity', 'Currency devaluation'],
+                  correctAnswer: 'Resource scarcity',
+                  explanation: 'Scarcity of critical resources like water, oil, or minerals frequently leads to territorial and economic conflicts.',
+                  points: 60
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Historical Pattern Recognition',
+              content: `
+                <h3>Learning from Past Conflicts</h3>
+                <p>Historical analysis reveals recurring patterns in conflict development:</p>
+                <ul>
+                  <li><strong>Conflict Cycles:</strong> Escalation, plateau, de-escalation phases</li>
+                  <li><strong>Intervention Patterns:</strong> When and how external powers intervene</li>
+                  <li><strong>Resolution Mechanisms:</strong> Negotiation, mediation, enforcement</li>
+                  <li><strong>Post-Conflict Stability:</strong> Reconstruction, reconciliation, prevention</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Final Assessment',
+              questions: [
+                {
+                  id: 'f1',
+                  type: 'multiple-choice',
+                  question: 'Which phase typically lasts longest in modern conflicts?',
+                  options: ['Initial escalation', 'Active fighting', 'Stalemate plateau', 'Resolution'],
+                  correctAnswer: 'Stalemate plateau',
+                  explanation: 'Most modern conflicts spend the majority of their duration in prolonged stalemate phases.',
+                  points: 75
+                },
+                {
+                  id: 'f2',
+                  type: 'multiple-choice',
+                  question: 'What is the most effective conflict prevention strategy?',
+                  options: ['Military deterrence', 'Economic development', 'Diplomatic engagement', 'All combined'],
+                  correctAnswer: 'All combined',
+                  explanation: 'Effective conflict prevention requires coordinated military, economic, and diplomatic approaches.',
+                  points: 75
                 }
               ]
             }
@@ -209,8 +338,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Analyze how conflicts drive defense contractor performance and market dynamics',
           icon: Target,
           difficulty: 'intermediate',
-
-          points: 150,
+          points: 450,
           steps: [
             {
               type: 'lesson',
@@ -223,6 +351,49 @@ export function LearningHub({}: LearningHubProps) {
                   <li><strong>Companies Tracked:</strong> ${defensiveStocks.length} major contractors</li>
                   <li><strong>Top Performer:</strong> ${defensiveStocks.sort((a, b) => b.changePercent - a.changePercent)[0]?.symbol || "N/A"}</li>
                   <li><strong>High Volatility Stocks:</strong> ${defensiveStocks.filter(s => Math.abs(s.changePercent) > 1).length} showing >1% movement</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Budget Cycle Analysis',
+              content: `
+                <h3>Government Spending Patterns</h3>
+                <p>Defense budgets follow predictable cycles:</p>
+                <ul>
+                  <li><strong>Fiscal Year Timing:</strong> October to September cycle</li>
+                  <li><strong>Appropriations Process:</strong> Congressional budget approval</li>
+                  <li><strong>Continuing Resolutions:</strong> Temporary funding measures</li>
+                  <li><strong>Supplemental Funding:</strong> Emergency military operations</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Budget Analysis Quiz',
+              questions: [
+                {
+                  id: 'b1',
+                  type: 'multiple-choice',
+                  question: 'When does the US government fiscal year begin?',
+                  options: ['January 1', 'April 1', 'July 1', 'October 1'],
+                  correctAnswer: 'October 1',
+                  explanation: 'The US federal fiscal year runs from October 1 to September 30.',
+                  points: 60
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Contract Type Analysis',
+              content: `
+                <h3>Government Contract Structures</h3>
+                <p>Different contract types affect risk and profitability:</p>
+                <ul>
+                  <li><strong>Fixed-Price:</strong> Contractor bears cost risk</li>
+                  <li><strong>Cost-Plus:</strong> Government reimburses costs</li>
+                  <li><strong>Time & Materials:</strong> Hourly rate structures</li>
+                  <li><strong>Indefinite Delivery:</strong> Framework contracts</li>
                 </ul>
               `
             },
@@ -245,7 +416,45 @@ export function LearningHub({}: LearningHubProps) {
                   options: ['Consumer demand', 'Government contracts', 'Trade agreements', 'Commercial markets'],
                   correctAnswer: 'Government contracts',
                   explanation: 'Defense contractors primarily rely on government contracts and military spending programs.',
-                  points: 40
+                  points: 70
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Performance Metrics',
+              content: `
+                <h3>Key Defense Industry KPIs</h3>
+                <p>Critical metrics for evaluating defense contractors:</p>
+                <ul>
+                  <li><strong>Book-to-Bill Ratio:</strong> New orders vs revenue</li>
+                  <li><strong>Backlog:</strong> Contracted future revenue</li>
+                  <li><strong>Operating Margins:</strong> Profitability measures</li>
+                  <li><strong>Cash Flow:</strong> Working capital management</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Performance Assessment',
+              questions: [
+                {
+                  id: 'p1',
+                  type: 'multiple-choice',
+                  question: 'What does a book-to-bill ratio above 1.0 indicate?',
+                  options: ['Declining orders', 'Growing business', 'Stable revenue', 'Cash flow problems'],
+                  correctAnswer: 'Growing business',
+                  explanation: 'A book-to-bill ratio above 1.0 means new orders exceed current revenue, indicating growth.',
+                  points: 80
+                },
+                {
+                  id: 'p2',
+                  type: 'multiple-choice',
+                  question: 'Which metric best indicates long-term revenue visibility?',
+                  options: ['Operating margin', 'Book-to-bill ratio', 'Contract backlog', 'Cash flow'],
+                  correctAnswer: 'Contract backlog',
+                  explanation: 'Contract backlog represents already-awarded future revenue, providing visibility into future performance.',
+                  points: 80
                 }
               ]
             }
@@ -257,7 +466,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Master techniques for evaluating escalation risks and investment implications',
           icon: AlertTriangle,
           difficulty: 'intermediate',
-          points: 175,
+          points: 425,
           steps: [
             {
               type: 'lesson',
@@ -276,17 +485,107 @@ export function LearningHub({}: LearningHubProps) {
               `
             },
             {
+              type: 'lesson',
+              title: 'Escalation Indicators',
+              content: `
+                <h3>Warning Signs and Triggers</h3>
+                <p>Key indicators that predict conflict escalation:</p>
+                <ul>
+                  <li><strong>Military Indicators:</strong> Troop buildups, equipment movements, exercises</li>
+                  <li><strong>Diplomatic Indicators:</strong> Ambassador recalls, summit cancellations, ultimatums</li>
+                  <li><strong>Economic Indicators:</strong> Trade restrictions, asset freezes, currency controls</li>
+                  <li><strong>Social Indicators:</strong> Propaganda increases, protest movements, refugee flows</li>
+                </ul>
+              `
+            },
+            {
               type: 'quiz',
-              title: 'Risk Assessment Skills',
+              title: 'Escalation Assessment',
               questions: [
                 {
-                  id: 'r1',
+                  id: 'e1',
                   type: 'multiple-choice',
                   question: 'What is the most reliable early indicator of conflict escalation?',
                   options: ['Media reports', 'Troop movements', 'Economic sanctions', 'Diplomatic protests'],
                   correctAnswer: 'Troop movements',
                   explanation: 'Military deployments and troop movements are concrete, observable actions that indicate serious escalation potential.',
-                  points: 45
+                  points: 65
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Economic Impact Analysis',
+              content: `
+                <h3>Financial Consequences Assessment</h3>
+                <p>Conflicts create economic disruptions with measurable impacts:</p>
+                <ul>
+                  <li><strong>Direct Costs:</strong> Military spending, reconstruction, humanitarian aid</li>
+                  <li><strong>Trade Disruption:</strong> Supply chain breaks, shipping route closures</li>
+                  <li><strong>Resource Impacts:</strong> Energy price spikes, commodity shortages</li>
+                  <li><strong>Market Volatility:</strong> Risk premiums, capital flight, currency fluctuations</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Regional Spillover Analysis',
+              content: `
+                <h3>Conflict Contagion Assessment</h3>
+                <p>Evaluate spillover risks using current data:</p>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                  <p><strong>Active Conflicts:</strong> ${activeConflicts.length} ongoing situations</p>
+                  <p><strong>Regional Clusters:</strong> ${new Set(activeConflicts.map(c => c.region)).size} affected regions</p>
+                  <p><strong>High-Risk Areas:</strong> Potential for expansion</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'r1',
+                  type: 'multiple-choice',
+                  question: 'Which factor most accelerates regional conflict spillover?',
+                  options: ['Media coverage', 'Alliance obligations', 'Economic ties', 'Geographic proximity'],
+                  correctAnswer: 'Alliance obligations',
+                  explanation: 'Military alliances create legal obligations that can rapidly expand local conflicts into regional wars.',
+                  points: 75
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Investment Risk Modeling',
+              content: `
+                <h3>Portfolio Risk Assessment</h3>
+                <p>Translating conflict risk into investment decisions:</p>
+                <ul>
+                  <li><strong>Sector Exposure:</strong> Defense, energy, commodities sensitivity</li>
+                  <li><strong>Geographic Risk:</strong> Regional market exposures</li>
+                  <li><strong>Timeline Factors:</strong> Short vs long-term impact assessment</li>
+                  <li><strong>Hedge Strategies:</strong> Risk mitigation through diversification</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Investment Risk Assessment',
+              questions: [
+                {
+                  id: 'i1',
+                  type: 'multiple-choice',
+                  question: 'Which investment sector typically benefits from geopolitical tensions?',
+                  options: ['Tourism', 'Defense', 'Retail', 'Entertainment'],
+                  correctAnswer: 'Defense',
+                  explanation: 'Defense contractors typically see increased demand and higher valuations during periods of geopolitical tension.',
+                  points: 85
+                },
+                {
+                  id: 'i2',
+                  type: 'multiple-choice',
+                  question: 'What is the primary risk to energy investments during conflicts?',
+                  options: ['Technology changes', 'Supply disruption', 'Regulatory changes', 'Currency fluctuation'],
+                  correctAnswer: 'Supply disruption',
+                  explanation: 'Conflicts often disrupt energy supply chains and infrastructure, creating price volatility and supply shortages.',
+                  points: 85
                 }
               ]
             }
@@ -298,7 +597,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Understand government contracting cycles and their market impact',
           icon: DollarSign,
           difficulty: 'advanced',
-          points: 200,
+          points: 475,
           steps: [
             {
               type: 'lesson',
@@ -315,6 +614,111 @@ export function LearningHub({}: LearningHubProps) {
                 <h4>Market Impact Analysis</h4>
                 <p>Defense stocks show correlation with contract announcements and budget approvals.</p>
               `
+            },
+            {
+              type: 'lesson',
+              title: 'Budget Authorization Process',
+              content: `
+                <h3>Congressional Appropriations Cycle</h3>
+                <p>Understanding the federal budget process:</p>
+                <ul>
+                  <li><strong>Presidential Budget:</strong> February submission to Congress</li>
+                  <li><strong>Authorization Bills:</strong> Setting spending limits and priorities</li>
+                  <li><strong>Appropriations Bills:</strong> Actual funding allocation</li>
+                  <li><strong>Continuing Resolutions:</strong> Temporary funding extensions</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Budget Process Assessment',
+              questions: [
+                {
+                  id: 'bp1',
+                  type: 'multiple-choice',
+                  question: 'When does the President typically submit the federal budget to Congress?',
+                  options: ['January', 'February', 'March', 'April'],
+                  correctAnswer: 'February',
+                  explanation: 'The President submits the federal budget request to Congress in early February each year.',
+                  points: 70
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Contract Award Cycles',
+              content: `
+                <h3>Procurement Timeline Patterns</h3>
+                <p>Government contracting follows predictable timing:</p>
+                <ul>
+                  <li><strong>RFP Release:</strong> Request for proposals timing</li>
+                  <li><strong>Bid Submission:</strong> Contractor response periods</li>
+                  <li><strong>Evaluation Phase:</strong> Government review and selection</li>
+                  <li><strong>Award Announcement:</strong> Contract notification and protests</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Procurement Impact Analysis',
+              content: `
+                <h3>Contract Award Market Effects</h3>
+                <p>Analyze how procurement announcements affect stock prices:</p>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <p><strong>Defense Companies:</strong> ${defensiveStocks.length} major contractors</p>
+                  <p><strong>Contract Sensitivity:</strong> Stock price reactions to awards</p>
+                  <p><strong>Timing Patterns:</strong> Fiscal year-end award spikes</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'pa1',
+                  type: 'multiple-choice',
+                  question: 'When do most defense contract awards typically occur?',
+                  options: ['Beginning of fiscal year', 'Mid fiscal year', 'End of fiscal year', 'Randomly throughout year'],
+                  correctAnswer: 'End of fiscal year',
+                  explanation: 'Government agencies rush to obligate funds before fiscal year end, creating a spike in contract awards.',
+                  points: 85
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Multi-Year Programs',
+              content: `
+                <h3>Long-Term Defense Programs</h3>
+                <p>Major defense programs span multiple years:</p>
+                <ul>
+                  <li><strong>Program Structure:</strong> Research, development, procurement phases</li>
+                  <li><strong>Milestone Reviews:</strong> Gate criteria for program continuation</li>
+                  <li><strong>Funding Profiles:</strong> Annual appropriations for multi-year efforts</li>
+                  <li><strong>Risk Factors:</strong> Program cancellation and restructuring risks</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Program Management Assessment',
+              questions: [
+                {
+                  id: 'pm1',
+                  type: 'multiple-choice',
+                  question: 'What is the greatest risk to defense contractors in long-term programs?',
+                  options: ['Technical challenges', 'Cost overruns', 'Program cancellation', 'Competition'],
+                  correctAnswer: 'Program cancellation',
+                  explanation: 'Program cancellation represents the greatest risk as it eliminates all future revenue from that contract.',
+                  points: 95
+                },
+                {
+                  id: 'pm2',
+                  type: 'multiple-choice',
+                  question: 'Which phase typically has the highest profit margins?',
+                  options: ['Research', 'Development', 'Production', 'Sustainment'],
+                  correctAnswer: 'Production',
+                  explanation: 'Production phases typically offer higher margins due to economies of scale and reduced development risks.',
+                  points: 95
+                }
+              ]
             }
           ]
         },
@@ -324,7 +728,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Combine multiple intelligence sources for comprehensive conflict analysis',
           icon: Brain,
           difficulty: 'advanced',
-          points: 225,
+          points: 525,
           steps: [
             {
               type: 'lesson',
@@ -341,6 +745,385 @@ export function LearningHub({}: LearningHubProps) {
                 <h4>Integration Framework</h4>
                 <p>Effective analysis requires systematic correlation of multiple data streams.</p>
               `
+            },
+            {
+              type: 'lesson',
+              title: 'Open Source Intelligence',
+              content: `
+                <h3>OSINT Collection and Analysis</h3>
+                <p>Publicly available information provides critical insights:</p>
+                <ul>
+                  <li><strong>Media Monitoring:</strong> News trends, bias analysis, source credibility</li>
+                  <li><strong>Social Media:</strong> Public sentiment, disinformation campaigns</li>
+                  <li><strong>Academic Research:</strong> Expert analysis, historical context</li>
+                  <li><strong>Government Reports:</strong> Official statements, budget documents</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'OSINT Assessment',
+              questions: [
+                {
+                  id: 'os1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary advantage of open source intelligence?',
+                  options: ['Always accurate', 'Publicly available', 'Government verified', 'Real-time updates'],
+                  correctAnswer: 'Publicly available',
+                  explanation: 'OSINT\'s main advantage is its accessibility - information available to all analysts without classification restrictions.',
+                  points: 75
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Economic Intelligence',
+              content: `
+                <h3>Financial and Trade Analysis</h3>
+                <p>Economic data reveals conflict patterns and impacts:</p>
+                <ul>
+                  <li><strong>Trade Flow Analysis:</strong> Import/export disruptions, sanctions effects</li>
+                  <li><strong>Currency Movements:</strong> Exchange rate volatility, capital flight</li>
+                  <li><strong>Commodity Prices:</strong> Resource scarcity, supply chain disruption</li>
+                  <li><strong>Market Indicators:</strong> Risk premiums, sector rotations</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Intelligence Integration Exercise',
+              content: `
+                <h3>Multi-Source Correlation</h3>
+                <p>Practice integrating diverse intelligence sources:</p>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                  <p><strong>Active Monitoring:</strong> ${activeConflicts.length} conflict situations</p>
+                  <p><strong>Data Sources:</strong> Economic, social, military indicators</p>
+                  <p><strong>Analysis Goal:</strong> Comprehensive threat assessment</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'ii1',
+                  type: 'multiple-choice',
+                  question: 'Which combination provides the most reliable conflict assessment?',
+                  options: ['Military + Economic', 'Social + Political', 'Economic + Social', 'All sources combined'],
+                  correctAnswer: 'All sources combined',
+                  explanation: 'Comprehensive analysis requires correlation across all available intelligence sources for accuracy.',
+                  points: 90
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Predictive Analytics',
+              content: `
+                <h3>Forecasting Conflict Developments</h3>
+                <p>Using integrated intelligence for prediction:</p>
+                <ul>
+                  <li><strong>Pattern Recognition:</strong> Historical precedents and cycles</li>
+                  <li><strong>Trend Analysis:</strong> Escalation and de-escalation indicators</li>
+                  <li><strong>Scenario Planning:</strong> Multiple outcome probabilities</li>
+                  <li><strong>Warning Systems:</strong> Early detection thresholds</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Predictive Analysis Assessment',
+              questions: [
+                {
+                  id: 'pa1',
+                  type: 'multiple-choice',
+                  question: 'What is the most important factor in conflict prediction accuracy?',
+                  options: ['Data quantity', 'Data quality', 'Analysis speed', 'Source diversity'],
+                  correctAnswer: 'Data quality',
+                  explanation: 'High-quality, verified data is more valuable than large quantities of unreliable information.',
+                  points: 100
+                },
+                {
+                  id: 'pa2',
+                  type: 'multiple-choice',
+                  question: 'Which analytical approach is most effective for long-term forecasting?',
+                  options: ['Trend extrapolation', 'Historical patterns', 'Scenario planning', 'Expert opinion'],
+                  correctAnswer: 'Scenario planning',
+                  explanation: 'Scenario planning accounts for multiple variables and uncertainties, making it most effective for long-term forecasting.',
+                  points: 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'cyber-warfare',
+          title: 'Cyber Warfare & Digital Security',
+          description: 'Analyze cyber threats, digital warfare tactics, and cybersecurity investments',
+          icon: Shield,
+          difficulty: 'advanced',
+          points: 550,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Cyber Threat Landscape',
+              content: `
+                <h3>Modern Digital Warfare</h3>
+                <p>Cyber warfare has become a primary conflict domain:</p>
+                <ul>
+                  <li><strong>State Actors:</strong> Nation-state cyber operations and capabilities</li>
+                  <li><strong>Critical Infrastructure:</strong> Power grids, communications, financial systems</li>
+                  <li><strong>Information Operations:</strong> Disinformation, election interference</li>
+                  <li><strong>Economic Warfare:</strong> Intellectual property theft, market manipulation</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Cybersecurity Economics',
+              content: `
+                <h3>Market Impact of Cyber Threats</h3>
+                <p>Cyber incidents create significant economic consequences:</p>
+                <ul>
+                  <li><strong>Direct Costs:</strong> System recovery, data restoration, legal fees</li>
+                  <li><strong>Business Disruption:</strong> Operational shutdowns, customer loss</li>
+                  <li><strong>Market Impacts:</strong> Stock price volatility, sector effects</li>
+                  <li><strong>Insurance Claims:</strong> Cyber insurance market growth</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Cyber Economics Assessment',
+              questions: [
+                {
+                  id: 'ce1',
+                  type: 'multiple-choice',
+                  question: 'Which sector is most vulnerable to cyber warfare economic impact?',
+                  options: ['Manufacturing', 'Financial services', 'Agriculture', 'Entertainment'],
+                  correctAnswer: 'Financial services',
+                  explanation: 'Financial services are highly dependent on digital systems and represent high-value targets for cyber attacks.',
+                  points: 80
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Attribution and Response',
+              content: `
+                <h3>Cyber Attack Attribution</h3>
+                <p>Identifying cyber attack sources and planning responses:</p>
+                <ul>
+                  <li><strong>Technical Attribution:</strong> Malware analysis, infrastructure tracking</li>
+                  <li><strong>Behavioral Attribution:</strong> Tactics, techniques, procedures (TTPs)</li>
+                  <li><strong>Strategic Attribution:</strong> Motivation, capabilities, opportunities</li>
+                  <li><strong>Response Options:</strong> Defensive, offensive, diplomatic measures</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Cyber Incident Analysis',
+              content: `
+                <h3>Critical Infrastructure Attack</h3>
+                <p>Analyze a hypothetical cyber attack scenario:</p>
+                <div class="bg-red-50 p-4 rounded-lg">
+                  <p><strong>Target:</strong> Energy grid control systems</p>
+                  <p><strong>Method:</strong> Supply chain compromise</p>
+                  <p><strong>Impact:</strong> Regional power outages</p>
+                  <p><strong>Attribution:</strong> Advanced persistent threat group</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'ci1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary economic impact of infrastructure cyber attacks?',
+                  options: ['Data theft', 'Service disruption', 'Reputation damage', 'Legal liability'],
+                  correctAnswer: 'Service disruption',
+                  explanation: 'Infrastructure attacks primarily cause economic damage through service disruption affecting multiple sectors.',
+                  points: 90
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Cybersecurity Investment Trends',
+              content: `
+                <h3>Security Technology Markets</h3>
+                <p>Growing cybersecurity investment opportunities:</p>
+                <ul>
+                  <li><strong>Zero Trust Architecture:</strong> Network security model investments</li>
+                  <li><strong>AI Security:</strong> Machine learning for threat detection</li>
+                  <li><strong>Cloud Security:</strong> Protecting distributed infrastructure</li>
+                  <li><strong>IoT Security:</strong> Internet of Things device protection</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Cybersecurity Investment Assessment',
+              questions: [
+                {
+                  id: 'csi1',
+                  type: 'multiple-choice',
+                  question: 'Which cybersecurity technology shows the highest growth potential?',
+                  options: ['Antivirus software', 'AI-powered security', 'Hardware firewalls', 'Password managers'],
+                  correctAnswer: 'AI-powered security',
+                  explanation: 'AI-powered security solutions show the highest growth potential due to their ability to detect sophisticated threats.',
+                  points: 100
+                },
+                {
+                  id: 'csi2',
+                  type: 'multiple-choice',
+                  question: 'What drives the largest cybersecurity spending increases?',
+                  options: ['Compliance requirements', 'High-profile breaches', 'Technology upgrades', 'Staff training'],
+                  correctAnswer: 'High-profile breaches',
+                  explanation: 'Major security breaches typically trigger significant increases in cybersecurity spending across industries.',
+                  points: 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'global-alliances',
+          title: 'Military Alliances & Defense Cooperation',
+          description: 'Understand alliance structures, burden sharing, and cooperative defense programs',
+          icon: Users,
+          difficulty: 'expert',
+          points: 600,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Alliance Architecture',
+              content: `
+                <h3>Global Defense Alliance Systems</h3>
+                <p>Understanding modern military alliance structures:</p>
+                <ul>
+                  <li><strong>NATO:</strong> North Atlantic Treaty Organization structure and Article 5</li>
+                  <li><strong>Bilateral Agreements:</strong> US defense partnerships worldwide</li>
+                  <li><strong>Regional Alliances:</strong> AUKUS, QUAD, Five Eyes intelligence sharing</li>
+                  <li><strong>Defense Industrial Cooperation:</strong> Joint development programs</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Burden Sharing Analysis',
+              content: `
+                <h3>Defense Spending and Contributions</h3>
+                <p>Alliance burden sharing creates market opportunities:</p>
+                <ul>
+                  <li><strong>NATO 2% Target:</strong> Defense spending as percentage of GDP</li>
+                  <li><strong>Capability Gaps:</strong> Identifying partner nation needs</li>
+                  <li><strong>Interoperability:</strong> Standardization requirements and opportunities</li>
+                  <li><strong>Technology Transfer:</strong> Foreign military sales and licensing</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Alliance Economics Assessment',
+              questions: [
+                {
+                  id: 'ae1',
+                  type: 'multiple-choice',
+                  question: 'What is NATO\'s defense spending target for member nations?',
+                  options: ['1% of GDP', '2% of GDP', '3% of GDP', '4% of GDP'],
+                  correctAnswer: '2% of GDP',
+                  explanation: 'NATO members committed to spending at least 2% of GDP on defense by 2024.',
+                  points: 85
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Joint Development Programs',
+              content: `
+                <h3>Multinational Defense Projects</h3>
+                <p>Collaborative defense development creates market opportunities:</p>
+                <ul>
+                  <li><strong>Cost Sharing:</strong> Reducing development costs through partnership</li>
+                  <li><strong>Technology Access:</strong> Sharing advanced capabilities</li>
+                  <li><strong>Market Access:</strong> Partner nation procurement preferences</li>
+                  <li><strong>Risk Mitigation:</strong> Distributing program risks across partners</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Alliance Procurement Analysis',
+              content: `
+                <h3>NATO Capability Development</h3>
+                <p>Analyze alliance procurement opportunities:</p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <p><strong>Capability Gap:</strong> Air defense systems</p>
+                  <p><strong>Partners:</strong> Multiple NATO nations</p>
+                  <p><strong>Market Size:</strong> Multi-billion dollar opportunity</p>
+                  <p><strong>Competition:</strong> US and European contractors</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'ap1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary advantage of multinational defense programs?',
+                  options: ['Lower costs', 'Faster development', 'Better technology', 'Guaranteed sales'],
+                  correctAnswer: 'Lower costs',
+                  explanation: 'Cost sharing across multiple nations is the primary advantage of multinational defense programs.',
+                  points: 95
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Foreign Military Sales',
+              content: `
+                <h3>International Defense Trade</h3>
+                <p>Understanding government-to-government defense sales:</p>
+                <ul>
+                  <li><strong>FMS Process:</strong> US Foreign Military Sales program structure</li>
+                  <li><strong>Partner Capacity:</strong> Building allied military capabilities</li>
+                  <li><strong>Technology Security:</strong> Export controls and classification levels</li>
+                  <li><strong>Market Access:</strong> Competitive advantages in partner nations</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Strategic Competition Impacts',
+              content: `
+                <h3>Great Power Competition Effects</h3>
+                <p>How strategic competition drives alliance cooperation:</p>
+                <ul>
+                  <li><strong>Threat Perception:</strong> Shared challenges driving cooperation</li>
+                  <li><strong>Capability Prioritization:</strong> Focus on high-end warfare systems</li>
+                  <li><strong>Industrial Base:</strong> Strengthening defense manufacturing capacity</li>
+                  <li><strong>Innovation Investment:</strong> Joint research and development priorities</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Strategic Competition Assessment',
+              questions: [
+                {
+                  id: 'sc1',
+                  type: 'multiple-choice',
+                  question: 'Which factor most drives increased alliance defense cooperation?',
+                  options: ['Economic benefits', 'Shared threats', 'Political agreements', 'Historical ties'],
+                  correctAnswer: 'Shared threats',
+                  explanation: 'Shared threat perceptions are the primary driver of increased defense cooperation among allies.',
+                  points: 110
+                },
+                {
+                  id: 'sc2',
+                  type: 'multiple-choice',
+                  question: 'What capability area receives highest alliance investment priority?',
+                  options: ['Peacekeeping', 'Humanitarian aid', 'High-end warfare', 'Border security'],
+                  correctAnswer: 'High-end warfare',
+                  explanation: 'Strategic competition focuses alliance investment on high-end warfare capabilities against peer competitors.',
+                  points: 110
+                }
+              ]
             }
           ]
         }
@@ -352,8 +1135,7 @@ export function LearningHub({}: LearningHubProps) {
           description: 'Master WHO health indicators and pharmaceutical market intelligence',
           icon: Activity,
           difficulty: 'beginner',
-
-          points: 120,
+          points: 425,
           steps: [
             {
               type: 'lesson',
@@ -373,26 +1155,107 @@ export function LearningHub({}: LearningHubProps) {
               `
             },
             {
+              type: 'lesson',
+              title: 'Health System Performance',
+              content: `
+                <h3>Healthcare System Effectiveness Metrics</h3>
+                <p>WHO evaluates health systems using comprehensive indicators:</p>
+                <ul>
+                  <li><strong>Universal Health Coverage:</strong> Population access to essential services</li>
+                  <li><strong>Financial Protection:</strong> Catastrophic health expenditure rates</li>
+                  <li><strong>Health Equity:</strong> Disparities between population groups</li>
+                  <li><strong>Quality of Care:</strong> Clinical effectiveness and patient safety</li>
+                </ul>
+              `
+            },
+            {
               type: 'quiz',
-              title: 'Health Data Mastery',
+              title: 'System Performance Assessment',
               questions: [
                 {
-                  id: 'h1',
+                  id: 'sp1',
+                  type: 'multiple-choice',
+                  question: 'What is universal health coverage designed to achieve?',
+                  options: ['Lower costs', 'Better technology', 'Population access to services', 'Faster treatment'],
+                  correctAnswer: 'Population access to services',
+                  explanation: 'Universal health coverage ensures all people have access to needed health services without financial hardship.',
+                  points: 60
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Disease Surveillance Systems',
+              content: `
+                <h3>Global Disease Monitoring</h3>
+                <p>WHO coordinates worldwide disease surveillance:</p>
+                <ul>
+                  <li><strong>Epidemic Intelligence:</strong> Early warning systems for outbreaks</li>
+                  <li><strong>Laboratory Networks:</strong> Diagnostic capacity and quality assurance</li>
+                  <li><strong>Data Integration:</strong> Multi-source health information systems</li>
+                  <li><strong>Risk Assessment:</strong> Threat evaluation and response planning</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Health Data Analysis',
+              content: `
+                <h3>Real-World Health Intelligence</h3>
+                <p>Analyze current pharmaceutical market performance:</p>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <p><strong>Healthcare Companies:</strong> ${healthStocks.length} major pharmaceutical firms</p>
+                  <p><strong>Market Leaders:</strong> Companies driving innovation and growth</p>
+                  <p><strong>Investment Trends:</strong> Capital flowing into health technology</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'hd1',
                   type: 'multiple-choice',
                   question: 'Which organization provides the most comprehensive global health statistics?',
                   options: ['CDC', 'WHO', 'NIH', 'FDA'],
                   correctAnswer: 'WHO',
                   explanation: 'The World Health Organization (WHO) maintains the most comprehensive global health database covering 195 countries.',
-                  points: 30
+                  points: 70
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Health Economics Fundamentals',
+              content: `
+                <h3>Economic Analysis in Healthcare</h3>
+                <p>Understanding the economics of health systems:</p>
+                <ul>
+                  <li><strong>Cost-Effectiveness:</strong> Value for money in health interventions</li>
+                  <li><strong>Budget Impact:</strong> Financial implications of health programs</li>
+                  <li><strong>Resource Allocation:</strong> Optimizing limited healthcare resources</li>
+                  <li><strong>Market Dynamics:</strong> Public-private partnerships in health</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Health Economics Assessment',
+              questions: [
+                {
+                  id: 'he1',
+                  type: 'multiple-choice',
+                  question: 'What does cost-effectiveness analysis primarily measure?',
+                  options: ['Total costs', 'Value for money', 'Patient satisfaction', 'Treatment speed'],
+                  correctAnswer: 'Value for money',
+                  explanation: 'Cost-effectiveness analysis measures the value for money of health interventions by comparing costs to health outcomes.',
+                  points: 80
                 },
                 {
-                  id: 'h2',
+                  id: 'he2',
                   type: 'multiple-choice',
-                  question: 'What does life expectancy primarily measure?',
-                  options: ['Quality of life', 'Average lifespan', 'Healthcare costs', 'Disease rates'],
-                  correctAnswer: 'Average lifespan',
-                  explanation: 'Life expectancy measures the average number of years a person is expected to live based on current mortality rates.',
-                  points: 30
+                  question: 'What drives healthcare investment decisions?',
+                  options: ['Political pressure', 'Evidence-based outcomes', 'Historical precedent', 'Popular opinion'],
+                  correctAnswer: 'Evidence-based outcomes',
+                  explanation: 'Healthcare investment decisions should be driven by evidence-based outcomes demonstrating clinical and economic value.',
+                  points: 80
                 }
               ]
             }
@@ -403,9 +1266,8 @@ export function LearningHub({}: LearningHubProps) {
           title: 'Drug Development Pipeline',
           description: 'Navigate clinical trials, regulatory pathways, and biotech investments',
           icon: Brain,
-          difficulty: 'advanced',
-
-          points: 200,
+          difficulty: 'intermediate',
+          points: 475,
           steps: [
             {
               type: 'lesson',
@@ -416,29 +1278,709 @@ export function LearningHub({}: LearningHubProps) {
                 <ul>
                   <li><strong>Preclinical:</strong> Laboratory and animal testing</li>
                   <li><strong>Phase I:</strong> Safety testing in small human groups</li>
-                  <li><strong>Phase II:</strong> Efficacy testing in larger groups</li>
-                  <li><strong>Phase III:</strong> Large-scale comparative studies</li>
-                  <li><strong>FDA Review:</strong> Regulatory approval process</li>
+                  <li><strong>Phase II:</strong> Efficacy evaluation in targeted populations</li>
+                  <li><strong>Phase III:</strong> Large-scale comparative effectiveness studies</li>
                 </ul>
-                <h4>Investment Implications</h4>
-                <p>Success rates vary dramatically by phase, with only ~12% of drugs reaching market approval.</p>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Regulatory Approval Process',
+              content: `
+                <h3>FDA and Global Regulatory Pathways</h3>
+                <p>Drug approval requires comprehensive regulatory review:</p>
+                <ul>
+                  <li><strong>Investigational New Drug (IND):</strong> Permission to begin human testing</li>
+                  <li><strong>New Drug Application (NDA):</strong> Comprehensive safety and efficacy data</li>
+                  <li><strong>Breakthrough Therapy:</strong> Expedited review for significant advances</li>
+                  <li><strong>Post-Market Surveillance:</strong> Ongoing safety monitoring</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Regulatory Process Assessment',
+              questions: [
+                {
+                  id: 'rp1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary purpose of Phase I clinical trials?',
+                  options: ['Test effectiveness', 'Test safety', 'Compare to existing drugs', 'Determine pricing'],
+                  correctAnswer: 'Test safety',
+                  explanation: 'Phase I trials primarily test safety and determine appropriate dosing in small groups of volunteers.',
+                  points: 70
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Biotech Investment Analysis',
+              content: `
+                <h3>Evaluating Pharmaceutical Investments</h3>
+                <p>Key factors in biotech investment decisions:</p>
+                <ul>
+                  <li><strong>Pipeline Depth:</strong> Number and stage of development programs</li>
+                  <li><strong>Market Size:</strong> Total addressable market for target indications</li>
+                  <li><strong>Competitive Landscape:</strong> Existing treatments and development competition</li>
+                  <li><strong>Regulatory Risk:</strong> Probability of approval and timeline uncertainty</li>
+                </ul>
               `
             },
             {
               type: 'scenario',
-              title: 'Biotech Investment Analysis',
+              title: 'Pipeline Valuation Exercise',
               content: `
-                <h3>Pipeline Valuation Exercise</h3>
-                <p>Analyze this biotech scenario:</p>
-                <div class="bg-green-50 p-4 rounded-lg">
-                  <p><strong>Company:</strong> ${healthStocks[0]?.symbol || "MRNA"}</p>
-                  <p><strong>Performance:</strong> ${healthStocks[0]?.changePercent?.toFixed(2) || "2.4"}%</p>
-                  <p><strong>Phase III Trial:</strong> Results expected Q2 2025</p>
+                <h3>Pharmaceutical Portfolio Analysis</h3>
+                <p>Evaluate biotech investment opportunities:</p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <p><strong>Development Stage:</strong> Phase II oncology program</p>
+                  <p><strong>Market Size:</strong> $10B total addressable market</p>
+                  <p><strong>Competition:</strong> 3 existing approved therapies</p>
+                  <p><strong>Timeline:</strong> 3-5 years to potential approval</p>
                 </div>
               `,
               questions: [
                 {
-                  id: 'p1',
+                  id: 'pv1',
+                  type: 'multiple-choice',
+                  question: 'What is the highest risk factor in biotech investments?',
+                  options: ['Market competition', 'Regulatory approval', 'Manufacturing costs', 'Patent expiration'],
+                  correctAnswer: 'Regulatory approval',
+                  explanation: 'Regulatory approval represents the highest risk as failure can result in total loss of investment.',
+                  points: 85
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Market Access and Pricing',
+              content: `
+                <h3>Commercial Strategy in Pharmaceuticals</h3>
+                <p>Bringing approved drugs to market requires strategic planning:</p>
+                <ul>
+                  <li><strong>Health Technology Assessment:</strong> Value demonstration to payers</li>
+                  <li><strong>Pricing Strategy:</strong> Value-based pricing and market access</li>
+                  <li><strong>Real-World Evidence:</strong> Post-launch effectiveness data</li>
+                  <li><strong>Global Launch:</strong> Sequential market entry strategies</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Market Access Assessment',
+              questions: [
+                {
+                  id: 'ma1',
+                  type: 'multiple-choice',
+                  question: 'What primarily determines drug pricing in developed markets?',
+                  options: ['Development costs', 'Value to patients', 'Competitor pricing', 'Manufacturing costs'],
+                  correctAnswer: 'Value to patients',
+                  explanation: 'Value-based pricing considers the clinical and economic value delivered to patients and healthcare systems.',
+                  points: 95
+                },
+                {
+                  id: 'ma2',
+                  type: 'multiple-choice',
+                  question: 'Which evidence type is most important for market access?',
+                  options: ['Clinical trial data', 'Real-world evidence', 'Expert opinions', 'Historical comparisons'],
+                  correctAnswer: 'Real-world evidence',
+                  explanation: 'Real-world evidence demonstrates actual effectiveness and value in routine clinical practice.',
+                  points: 95
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'epidemic-intelligence',
+          title: 'Epidemic Intelligence & Outbreak Response',
+          description: 'Master disease surveillance, outbreak investigation, and public health response',
+          icon: AlertTriangle,
+          difficulty: 'advanced',
+          points: 525,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Disease Surveillance Systems',
+              content: `
+                <h3>Global Health Security</h3>
+                <p>Modern disease surveillance integrates multiple data sources:</p>
+                <ul>
+                  <li><strong>Sentinel Surveillance:</strong> Strategic monitoring sites for early detection</li>
+                  <li><strong>Syndromic Surveillance:</strong> Pattern recognition before laboratory confirmation</li>
+                  <li><strong>Laboratory Networks:</strong> Diagnostic capacity and pathogen characterization</li>
+                  <li><strong>Digital Surveillance:</strong> Social media and web-based disease monitoring</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Outbreak Investigation Methodology',
+              content: `
+                <h3>Systematic Outbreak Response</h3>
+                <p>Standardized approach to outbreak investigation:</p>
+                <ul>
+                  <li><strong>Case Definition:</strong> Clear criteria for confirmed, probable, and suspected cases</li>
+                  <li><strong>Descriptive Epidemiology:</strong> Time, place, and person analysis</li>
+                  <li><strong>Hypothesis Generation:</strong> Source and transmission mode identification</li>
+                  <li><strong>Control Measures:</strong> Intervention strategies to limit spread</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Outbreak Investigation Assessment',
+              questions: [
+                {
+                  id: 'oi1',
+                  type: 'multiple-choice',
+                  question: 'What is the first step in outbreak investigation?',
+                  options: ['Laboratory testing', 'Case definition', 'Contact tracing', 'Media notification'],
+                  correctAnswer: 'Case definition',
+                  explanation: 'Establishing clear case definitions is essential for consistent case identification and counting.',
+                  points: 75
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Risk Communication Strategies',
+              content: `
+                <h3>Public Health Communication</h3>
+                <p>Effective crisis communication during health emergencies:</p>
+                <ul>
+                  <li><strong>Risk Perception:</strong> Understanding public risk perception and behavior</li>
+                  <li><strong>Message Development:</strong> Clear, actionable, and culturally appropriate messaging</li>
+                  <li><strong>Stakeholder Engagement:</strong> Coordination with media, community leaders, and partners</li>
+                  <li><strong>Misinformation Management:</strong> Combating false information and conspiracy theories</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Pandemic Response Simulation',
+              content: `
+                <h3>Global Health Emergency</h3>
+                <p>Manage a hypothetical pandemic scenario:</p>
+                <div class="bg-red-50 p-4 rounded-lg">
+                  <p><strong>Pathogen:</strong> Novel respiratory virus with human-to-human transmission</p>
+                  <p><strong>Geography:</strong> Multiple countries with international spread</p>
+                  <p><strong>Severity:</strong> Moderate case fatality rate, high transmission</p>
+                  <p><strong>Response:</strong> Coordinate international public health response</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'pr1',
+                  type: 'multiple-choice',
+                  question: 'What is the most critical early intervention in pandemic response?',
+                  options: ['Vaccine development', 'Travel restrictions', 'Case isolation', 'Economic support'],
+                  correctAnswer: 'Case isolation',
+                  explanation: 'Early case identification and isolation is most critical for breaking transmission chains.',
+                  points: 90
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Global Health Security',
+              content: `
+                <h3>International Health Regulations</h3>
+                <p>Framework for global health security cooperation:</p>
+                <ul>
+                  <li><strong>Core Capacities:</strong> National surveillance and response capabilities</li>
+                  <li><strong>Public Health Emergencies:</strong> International concern determination and response</li>
+                  <li><strong>Information Sharing:</strong> Rapid data exchange and transparency requirements</li>
+                  <li><strong>Mutual Support:</strong> Technical assistance and resource sharing mechanisms</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Pharmaceutical Countermeasures',
+              content: `
+                <h3>Medical Countermeasure Development</h3>
+                <p>Rapid development and deployment of medical interventions:</p>
+                <ul>
+                  <li><strong>Vaccine Development:</strong> Accelerated vaccine design and testing</li>
+                  <li><strong>Therapeutic Options:</strong> Antiviral development and repurposing existing drugs</li>
+                  <li><strong>Diagnostic Tools:</strong> Rapid test development and validation</li>
+                  <li><strong>Manufacturing Scale-up:</strong> Global production and distribution capacity</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Countermeasures Assessment',
+              questions: [
+                {
+                  id: 'cm1',
+                  type: 'multiple-choice',
+                  question: 'Which countermeasure can be deployed fastest in a pandemic?',
+                  options: ['New vaccines', 'Novel therapeutics', 'Repurposed drugs', 'New diagnostics'],
+                  correctAnswer: 'Repurposed drugs',
+                  explanation: 'Repurposing existing approved drugs can be fastest since safety profiles are already known.',
+                  points: 100
+                },
+                {
+                  id: 'cm2',
+                  type: 'multiple-choice',
+                  question: 'What is the primary bottleneck in pandemic vaccine deployment?',
+                  options: ['Development time', 'Manufacturing capacity', 'Regulatory approval', 'Distribution logistics'],
+                  correctAnswer: 'Manufacturing capacity',
+                  explanation: 'Manufacturing scale-up to produce billions of doses is typically the primary constraint.',
+                  points: 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'digital-health',
+          title: 'Digital Health Innovation',
+          description: 'Explore telemedicine, AI diagnostics, and health technology investments',
+          icon: Smartphone,
+          difficulty: 'intermediate',
+          points: 450,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Telemedicine Transformation',
+              content: `
+                <h3>Remote Healthcare Delivery</h3>
+                <p>Digital transformation of healthcare delivery models:</p>
+                <ul>
+                  <li><strong>Virtual Consultations:</strong> Remote patient-provider interactions</li>
+                  <li><strong>Remote Monitoring:</strong> Continuous health data collection</li>
+                  <li><strong>Digital Therapeutics:</strong> Software-based treatment interventions</li>
+                  <li><strong>Mobile Health Apps:</strong> Consumer health management tools</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Artificial Intelligence in Healthcare',
+              content: `
+                <h3>AI-Powered Medical Applications</h3>
+                <p>Machine learning revolutionizing healthcare:</p>
+                <ul>
+                  <li><strong>Diagnostic Imaging:</strong> AI-assisted radiology and pathology</li>
+                  <li><strong>Drug Discovery:</strong> Accelerated pharmaceutical development</li>
+                  <li><strong>Clinical Decision Support:</strong> Evidence-based treatment recommendations</li>
+                  <li><strong>Predictive Analytics:</strong> Risk stratification and early warning systems</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'AI Healthcare Assessment',
+              questions: [
+                {
+                  id: 'ai1',
+                  type: 'multiple-choice',
+                  question: 'Where has AI shown the most promising results in healthcare?',
+                  options: ['Administrative tasks', 'Diagnostic imaging', 'Patient scheduling', 'Billing processes'],
+                  correctAnswer: 'Diagnostic imaging',
+                  explanation: 'AI has demonstrated exceptional performance in medical imaging, often matching or exceeding human radiologist accuracy.',
+                  points: 65
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Health Data Analytics',
+              content: `
+                <h3>Big Data in Healthcare</h3>
+                <p>Leveraging large-scale health data for insights:</p>
+                <ul>
+                  <li><strong>Electronic Health Records:</strong> Structured and unstructured clinical data</li>
+                  <li><strong>Genomic Data:</strong> Personalized medicine and precision therapy</li>
+                  <li><strong>Population Health:</strong> Community-level health trend analysis</li>
+                  <li><strong>Real-World Evidence:</strong> Treatment effectiveness in routine practice</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Digital Health Investment',
+              content: `
+                <h3>Health Technology Venture</h3>
+                <p>Evaluate digital health investment opportunity:</p>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                  <p><strong>Technology:</strong> AI-powered diagnostic platform</p>
+                  <p><strong>Market:</strong> Primary care and specialist applications</p>
+                  <p><strong>Validation:</strong> Clinical trials in progress</p>
+                  <p><strong>Regulatory:</strong> FDA breakthrough device designation</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'dh1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary risk in digital health investments?',
+                  options: ['Technology development', 'Regulatory approval', 'Market adoption', 'Competition'],
+                  correctAnswer: 'Market adoption',
+                  explanation: 'Healthcare providers can be slow to adopt new technologies, making market adoption a primary investment risk.',
+                  points: 75
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Regulatory Framework for Digital Health',
+              content: `
+                <h3>Digital Health Regulation</h3>
+                <p>Evolving regulatory landscape for health technology:</p>
+                <ul>
+                  <li><strong>Software as Medical Device:</strong> FDA regulation of diagnostic and therapeutic software</li>
+                  <li><strong>Data Privacy:</strong> HIPAA compliance and patient data protection</li>
+                  <li><strong>Clinical Evidence:</strong> Requirements for safety and effectiveness validation</li>
+                  <li><strong>Quality Management:</strong> ISO standards for medical device software</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Cybersecurity in Healthcare',
+              content: `
+                <h3>Protecting Health Information</h3>
+                <p>Critical cybersecurity considerations for digital health:</p>
+                <ul>
+                  <li><strong>Data Encryption:</strong> Protecting patient information in transit and at rest</li>
+                  <li><strong>Access Controls:</strong> Identity management and role-based permissions</li>
+                  <li><strong>Incident Response:</strong> Breach detection and response protocols</li>
+                  <li><strong>Vendor Management:</strong> Third-party security assessments and contracts</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Digital Health Security Assessment',
+              questions: [
+                {
+                  id: 'dhs1',
+                  type: 'multiple-choice',
+                  question: 'What is the most common cause of healthcare data breaches?',
+                  options: ['Hacking attacks', 'Employee error', 'System failures', 'Physical theft'],
+                  correctAnswer: 'Employee error',
+                  explanation: 'Human error, including inadvertent disclosure and lost devices, accounts for the majority of healthcare data breaches.',
+                  points: 85
+                },
+                {
+                  id: 'dhs2',
+                  type: 'multiple-choice',
+                  question: 'Which regulation primarily governs healthcare data privacy in the US?',
+                  options: ['GDPR', 'HIPAA', 'SOX', 'FERPA'],
+                  correctAnswer: 'HIPAA',
+                  explanation: 'The Health Insurance Portability and Accountability Act (HIPAA) is the primary US regulation for healthcare data privacy.',
+                  points: 85
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'health-economics',
+          title: 'Health Economics & Policy Analysis',
+          description: 'Understand healthcare financing, policy evaluation, and economic impact assessment',
+          icon: DollarSign,
+          difficulty: 'advanced',
+          points: 500,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Healthcare Financing Models',
+              content: `
+                <h3>Global Health System Financing</h3>
+                <p>Different approaches to healthcare funding and delivery:</p>
+                <ul>
+                  <li><strong>Single-Payer Systems:</strong> Government-funded universal healthcare</li>
+                  <li><strong>Multi-Payer Insurance:</strong> Mixed public-private insurance models</li>
+                  <li><strong>Direct Payment:</strong> Out-of-pocket and fee-for-service systems</li>
+                  <li><strong>Hybrid Models:</strong> Combinations of funding mechanisms</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Health Technology Assessment',
+              content: `
+                <h3>Economic Evaluation of Health Interventions</h3>
+                <p>Systematic assessment of health technology value:</p>
+                <ul>
+                  <li><strong>Cost-Effectiveness Analysis:</strong> Cost per quality-adjusted life year</li>
+                  <li><strong>Budget Impact Analysis:</strong> Financial implications for health systems</li>
+                  <li><strong>Cost-Utility Analysis:</strong> Preference-based outcome measures</li>
+                  <li><strong>Social Value Assessment:</strong> Broader societal impact consideration</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Health Economics Fundamentals',
+              questions: [
+                {
+                  id: 'hef1',
+                  type: 'multiple-choice',
+                  question: 'What does a cost-effectiveness ratio measure?',
+                  options: ['Total treatment costs', 'Cost per unit of health benefit', 'Patient satisfaction scores', 'Healthcare provider revenue'],
+                  correctAnswer: 'Cost per unit of health benefit',
+                  explanation: 'Cost-effectiveness ratios measure the cost required to achieve one unit of health benefit, typically cost per QALY.',
+                  points: 70
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Pharmaceutical Economics',
+              content: `
+                <h3>Drug Pricing and Market Access</h3>
+                <p>Economic factors in pharmaceutical markets:</p>
+                <ul>
+                  <li><strong>Value-Based Pricing:</strong> Pricing based on clinical and economic outcomes</li>
+                  <li><strong>Reference Pricing:</strong> International price comparisons and benchmarking</li>
+                  <li><strong>Risk-Sharing Agreements:</strong> Outcomes-based contracts with payers</li>
+                  <li><strong>Biosimilar Competition:</strong> Generic competition for biologic drugs</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Health Policy Analysis',
+              content: `
+                <h3>Healthcare Reform Impact Assessment</h3>
+                <p>Analyze the economic impact of health policy changes:</p>
+                <div class="bg-green-50 p-4 rounded-lg">
+                  <p><strong>Policy:</strong> Universal health coverage expansion</p>
+                  <p><strong>Population:</strong> 10 million uninsured individuals</p>
+                  <p><strong>Cost:</strong> $50 billion annual government investment</p>
+                  <p><strong>Benefits:</strong> Improved access, preventive care, health outcomes</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'hpa1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary economic benefit of universal health coverage?',
+                  options: ['Lower administrative costs', 'Improved population health', 'Increased healthcare employment', 'Higher tax revenue'],
+                  correctAnswer: 'Improved population health',
+                  explanation: 'The primary economic benefit is improved population health leading to increased productivity and reduced healthcare costs.',
+                  points: 85
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Global Health Investment',
+              content: `
+                <h3>International Health Development</h3>
+                <p>Economic aspects of global health initiatives:</p>
+                <ul>
+                  <li><strong>Development Assistance:</strong> Bilateral and multilateral health funding</li>
+                  <li><strong>Impact Investing:</strong> Private capital for health outcomes</li>
+                  <li><strong>Innovative Financing:</strong> Results-based funding mechanisms</li>
+                  <li><strong>Economic Growth:</strong> Health investment impact on national development</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Health Workforce Economics',
+              content: `
+                <h3>Healthcare Labor Market Analysis</h3>
+                <p>Economic factors affecting health workforce:</p>
+                <ul>
+                  <li><strong>Workforce Planning:</strong> Supply and demand forecasting</li>
+                  <li><strong>Migration Patterns:</strong> International health worker mobility</li>
+                  <li><strong>Productivity Analysis:</strong> Efficiency and output optimization</li>
+                  <li><strong>Compensation Models:</strong> Performance-based payment systems</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Health Workforce Assessment',
+              questions: [
+                {
+                  id: 'hw1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary driver of healthcare workforce shortages?',
+                  options: ['Low wages', 'Aging population', 'Poor working conditions', 'Limited training capacity'],
+                  correctAnswer: 'Aging population',
+                  explanation: 'Aging populations increase healthcare demand while simultaneously reducing the workforce through retirements.',
+                  points: 90
+                },
+                {
+                  id: 'hw2',
+                  type: 'multiple-choice',
+                  question: 'Which payment model best aligns provider incentives with patient outcomes?',
+                  options: ['Fee-for-service', 'Salary-based', 'Value-based care', 'Capitation'],
+                  correctAnswer: 'Value-based care',
+                  explanation: 'Value-based care payment models tie compensation to patient outcomes and quality metrics.',
+                  points: 90
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'precision-medicine',
+          title: 'Precision Medicine & Genomics',
+          description: 'Explore personalized healthcare, genetic testing, and targeted therapy investments',
+          icon: Dna,
+          difficulty: 'expert',
+          points: 575,
+          steps: [
+            {
+              type: 'lesson',
+              title: 'Genomic Medicine Fundamentals',
+              content: `
+                <h3>Personalized Healthcare Revolution</h3>
+                <p>Genomics transforming medical practice:</p>
+                <ul>
+                  <li><strong>Pharmacogenomics:</strong> Drug response based on genetic variations</li>
+                  <li><strong>Disease Risk Assessment:</strong> Genetic predisposition screening</li>
+                  <li><strong>Targeted Therapies:</strong> Treatments based on molecular profiles</li>
+                  <li><strong>Companion Diagnostics:</strong> Tests guiding treatment selection</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Genomic Data Infrastructure',
+              content: `
+                <h3>Big Data in Genomics</h3>
+                <p>Managing and analyzing genomic information:</p>
+                <ul>
+                  <li><strong>Sequencing Technologies:</strong> Next-generation and long-read sequencing</li>
+                  <li><strong>Data Storage:</strong> Cloud computing for genomic data management</li>
+                  <li><strong>Bioinformatics:</strong> Computational tools for genetic analysis</li>
+                  <li><strong>Privacy Protection:</strong> Genetic data security and consent</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Genomics Technology Assessment',
+              questions: [
+                {
+                  id: 'gt1',
+                  type: 'multiple-choice',
+                  question: 'What has driven the rapid adoption of genomic medicine?',
+                  options: ['Government mandates', 'Decreasing sequencing costs', 'Patient demand', 'Insurance coverage'],
+                  correctAnswer: 'Decreasing sequencing costs',
+                  explanation: 'Dramatic reductions in DNA sequencing costs have made genomic medicine economically viable for routine clinical use.',
+                  points: 80
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Cancer Genomics and Immunotherapy',
+              content: `
+                <h3>Precision Oncology</h3>
+                <p>Genomics revolutionizing cancer treatment:</p>
+                <ul>
+                  <li><strong>Tumor Profiling:</strong> Genetic characterization of cancer types</li>
+                  <li><strong>Liquid Biopsies:</strong> Blood-based cancer detection and monitoring</li>
+                  <li><strong>CAR-T Cell Therapy:</strong> Genetically engineered immune treatments</li>
+                  <li><strong>Immunotherapy Biomarkers:</strong> Predicting response to immune treatments</li>
+                </ul>
+              `
+            },
+            {
+              type: 'scenario',
+              title: 'Precision Medicine Investment',
+              content: `
+                <h3>Genomics Company Valuation</h3>
+                <p>Evaluate precision medicine investment opportunity:</p>
+                <div class="bg-indigo-50 p-4 rounded-lg">
+                  <p><strong>Technology:</strong> AI-powered genomic analysis platform</p>
+                  <p><strong>Applications:</strong> Cancer diagnosis and treatment selection</p>
+                  <p><strong>Market:</strong> Oncology centers and clinical laboratories</p>
+                  <p><strong>Intellectual Property:</strong> 15 patents in genomic algorithms</p>
+                </div>
+              `,
+              questions: [
+                {
+                  id: 'pm1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary value proposition of precision medicine?',
+                  options: ['Lower treatment costs', 'Faster diagnosis', 'Improved treatment outcomes', 'Reduced side effects'],
+                  correctAnswer: 'Improved treatment outcomes',
+                  explanation: 'Precision medicine\'s primary value is matching patients with treatments most likely to be effective for their specific condition.',
+                  points: 95
+                }
+              ]
+            },
+            {
+              type: 'lesson',
+              title: 'Rare Disease Genomics',
+              content: `
+                <h3>Orphan Drug Development</h3>
+                <p>Genomics enabling rare disease treatment:</p>
+                <ul>
+                  <li><strong>Disease Gene Discovery:</strong> Identifying genetic causes of rare conditions</li>
+                  <li><strong>Gene Therapy:</strong> Direct genetic intervention strategies</li>
+                  <li><strong>Regulatory Pathways:</strong> Orphan drug designation and accelerated approval</li>
+                  <li><strong>Market Dynamics:</strong> Small patient populations and high-value treatments</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Population Genomics',
+              content: `
+                <h3>Large-Scale Genetic Studies</h3>
+                <p>Population-level genomic research and applications:</p>
+                <ul>
+                  <li><strong>Biobanks:</strong> Large-scale genetic and health data repositories</li>
+                  <li><strong>Polygenic Risk Scores:</strong> Multiple genetic variant risk assessment</li>
+                  <li><strong>Ancestry and Health:</strong> Population-specific genetic variations</li>
+                  <li><strong>Public Health Genomics:</strong> Population screening and prevention</li>
+                </ul>
+              `
+            },
+            {
+              type: 'lesson',
+              title: 'Ethical and Regulatory Considerations',
+              content: `
+                <h3>Genomics Ethics and Policy</h3>
+                <p>Addressing societal implications of genomic medicine:</p>
+                <ul>
+                  <li><strong>Genetic Discrimination:</strong> Insurance and employment protections</li>
+                  <li><strong>Informed Consent:</strong> Complex genetic testing decisions</li>
+                  <li><strong>Data Sharing:</strong> Balancing research benefits with privacy</li>
+                  <li><strong>Health Equity:</strong> Ensuring diverse representation in genomic research</li>
+                </ul>
+              `
+            },
+            {
+              type: 'quiz',
+              title: 'Precision Medicine Ethics Assessment',
+              questions: [
+                {
+                  id: 'pme1',
+                  type: 'multiple-choice',
+                  question: 'What is the primary ethical concern in genomic medicine?',
+                  options: ['Treatment costs', 'Data privacy', 'Research validity', 'Clinical effectiveness'],
+                  correctAnswer: 'Data privacy',
+                  explanation: 'Genetic data privacy is a primary concern as genomic information can affect individuals and their families for generations.',
+                  points: 105
+                },
+                {
+                  id: 'pme2',
+                  type: 'multiple-choice',
+                  question: 'Why is diversity important in genomic research?',
+                  options: ['Political correctness', 'Research funding', 'Health equity', 'Statistical power'],
+                  correctAnswer: 'Health equity',
+                  explanation: 'Genomic diversity ensures that precision medicine benefits are available to all populations, not just those historically over-represented in research.',
+                  points: 105
+                }
+              ]
+            }
+          ]
+        }
                   type: 'multiple-choice',
                   question: 'What percentage of drugs typically succeed from Phase I to market approval?',
                   options: ['50%', '25%', '12%', '5%'],
