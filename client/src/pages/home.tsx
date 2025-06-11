@@ -276,9 +276,9 @@ export default function Home() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     {/* Logo and Name */}
-                    <div className="flex items-center space-x-3 flex-shrink-0">
+                    <div className="flex items-center space-x-2 flex-shrink-0">
                       <div className={`bg-gradient-to-r ${sector.color} text-white p-2 rounded-lg`}>
-                        <IconComponent className="h-5 w-5" />
+                        <IconComponent className="h-4 w-4" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-slate-900 text-sm">{sector.name}</h3>
@@ -286,8 +286,8 @@ export default function Home() {
                       </div>
                     </div>
                     
-                    {/* Evenly spaced metrics and descriptors */}
-                    <div className="flex items-center space-x-6 text-xs flex-1 justify-center">
+                    {/* Compact metrics */}
+                    <div className="flex items-center space-x-3 text-xs">
                       {sector.key === 'defense' && (
                         <>
                           <div className="text-center">
@@ -296,10 +296,7 @@ export default function Home() {
                           </div>
                           <div className="text-center">
                             <span className="font-semibold text-slate-900 block">{sector.stats.stocks}</span>
-                            <span className="text-slate-600">Defense Stocks</span>
-                          </div>
-                          <div className="text-center">
-                            <span className="text-slate-500">Live tracking</span>
+                            <span className="text-slate-600">Stocks</span>
                           </div>
                         </>
                       )}
@@ -311,10 +308,7 @@ export default function Home() {
                           </div>
                           <div className="text-center">
                             <span className="font-semibold text-slate-900 block">{sector.stats.stocks}</span>
-                            <span className="text-slate-600">Health Stocks</span>
-                          </div>
-                          <div className="text-center">
-                            <span className="text-slate-500">WHO analysis</span>
+                            <span className="text-slate-600">Stocks</span>
                           </div>
                         </>
                       )}
@@ -326,20 +320,10 @@ export default function Home() {
                           </div>
                           <div className="text-center">
                             <span className="font-semibold text-slate-900 block">{sector.stats.stocks}</span>
-                            <span className="text-slate-600">Energy Stocks</span>
-                          </div>
-                          <div className="text-center">
-                            <span className="text-slate-500">Live monitoring</span>
+                            <span className="text-slate-600">Stocks</span>
                           </div>
                         </>
                       )}
-                    </div>
-                    
-                    {/* Sector Tag */}
-                    <div className="flex-shrink-0">
-                      <Badge variant="outline" className={`${sector.textColor} text-xs`}>
-                        {sector.key.charAt(0).toUpperCase() + sector.key.slice(1)}
-                      </Badge>
                     </div>
                   </div>
 
