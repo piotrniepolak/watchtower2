@@ -23,15 +23,30 @@ interface ConflictTimelineProps {
 }
 
 const cleanEventDescription = (description: string) => {
-  // Remove formatting markers and clean up text
+  // Remove all formatting markers and clean up text thoroughly
   let cleaned = description
     .replace(/^\*+/g, '') // Remove leading asterisks
     .replace(/\*\*/g, '') // Remove markdown bold
+    .replace(/##\s*/g, '') // Remove markdown headers
     .replace(/Title:\s*/g, '')
     .replace(/Description:\s*/g, '')
     .replace(/\(Source:.*?\)$/g, '') // Remove source citations at end
     .replace(/\[Source:.*?\]$/g, '') // Remove bracketed sources
+    .replace(/Source:.*$/gm, '') // Remove source lines
+    .replace(/Severity:.*$/gm, '') // Remove severity lines
+    .replace(/- \*\*\d{4}-\d{2}-\d{2}.*?\*\*.*?-/g, '') // Remove date headers
+    .replace(/^\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/gm, '') // Remove standalone timestamps
+    .replace(/Russia conflict based on available news.*?:/gi, '') // Remove boilerplate text
+    .replace(/Military Operations and Battlefield Updates/gi, '') // Remove section headers
+    .replace(/\n+/g, ' ') // Replace multiple newlines with space
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/^[^a-zA-Z]*/, '') // Remove non-letter characters from start
     .trim();
+  
+  // If description is empty or too short, provide a fallback
+  if (cleaned.length < 10) {
+    cleaned = "Military activity reported in the region";
+  }
   
   return cleaned;
 };
@@ -149,8 +164,8 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
 
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <Clock className="w-5 h-5" />
@@ -172,9 +187,9 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
         </p>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-hidden">
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-3 p-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="h-4 bg-muted rounded w-3/4 mb-2" />
@@ -191,28 +206,29 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
             </p>
           </div>
         ) : (
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-            
-            <div className="space-y-6">
+          <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <div className="relative px-4 pb-4">
+              {/* Timeline line */}
+              <div className="absolute left-8 top-0 bottom-0 w-px bg-border" />
+              
+              <div className="space-y-4">
               {(timeline as TimelineEvent[]).map((event: TimelineEvent, index: number) => (
-                <div key={event.id} className="relative flex gap-4">
+                <div key={event.id} className="relative flex gap-3">
                   {/* Timeline dot */}
                   <div className={`
-                    relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 flex-shrink-0
+                    relative z-10 flex items-center justify-center w-6 h-6 rounded-full border-2 flex-shrink-0 mt-1
                     ${getSeverityColor(event.severity) === 'destructive' ? 'bg-red-100 border-red-500 text-red-700' :
                       getSeverityColor(event.severity) === 'secondary' ? 'bg-orange-100 border-orange-500 text-orange-700' :
                       getSeverityColor(event.severity) === 'outline' ? 'bg-yellow-100 border-yellow-500 text-yellow-700' :
                       'bg-blue-100 border-blue-500 text-blue-700'}
                   `}>
-                    <div className="w-3 h-3 rounded-full bg-current"></div>
+                    <div className="w-2 h-2 rounded-full bg-current"></div>
                   </div>
                   
                   {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <Badge variant={getSeverityColor(event.severity)} className="text-xs px-2 py-0.5 font-medium">
+                  <div className="flex-1 min-w-0 pb-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant={getSeverityColor(event.severity)} className="text-xs px-1.5 py-0.5 font-medium h-5">
                         Level {event.severity}
                       </Badge>
                       <span className="text-xs text-muted-foreground font-medium">
@@ -220,16 +236,16 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
                       </span>
                     </div>
                     
-                    <div className="bg-muted/20 rounded-lg p-3 border border-border/50">
+                    <div className="bg-muted/10 rounded-md p-2.5 border border-border/30">
                       {(() => {
                         const cleanedDescription = cleanEventDescription(event.eventDescription);
-                        const { text, isTruncated } = truncateText(cleanedDescription);
+                        const { text, isTruncated } = truncateText(cleanedDescription, 120);
                         const isExpanded = expandedEvents.has(event.id);
                         const displayText = isExpanded ? cleanedDescription : text;
                         
                         return (
                           <div>
-                            <p className="text-sm text-foreground leading-relaxed mb-1">
+                            <p className="text-sm text-foreground leading-relaxed">
                               {displayText}
                             </p>
                             {isTruncated && (
@@ -268,18 +284,18 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         )}
         
         {timeline && timeline.length > 0 && (
-          <>
-            <Separator />
+          <div className="px-4 py-2 border-t bg-muted/5">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Powered by Perplexity AI</span>
               <span>Auto-refreshes every minute</span>
             </div>
-          </>
+          </div>
         )}
       </CardContent>
     </Card>
