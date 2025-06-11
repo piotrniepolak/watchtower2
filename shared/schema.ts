@@ -228,16 +228,7 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 
-export interface QuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-  difficulty: "easy" | "medium" | "hard";
-  category: "geopolitical" | "market" | "defense" | "general";
-  source?: string;
-}
+
 
 // Daily News Schema
 export const dailyNews = pgTable("daily_news", {
@@ -377,6 +368,46 @@ export const discussionVotes = pgTable("discussion_votes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Learning Module Tables
+export const quizQuestions = pgTable("quiz_questions", {
+  id: serial("id").primaryKey(),
+  question: text("question").notNull(),
+  options: jsonb("options").notNull(), // Array of answer options
+  correctAnswer: integer("correct_answer").notNull(), // Index of correct option
+  explanation: text("explanation").notNull(),
+  sector: varchar("sector", { length: 20 }).notNull(), // 'defense', 'health', 'energy'
+  difficulty: varchar("difficulty", { length: 10 }).notNull(), // 'easy', 'medium', 'hard'
+  source: text("source").notNull(), // Source of the information
+  tags: text("tags").array(), // Related topics/tags
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const quizResponses = pgTable("quiz_responses", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  questionId: integer("question_id").notNull().references(() => quizQuestions.id),
+  selectedAnswer: integer("selected_answer").notNull(),
+  isCorrect: boolean("is_correct").notNull(),
+  timeSpent: integer("time_spent").notNull(), // in milliseconds
+  sector: varchar("sector", { length: 20 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const learningStats = pgTable("learning_stats", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  sector: varchar("sector", { length: 20 }).notNull(),
+  totalScore: integer("total_score").default(0),
+  streak: integer("streak").default(0),
+  correctAnswers: integer("correct_answers").default(0),
+  totalQuestions: integer("total_questions").default(0),
+  lastQuizDate: date("last_quiz_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const discussionsRelations = relations(discussions, ({ one, many }) => ({
   author: one(users, {
@@ -462,3 +493,32 @@ export type DiscussionReply = typeof discussionReplies.$inferSelect;
 export type InsertDiscussionReply = z.infer<typeof insertDiscussionReplySchema>;
 export type DiscussionVote = typeof discussionVotes.$inferSelect;
 export type InsertDiscussionVote = z.infer<typeof insertDiscussionVoteSchema>;
+
+// Learning Module Schemas
+export const insertQuizQuestionSchema = createInsertSchema(quizQuestions, {
+  options: z.array(z.string()),
+  tags: z.array(z.string()).optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertQuizResponseSchema = createInsertSchema(quizResponses).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLearningStatsSchema = createInsertSchema(learningStats).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Learning Module Types
+export type QuizQuestion = typeof quizQuestions.$inferSelect;
+export type InsertQuizQuestion = z.infer<typeof insertQuizQuestionSchema>;
+export type QuizResponse = typeof quizResponses.$inferSelect;
+export type InsertQuizResponse = z.infer<typeof insertQuizResponseSchema>;
+export type LearningStats = typeof learningStats.$inferSelect;
+export type InsertLearningStats = z.infer<typeof insertLearningStatsSchema>;

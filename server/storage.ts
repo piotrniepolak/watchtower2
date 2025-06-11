@@ -1,10 +1,11 @@
 import { 
   conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
-  discussions, discussionReplies, discussionVotes, chatMessages,
+  discussions, discussionReplies, discussionVotes, chatMessages, quizQuestions, quizResponses, learningStats,
   type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
   type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser,
   type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote,
-  type ChatMessage, type InsertChatMessage
+  type ChatMessage, type InsertChatMessage,
+  type QuizQuestion, type InsertQuizQuestion, type QuizResponse, type InsertQuizResponse, type LearningStats, type InsertLearningStats
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gt, sql } from "drizzle-orm";
