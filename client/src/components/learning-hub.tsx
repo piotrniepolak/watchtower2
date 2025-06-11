@@ -1,30 +1,12 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  BookOpen, 
-  Trophy, 
-  Brain, 
-  ChevronDown, 
-  ChevronUp, 
-  Play, 
-  CheckCircle, 
-  XCircle, 
-  Clock,
-  Medal,
-  Star,
-  Target,
-  TrendingUp,
-  Shield,
-  Pill,
-  Zap,
-  Globe
-} from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { useState, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QuizQuestion {
   id: string;
@@ -35,6 +17,7 @@ interface QuizQuestion {
   sector: string;
   difficulty: 'easy' | 'medium' | 'hard';
   source: string;
+  tags: string[];
 }
 
 interface QuizResponse {
@@ -54,6 +37,13 @@ interface LeaderboardEntry {
   rank: number;
 }
 
+interface UserStats {
+  totalScore: number;
+  streak: number;
+  correctAnswers: number;
+  totalQuestions: number;
+}
+
 interface LearningHubProps {
   selectedSector: string;
 }
@@ -63,12 +53,39 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
   const [currentQuiz, setCurrentQuiz] = useState<QuizQuestion | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [quizStartTime, setQuizStartTime] = useState<number>(0);
-  const [activeTab, setActiveTab] = useState("quiz");
+  const [quizStartTime, setQuizStartTime] = useState<number>(Date.now());
+  const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
+
   const queryClient = useQueryClient();
 
+  const sectorConfig = {
+    defense: {
+      title: 'ConflictWatch Learning',
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      borderColor: 'border-blue-200 dark:border-blue-800',
+      icon: Target,
+    },
+    health: {
+      title: 'PharmaWatch Learning',
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      borderColor: 'border-green-200 dark:border-green-800',
+      icon: Brain,
+    },
+    energy: {
+      title: 'EnergyWatch Learning',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+      borderColor: 'border-orange-200 dark:border-orange-800',
+      icon: Sparkles,
+    },
+  };
+
+  const config = sectorConfig[selectedSector as keyof typeof sectorConfig] || sectorConfig.defense;
+
   // Fetch daily quiz for current sector
-  const { data: dailyQuiz, isLoading: quizLoading } = useQuery({
+  const { data: dailyQuiz, isLoading: quizLoading } = useQuery<QuizQuestion>({
     queryKey: ["/api/learning/daily-quiz", selectedSector],
     enabled: isExpanded,
   });
@@ -80,12 +97,7 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
   });
 
   // Fetch user stats
-  const { data: userStats } = useQuery<{
-    totalScore: number;
-    streak: number;
-    correctAnswers: number;
-    totalQuestions: number;
-  }>({
+  const { data: userStats } = useQuery<UserStats>({
     queryKey: ["/api/learning/user-stats", selectedSector],
     enabled: isExpanded,
   });
@@ -124,6 +136,7 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
       setSelectedAnswer(null);
       setShowResult(false);
       setQuizStartTime(Date.now());
+      setIsAnswerSubmitted(false);
     }
   });
 
@@ -135,355 +148,297 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
   }, [dailyQuiz, currentQuiz]);
 
   const handleAnswerSelect = (answerIndex: number) => {
-    if (showResult) return;
-    setSelectedAnswer(answerIndex);
+    if (!isAnswerSubmitted) {
+      setSelectedAnswer(answerIndex);
+    }
   };
 
-  const handleSubmitAnswer = () => {
-    if (selectedAnswer === null || !currentQuiz) return;
+  const handleSubmitAnswer = async () => {
+    if (selectedAnswer === null || !currentQuiz || isAnswerSubmitted) return;
 
     const timeSpent = Date.now() - quizStartTime;
     const isCorrect = selectedAnswer === currentQuiz.correctAnswer;
 
-    const response: QuizResponse = {
+    setIsAnswerSubmitted(true);
+    setShowResult(true);
+
+    await submitResponseMutation.mutateAsync({
       questionId: currentQuiz.id,
       selectedAnswer,
       isCorrect,
-      timeSpent
-    };
-
-    submitResponseMutation.mutate(response);
-    setShowResult(true);
+      timeSpent,
+    });
   };
 
-  const handleNextQuiz = () => {
+  const handleGenerateNewQuiz = () => {
     generateQuizMutation.mutate();
   };
 
-  const getSectorIcon = (sector: string) => {
-    switch (sector) {
-      case 'defense': return Shield;
-      case 'health': return Pill;
-      case 'energy': return Zap;
-      default: return Globe;
-    }
+  const IconComponent = config.icon;
+
+  const difficultyColor = {
+    easy: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+    hard: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   };
 
-  const getSectorColor = (sector: string) => {
-    switch (sector) {
-      case 'defense': return 'from-blue-500 to-purple-600';
-      case 'health': return 'from-green-500 to-teal-600';
-      case 'energy': return 'from-orange-500 to-red-600';
-      default: return 'from-gray-500 to-slate-600';
-    }
-  };
-
-  const getSectorName = (sector: string) => {
-    switch (sector) {
-      case 'defense': return 'ConflictWatch';
-      case 'health': return 'PharmaWatch';
-      case 'energy': return 'EnergyWatch';
-      default: return 'Global Intelligence';
-    }
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const SectorIcon = getSectorIcon(selectedSector);
+  if (!isExpanded) {
+    return (
+      <Card className={cn("transition-all duration-300 hover:shadow-md cursor-pointer", config.borderColor, config.bgColor)}>
+        <CardHeader 
+          className="pb-3"
+          onClick={() => setIsExpanded(true)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-2 rounded-lg", config.bgColor)}>
+                <IconComponent className={cn("h-5 w-5", config.color)} />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-semibold">{config.title}</CardTitle>
+                <CardDescription className="text-sm">
+                  Expand to access learning modules and quizzes
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {userStats && (
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    Score: {userStats.totalScore || 0}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Streak: {userStats.streak || 0} 🔥
+                  </div>
+                </div>
+              )}
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="w-full">
-      <CardHeader 
-        className="cursor-pointer hover:bg-slate-50 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-lg bg-gradient-to-r ${getSectorColor(selectedSector)} text-white`}>
-              <BookOpen className="h-5 w-5" />
+    <Card className={cn("transition-all duration-300", config.borderColor)}>
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={cn("p-2 rounded-lg", config.bgColor)}>
+              <IconComponent className={cn("h-5 w-5", config.color)} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">Learning Hub</h3>
-              <p className="text-sm text-slate-600 font-normal">
-                Master {getSectorName(selectedSector)} intelligence with AI-powered quizzes
-              </p>
+              <CardTitle className="text-lg font-semibold">{config.title}</CardTitle>
+              <CardDescription>
+                Master intelligence analysis with real-time market quizzes
+              </CardDescription>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            {userStats && (
-              <div className="flex items-center space-x-3 mr-4">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-slate-900">{userStats.totalScore || 0}</div>
-                  <div className="text-xs text-slate-500">Score</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-orange-600">{userStats.streak || 0}</div>
-                  <div className="text-xs text-slate-500">Streak</div>
-                </div>
-              </div>
-            )}
-            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-          </div>
-        </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(false)}
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
 
-      {isExpanded && (
-        <CardContent className="pt-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="quiz" className="flex items-center space-x-2">
-                <Brain className="h-4 w-4" />
-                <span>Daily Quiz</span>
-              </TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex items-center space-x-2">
-                <Trophy className="h-4 w-4" />
-                <span>Leaderboard</span>
-              </TabsTrigger>
-              <TabsTrigger value="progress" className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4" />
-                <span>Progress</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="quiz" className="mt-6">
-              {quizLoading || generateQuizMutation.isPending ? (
-                <div className="flex items-center justify-center h-64">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                    <p className="text-slate-600">Generating intelligent quiz questions...</p>
-                  </div>
+      <CardContent className="space-y-6">
+        {/* User Progress Section */}
+        {userStats && (
+          <div className={cn("p-4 rounded-lg", config.bgColor)}>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              Your Progress
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {userStats.totalScore || 0}
                 </div>
-              ) : currentQuiz ? (
-                <div className="space-y-6">
-                  {/* Quiz Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <SectorIcon className="h-5 w-5 text-slate-600" />
-                      <div>
-                        <h4 className="font-semibold text-slate-900">{getSectorName(selectedSector)} Quiz</h4>
-                        <p className="text-sm text-slate-600">Test your knowledge of current events and market trends</p>
-                      </div>
-                    </div>
-                    <Badge className={getDifficultyColor(currentQuiz.difficulty)}>
-                      {currentQuiz.difficulty.toUpperCase()}
-                    </Badge>
-                  </div>
-
-                  {/* Question */}
-                  <Card className="p-6 bg-gradient-to-r from-slate-50 to-blue-50">
-                    <h5 className="text-lg font-medium mb-4">{currentQuiz.question}</h5>
-                    
-                    <div className="space-y-3">
-                      {currentQuiz.options.map((option, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleAnswerSelect(index)}
-                          disabled={showResult}
-                          className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                            selectedAnswer === index
-                              ? showResult
-                                ? index === currentQuiz.correctAnswer
-                                  ? 'border-green-500 bg-green-50'
-                                  : 'border-red-500 bg-red-50'
-                                : 'border-blue-500 bg-blue-50'
-                              : showResult && index === currentQuiz.correctAnswer
-                              ? 'border-green-500 bg-green-50'
-                              : 'border-slate-200 hover:border-slate-300 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                              selectedAnswer === index
-                                ? showResult
-                                  ? index === currentQuiz.correctAnswer
-                                    ? 'border-green-500 bg-green-500'
-                                    : 'border-red-500 bg-red-500'
-                                  : 'border-blue-500 bg-blue-500'
-                                : showResult && index === currentQuiz.correctAnswer
-                                ? 'border-green-500 bg-green-500'
-                                : 'border-slate-300'
-                            }`}>
-                              {showResult && (
-                                selectedAnswer === index
-                                  ? index === currentQuiz.correctAnswer
-                                    ? <CheckCircle className="h-4 w-4 text-white" />
-                                    : <XCircle className="h-4 w-4 text-white" />
-                                  : index === currentQuiz.correctAnswer
-                                  ? <CheckCircle className="h-4 w-4 text-white" />
-                                  : null
-                              )}
-                            </div>
-                            <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
-                            <span>{option}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </Card>
-
-                  {/* Results */}
-                  {showResult && (
-                    <Card className="p-6 bg-gradient-to-r from-slate-50 to-green-50">
-                      <div className="flex items-center space-x-3 mb-4">
-                        {selectedAnswer === currentQuiz.correctAnswer ? (
-                          <>
-                            <CheckCircle className="h-6 w-6 text-green-500" />
-                            <span className="text-lg font-semibold text-green-700">Correct!</span>
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="h-6 w-6 text-red-500" />
-                            <span className="text-lg font-semibold text-red-700">Incorrect</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-slate-700 mb-4">{currentQuiz.explanation}</p>
-                      <div className="text-xs text-slate-500">
-                        Source: {currentQuiz.source}
-                      </div>
-                    </Card>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-between">
-                    {!showResult ? (
-                      <Button 
-                        onClick={handleSubmitAnswer} 
-                        disabled={selectedAnswer === null || submitResponseMutation.isPending}
-                        className="w-full"
-                      >
-                        {submitResponseMutation.isPending ? 'Submitting...' : 'Submit Answer'}
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={handleNextQuiz} 
-                        disabled={generateQuizMutation.isPending}
-                        className="w-full"
-                      >
-                        {generateQuizMutation.isPending ? 'Generating...' : 'Next Question'}
-                      </Button>
-                    )}
-                  </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Total Score</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center gap-1">
+                  {userStats.streak || 0} 🔥
                 </div>
-              ) : (
-                <div className="text-center py-12">
-                  <BookOpen className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                  <h4 className="text-lg font-semibold text-slate-900 mb-2">No Quiz Available</h4>
-                  <p className="text-slate-600 mb-6">Generate a new quiz to start learning!</p>
-                  <Button onClick={handleNextQuiz} disabled={generateQuizMutation.isPending}>
-                    <Play className="h-4 w-4 mr-2" />
-                    {generateQuizMutation.isPending ? 'Generating...' : 'Start Quiz'}
+                <div className="text-xs text-gray-600 dark:text-gray-400">Day Streak</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {userStats.totalQuestions || 0}
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Questions</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {userStats.totalQuestions > 0 ? Math.round((userStats.correctAnswers / userStats.totalQuestions) * 100) : 0}%
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400">Accuracy</div>
+              </div>
+            </div>
+            {userStats.totalQuestions > 0 && (
+              <div className="mt-3">
+                <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <span>Progress</span>
+                  <span>{userStats.correctAnswers}/{userStats.totalQuestions}</span>
+                </div>
+                <Progress 
+                  value={(userStats.correctAnswers / userStats.totalQuestions) * 100} 
+                  className="h-2"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        <Separator />
+
+        {/* Quiz Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              Daily Intelligence Quiz
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateNewQuiz}
+              disabled={generateQuizMutation.isPending}
+            >
+              {generateQuizMutation.isPending ? 'Generating...' : 'New Quiz'}
+            </Button>
+          </div>
+
+          {quizLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading quiz...</p>
+            </div>
+          ) : currentQuiz ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Badge className={difficultyColor[currentQuiz.difficulty]}>
+                  {currentQuiz.difficulty}
+                </Badge>
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Timer className="h-3 w-3" />
+                  <span>{Math.round((Date.now() - quizStartTime) / 1000)}s</span>
+                </div>
+              </div>
+
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-medium mb-4">{currentQuiz.question}</h4>
+                <div className="space-y-2">
+                  {currentQuiz.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleAnswerSelect(index)}
+                      disabled={isAnswerSubmitted}
+                      className={cn(
+                        "w-full p-3 text-left border rounded-lg transition-colors",
+                        selectedAnswer === index
+                          ? showResult
+                            ? index === currentQuiz.correctAnswer
+                              ? "bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-600 dark:text-green-300"
+                              : "bg-red-100 border-red-300 text-red-800 dark:bg-red-900/30 dark:border-red-600 dark:text-red-300"
+                            : "bg-blue-100 border-blue-300 text-blue-800 dark:bg-blue-900/30 dark:border-blue-600 dark:text-blue-300"
+                          : showResult && index === currentQuiz.correctAnswer
+                          ? "bg-green-100 border-green-300 text-green-800 dark:bg-green-900/30 dark:border-green-600 dark:text-green-300"
+                          : "hover:bg-gray-50 dark:hover:bg-gray-800",
+                        isAnswerSubmitted && "cursor-not-allowed"
+                      )}
+                    >
+                      <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
+                {!showResult && selectedAnswer !== null && (
+                  <Button 
+                    onClick={handleSubmitAnswer}
+                    disabled={submitResponseMutation.isPending}
+                    className="w-full mt-4"
+                  >
+                    {submitResponseMutation.isPending ? 'Submitting...' : 'Submit Answer'}
                   </Button>
-                </div>
-              )}
-            </TabsContent>
+                )}
 
-            <TabsContent value="leaderboard" className="mt-6">
-              {leaderboardLoading ? (
-                <div className="flex items-center justify-center h-64">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-lg font-semibold">Top Performers</h4>
-                    <Badge variant="outline">{getSectorName(selectedSector)}</Badge>
-                  </div>
-                  
-                  {leaderboard.length > 0 ? (
-                    <div className="space-y-3">
-                      {leaderboard.slice(0, 10).map((entry: LeaderboardEntry, index: number) => (
-                        <div key={entry.id} className="flex items-center justify-between p-4 bg-white rounded-lg border">
-                          <div className="flex items-center space-x-4">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                              index === 1 ? 'bg-gray-100 text-gray-800' :
-                              index === 2 ? 'bg-orange-100 text-orange-800' :
-                              'bg-slate-100 text-slate-600'
-                            }`}>
-                              {index < 3 ? <Medal className="h-4 w-4" /> : <span className="text-sm font-bold">{index + 1}</span>}
-                            </div>
-                            <div>
-                              <div className="font-medium">{entry.username}</div>
-                              <div className="text-sm text-slate-500">
-                                {entry.streak} day streak
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-lg">{entry.totalScore}</div>
-                            <div className="text-xs text-slate-500">points</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Trophy className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                      <p className="text-slate-600">No rankings available yet. Be the first to take a quiz!</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="progress" className="mt-6">
-              <div className="space-y-6">
-                <h4 className="text-lg font-semibold">Your Learning Progress</h4>
-                
-                {userStats ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="p-4">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Star className="h-5 w-5 text-yellow-500" />
-                        <span className="font-medium">Total Score</span>
-                      </div>
-                      <div className="text-2xl font-bold">{userStats.totalScore || 0}</div>
-                      <div className="text-sm text-slate-500">Points earned</div>
-                    </Card>
-                    
-                    <Card className="p-4">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Target className="h-5 w-5 text-orange-500" />
-                        <span className="font-medium">Current Streak</span>
-                      </div>
-                      <div className="text-2xl font-bold">{userStats.streak || 0}</div>
-                      <div className="text-sm text-slate-500">Consecutive days</div>
-                    </Card>
-                    
-                    <Card className="p-4">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span className="font-medium">Accuracy</span>
-                      </div>
-                      <div className="text-2xl font-bold">
-                        {userStats.totalQuestions > 0 
-                          ? Math.round((userStats.correctAnswers / userStats.totalQuestions) * 100)
-                          : 0}%
-                      </div>
-                      <div className="text-sm text-slate-500">
-                        {userStats.correctAnswers || 0} of {userStats.totalQuestions || 0} correct
-                      </div>
-                    </Card>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <TrendingUp className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-600">Take your first quiz to see your progress!</p>
+                {showResult && (
+                  <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <h5 className="font-medium mb-2">Explanation:</h5>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      {currentQuiz.explanation}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Source: {currentQuiz.source}
+                    </p>
                   </div>
                 )}
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      )}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600 dark:text-gray-400">
+                Click "New Quiz" to generate a question based on current market conditions
+              </p>
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Leaderboard Section */}
+        <div className="space-y-4">
+          <h3 className="font-semibold flex items-center gap-2">
+            <Crown className="h-4 w-4 text-yellow-500" />
+            Sector Leaderboard
+          </h3>
+
+          {leaderboardLoading ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+            </div>
+          ) : leaderboard && leaderboard.length > 0 ? (
+            <div className="space-y-2">
+              {leaderboard.slice(0, 10).map((entry: LeaderboardEntry, index: number) => (
+                <div 
+                  key={entry.id} 
+                  className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-medium">
+                      {index < 3 ? (
+                        <Medal className={cn(
+                          "h-4 w-4",
+                          index === 0 ? "text-yellow-500" : index === 1 ? "text-gray-400" : "text-orange-600"
+                        )} />
+                      ) : (
+                        entry.rank
+                      )}
+                    </div>
+                    <span className="font-medium">{entry.username}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium">{entry.totalScore}</div>
+                    <div className="text-xs text-gray-500">
+                      {entry.streak} day streak
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+              No participants yet. Be the first to take a quiz!
+            </p>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 }
