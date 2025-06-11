@@ -8,7 +8,7 @@ import { userQuizResponses, users, dailyQuizzes, discussions } from "@shared/sch
 import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
-import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline, generateSectorPredictions, generateSectorMarketAnalysis } from "./ai-analysis";
+import { generateConflictPredictions, generateMarketAnalysis, generateConflictStoryline, generateSectorPredictions, generateSectorMarketAnalysis, generateSectorStorylines } from "./ai-analysis";
 import { DatabaseStorage } from "./storage";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
@@ -1113,6 +1113,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // REMOVED LEGACY ENDPOINT - ALL REQUESTS NOW GO THROUGH /api/analysis/predictions
 
   // REMOVED LEGACY MARKET ANALYSIS ENDPOINT - ALL REQUESTS NOW GO THROUGH /api/analysis/market
+
+  // Sector-aware storylines endpoint
+  app.get('/api/analysis/storylines', async (req, res) => {
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: 'OpenAI API key not configured' });
+      }
+      
+      const sectorParam = req.query.sector as string;
+      const validSectors = ['defense', 'health', 'energy'];
+      const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
+      
+      console.log(`Frontend: Generating storylines for sector: ${sector}`);
+      
+      const conflicts = await storage.getConflicts();
+      const stocks = await storage.getStocks();
+      
+      const storylines = await generateSectorStorylines(sector, conflicts, stocks);
+      res.json(storylines);
+    } catch (error) {
+      console.error('Error generating sector storylines:', error);
+      res.status(500).json({ message: 'Failed to generate storylines' });
+    }
+  });
 
   app.get("/api/ai/storyline/:conflictId", async (req, res) => {
     try {

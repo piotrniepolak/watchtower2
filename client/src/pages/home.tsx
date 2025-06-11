@@ -535,6 +535,26 @@ export default function Home() {
                   <CardDescription>
                     Complete sector analysis with predictions, market insights, and strategic storylines
                   </CardDescription>
+                  
+                  {/* Confidence & Implications Explanation */}
+                  <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start space-x-3">
+                      <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-blue-800">
+                        <div className="font-medium mb-1">Understanding Analysis Confidence</div>
+                        <p className="mb-2">
+                          <strong>Confidence Levels:</strong> 70-85% = High reliability based on current data | 
+                          50-69% = Moderate certainty with evolving factors | 
+                          30-49% = Lower confidence due to market volatility
+                        </p>
+                        <p>
+                          <strong>Investment Implications:</strong> Consider confidence levels alongside your risk tolerance. 
+                          Higher confidence predictions may warrant larger position sizes, while lower confidence scenarios 
+                          suggest smaller, diversified positions with close monitoring.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="h-[400px] overflow-hidden">
                   <Tabs defaultValue="predictions" className="h-full">
