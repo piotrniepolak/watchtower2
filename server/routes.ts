@@ -2452,18 +2452,26 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
 
       const questionSets = { defense: defenseQuestions, health: healthQuestions, energy: energyQuestions };
       const questions = questionSets[sector as keyof typeof questionSets] || questionSets.defense;
-      const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+      
+      // Generate 3 unique questions for the quiz
+      const shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
+      const selectedQuestions = shuffledQuestions.slice(0, 3);
 
       const quiz = {
         id: `${sector}-quiz-${Date.now()}`,
-        question: randomQuestion.question,
-        options: randomQuestion.options,
-        correctAnswer: randomQuestion.correctAnswer,
-        explanation: randomQuestion.explanation,
+        questions: selectedQuestions.map((q, index) => ({
+          id: index + 1,
+          question: q.question,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          source: q.source,
+          tags: q.tags
+        })),
         sector,
         difficulty,
-        source: randomQuestion.source,
-        tags: randomQuestion.tags
+        totalQuestions: 3,
+        currentQuestion: 1
       };
 
       res.json(quiz);
