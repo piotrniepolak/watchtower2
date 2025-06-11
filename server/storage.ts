@@ -88,6 +88,10 @@ export interface IStorage {
   createDailyQuestion(question: InsertDailyQuestion): Promise<DailyQuestion>;
   getActiveDailyQuestions(): Promise<DailyQuestion[]>;
   deactivateDailyQuestion(id: number): Promise<void>;
+  
+  // User Visits
+  trackUserVisit(username: string): Promise<void>;
+  getUserFirstVisit(username: string): Promise<Date | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1537,6 +1541,49 @@ export class MemStorage implements IStorage {
       .update(dailyQuestions)
       .set({ isActive: false })
       .where(eq(dailyQuestions.id, id));
+  }
+
+  // User Visits Implementation
+  async trackUserVisit(username: string): Promise<void> {
+    const now = new Date();
+    
+    // Check if user visit record exists
+    const [existingVisit] = await db
+      .select()
+      .from(userVisits)
+      .where(eq(userVisits.username, username))
+      .limit(1);
+
+    if (existingVisit) {
+      // Update existing visit record
+      await db
+        .update(userVisits)
+        .set({ 
+          lastVisit: now,
+          visitCount: existingVisit.visitCount + 1
+        })
+        .where(eq(userVisits.username, username));
+    } else {
+      // Create new visit record
+      await db
+        .insert(userVisits)
+        .values({
+          username,
+          firstVisit: now,
+          lastVisit: now,
+          visitCount: 1
+        });
+    }
+  }
+
+  async getUserFirstVisit(username: string): Promise<Date | null> {
+    const [visit] = await db
+      .select({ firstVisit: userVisits.firstVisit })
+      .from(userVisits)
+      .where(eq(userVisits.username, username))
+      .limit(1);
+    
+    return visit?.firstVisit || null;
   }
 }
 

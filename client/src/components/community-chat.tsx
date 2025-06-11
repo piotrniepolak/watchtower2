@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill, Reply } from "lucide-react";
+import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill, Reply, Star } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -30,6 +30,14 @@ interface DailyQuestion {
   generatedDate: string;
   discussionId: number;
   isActive: boolean;
+}
+
+interface Badge {
+  type: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
 }
 
 interface CommunityChatProps {}
@@ -90,6 +98,32 @@ export function CommunityChat() {
     },
     staleTime: 60000, // Cache for 1 minute
   });
+
+  // Fetch user badges
+  const { data: userBadges = [] } = useQuery({
+    queryKey: ["/api/users/badges", username],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${username}/badges`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    staleTime: 300000, // Cache for 5 minutes
+  });
+
+  // Track user visit on component mount
+  useEffect(() => {
+    const trackVisit = async () => {
+      try {
+        await apiRequest(`/api/users/${username}/visit`, {
+          method: "POST"
+        });
+      } catch (error) {
+        console.error("Failed to track user visit:", error);
+      }
+    };
+    
+    trackVisit();
+  }, [username]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -575,32 +609,47 @@ export function CommunityChat() {
                             <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
                               {msg.username}
                             </span>
-                            {coFounderInfo.isCoFounder && (
-                              <div className="flex items-center space-x-1">
-                                {/* Co-Founder Badge - Collapsed by default */}
-                                <div className="group/badge relative">
-                                  <div className="flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 px-1 py-0.5 rounded-full border border-amber-200 dark:border-amber-700 cursor-pointer transition-all duration-200 group-hover/badge:px-2">
-                                    <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                                    <span className="text-xs font-medium text-amber-700 dark:text-amber-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/badge:opacity-100 group-hover/badge:max-w-[80px] group-hover/badge:ml-1">
-                                      Co-Founder
+                            {/* Badges Container */}
+                            <div className="flex items-center space-x-1">
+                              {/* Co-Founder Badge */}
+                              {coFounderInfo.isCoFounder && (
+                                <>
+                                  <div className="group/badge relative">
+                                    <div className="flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 px-1 py-0.5 rounded-full border border-amber-200 dark:border-amber-700 cursor-pointer transition-all duration-200 group-hover/badge:px-2">
+                                      <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/badge:opacity-100 group-hover/badge:max-w-[80px] group-hover/badge:ml-1">
+                                        Co-Founder
+                                      </span>
+                                    </div>
+                                  </div>
+                                  {/* Sector Badge */}
+                                  <div className="group/sector relative">
+                                    <div className={`flex items-center px-1 py-0.5 rounded-full border cursor-pointer transition-all duration-200 group-hover/sector:px-2 ${
+                                      coFounderInfo.sector === 'health' 
+                                        ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
+                                        : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
+                                    }`}>
+                                      <coFounderInfo.icon className={`w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`} />
+                                      <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[80px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`}>
+                                        {coFounderInfo.sector === 'health' ? 'PharmaWatch' : 'ConflictWatch'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                              
+                              {/* Early Supporter Badge */}
+                              {userBadges.some((badge: Badge) => badge.type === 'early_supporter') && (
+                                <div className="group/supporter relative">
+                                  <div className="flex items-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 px-1 py-0.5 rounded-full border border-yellow-200 dark:border-yellow-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
+                                    <Star className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
+                                    <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[100px] group-hover/supporter:ml-1">
+                                      Early Supporter
                                     </span>
                                   </div>
                                 </div>
-                                {/* Sector Badge - Collapsed by default */}
-                                <div className="group/sector relative">
-                                  <div className={`flex items-center px-1 py-0.5 rounded-full border cursor-pointer transition-all duration-200 group-hover/sector:px-2 ${
-                                    coFounderInfo.sector === 'health' 
-                                      ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
-                                      : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
-                                  }`}>
-                                    <coFounderInfo.icon className={`w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`} />
-                                    <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[80px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`}>
-                                      {coFounderInfo.sector === 'health' ? 'PharmaWatch' : 'ConflictWatch'}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                             {msg.username === username && (
                               <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
                             )}

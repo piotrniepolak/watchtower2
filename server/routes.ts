@@ -2825,6 +2825,43 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
       res.status(500).json({ message: "Failed to fetch daily questions" });
     }
   });
+
+  // User visit tracking and badge eligibility
+  app.post("/api/users/:username/visit", async (req, res) => {
+    try {
+      const { username } = req.params;
+      await storage.trackUserVisit(username);
+      res.json({ message: "Visit tracked successfully" });
+    } catch (error) {
+      console.error("Error tracking user visit:", error);
+      res.status(500).json({ message: "Failed to track visit" });
+    }
+  });
+
+  app.get("/api/users/:username/badges", async (req, res) => {
+    try {
+      const { username } = req.params;
+      const firstVisit = await storage.getUserFirstVisit(username);
+      
+      const badges = [];
+      
+      // Early Supporter badge - for users who visited before August 26th, 2025
+      if (firstVisit && firstVisit < new Date('2025-08-26T00:00:00Z')) {
+        badges.push({
+          type: 'early_supporter',
+          name: 'Early Supporter',
+          description: 'Joined Watchtower before August 26th, 2025',
+          icon: 'star',
+          color: 'text-yellow-500'
+        });
+      }
+      
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ message: "Failed to fetch badges" });
+    }
+  });
   
   return httpServer;
 }
