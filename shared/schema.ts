@@ -368,6 +368,18 @@ export const discussionVotes = pgTable("discussion_votes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Daily Questions for Community Chat
+export const dailyQuestions = pgTable("daily_questions", {
+  id: serial("id").primaryKey(),
+  sector: varchar("sector", { length: 20 }).notNull(), // 'defense', 'healthcare', 'energy', 'general'
+  question: text("question").notNull(),
+  context: text("context"), // Additional context or background
+  generatedDate: date("generated_date").notNull(),
+  discussionId: integer("discussion_id").references(() => discussions.id, { onDelete: "cascade" }),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Learning Module Tables
 export const quizQuestions = pgTable("quiz_questions", {
   id: serial("id").primaryKey(),
@@ -463,6 +475,11 @@ export const insertDiscussionSchema = createInsertSchema(discussions, {
   updatedAt: true,
 });
 
+export const insertDailyQuestionSchema = createInsertSchema(dailyQuestions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertDiscussionReplySchema = createInsertSchema(discussionReplies).omit({
   id: true,
   upvotes: true,
@@ -493,6 +510,8 @@ export type DiscussionReply = typeof discussionReplies.$inferSelect;
 export type InsertDiscussionReply = z.infer<typeof insertDiscussionReplySchema>;
 export type DiscussionVote = typeof discussionVotes.$inferSelect;
 export type InsertDiscussionVote = z.infer<typeof insertDiscussionVoteSchema>;
+export type DailyQuestion = typeof dailyQuestions.$inferSelect;
+export type InsertDailyQuestion = z.infer<typeof insertDailyQuestionSchema>;
 
 // Learning Module Schemas
 export const insertQuizQuestionSchema = createInsertSchema(quizQuestions, {

@@ -1,10 +1,10 @@
 import { 
   conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
-  discussions, discussionReplies, discussionVotes, chatMessages, quizQuestions, quizResponses, learningStats,
+  discussions, discussionReplies, discussionVotes, chatMessages, quizQuestions, quizResponses, learningStats, dailyQuestions,
   type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
   type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser,
   type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote,
-  type ChatMessage, type InsertChatMessage,
+  type ChatMessage, type InsertChatMessage, type DailyQuestion, type InsertDailyQuestion,
   type QuizQuestion, type InsertQuizQuestion, type QuizResponse, type InsertQuizResponse, type LearningStats, type InsertLearningStats
 } from "@shared/schema";
 import { db } from "./db";
@@ -82,6 +82,12 @@ export interface IStorage {
     lastQuizDate: string;
     rank: number;
   }>>;
+
+  // Daily Questions
+  getDailyQuestion(sector: string, date?: string): Promise<DailyQuestion | undefined>;
+  createDailyQuestion(question: InsertDailyQuestion): Promise<DailyQuestion>;
+  getActiveDailyQuestions(): Promise<DailyQuestion[]>;
+  deactivateDailyQuestion(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
