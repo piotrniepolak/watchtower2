@@ -128,12 +128,12 @@ export function CommunityChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch daily question replies when daily question changes
+  // Fetch daily question replies when daily question or sector changes
   useEffect(() => {
     const fetchDailyQuestionReplies = async () => {
       if (dailyQuestion?.id) {
         try {
-          const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies`);
+          const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies?sector=${chatSector}`);
           if (response.ok) {
             const replies = await response.json();
             setDailyQuestionReplies(replies);
@@ -145,7 +145,7 @@ export function CommunityChat() {
     };
 
     fetchDailyQuestionReplies();
-  }, [dailyQuestion?.id]);
+  }, [dailyQuestion?.id, chatSector]);
 
   // WebSocket connection for real-time updates
   useEffect(() => {
@@ -226,9 +226,9 @@ export function CommunityChat() {
     if (!dailyQuestion) return;
     
     if (!showDailyQuestionReplies) {
-      // Fetch daily question replies
+      // Fetch daily question replies filtered by current sector
       try {
-        const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies`);
+        const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies?sector=${chatSector}`);
         if (response.ok) {
           const replies = await response.json();
           setDailyQuestionReplies(replies);

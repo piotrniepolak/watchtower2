@@ -1886,20 +1886,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get replies for a daily question
+  // Get replies for a daily question (filtered by sector)
   app.get('/api/daily-questions/:questionId/replies', async (req, res) => {
     try {
       const questionId = parseInt(req.params.questionId);
+      const sector = req.query.sector as string;
       
       if (!questionId) {
         return res.status(400).json({ error: 'Invalid question ID' });
       }
 
       const { chatMessages } = await import('@shared/schema');
-      const { eq, desc } = await import('drizzle-orm');
+      const { eq, desc, and } = await import('drizzle-orm');
+      
+      let whereClause = eq(chatMessages.dailyQuestionId, questionId);
+      
+      // Filter by sector if provided
+      if (sector) {
+        whereClause = and(
+          eq(chatMessages.dailyQuestionId, questionId),
+          eq(chatMessages.sector, sector)
+        );
+      }
       
       const replies = await db.select().from(chatMessages)
-        .where(eq(chatMessages.dailyQuestionId, questionId))
+        .where(whereClause)
         .orderBy(desc(chatMessages.timestamp));
       
       res.json(replies);
