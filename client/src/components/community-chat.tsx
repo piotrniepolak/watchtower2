@@ -114,7 +114,7 @@ export function CommunityChat() {
   useEffect(() => {
     const trackVisit = async () => {
       try {
-        await apiRequest(`/api/users/${username}/visit`, {
+        await fetch(`/api/users/${username}/visit`, {
           method: "POST"
         });
       } catch (error) {
