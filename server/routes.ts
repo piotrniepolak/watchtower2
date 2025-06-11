@@ -677,6 +677,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get sector-specific stocks
+  app.get('/api/sectors/:sectorKey/stocks', async (req, res) => {
+    try {
+      const stocks = await storage.getStocks();
+      
+      // Map sector keys to database sector names
+      const sectorMapping: Record<string, string> = {
+        'defense': 'Defense',
+        'health': 'Healthcare', 
+        'energy': 'Energy'
+      };
+      
+      const dbSectorName = sectorMapping[req.params.sectorKey];
+      if (!dbSectorName) {
+        return res.status(404).json({ error: 'Sector not found' });
+      }
+      
+      const sectorStocks = stocks.filter(stock => stock.sector === dbSectorName);
+      res.json(sectorStocks);
+    } catch (error) {
+      console.error('Error fetching sector stocks:', error);
+      res.status(500).json({ error: 'Failed to fetch sector stocks' });
+    }
+  });
+
   // Manual stock data update
   app.post("/api/stocks/manual-update", async (req, res) => {
     try {
