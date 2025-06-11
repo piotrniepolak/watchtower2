@@ -2693,10 +2693,10 @@ export function LearningHub({}: LearningHubProps) {
               <p className="text-muted-foreground">
                 You scored {answers.filter((answer, index) => answer === currentQuiz.questions[index].correctAnswer).length} out of {currentQuiz.questions.length}
               </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                New quiz available in 24 hours
+              </p>
             </div>
-            <Button onClick={handleRestartQuiz} className="w-full max-w-xs">
-              Take New Quiz
-            </Button>
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date, index, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, timestamp, varchar, boolean, jsonb, date, index, decimal, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
@@ -187,15 +187,19 @@ export type ConflictWatchlist = typeof conflictWatchlists.$inferSelect;
 // Daily Quiz Tables
 export const dailyQuizzes = pgTable("daily_quizzes", {
   id: serial("id").primaryKey(),
-  date: date("date").notNull().unique(),
+  date: date("date").notNull(),
+  sector: varchar("sector").notNull(), // defense, health, energy
   questions: jsonb("questions").notNull(), // Array of quiz questions
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  uniqueDateSector: unique().on(table.date, table.sector),
+}));
 
 export const userQuizResponses = pgTable("user_quiz_responses", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   quizId: integer("quiz_id").notNull().references(() => dailyQuizzes.id),
+  sector: varchar("sector").notNull(), // defense, health, energy
   responses: jsonb("responses").notNull(), // User's answers
   score: integer("score").notNull(),
   totalPoints: integer("total_points").notNull().default(0), // Points earned including time bonus
