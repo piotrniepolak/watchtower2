@@ -22,46 +22,52 @@ function EnhancedChartsSection({ sector = "defense" }: EnhancedChartsSectionProp
     setExpandedStock(expandedStock === symbol ? null : symbol);
   };
   
-  // Filter to only defense stocks for ConflictWatch
-  const getDefenseStockPerformance = () => {
+  // Filter stocks by sector
+  const getSectorStockPerformance = () => {
     if (!stocks || !Array.isArray(stocks)) return { topPerformers: [], worstPerformers: [] };
     
-    // Filter for defense-related stocks only
-    const defenseStocks = stocks.filter(stock => 
-      stock.sector === 'Defense' || 
-      stock.hasDefense === true ||
-      ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'LDOS', 'KTOS', 'AVAV', 'HII', 'ITA'].includes(stock.symbol)
-    );
+    // Define sector mappings
+    const sectorMapping: Record<string, string> = {
+      'defense': 'Defense',
+      'health': 'Healthcare', 
+      'energy': 'Energy'
+    };
     
-    const sorted = [...defenseStocks].sort((a, b) => b.changePercent - a.changePercent);
+    const dbSectorName = sectorMapping[sector];
+    const sectorStocks = stocks.filter(stock => stock.sector === dbSectorName);
+    
+    const sorted = [...sectorStocks].sort((a, b) => b.changePercent - a.changePercent);
     return {
       topPerformers: sorted.slice(0, 3),
       worstPerformers: sorted.slice(-3).reverse()
     };
   };
 
-  const { topPerformers, worstPerformers } = getDefenseStockPerformance();
+  const { topPerformers, worstPerformers } = getSectorStockPerformance();
 
-  // Calculate defense market metrics only
-  const calculateDefenseMarketMetrics = () => {
+  // Calculate sector market metrics
+  const calculateSectorMarketMetrics = () => {
     if (!stocks || !Array.isArray(stocks)) return { totalGains: 0, totalLosses: 0, avgChange: 0 };
     
-    // Filter for defense-related stocks only
-    const defenseStocks = stocks.filter(stock => 
-      stock.sector === 'Defense' || 
-      stock.hasDefense === true ||
-      ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'LDOS', 'KTOS', 'AVAV', 'HII', 'ITA'].includes(stock.symbol)
-    );
+    // Define sector mappings
+    const sectorMapping: Record<string, string> = {
+      'defense': 'Defense',
+      'health': 'Healthcare', 
+      'energy': 'Energy'
+    };
     
-    const gains = defenseStocks.filter(s => s.changePercent > 0).length;
-    const losses = defenseStocks.filter(s => s.changePercent < 0).length;
-    const avgChange = defenseStocks.length > 0 ? 
-      defenseStocks.reduce((sum, s) => sum + s.changePercent, 0) / defenseStocks.length : 0;
+    const dbSectorName = sectorMapping[sector];
+    const sectorStocks = stocks.filter(stock => stock.sector === dbSectorName);
+    
+    const gains = sectorStocks.filter(s => s.changePercent > 0).length;
+    const losses = sectorStocks.filter(s => s.changePercent < 0).length;
+    const avgChange = sectorStocks.length > 0 ? 
+      sectorStocks.reduce((sum, s) => sum + s.changePercent, 0) / sectorStocks.length : 0;
     
     return { totalGains: gains, totalLosses: losses, avgChange };
   };
 
-  const marketMetrics = calculateDefenseMarketMetrics();
+  const marketMetrics = calculateSectorMarketMetrics();
 
   if (stocksLoading) {
     return (
@@ -245,3 +251,5 @@ function EnhancedChartsSection({ sector = "defense" }: EnhancedChartsSectionProp
     </div>
   );
 }
+
+export default EnhancedChartsSection;

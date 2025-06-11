@@ -79,7 +79,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             Real-time performance of defense and aerospace stocks
           </p>
         </div>
-        <EnhancedChartsSection />
+        <EnhancedChartsSection sector={currentSector} />
       </div>
 
 
@@ -174,7 +174,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             Real-time performance of pharmaceutical and healthcare stocks
           </p>
         </div>
-        <EnhancedChartsSection />
+        <EnhancedChartsSection sector={currentSector} />
       </div>
 
       {/* Global Health Map Section */}
