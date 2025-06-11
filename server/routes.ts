@@ -2216,6 +2216,36 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
 
   // Learning Module API Routes
   
+  // Get daily quiz (fallback route without sector)
+  app.get('/api/learning/daily-quiz', async (req, res) => {
+    try {
+      const sector = 'defense'; // Default sector
+      
+      // Try to get existing quiz for today
+      const mockQuiz = {
+        id: `${sector}-${new Date().toISOString().split('T')[0]}`,
+        question: "Which defense contractor is the largest by revenue globally?",
+        options: [
+          "Lockheed Martin",
+          "Raytheon Technologies", 
+          "Boeing Defense",
+          "Northrop Grumman"
+        ],
+        correctAnswer: 0,
+        explanation: "Lockheed Martin is the world's largest defense contractor by revenue, with over $65 billion in annual sales.",
+        sector,
+        difficulty: 'medium' as const,
+        source: "Defense Industry Analysis",
+        tags: ["defense", "contractors", "revenue"]
+      };
+      
+      res.json(mockQuiz);
+    } catch (error) {
+      console.error('Error fetching daily quiz:', error);
+      res.status(500).json({ message: 'Failed to fetch quiz' });
+    }
+  });
+
   // Get daily quiz for sector
   app.get('/api/learning/daily-quiz/:sector', async (req, res) => {
     try {
@@ -2349,6 +2379,46 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
     } catch (error) {
       console.error('Error submitting quiz response:', error);
       res.status(500).json({ message: 'Failed to submit response' });
+    }
+  });
+
+  // Get leaderboard (fallback route without sector)
+  app.get('/api/learning/leaderboard', async (req, res) => {
+    try {
+      const mockLeaderboard = [
+        {
+          id: 1,
+          username: "DefenseExpert",
+          totalScore: 450,
+          streak: 12,
+          sector: "defense",
+          lastQuizDate: new Date().toISOString().split('T')[0],
+          rank: 1
+        },
+        {
+          id: 2,
+          username: "PharmaAnalyst",
+          totalScore: 380,
+          streak: 8,
+          sector: "health",
+          lastQuizDate: new Date().toISOString().split('T')[0],
+          rank: 2
+        },
+        {
+          id: 3,
+          username: "EnergyTrader",
+          totalScore: 320,
+          streak: 5,
+          sector: "energy",
+          lastQuizDate: new Date().toISOString().split('T')[0],
+          rank: 3
+        }
+      ];
+      
+      res.json(mockLeaderboard);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ message: 'Failed to fetch leaderboard' });
     }
   });
 

@@ -86,19 +86,19 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
 
   // Fetch daily quiz for current sector
   const { data: dailyQuiz, isLoading: quizLoading } = useQuery<QuizQuestion>({
-    queryKey: ["/api/learning/daily-quiz", selectedSector],
+    queryKey: [`/api/learning/daily-quiz/${selectedSector}`],
     enabled: isExpanded,
   });
 
   // Fetch leaderboard
   const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery<LeaderboardEntry[]>({
-    queryKey: ["/api/learning/leaderboard", selectedSector],
+    queryKey: [`/api/learning/leaderboard/${selectedSector}`],
     enabled: isExpanded,
   });
 
   // Fetch user stats
   const { data: userStats } = useQuery<UserStats>({
-    queryKey: ["/api/learning/user-stats", selectedSector],
+    queryKey: [`/api/learning/user-stats/${selectedSector}`],
     enabled: isExpanded,
   });
 
@@ -403,7 +403,7 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
             </div>
-          ) : leaderboard && leaderboard.length > 0 ? (
+          ) : Array.isArray(leaderboard) && leaderboard.length > 0 ? (
             <div className="space-y-2">
               {leaderboard.slice(0, 10).map((entry: LeaderboardEntry, index: number) => (
                 <div 
