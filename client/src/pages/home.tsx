@@ -342,7 +342,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Link href={sector.key === 'defense' ? '/' : sector.key === 'health' ? '/?sector=health' : '/?sector=energy'}>
+                  <Link href={`/dashboard?sector=${sector.key}`}>
                     <Button size="sm" className={`w-full bg-gradient-to-r ${sector.color} text-white hover:opacity-90 text-xs`}>
                       Explore {sector.name}
                     </Button>
