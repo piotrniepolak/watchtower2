@@ -1331,6 +1331,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Timeline update endpoint
+  app.post('/api/conflicts/:id/update-timeline', async (req, res) => {
+    // Ensure JSON response headers are set early
+    res.setHeader('Content-Type', 'application/json');
+    
+    try {
+      console.log(`Timeline update requested for conflict ID: ${req.params.id}`);
+      
+      const conflictId = parseInt(req.params.id);
+      if (isNaN(conflictId)) {
+        console.error('Invalid conflict ID:', req.params.id);
+        return res.status(400).json({ error: 'Invalid conflict ID' });
+      }
+
+      const conflict = await storage.getConflict(conflictId);
+      if (!conflict) {
+        console.error('Conflict not found:', conflictId);
+        return res.status(404).json({ error: 'Conflict not found' });
+      }
+
+      console.log(`Fetching updates for conflict: ${conflict.name}`);
+      
+      let events = [];
+      let eventsProcessed = 0;
+      
+      try {
+        const { conflictTimelineService } = await import('./conflict-timeline-service');
+        events = await conflictTimelineService.fetchConflictUpdates(conflict);
+        console.log(`Found ${events.length} new events for ${conflict.name}`);
+      } catch (fetchError) {
+        console.error('Error fetching conflict updates:', fetchError);
+        // Return success with zero events rather than failing
+        return res.status(200).json({ 
+          message: 'Timeline update completed with fallback data',
+          eventsAdded: 0,
+          conflictName: conflict.name,
+          warning: 'External data source unavailable'
+        });
+      }
+      
+      for (const event of events) {
+        try {
+          // Clean description to remove verbose formatting
+          const cleanDescription = event.description
+            .replace(/##\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+-\s+/g, '')
+            .replace(/- Source:.*?- Severity:.*$/gm, '')
+            .replace(/- Source:.*$/gm, '')
+            .replace(/- Severity:.*$/gm, '')
+            .replace(/Source:.*$/gm, '')
+            .replace(/Severity:.*$/gm, '')
+            .replace(/\n+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .replace(/^[^-]*-\s*/, '')
+            .replace(/^\s*-\s*/, '')
+            .trim();
+          
+          const correlationEvent = {
+            eventDate: event.timestamp,
+            eventDescription: cleanDescription,
+            stockMovement: 0,
+            conflictId: event.conflictId,
+            severity: event.severity === 'low' ? 2 : event.severity === 'medium' ? 5 : event.severity === 'high' ? 7 : 9
+          };
+          
+          await storage.createCorrelationEvent(correlationEvent);
+          eventsProcessed++;
+        } catch (eventError) {
+          console.error('Error processing event:', eventError);
+          // Continue processing other events
+        }
+      }
+
+      console.log(`Successfully processed ${eventsProcessed} events for ${conflict.name}`);
+
+      return res.status(200).json({ 
+        message: 'Timeline updated successfully',
+        eventsAdded: eventsProcessed,
+        conflictName: conflict.name
+      });
+    } catch (error) {
+      console.error('Error updating conflict timeline:', error);
+      return res.status(500).json({ 
+        error: 'Failed to update timeline',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Real-time stock price updates
   app.post("/api/stocks/update", async (req, res) => {
     try {
