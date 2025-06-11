@@ -1493,14 +1493,69 @@ export class MemStorage implements IStorage {
       .innerJoin(users, eq(learningStats.userId, users.id))
       .where(eq(learningStats.sector, sector))
       .orderBy(desc(learningStats.totalScore), desc(learningStats.streak))
-      .limit(50);
+      .limit(10);
 
     return results.map((result, index) => ({
       ...result,
       username: result.username || 'Anonymous',
-      lastQuizDate: result.lastQuizDate?.toISOString() || '',
+      totalScore: result.totalScore || 0,
+      streak: result.streak || 0,
+      lastQuizDate: result.lastQuizDate || '',
       rank: index + 1
     }));
+  }
+
+  // Daily Quiz Methods
+  async createDailyQuiz(data: InsertDailyQuiz): Promise<DailyQuiz> {
+    const [quiz] = await db.insert(dailyQuizzes).values(data).returning();
+    return quiz;
+  }
+
+  async getDailyQuiz(date: string): Promise<DailyQuiz | undefined> {
+    const [quiz] = await db
+      .select()
+      .from(dailyQuizzes)
+      .where(eq(dailyQuizzes.date, date))
+      .limit(1);
+    return quiz;
+  }
+
+  async getDailyQuizBySector(date: string, sector: string): Promise<DailyQuiz | undefined> {
+    const [quiz] = await db
+      .select()
+      .from(dailyQuizzes)
+      .where(and(
+        eq(dailyQuizzes.date, date),
+        eq(dailyQuizzes.sector, sector)
+      ))
+      .limit(1);
+    return quiz;
+  }
+
+  async getDailyQuizById(id: number): Promise<DailyQuiz | undefined> {
+    const [quiz] = await db
+      .select()
+      .from(dailyQuizzes)
+      .where(eq(dailyQuizzes.id, id))
+      .limit(1);
+    return quiz;
+  }
+
+  async createUserQuizResponse(data: InsertUserQuizResponse): Promise<UserQuizResponse> {
+    const [response] = await db.insert(userQuizResponses).values(data).returning();
+    return response;
+  }
+
+  async getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined> {
+    const [response] = await db
+      .select()
+      .from(userQuizResponses)
+      .where(and(
+        eq(userQuizResponses.userId, userId),
+        eq(userQuizResponses.quizId, quizId)
+      ))
+      .limit(1);
+    return response;
   }
 
   // Daily Questions Implementation

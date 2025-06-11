@@ -2702,6 +2702,87 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
     }
   });
 
+  // Get today's quiz for a specific sector
+  app.get('/api/quiz/daily/:sector', async (req, res) => {
+    try {
+      const { sector } = req.params;
+      const validSectors = ['defense', 'health', 'energy'];
+      
+      if (!validSectors.includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector' });
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const quiz = await storage.getDailyQuizBySector(today, sector);
+      
+      if (!quiz) {
+        // Generate new quiz for today if it doesn't exist
+        console.log(`Generating daily quiz for ${sector} sector`);
+        const newQuiz = await quizService.generateDailyQuizForSector(today, sector);
+        return res.json(newQuiz);
+      }
+
+      res.json(quiz);
+    } catch (error) {
+      console.error('Error fetching daily quiz:', error);
+      res.status(500).json({ message: 'Failed to fetch daily quiz' });
+    }
+  });
+
+  // Submit quiz response with scoring
+  app.post('/api/quiz/:quizId/submit', async (req, res) => {
+    try {
+      const { quizId } = req.params;
+      const { responses, completionTimeSeconds, username } = req.body;
+      const user = req.session?.user;
+
+      if (!user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      // Check if user already completed this quiz
+      const existingResponse = await storage.getUserQuizResponse(user.id, parseInt(quizId));
+      if (existingResponse) {
+        return res.status(400).json({ message: 'Quiz already completed' });
+      }
+
+      // Calculate score with time bonus
+      const quiz = await storage.getDailyQuizById(parseInt(quizId));
+      if (!quiz) {
+        return res.status(404).json({ message: 'Quiz not found' });
+      }
+
+      const result = await quizService.calculateScore(responses, quiz.questions, completionTimeSeconds);
+      
+      // Save the response
+      const quizResponse = await storage.createUserQuizResponse({
+        userId: user.id,
+        quizId: parseInt(quizId),
+        sector: quiz.sector,
+        responses,
+        score: result.score,
+        totalPoints: result.totalPoints,
+        timeBonus: result.timeBonus,
+        completionTimeSeconds
+      });
+
+      // Update user learning stats
+      await storage.updateLearningStats(user.id, quiz.sector, {
+        totalScore: result.totalPoints,
+        streak: result.score === quiz.questions.length ? 1 : 0, // Reset streak if not perfect
+        lastQuizDate: new Date().toISOString().split('T')[0]
+      });
+
+      res.json({
+        ...result,
+        message: 'Quiz completed successfully'
+      });
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      res.status(500).json({ message: 'Failed to submit quiz' });
+    }
+  });
+
   // Get user learning stats (fallback route without sector)
   app.get('/api/learning/user-stats', async (req, res) => {
     try {

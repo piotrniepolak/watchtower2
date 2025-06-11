@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { storage } from "./storage";
+import { perplexityService } from "./perplexity-service";
 import type { QuizQuestion, DailyQuiz, InsertDailyQuiz } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -307,15 +308,45 @@ Only use information from the current events data provided above.`
     return etTime.toISOString().split('T')[0];
   }
 
-  // Schedule daily quiz generation
+  // Generate daily quiz for a specific sector
+  async generateDailyQuizForSector(date: string, sector: string): Promise<any> {
+    try {
+      console.log(`Generating quiz for ${sector} sector on ${date}`);
+      
+      // Use Perplexity to generate quiz questions
+      const quiz = await perplexityService.generateQuiz({
+        sector,
+        difficulty: 'medium'
+      });
+
+      // Store the quiz in database
+      const storedQuiz = await storage.createDailyQuiz({
+        date,
+        sector,
+        questions: quiz.questions
+      });
+
+      console.log(`Successfully generated ${sector} quiz with ${quiz.questions.length} questions`);
+      return storedQuiz;
+    } catch (error) {
+      console.error(`Error generating ${sector} quiz:`, error);
+      throw error;
+    }
+  }
+
+  // Schedule daily quiz generation for all sectors
   startDailyQuizScheduler(): void {
     const checkAndGenerate = async () => {
       const today = this.getTodayDateET();
-      const existingQuiz = await storage.getDailyQuiz(today);
+      const sectors = ['defense', 'health', 'energy'];
       
-      if (!existingQuiz) {
-        console.log("Generating today's quiz...");
-        await this.generateDailyQuiz(today);
+      for (const sector of sectors) {
+        const existingQuiz = await storage.getDailyQuizBySector(today, sector);
+        
+        if (!existingQuiz) {
+          console.log(`Generating today's ${sector} quiz...`);
+          await this.generateDailyQuizForSector(today, sector);
+        }
       }
     };
 
