@@ -60,6 +60,7 @@ interface ConflictStoryline {
 
 export default function Home() {
   const [selectedSector, setSelectedSector] = useState("defense");
+  const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
   const queryClient = useQueryClient();
   
   // Fetch global metrics for overview
@@ -108,12 +109,18 @@ export default function Home() {
     retry: false,
   });
 
+
+
   // Fetch storylines for sector
   const { data: storylines = [], isLoading: storylinesLoading } = useQuery({
-    queryKey: ["/api/analysis/storylines", selectedSector],
+    queryKey: ["/api/analysis/storylines", selectedSector, selectedConflictId],
     queryFn: async () => {
       console.log(`Frontend: Fetching storylines for sector: ${selectedSector}`);
-      const response = await fetch(`/api/analysis/storylines?sector=${selectedSector}&cache=${Date.now()}`);
+      let url = `/api/analysis/storylines?sector=${selectedSector}&cache=${Date.now()}`;
+      if (selectedSector === 'defense' && selectedConflictId) {
+        url += `&conflictId=${selectedConflictId}`;
+      }
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch storylines');
       return response.json();
     },
@@ -675,6 +682,37 @@ export default function Home() {
                     </TabsContent>
 
                     <TabsContent value="storylines" className="h-[320px] overflow-y-auto space-y-4">
+                      {/* Conflict Selection for Defense Sector */}
+                      {selectedSector === 'defense' && conflicts && conflicts.length > 0 && (
+                        <div className="mb-4 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border border-red-200">
+                          <div className="flex items-center mb-2">
+                            <Shield className="h-4 w-4 text-red-600 mr-2" />
+                            <span className="text-sm font-medium text-red-800">Select Conflict for Analysis</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button 
+                              variant={selectedConflictId === null ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setSelectedConflictId(null)}
+                              className="text-xs"
+                            >
+                              All Conflicts
+                            </Button>
+                            {conflicts.filter((c: any) => c.status === 'Active').slice(0, 3).map((conflict: any) => (
+                              <Button
+                                key={conflict.id}
+                                variant={selectedConflictId === conflict.id ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setSelectedConflictId(conflict.id)}
+                                className="text-xs"
+                              >
+                                {conflict.name.length > 20 ? conflict.name.substring(0, 20) + '...' : conflict.name}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {storylinesLoading ? (
                         <div className="flex items-center justify-center h-32">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
@@ -697,10 +735,25 @@ export default function Home() {
                                     </div>
                                   </div>
                                   <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
-                                  <div className="flex items-center text-xs text-slate-500">
+                                  <div className="flex items-center text-xs text-slate-500 mb-2">
                                     <Clock className="h-2.5 w-2.5 mr-1" />
                                     {outcome.timeline}
                                   </div>
+                                  
+                                  {/* Display Actual Implications */}
+                                  {outcome.implications && outcome.implications.length > 0 && (
+                                    <div className="mt-2 p-2 bg-blue-50 rounded border-l-2 border-blue-200">
+                                      <h6 className="text-xs font-medium text-blue-800 mb-1">Key Implications:</h6>
+                                      <ul className="space-y-1">
+                                        {outcome.implications.map((implication: string, idx: number) => (
+                                          <li key={idx} className="text-xs text-blue-700 flex items-start">
+                                            <div className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                                            {implication}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -715,12 +768,25 @@ export default function Home() {
                                 </div>
                               </div>
                             )}
+
+                            {storyline.expertInsights && (
+                              <div className="mt-3 p-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded border">
+                                <h5 className="font-medium text-slate-900 mb-1 text-sm flex items-center">
+                                  <Brain className="h-3 w-3 mr-1" />
+                                  Expert Insights
+                                </h5>
+                                <p className="text-xs text-slate-700">{storyline.expertInsights}</p>
+                              </div>
+                            )}
                           </div>
                         ))
                       ) : (
                         <div className="text-center py-8">
                           <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
                           <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
+                          {selectedSector === 'defense' && (
+                            <p className="text-xs text-slate-400 mt-1">Try selecting a specific conflict above</p>
+                          )}
                         </div>
                       )}
                     </TabsContent>
