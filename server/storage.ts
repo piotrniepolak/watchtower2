@@ -1346,7 +1346,8 @@ export class MemStorage implements IStorage {
     let query = db.select().from(chatMessages).orderBy(desc(chatMessages.timestamp)).limit(limit);
     
     if (sector) {
-      query = query.where(eq(chatMessages.sector, sector));
+      const messages = await query.where(eq(chatMessages.sector, sector));
+      return messages.reverse();
     }
     
     const messages = await query;

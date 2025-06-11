@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
+import { CommunityChat } from "@/components/community-chat";
 
 interface SectorMetrics {
   totalStocks: number;
