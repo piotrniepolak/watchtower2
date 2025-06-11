@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { discussionStorage } from "./discussion-storage";
 import { insertUserSchema, insertStockWatchlistSchema, insertConflictWatchlistSchema } from "@shared/schema";
-import { userQuizResponses, users, dailyQuizzes, discussions } from "@shared/schema";
+import { userQuizResponses, users, dailyQuizzes, discussions, dailyQuestions } from "@shared/schema";
 import { sql, eq, desc, asc, and, isNotNull } from "drizzle-orm";
 import { db } from "./db";
 import { pool } from "./db";
@@ -2645,21 +2645,49 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
   app.get("/api/daily-questions/:sector", async (req, res) => {
     try {
       const { sector } = req.params;
-      const targetDate = new Date().toISOString().split('T')[0];
+      console.log(`Daily question request for sector: ${sector}`);
       
-      // Query database directly since storage method has issues
-      const [question] = await db
-        .select()
-        .from(dailyQuestions)
-        .where(and(
-          eq(dailyQuestions.sector, sector),
-          eq(dailyQuestions.generatedDate, targetDate),
-          eq(dailyQuestions.isActive, true)
-        ))
-        .orderBy(desc(dailyQuestions.createdAt))
-        .limit(1);
+      // First check if we have any daily questions at all
+      const allQuestionsResult = await pool.query(`SELECT id, sector, question, generated_date FROM daily_questions ORDER BY created_at DESC LIMIT 5`);
+      console.log(`Total daily questions in database: ${allQuestionsResult.rows.length}`);
+      
+      if (allQuestionsResult.rows.length > 0) {
+        console.log('Recent questions:', allQuestionsResult.rows);
+      }
+      
+      const targetDate = new Date().toISOString().split('T')[0];
+      console.log(`Looking for questions on date: ${targetDate} for sector: ${sector}`);
+      
+      const result = await pool.query(`
+        SELECT id, sector, question, context, generated_date, discussion_id, is_active, created_at
+        FROM daily_questions 
+        WHERE sector = $1 
+        AND generated_date = $2 
+        AND is_active = true 
+        ORDER BY created_at DESC 
+        LIMIT 1
+      `, [sector, targetDate]);
+      
+      console.log(`Found ${result.rows.length} questions for ${sector} on ${targetDate}`);
+      
+      const question = result.rows[0];
         
       if (!question) {
+        // Try to get any question for this sector
+        const fallbackResult = await pool.query(`
+          SELECT id, sector, question, context, generated_date, discussion_id, is_active, created_at
+          FROM daily_questions 
+          WHERE sector = $1 
+          AND is_active = true 
+          ORDER BY created_at DESC 
+          LIMIT 1
+        `, [sector]);
+        
+        if (fallbackResult.rows.length > 0) {
+          console.log(`Using fallback question for ${sector}`);
+          return res.json(fallbackResult.rows[0]);
+        }
+        
         return res.status(404).json({ message: "No daily question found" });
       }
       
