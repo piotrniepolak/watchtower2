@@ -318,11 +318,11 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading quiz...</p>
             </div>
-          ) : currentQuiz ? (
+          ) : currentQuiz && currentQuiz.question && currentQuiz.options ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge className={difficultyColor[currentQuiz.difficulty]}>
-                  {currentQuiz.difficulty}
+                <Badge className={difficultyColor[currentQuiz.difficulty || 'medium']}>
+                  {currentQuiz.difficulty || 'medium'}
                 </Badge>
                 <div className="flex items-center gap-1 text-xs text-gray-500">
                   <Timer className="h-3 w-3" />

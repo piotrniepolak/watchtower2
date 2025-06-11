@@ -10,7 +10,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
-import { LearningHub } from "@/components/learning-hub";
+import { LearningHub } from "../components/learning-hub";
 
 interface SectorMetrics {
   totalStocks: number;
