@@ -283,16 +283,18 @@ export default function Home() {
                   </div>
                   
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex space-x-4 text-xs">
+                    <div className="flex justify-between w-full text-xs mr-3">
                       {sector.key === 'defense' && (
                         <>
                           <div className="text-center">
                             <div className="font-semibold text-slate-900">{sector.stats.conflicts}</div>
                             <div className="text-slate-600">Conflicts</div>
                           </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-slate-600">Defense Stocks</div>
+                          <div className="flex items-center space-x-2">
+                            <div className="text-center">
+                              <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
+                              <div className="text-slate-600">Defense Stocks</div>
+                            </div>
                             <div className="text-slate-500 text-xs">Real-time tracking</div>
                           </div>
                         </>
@@ -303,9 +305,11 @@ export default function Home() {
                             <div className="font-semibold text-slate-900">{sector.stats.countries}</div>
                             <div className="text-slate-600">Countries</div>
                           </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-slate-600">Health Stocks</div>
+                          <div className="flex items-center space-x-2">
+                            <div className="text-center">
+                              <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
+                              <div className="text-slate-600">Health Stocks</div>
+                            </div>
                             <div className="text-slate-500 text-xs">WHO data analysis</div>
                           </div>
                         </>
@@ -316,9 +320,11 @@ export default function Home() {
                             <div className="font-semibold text-slate-900">{sector.stats.commodities}</div>
                             <div className="text-slate-600">Commodities</div>
                           </div>
-                          <div className="text-center">
-                            <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-slate-600">Energy Stocks</div>
+                          <div className="flex items-center space-x-2">
+                            <div className="text-center">
+                              <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
+                              <div className="text-slate-600">Energy Stocks</div>
+                            </div>
                             <div className="text-slate-500 text-xs">Market monitoring</div>
                           </div>
                         </>
