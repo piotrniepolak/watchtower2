@@ -17,6 +17,9 @@ interface ChatMessage {
   isSystem: boolean;
   replyToId?: number;
   replyToUser?: string;
+  replyCount?: number;
+  isDailyQuestionReply?: boolean;
+  dailyQuestionId?: number;
 }
 
 interface DailyQuestion {
@@ -49,6 +52,8 @@ export function CommunityChat() {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [onlineCount, setOnlineCount] = useState(0);
   const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
+  const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
+  const [replies, setReplies] = useState<{ [messageId: number]: ChatMessage[] }>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -159,6 +164,35 @@ export function CommunityChat() {
       replyToId: replyingTo?.id,
       replyToUser: replyingTo?.username,
     });
+  };
+
+  const toggleThread = async (messageId: number) => {
+    const newExpandedThreads = new Set(expandedThreads);
+    
+    if (expandedThreads.has(messageId)) {
+      newExpandedThreads.delete(messageId);
+    } else {
+      newExpandedThreads.add(messageId);
+      
+      // Fetch replies if not already loaded
+      if (!replies[messageId]) {
+        try {
+          const response = await fetch(`/api/chat/messages/${messageId}/replies`);
+          if (response.ok) {
+            const messageReplies = await response.json();
+            setReplies(prev => ({ ...prev, [messageId]: messageReplies }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch replies:', error);
+        }
+      }
+    }
+    
+    setExpandedThreads(newExpandedThreads);
+  };
+
+  const replyToDailyQuestion = (questionId: number) => {
+    setReplyingTo({ id: questionId, username: "Daily Question" });
   };
 
   const checkUsernameAvailability = async (usernameToCheck: string) => {

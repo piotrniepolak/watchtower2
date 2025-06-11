@@ -1812,6 +1812,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isSystem: false,
         replyToId: replyToId || null,
         replyToUser: replyToUser || null,
+        isDailyQuestionReply: false,
+        dailyQuestionId: null,
       };
       
       const { chatMessages } = await import('@shared/schema');

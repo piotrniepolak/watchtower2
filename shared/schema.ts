@@ -51,6 +51,11 @@ export const chatMessages = pgTable("chat_messages", {
   timestamp: timestamp("timestamp").defaultNow(),
   sector: text("sector"), // Optional: defense, health, energy
   isSystem: boolean("is_system").default(false),
+  replyToId: integer("reply_to_id").references(() => chatMessages.id),
+  replyToUser: text("reply_to_user"),
+  replyCount: integer("reply_count").default(0),
+  isDailyQuestionReply: boolean("is_daily_question_reply").default(false),
+  dailyQuestionId: integer("daily_question_id").references(() => dailyQuestions.id),
 });
 
 export const chatUsers = pgTable("chat_users", {
