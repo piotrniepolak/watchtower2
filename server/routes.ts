@@ -1645,15 +1645,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Direct database query to fix the method binding issue
       const { chatMessages } = await import('@shared/schema');
-      const { desc, eq } = await import('drizzle-orm');
+      const { desc, eq, isNull } = await import('drizzle-orm');
       
       let messages;
       if (sector) {
         console.log('Querying with sector filter:', sector);
-        messages = await db.select().from(chatMessages)
-          .where(eq(chatMessages.sector, sector))
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
+        // Handle "general" sector by filtering for null values in database
+        if (sector === 'general') {
+          messages = await db.select().from(chatMessages)
+            .where(isNull(chatMessages.sector))
+            .orderBy(desc(chatMessages.timestamp))
+            .limit(limit);
+        } else {
+          messages = await db.select().from(chatMessages)
+            .where(eq(chatMessages.sector, sector))
+            .orderBy(desc(chatMessages.timestamp))
+            .limit(limit);
+        }
       } else {
         console.log('Querying all messages');
         messages = await db.select().from(chatMessages)
@@ -1678,10 +1686,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Direct database insertion to fix the method binding issue
+      // Store "general" messages with null sector to separate them from other channels
       const messageToInsert = {
         username,
         message,
-        sector: sector || null,
+        sector: sector === 'general' ? null : sector,
         isSystem: false,
       };
       

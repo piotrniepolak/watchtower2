@@ -40,9 +40,7 @@ export function CommunityChat() {
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["/api/chat/messages", chatSector],
     queryFn: async () => {
-      const url = chatSector && chatSector !== "general"
-        ? `/api/chat/messages?sector=${chatSector}&limit=30`
-        : `/api/chat/messages?limit=30`;
+      const url = `/api/chat/messages?sector=${chatSector}&limit=30`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch messages');
       return response.json();
@@ -81,7 +79,7 @@ export function CommunityChat() {
     sendMessageMutation.mutate({
       username,
       message: message.trim(),
-      sector: chatSector !== "general" ? chatSector : undefined,
+      sector: chatSector,
     });
   };
 
