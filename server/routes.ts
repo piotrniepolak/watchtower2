@@ -1797,7 +1797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chat/messages', async (req, res) => {
     try {
-      const { username, message, sector } = req.body;
+      const { username, message, sector, replyToId, replyToUser } = req.body;
       
       if (!username || !message) {
         return res.status(400).json({ error: 'Username and message are required' });
@@ -1810,6 +1810,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message,
         sector: sector === 'general' ? null : sector,
         isSystem: false,
+        replyToId: replyToId || null,
+        replyToUser: replyToUser || null,
       };
       
       const { chatMessages } = await import('@shared/schema');
