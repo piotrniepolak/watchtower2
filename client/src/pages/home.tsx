@@ -680,43 +680,62 @@ export default function Home() {
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
                         </div>
                       ) : storylines?.length > 0 ? (
-                        storylines.map((storyline: any, index: number) => (
-                          <div key={index} className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
-                            <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
-                            <p className="text-xs text-slate-700 mb-3">{storyline.currentSituation}</p>
-                            
-                            <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
-                            <div className="space-y-2">
-                              {storyline.possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
-                                <div key={i} className="bg-white rounded-lg p-2 border">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
-                                    <div className="flex items-center">
-                                      <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
-                                      <span className="text-xs text-slate-600">{outcome.probability}%</span>
+                        <div className="space-y-4">
+                          {/* Storyline Selector */}
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-slate-900 text-sm">Strategic Storylines</h4>
+                            <select 
+                              className="text-xs border rounded px-2 py-1 bg-white"
+                              value={selectedStorylineIndex}
+                              onChange={(e) => setSelectedStorylineIndex(parseInt(e.target.value))}
+                            >
+                              {storylines.map((storyline: any, index: number) => (
+                                <option key={index} value={index}>
+                                  {storyline.title || `Storyline ${index + 1}`}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Selected Storyline Display */}
+                          {storylines[selectedStorylineIndex] && (
+                            <div className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+                              <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
+                              <p className="text-xs text-slate-700 mb-3">{storylines[selectedStorylineIndex].currentSituation}</p>
+                              
+                              <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
+                              <div className="space-y-2">
+                                {storylines[selectedStorylineIndex].possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
+                                  <div key={i} className="bg-white rounded-lg p-2 border">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
+                                      <div className="flex items-center">
+                                        <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
+                                        <span className="text-xs text-slate-600">{outcome.probability}%</span>
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
+                                    <div className="flex items-center text-xs text-slate-500">
+                                      <Clock className="h-2.5 w-2.5 mr-1" />
+                                      {outcome.timeline}
                                     </div>
                                   </div>
-                                  <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
-                                  <div className="flex items-center text-xs text-slate-500">
-                                    <Clock className="h-2.5 w-2.5 mr-1" />
-                                    {outcome.timeline}
+                                ))}
+                              </div>
+
+                              {storylines[selectedStorylineIndex].keyWatchPoints && storylines[selectedStorylineIndex].keyWatchPoints.length > 0 && (
+                                <div className="mt-3">
+                                  <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
+                                  <div className="flex flex-wrap gap-1">
+                                    {storylines[selectedStorylineIndex].keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
+                                      <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
+                                    ))}
                                   </div>
                                 </div>
-                              ))}
+                              )}
                             </div>
-
-                            {storyline.keyWatchPoints && storyline.keyWatchPoints.length > 0 && (
-                              <div className="mt-3">
-                                <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
-                                <div className="flex flex-wrap gap-1">
-                                  {storyline.keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
-                                    <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))
+                          )}
+                        </div>
                       ) : (
                         <div className="text-center py-8">
                           <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
