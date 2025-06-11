@@ -918,7 +918,7 @@ export default function Home() {
 
         {/* Community Chat Section */}
         <div className="mt-6">
-          <CommunityChat selectedSector={selectedSector} />
+          <CommunityChat />
         </div>
       </div>
     </div>

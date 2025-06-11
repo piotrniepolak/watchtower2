@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MessageCircle, Send, Users, ChevronDown } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -16,12 +17,11 @@ interface ChatMessage {
   isSystem: boolean;
 }
 
-interface CommunityChatProps {
-  selectedSector?: string;
-}
+interface CommunityChatProps {}
 
-export function CommunityChat({ selectedSector }: CommunityChatProps) {
+export function CommunityChat() {
   const [message, setMessage] = useState("");
+  const [chatSector, setChatSector] = useState<string>("general");
   const [username, setUsername] = useState(() => {
     // Get username from localStorage or generate a random one
     const stored = localStorage.getItem('chatUsername');
@@ -38,10 +38,10 @@ export function CommunityChat({ selectedSector }: CommunityChatProps) {
 
   // Fetch chat messages
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ["/api/chat/messages", selectedSector],
+    queryKey: ["/api/chat/messages", chatSector],
     queryFn: async () => {
-      const url = selectedSector 
-        ? `/api/chat/messages?sector=${selectedSector}&limit=30`
+      const url = chatSector && chatSector !== "general"
+        ? `/api/chat/messages?sector=${chatSector}&limit=30`
         : `/api/chat/messages?limit=30`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch messages');
@@ -81,7 +81,7 @@ export function CommunityChat({ selectedSector }: CommunityChatProps) {
     sendMessageMutation.mutate({
       username,
       message: message.trim(),
-      sector: selectedSector || undefined,
+      sector: chatSector !== "general" ? chatSector : undefined,
     });
   };
 
@@ -131,17 +131,27 @@ export function CommunityChat({ selectedSector }: CommunityChatProps) {
           <div className="flex items-center">
             <MessageCircle className="w-5 h-5 mr-2" />
             Community Chat
-            {selectedSector && (
-              <span className="ml-2 text-sm font-normal text-slate-600 dark:text-slate-400">
-                · {getSectorLabel(selectedSector)}
-              </span>
-            )}
           </div>
           <div className="flex items-center space-x-2">
             <Users className="w-4 h-4 text-slate-500" />
-            <span className="text-sm text-slate-500">{messages.length > 0 ? `${new Set(messages.map(m => m.username)).size} online` : '0 online'}</span>
+            <span className="text-sm text-slate-500">{messages.length > 0 ? `${new Set(messages.map((m: ChatMessage) => m.username)).size} online` : '0 online'}</span>
           </div>
         </CardTitle>
+        
+        {/* Independent Sector Selector */}
+        <div className="mt-3">
+          <Select value={chatSector} onValueChange={setChatSector}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select chat channel" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="general">General Discussion</SelectItem>
+              <SelectItem value="defense">ConflictWatch</SelectItem>
+              <SelectItem value="health">PharmaWatch</SelectItem>
+              <SelectItem value="energy">EnergyWatch</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col p-4 pt-0 min-h-0">
