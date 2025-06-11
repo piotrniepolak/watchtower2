@@ -35,6 +35,7 @@ export function CommunityChat() {
   const [tempUsername, setTempUsername] = useState(username);
   const [usernameError, setUsernameError] = useState<string>("");
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [onlineCount, setOnlineCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -74,6 +75,40 @@ export function CommunityChat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'online_count') {
+          setOnlineCount(data.count);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -197,7 +232,7 @@ export function CommunityChat() {
           </div>
           <div className="flex items-center space-x-2">
             <Users className="w-4 h-4 text-slate-500" />
-            <span className="text-sm text-slate-500">{messages.length > 0 ? `${new Set(messages.map((m: ChatMessage) => m.username)).size} online` : '0 online'}</span>
+            <span className="text-sm text-slate-500">{onlineCount} online</span>
           </div>
         </CardTitle>
         

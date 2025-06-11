@@ -55,6 +55,9 @@ const isAuthenticated = async (req: any, res: any, next: any) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   const { storage } = await import('./storage');
   
+  // Track active WebSocket connections at module level
+  let activeConnections = 0;
+  
   // Add comprehensive request logging middleware
   app.use((req, res, next) => {
     if (req.url.includes('/api/analysis')) {
@@ -1332,8 +1335,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket server for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
+  const broadcastOnlineCount = () => {
+    const message = JSON.stringify({
+      type: 'online_count',
+      count: activeConnections,
+      timestamp: new Date().toISOString()
+    });
+    
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+  
   wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket');
+    activeConnections++;
+    console.log(`Client connected to WebSocket (${activeConnections} active)`);
     
     // Send initial stock data
     storage.getStocks().then(stocks => {
@@ -1344,8 +1362,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
     });
     
+    // Broadcast updated online count to all clients
+    broadcastOnlineCount();
+    
     ws.on('close', () => {
-      console.log('Client disconnected from WebSocket');
+      activeConnections = Math.max(0, activeConnections - 1);
+      console.log(`Client disconnected from WebSocket (${activeConnections} active)`);
+      
+      // Broadcast updated online count to all clients
+      broadcastOnlineCount();
     });
     
     ws.on('error', (error) => {
@@ -1633,6 +1658,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Discussion endpoint error:", error);
       res.status(500).json({ error: "Server error" });
     }
+  });
+
+  // Get current online users count
+  app.get('/api/chat/online-count', async (req, res) => {
+    res.json({ count: activeConnections });
   });
 
   // Chat username validation endpoints
