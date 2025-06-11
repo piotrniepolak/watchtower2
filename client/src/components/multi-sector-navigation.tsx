@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -78,13 +78,24 @@ interface MultiSectorNavigationProps {
 }
 
 export default function MultiSectorNavigation({ currentSector, onSectorChange }: MultiSectorNavigationProps) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   
   const { user, isAuthenticated } = useAuth();
   const config = sectorConfigs[currentSector] || sectorConfigs.defense;
+
+  // Handle sector change with navigation
+  const handleSectorChange = (newSector: string) => {
+    // Update parent component state
+    onSectorChange(newSector);
+    
+    // Navigate to dashboard with new sector parameter
+    if (location === "/" || location === "/dashboard" || location.startsWith("/dashboard")) {
+      navigate(`/dashboard?sector=${newSector}`);
+    }
+  };
 
   const handleLogout = () => {
     window.location.href = '/api/logout';
@@ -173,10 +184,10 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               </Link>
             </div>
 
-            {/* Sector Selector - Only show on dashboard */}
-            {location === "/" && (
+            {/* Sector Selector - Show on dashboard pages */}
+            {(location === "/" || location === "/dashboard" || location.startsWith("/dashboard")) && (
               <div className="ml-4">
-                <Select value={currentSector} onValueChange={onSectorChange}>
+                <Select value={currentSector} onValueChange={handleSectorChange}>
                   <SelectTrigger className="w-36 h-8 text-xs border-slate-300">
                     <SelectValue />
                   </SelectTrigger>

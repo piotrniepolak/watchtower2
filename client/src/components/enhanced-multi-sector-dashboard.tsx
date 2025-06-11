@@ -32,9 +32,20 @@ interface StockData {
 
 export default function EnhancedMultiSectorDashboard({ defaultSector = "defense" }: EnhancedMultiSectorDashboardProps) {
   const [location] = useLocation();
-  const [currentSector, setCurrentSector] = useState(defaultSector);
+  
+  // Initialize sector from URL parameters immediately to prevent flash
+  const getInitialSector = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sectorParam = urlParams.get('sector');
+    if (sectorParam && ['defense', 'health', 'energy'].includes(sectorParam)) {
+      return sectorParam;
+    }
+    return defaultSector;
+  };
+  
+  const [currentSector, setCurrentSector] = useState(getInitialSector);
 
-  // Read sector from URL search parameters
+  // Update sector when location changes
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const sectorParam = urlParams.get('sector');
