@@ -430,25 +430,27 @@ export function CommunityChat() {
                   {dailyQuestion.question}
                 </p>
                 
-                {/* Daily Question Replies Toggle */}
+                {/* Thread Toggle - Similar to regular messages */}
                 {dailyQuestionReplies.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mt-2 h-6 px-2 text-xs text-slate-600 dark:text-slate-400"
-                    onClick={toggleDailyQuestionReplies}
-                  >
-                    <MessageCircle className="w-3 h-3 mr-1" />
-                    {dailyQuestionReplies.length} {dailyQuestionReplies.length === 1 ? 'reply' : 'replies'}
-                    <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${showDailyQuestionReplies ? 'rotate-180' : ''}`} />
-                  </Button>
+                  <div className="flex items-center justify-between mt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      onClick={toggleDailyQuestionReplies}
+                    >
+                      <MessageCircle className="w-3 h-3 mr-1" />
+                      {dailyQuestionReplies.length} {dailyQuestionReplies.length === 1 ? 'reply' : 'replies'}
+                      <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${showDailyQuestionReplies ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
             
-            {/* Daily Question Replies */}
+            {/* Collapsible Thread Replies - Same style as regular message threads */}
             {showDailyQuestionReplies && dailyQuestionReplies.length > 0 && (
-              <div className="mt-3 ml-11 space-y-3 border-l-2 border-blue-200 dark:border-blue-700 pl-4">
+              <div className="ml-11 mt-2 border-l-2 border-slate-200 dark:border-slate-700 pl-4 space-y-3">
                 {dailyQuestionReplies.map((reply) => {
                   const replyCoFounderInfo = getCoFounderInfo(reply.username);
                   return (
