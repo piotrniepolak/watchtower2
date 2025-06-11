@@ -33,6 +33,8 @@ export function CommunityChat() {
   });
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [tempUsername, setTempUsername] = useState(username);
+  const [usernameError, setUsernameError] = useState<string>("");
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 

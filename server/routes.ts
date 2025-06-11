@@ -1635,6 +1635,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat username validation endpoints
+  app.get('/api/chat/username/:username/available', async (req, res) => {
+    try {
+      const username = req.params.username.trim();
+      
+      if (!username || username.length < 2 || username.length > 30) {
+        return res.json({ available: false, reason: 'Username must be 2-30 characters' });
+      }
+      
+      // Check for reserved usernames
+      const reserved = ['admin', 'system', 'bot', 'moderator', 'support'];
+      if (reserved.includes(username.toLowerCase())) {
+        return res.json({ available: false, reason: 'Username is reserved' });
+      }
+      
+      const { chatUsers } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const existingUser = await db.select().from(chatUsers)
+        .where(eq(chatUsers.username, username))
+        .limit(1);
+      
+      const available = existingUser.length === 0;
+      res.json({ 
+        available, 
+        reason: available ? null : 'Username is already taken' 
+      });
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      res.status(500).json({ available: false, reason: 'Server error' });
+    }
+  });
+
+  app.post('/api/chat/username/register', async (req, res) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ error: 'Username is required' });
+      }
+      
+      const trimmedUsername = username.trim();
+      
+      if (trimmedUsername.length < 2 || trimmedUsername.length > 30) {
+        return res.status(400).json({ error: 'Username must be 2-30 characters' });
+      }
+      
+      const { chatUsers } = await import('@shared/schema');
+      
+      try {
+        const [newUser] = await db.insert(chatUsers).values({
+          username: trimmedUsername,
+          lastActive: new Date(),
+        }).returning();
+        
+        res.json({ success: true, user: newUser });
+      } catch (dbError: any) {
+        if (dbError.code === '23505') { // Unique constraint violation
+          return res.status(409).json({ error: 'Username is already taken' });
+        }
+        throw dbError;
+      }
+    } catch (error) {
+      console.error('Error registering username:', error);
+      res.status(500).json({ error: 'Failed to register username' });
+    }
+  });
+
   // Chat message endpoints (must come before generic chat routes)
   app.get('/api/chat/messages', async (req, res) => {
     try {

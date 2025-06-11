@@ -53,6 +53,13 @@ export const chatMessages = pgTable("chat_messages", {
   isSystem: boolean("is_system").default(false),
 });
 
+export const chatUsers = pgTable("chat_users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  lastActive: timestamp("last_active").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Session storage table for Replit Auth
 export const sessions = pgTable(
   "sessions",
@@ -437,6 +444,16 @@ export const insertDiscussionVoteSchema = createInsertSchema(discussionVotes).om
   id: true,
   createdAt: true,
 });
+
+// Chat User Schema
+export const insertChatUserSchema = createInsertSchema(chatUsers).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Chat User Types
+export type ChatUser = typeof chatUsers.$inferSelect;
+export type InsertChatUser = z.infer<typeof insertChatUserSchema>;
 
 // Discussion Board Types
 export type Discussion = typeof discussions.$inferSelect;
