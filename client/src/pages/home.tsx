@@ -939,7 +939,7 @@ export default function Home() {
               <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-teal-600 mx-auto mb-4 flex items-center justify-center">
                 <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                   <img 
-                    src="https://media.licdn.com/dms/image/v2/D4E03AQFhgW7DVDC9KA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1689098934806?e=1740614400&v=beta&t=vJLCmjXqFJQjZp1_2kTrzWnm9nkQ-LQ6Ub6TBKZe6rE"
+                    src="/attached_assets/L'INTENDANCE BEACH129_1749681593229.JPG"
                     alt="Atlas Loutfi"
                     className="w-full h-full object-cover"
                     onError={(e) => {
