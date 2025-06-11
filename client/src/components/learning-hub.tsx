@@ -1009,151 +1009,112 @@ export function LearningHub({}: LearningHubProps) {
 
         <Separator />
 
-        {/* Learning Modules Section */}
-        <div className="space-y-6">
-          <h3 className="text-lg font-semibold flex items-center">
-            <Brain className="h-5 w-5 mr-2" />
-            Learning Modules
-          </h3>
+        {/* Interactive Learning Modules */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center">
+              <config.icon className="h-5 w-5 mr-2" />
+              Interactive Learning Modules
+            </h3>
+            <Badge variant="secondary" className="text-xs">
+              Step-by-Step Learning
+            </Badge>
+          </div>
           
-          {/* Sector-Specific Learning Content */}
-          {learningSelectedSector === 'defense' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="p-4">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Conflict Analysis Fundamentals</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Learn to analyze geopolitical tensions, defense spending patterns, and military readiness indicators.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Understanding conflict escalation patterns
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Defense stock correlation analysis
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Military spending impact assessment
-                  </div>
-                </div>
-              </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {getLearningModules().map((module) => {
+              const ModuleIcon = module.icon;
+              const isCompleted = completedModules.includes(module.id);
+              const difficultyColor = {
+                beginner: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+                intermediate: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
+                advanced: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+              };
 
-              <Card className="p-4">
-                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Defense Market Intelligence</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Master defense contractor analysis, procurement cycles, and strategic investment timing.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Defense contractor valuation methods
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Government contract analysis
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    Risk-adjusted portfolio strategies
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
+              return (
+                <Card 
+                  key={module.id} 
+                  className={cn(
+                    "p-4 cursor-pointer transition-all hover:shadow-lg border-2",
+                    isCompleted ? "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/10" : "border-border hover:border-primary/20"
+                  )}
+                  onClick={() => handleModuleStart(module.id)}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={cn("p-2 rounded-lg", config.bgColor)}>
+                          <ModuleIcon className={cn("h-5 w-5", config.color)} />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-base mb-1 flex items-center gap-2">
+                            {module.title}
+                            {isCompleted && <CheckCircle className="h-4 w-4 text-green-600" />}
+                          </h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {module.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-4">
+                        <Badge className={cn("text-xs", difficultyColor[module.difficulty])}>
+                          {module.difficulty.charAt(0).toUpperCase() + module.difficulty.slice(1)}
+                        </Badge>
+                        <div className="flex items-center text-muted-foreground">
+                          <Timer className="h-3 w-3 mr-1" />
+                          {module.estimatedTime}
+                        </div>
+                        <div className="flex items-center text-muted-foreground">
+                          <Award className="h-3 w-3 mr-1" />
+                          {module.points} pts
+                        </div>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant={isCompleted ? "secondary" : "default"}
+                        className="h-7 px-3 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleModuleStart(module.id);
+                        }}
+                      >
+                        {isCompleted ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Review
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-3 w-3 mr-1" />
+                            Start
+                          </>
+                        )}
+                      </Button>
+                    </div>
 
-          {learningSelectedSector === 'health' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="p-4">
-                <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">Global Health Analytics</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Analyze WHO health indicators, pharmaceutical markets, and healthcare investment opportunities.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    WHO data interpretation techniques
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Progress</span>
+                        <span>{module.steps.length} steps</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-1.5">
+                        <div 
+                          className={cn(
+                            "h-1.5 rounded-full transition-all duration-300",
+                            isCompleted ? "bg-green-500" : "bg-primary/30"
+                          )}
+                          style={{ width: isCompleted ? '100%' : '0%' }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Health score calculation methods
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Pharmaceutical market analysis
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-4">
-                <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">Drug Development Pipeline</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Understand clinical trial phases, regulatory pathways, and biotech investment strategies.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Clinical trial success probability
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    FDA approval timeline analysis
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Biotech valuation frameworks
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-
-          {learningSelectedSector === 'energy' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="p-4">
-                <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">Energy Market Dynamics</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Master commodity trading, renewable energy trends, and energy security analysis.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                    Oil and gas price forecasting
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                    Renewable energy economics
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                    Energy security risk assessment
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-4">
-                <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">Green Energy Transition</h4>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Analyze clean technology adoption, carbon markets, and sustainable energy investments.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                    Carbon credit market dynamics
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                    Clean technology valuation
-                  </div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
-                    ESG investment strategies
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         <Separator />
