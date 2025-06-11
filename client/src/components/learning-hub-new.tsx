@@ -94,25 +94,22 @@ export function LearningHub({}: LearningHubProps) {
 
   const config = sectorConfig[learningSelectedSector as keyof typeof sectorConfig] || sectorConfig.defense;
 
-  // Generate new quiz mutation
-  const generateQuizMutation = useMutation({
-    mutationFn: async (sector: string) => {
-      const result = await fetch('/api/learning/generate-quiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sector, difficulty: 'medium' })
-      });
-      return result.json();
-    },
-    onSuccess: (data: Quiz) => {
-      setCurrentQuiz(data);
-      setCurrentQuestionIndex(0);
-      setAnswers([]);
-      setSelectedAnswer(null);
-      setShowResult(false);
-      setIsAnswerSubmitted(false);
-      setQuizCompleted(false);
-      setQuizStartTime(Date.now());
+  // Get today's daily quiz
+  const { data: dailyQuiz, isLoading: quizLoading } = useQuery({
+    queryKey: ['/api/quiz/daily', learningSelectedSector],
+    enabled: !!learningSelectedSector,
+    refetchInterval: 60000, // Check every minute for new quiz
+    onSuccess: (data) => {
+      if (data && !currentQuiz) {
+        setCurrentQuiz(data);
+        setCurrentQuestionIndex(0);
+        setAnswers([]);
+        setSelectedAnswer(null);
+        setShowResult(false);
+        setIsAnswerSubmitted(false);
+        setQuizCompleted(false);
+        setQuizStartTime(Date.now());
+      }
     }
   });
 
@@ -128,29 +125,24 @@ export function LearningHub({}: LearningHubProps) {
     enabled: isExpanded,
   });
 
-  // Auto-generate quiz when sector changes
-  useEffect(() => {
-    if (isExpanded) {
-      generateQuizMutation.mutate(learningSelectedSector);
-    }
-  }, [learningSelectedSector, isExpanded]);
-
   // Submit quiz response mutation
-  const submitResponseMutation = useMutation({
-    mutationFn: async (response: QuizResponse) => {
-      const result = await fetch('/api/learning/submit-response', {
+  const submitQuizMutation = useMutation({
+    mutationFn: async ({ quizId, responses, completionTimeSeconds }: { 
+      quizId: number; 
+      responses: number[]; 
+      completionTimeSeconds: number;
+    }) => {
+      const result = await fetch(`/api/quiz/${quizId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...response,
-          sector: learningSelectedSector
-        })
+        body: JSON.stringify({ responses, completionTimeSeconds })
       });
+      if (!result.ok) throw new Error('Failed to submit quiz');
       return result.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/learning/leaderboard"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/learning/user-stats"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/learning/leaderboard/${learningSelectedSector}`] });
+      setQuizCompleted(true);
     }
   });
 
