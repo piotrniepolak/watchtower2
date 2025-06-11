@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageCircle, Send, Users, ChevronDown } from "lucide-react";
+import { MessageCircle, Send, Users, ChevronDown, Crown, Shield, Pill } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -222,6 +222,32 @@ export function CommunityChat() {
     }
   };
 
+  const getCoFounderInfo = (username: string) => {
+    const normalizedUsername = username.toLowerCase().trim();
+    
+    if (normalizedUsername === 'atlas loutfi' || normalizedUsername === 'atlas' || normalizedUsername === 'atloutfi') {
+      return {
+        isCoFounder: true,
+        title: 'Co-Founder & Director of PharmaWatch',
+        sector: 'health',
+        icon: Pill,
+        color: 'text-green-600'
+      };
+    }
+    
+    if (normalizedUsername === 'piotrek polak' || normalizedUsername === 'piotrek' || normalizedUsername === 'polakp') {
+      return {
+        isCoFounder: true,
+        title: 'Co-Founder & Director of ConflictWatch',
+        sector: 'defense',
+        icon: Shield,
+        color: 'text-blue-600'
+      };
+    }
+    
+    return { isCoFounder: false };
+  };
+
   return (
     <Card className="h-[500px] flex flex-col">
       <CardHeader className="pb-3">
@@ -269,31 +295,58 @@ export function CommunityChat() {
               </div>
             ) : (
               <div className="space-y-3">
-                {messages.map((msg: ChatMessage) => (
-                  <div key={msg.id} className="group">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                        {msg.username.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
-                            {msg.username}
-                          </span>
-                          {msg.username === username && (
-                            <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
-                          )}
-                          <span className="text-xs text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">
-                            {formatTimestamp(msg.timestamp)}
-                          </span>
+                {messages.map((msg: ChatMessage) => {
+                  const coFounderInfo = getCoFounderInfo(msg.username);
+                  return (
+                    <div key={msg.id} className="group">
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0 ${
+                          coFounderInfo.isCoFounder 
+                            ? coFounderInfo.sector === 'health' 
+                              ? 'bg-gradient-to-br from-green-500 to-teal-600' 
+                              : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                            : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                        }`}>
+                          {msg.username.charAt(0).toUpperCase()}
                         </div>
-                        <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed break-words">
-                          {msg.message}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1 flex-wrap">
+                            <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
+                              {msg.username}
+                            </span>
+                            {coFounderInfo.isCoFounder && (
+                              <div className="flex items-center space-x-1">
+                                <div className="flex items-center space-x-1 bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-700">
+                                  <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                  <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Co-Founder</span>
+                                </div>
+                                <div className={`flex items-center space-x-1 px-2 py-0.5 rounded-full border ${
+                                  coFounderInfo.sector === 'health' 
+                                    ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
+                                    : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
+                                }`}>
+                                  <coFounderInfo.icon className={`w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`} />
+                                  <span className={`text-xs font-medium ${coFounderInfo.color} dark:${coFounderInfo.color.replace('text-', 'text-').replace('-600', '-400')}`}>
+                                    {coFounderInfo.sector === 'health' ? 'PharmaWatch' : 'ConflictWatch'}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            {msg.username === username && (
+                              <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
+                            )}
+                            <span className="text-xs text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">
+                              {formatTimestamp(msg.timestamp)}
+                            </span>
+                          </div>
+                          <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed break-words">
+                            {msg.message}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
             )}
