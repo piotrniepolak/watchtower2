@@ -292,7 +292,8 @@ export default function Home() {
                           </div>
                           <div className="text-center">
                             <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-slate-600">Stocks</div>
+                            <div className="text-slate-600">Defense Stocks</div>
+                            <div className="text-slate-500 text-xs">Real-time tracking</div>
                           </div>
                         </>
                       )}
@@ -304,7 +305,8 @@ export default function Home() {
                           </div>
                           <div className="text-center">
                             <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-slate-600">Stocks</div>
+                            <div className="text-slate-600">Health Stocks</div>
+                            <div className="text-slate-500 text-xs">WHO data analysis</div>
                           </div>
                         </>
                       )}
@@ -316,7 +318,8 @@ export default function Home() {
                           </div>
                           <div className="text-center">
                             <div className="font-semibold text-slate-900">{sector.stats.stocks}</div>
-                            <div className="text-slate-600">Stocks</div>
+                            <div className="text-slate-600">Energy Stocks</div>
+                            <div className="text-slate-500 text-xs">Market monitoring</div>
                           </div>
                         </>
                       )}
