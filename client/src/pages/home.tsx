@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
+import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
 interface SectorMetrics {
   totalStocks: number;
@@ -939,7 +940,7 @@ export default function Home() {
               <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-teal-600 mx-auto mb-4 flex items-center justify-center">
                 <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                   <img 
-                    src="/attached_assets/L'INTENDANCE BEACH129_1749681593229.JPG"
+                    src={atlasPhotoPath}
                     alt="Atlas Loutfi"
                     className="w-full h-full object-cover"
                     onError={(e) => {
