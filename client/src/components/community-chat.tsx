@@ -108,7 +108,7 @@ export function CommunityChat() {
     if (targetUsername === 'Atlas' || targetUsername === 'Atlas Loutfi' || 
         targetUsername === 'Piotrek' || targetUsername === 'polakp') {
       badges.push(
-        { type: 'early_supporter', name: 'Early Supporter', icon: 'Star', color: 'text-yellow-600' },
+        { type: 'early_supporter', name: 'Early Supporter', icon: 'Star', color: 'text-rose-600' },
         { type: 'learning_completionist', name: 'Learning Completionist', icon: 'GraduationCap', color: 'text-purple-600' }
       );
     }
@@ -662,9 +662,9 @@ export function CommunityChat() {
                                 if (badge.type === 'early_supporter') {
                                   return (
                                     <div key={badgeIndex} className="group/supporter relative">
-                                      <div className="flex items-center bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 px-1 py-0.5 rounded-full border border-yellow-200 dark:border-yellow-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
-                                        <Star className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
-                                        <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[80px] group-hover/supporter:ml-1 leading-tight">
+                                      <div className="flex items-center bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 px-1 py-0.5 rounded-full border border-rose-200 dark:border-rose-700 cursor-pointer transition-all duration-200 group-hover/supporter:px-2">
+                                        <Star className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                                        <span className="text-xs font-medium text-rose-700 dark:text-rose-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/supporter:opacity-100 group-hover/supporter:max-w-[80px] group-hover/supporter:ml-1 leading-tight">
                                           Early<br />Supporter
                                         </span>
                                       </div>
