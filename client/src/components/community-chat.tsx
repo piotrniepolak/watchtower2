@@ -250,7 +250,7 @@ export function CommunityChat() {
           <Input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder={`Share your ${selectedSector ? getSectorLabel(selectedSector) : 'market'} insights...`}
+            placeholder={`Share your ${chatSector !== 'general' ? getSectorLabel(chatSector) : 'market'} insights...`}
             className="flex-1"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
