@@ -1122,15 +1122,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const sectorParam = req.query.sector as string;
+      const conflictId = req.query.conflictId ? parseInt(req.query.conflictId as string) : null;
       const validSectors = ['defense', 'health', 'energy'];
       const sector = validSectors.includes(sectorParam) ? sectorParam : 'defense';
       
-      console.log(`Frontend: Generating storylines for sector: ${sector}`);
+      console.log(`Frontend: Generating storylines for sector: ${sector}${conflictId ? ` with conflict ID: ${conflictId}` : ''}`);
       
-      const conflicts = await storage.getConflicts();
-      const stocks = await storage.getStocks();
+      const [conflicts, stocks] = await Promise.all([
+        storage.getConflicts(),
+        storage.getStocks()
+      ]);
+
+      // Filter conflicts if specific conflict ID is provided for defense sector
+      let filteredConflicts = conflicts;
+      if (sector === 'defense' && conflictId) {
+        filteredConflicts = conflicts.filter(c => c.id === conflictId);
+        if (filteredConflicts.length === 0) {
+          return res.status(404).json({ message: 'Conflict not found' });
+        }
+      }
       
-      const storylines = await generateSectorStorylines(sector, conflicts, stocks);
+      const storylines = await generateSectorStorylines(sector, filteredConflicts, stocks);
       res.json(storylines);
     } catch (error) {
       console.error('Error generating sector storylines:', error);

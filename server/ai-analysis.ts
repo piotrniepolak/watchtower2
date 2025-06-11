@@ -566,11 +566,17 @@ export async function generateSectorStorylines(sector: string, conflicts: Confli
 }
 
 async function generateDefenseStorylines(conflicts: Conflict[], stocks: Stock[]): Promise<any[]> {
-  const activeConflicts = conflicts.filter(c => c.status === 'Active').slice(0, 2);
+  const activeConflicts = conflicts.filter(c => c.status === 'Active');
   
+  // If no specific conflicts provided, generate storylines for top active conflicts
+  if (activeConflicts.length === 0) {
+    return [];
+  }
+
   const storylines = [];
+  const conflictsToProcess = activeConflicts.slice(0, Math.min(3, activeConflicts.length));
   
-  for (const conflict of activeConflicts) {
+  for (const conflict of conflictsToProcess) {
     const stockPerformance = stocks.slice(0, 5).map(s => 
       `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
     ).join('\n');
@@ -587,6 +593,7 @@ ${stockPerformance}
 
 Generate a strategic storyline in JSON format:
 {
+  "conflictName": "${conflict.name}",
   "currentSituation": "current defense industry response to this conflict",
   "possibleOutcomes": [
     {
@@ -594,14 +601,21 @@ Generate a strategic storyline in JSON format:
       "probability": 25-45,
       "description": "detailed outcome description",
       "timeline": "3-6 months|6-12 months|1-2 years",
-      "implications": ["defense implication 1", "defense implication 2"]
+      "implications": ["specific defense industry implication", "geopolitical market impact", "contractor performance outlook"]
+    },
+    {
+      "scenario": "alternative scenario name",
+      "probability": 20-40,
+      "description": "alternative outcome description",
+      "timeline": "6-18 months|1-3 years",
+      "implications": ["alternative defense implication", "supply chain impact", "budget allocation effect"]
     }
   ],
   "keyWatchPoints": ["defense indicator 1", "defense indicator 2", "defense indicator 3"],
   "expertInsights": "defense industry expert analysis"
 }
 
-Focus on defense contractor performance, military equipment demand, and geopolitical implications.`;
+Provide detailed, specific implications for each scenario focusing on defense contractors, military spending, and market impacts.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -617,7 +631,7 @@ Focus on defense contractor performance, military equipment demand, and geopolit
       ],
       response_format: { type: "json_object" },
       temperature: 0.7,
-      max_tokens: 1200
+      max_tokens: 1500
     });
 
     storylines.push(JSON.parse(response.choices[0].message.content!));
@@ -631,47 +645,78 @@ async function generateHealthStorylines(stocks: Stock[]): Promise<any[]> {
     `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
   ).join('\n');
 
-  const prompt = `Create healthcare industry storylines focusing on global health challenges:
+  const healthScenarios = [
+    {
+      title: "Global Pandemic Preparedness",
+      focus: "vaccine development, disease surveillance, and international health cooperation"
+    },
+    {
+      title: "Healthcare Innovation & AI",
+      focus: "digital therapeutics, personalized medicine, and healthcare technology adoption"
+    },
+    {
+      title: "Aging Population Healthcare",
+      focus: "chronic disease management, healthcare infrastructure, and pharmaceutical demand"
+    }
+  ];
+
+  const storylines = [];
+
+  for (let i = 0; i < Math.min(2, healthScenarios.length); i++) {
+    const scenario = healthScenarios[i];
+    
+    const prompt = `Create a healthcare industry storyline focusing on ${scenario.title}:
 
 Healthcare Stock Performance:
 ${stockPerformance}
 
-Generate healthcare storylines in JSON format:
+Generate healthcare storyline in JSON format:
 {
-  "currentSituation": "current global health landscape and pharmaceutical industry trends",
+  "scenarioTitle": "${scenario.title}",
+  "currentSituation": "current global health landscape and pharmaceutical industry trends related to ${scenario.focus}",
   "possibleOutcomes": [
     {
-      "scenario": "scenario name", 
-      "probability": 30-50,
-      "description": "detailed health outcome description",
-      "timeline": "6-12 months|1-2 years|2-5 years",
-      "implications": ["health implication 1", "health implication 2"]
+      "scenario": "positive development scenario", 
+      "probability": 35-55,
+      "description": "detailed positive health outcome description",
+      "timeline": "6-18 months|1-3 years|2-5 years",
+      "implications": ["specific pharmaceutical market impact", "healthcare access improvement", "regulatory policy change effect"]
+    },
+    {
+      "scenario": "challenging scenario",
+      "probability": 25-45,
+      "description": "detailed challenging outcome description", 
+      "timeline": "1-2 years|2-4 years",
+      "implications": ["healthcare cost impact", "pharmaceutical R&D allocation", "global health system strain"]
     }
   ],
   "keyWatchPoints": ["health indicator 1", "health indicator 2", "health indicator 3"],
   "expertInsights": "pharmaceutical and health industry expert analysis"
 }
 
-Focus on pandemic preparedness, drug development, healthcare accessibility, and regulatory changes.`;
+Focus on ${scenario.focus} with specific implications for pharmaceutical companies, healthcare systems, and medical innovation.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: "You are a healthcare industry analyst specializing in pharmaceutical markets, global health trends, and healthcare policy impacts."
-      },
-      {
-        role: "user",
-        content: prompt
-      }
-    ],
-    response_format: { type: "json_object" },
-    temperature: 0.7,
-    max_tokens: 1200
-  });
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a healthcare industry analyst specializing in pharmaceutical markets, global health trends, and healthcare policy impacts."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 1500
+    });
 
-  return [JSON.parse(response.choices[0].message.content!)];
+    storylines.push(JSON.parse(response.choices[0].message.content!));
+  }
+
+  return storylines;
 }
 
 async function generateEnergyStorylines(stocks: Stock[]): Promise<any[]> {
@@ -679,45 +724,76 @@ async function generateEnergyStorylines(stocks: Stock[]): Promise<any[]> {
     `${s.symbol}: $${s.price} (${s.changePercent > 0 ? '+' : ''}${s.changePercent}%)`
   ).join('\n');
 
-  const prompt = `Create energy sector storylines focusing on global energy transitions:
+  const energyScenarios = [
+    {
+      title: "Renewable Energy Transition",
+      focus: "solar and wind adoption, grid modernization, and traditional energy displacement"
+    },
+    {
+      title: "Oil & Gas Market Dynamics",
+      focus: "global supply chains, geopolitical tensions, and price volatility impacts"
+    },
+    {
+      title: "Energy Security & Infrastructure",
+      focus: "grid resilience, strategic reserves, and energy independence initiatives"
+    }
+  ];
+
+  const storylines = [];
+
+  for (let i = 0; i < Math.min(2, energyScenarios.length); i++) {
+    const scenario = energyScenarios[i];
+    
+    const prompt = `Create an energy sector storyline focusing on ${scenario.title}:
 
 Energy Stock Performance:
 ${stockPerformance}
 
-Generate energy sector storylines in JSON format:
+Generate energy sector storyline in JSON format:
 {
-  "currentSituation": "current global energy market dynamics and transition trends",
+  "scenarioTitle": "${scenario.title}",
+  "currentSituation": "current global energy market dynamics and transition trends related to ${scenario.focus}",
   "possibleOutcomes": [
     {
-      "scenario": "scenario name",
-      "probability": 35-55, 
-      "description": "detailed energy outcome description",
+      "scenario": "accelerated transition scenario",
+      "probability": 40-60, 
+      "description": "detailed energy acceleration outcome description",
       "timeline": "6-18 months|1-3 years|3-5 years",
-      "implications": ["energy implication 1", "energy implication 2"]
+      "implications": ["specific energy market impact", "infrastructure investment requirement", "traditional energy sector disruption"]
+    },
+    {
+      "scenario": "gradual evolution scenario",
+      "probability": 30-50,
+      "description": "detailed gradual change outcome description",
+      "timeline": "2-4 years|3-7 years", 
+      "implications": ["energy price stability impact", "regulatory adaptation timeline", "market consolidation effects"]
     }
   ],
   "keyWatchPoints": ["energy indicator 1", "energy indicator 2", "energy indicator 3"],
   "expertInsights": "energy industry expert analysis"
 }
 
-Focus on renewable energy adoption, oil/gas market dynamics, energy security, and climate policy impacts.`;
+Focus on ${scenario.focus} with specific implications for energy companies, infrastructure investments, and market transitions.`;
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: "You are an energy sector analyst specializing in oil, gas, renewable energy markets, and energy transition policies."
-      },
-      {
-        role: "user",
-        content: prompt
-      }
-    ],
-    response_format: { type: "json_object" },
-    temperature: 0.7,
-    max_tokens: 1200
-  });
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are an energy sector analyst specializing in oil, gas, renewable energy markets, and energy transition policies."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 1500
+    });
 
-  return [JSON.parse(response.choices[0].message.content!)];
+    storylines.push(JSON.parse(response.choices[0].message.content!));
+  }
+
+  return storylines;
 }
