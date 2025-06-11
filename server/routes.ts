@@ -1142,7 +1142,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const storylines = await generateSectorStorylines(sector, filteredConflicts, stocks);
+      // For health and energy sectors, pass conflictId as focusId
+      const focusId = (sector === 'health' || sector === 'energy') ? conflictId || undefined : undefined;
+      
+      const storylines = await generateSectorStorylines(sector, filteredConflicts, stocks, focusId);
       res.json(storylines);
     } catch (error) {
       console.error('Error generating sector storylines:', error);

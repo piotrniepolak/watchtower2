@@ -117,7 +117,7 @@ export default function Home() {
     queryFn: async () => {
       console.log(`Frontend: Fetching storylines for sector: ${selectedSector}`);
       let url = `/api/analysis/storylines?sector=${selectedSector}&cache=${Date.now()}`;
-      if (selectedSector === 'defense' && selectedConflictId) {
+      if (selectedConflictId) {
         url += `&conflictId=${selectedConflictId}`;
       }
       const response = await fetch(url);
