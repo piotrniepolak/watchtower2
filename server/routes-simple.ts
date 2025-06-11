@@ -1151,9 +1151,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const stocks = await storage.getStocks();
-      const sectorStocks = stocks.filter(stock => 
-        sector.dataSources.stocks.tickers.includes(stock.symbol)
-      );
+      
+      // Map sector keys to database sector names
+      const sectorMapping: Record<string, string> = {
+        'defense': 'Defense',
+        'health': 'Healthcare', 
+        'energy': 'Energy'
+      };
+      
+      const dbSectorName = sectorMapping[req.params.sectorKey];
+      const sectorStocks = stocks.filter(stock => stock.sector === dbSectorName);
 
       const avgChange = sectorStocks.length > 0 ? 
         sectorStocks.reduce((sum, stock) => sum + stock.changePercent, 0) / sectorStocks.length : 0;
