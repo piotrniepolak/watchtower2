@@ -941,6 +941,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat API routes
+  app.get('/api/chat/messages', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 30;
+      const sector = req.query.sector as string || 'general';
+      
+      console.log('Chat messages request - limit:', limit, 'sector:', sector);
+      
+      // Use storage to get chat messages
+      const messages = await storage.getChatMessages(limit, sector);
+      
+      console.log('Query result:', messages.length, 'messages found');
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+      res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+  });
+
   app.get('/api/chat/:category', async (req, res) => {
     try {
       const category = req.params.category || 'general';
@@ -953,8 +971,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Expires': '0'
       });
       
-      const messages = await storage.getDiscussions(limit, 0, category);
-      res.json(messages);
+      // Redirect to proper endpoint
+      const messages = await db.select().from(chatMessages)
+        .where(eq(chatMessages.sector, category === 'general' ? null : category))
+        .orderBy(desc(chatMessages.timestamp))
+        .limit(limit);
+      
+      res.json(messages.reverse());
     } catch (error) {
       console.error("Error fetching chat messages:", error);
       res.status(500).json({ error: "Failed to fetch messages" });
