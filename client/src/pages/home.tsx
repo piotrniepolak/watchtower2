@@ -60,7 +60,6 @@ interface ConflictStoryline {
 
 export default function Home() {
   const [selectedSector, setSelectedSector] = useState("defense");
-  const [selectedStorylineIndex, setSelectedStorylineIndex] = useState(0);
   const queryClient = useQueryClient();
   
   // Fetch global metrics for overview
@@ -125,11 +124,6 @@ export default function Home() {
     refetchOnWindowFocus: false,
     retry: false,
   });
-
-  // Reset storyline index when sector changes
-  useEffect(() => {
-    setSelectedStorylineIndex(0);
-  }, [selectedSector]);
 
   const sectors = [
     {
@@ -477,7 +471,7 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Market Analysis */}
               <Card className="bg-white/70 backdrop-blur">
                 <CardHeader>
@@ -526,56 +520,51 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              {/* AI Predictions */}
+              {/* Comprehensive AI Analysis Hub */}
               <Card className="bg-white/70 backdrop-blur">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Brain className="h-5 w-5 text-indigo-600 mr-2" />
-                      <CardTitle className="text-lg">AI Predictions</CardTitle>
+                      <CardTitle className="text-lg">AI Analysis Hub</CardTitle>
                     </div>
                     <Badge variant="outline" className="text-xs">
                       Real-time Analysis
                     </Badge>
                   </div>
                   <CardDescription>
-                    Sector-specific predictions with confidence levels and strategic implications
+                    Complete sector analysis with predictions, market insights, and strategic storylines
                   </CardDescription>
                   
-                  {/* Specific Prediction Implications */}
-                  {predictions && predictions.length > 0 && (
-                    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                      <div className="flex items-start space-x-3">
-                        <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                        <div className="text-xs text-blue-800">
-                          <div className="font-medium mb-1">Key Prediction Implications</div>
-                          <div className="space-y-2">
-                            {predictions.slice(0, 2).map((prediction: any, index: number) => (
-                              <div key={index} className="border-l-2 border-blue-300 pl-2">
-                                <div className="font-medium text-blue-900">{prediction.prediction}</div>
-                                <div className="text-blue-700 mt-1">
-                                  <strong>Confidence:</strong> {prediction.confidence}% | 
-                                  <strong> Timeline:</strong> {prediction.timeframe}
-                                </div>
-                                {prediction.implications && prediction.implications.length > 0 && (
-                                  <ul className="mt-1 space-y-1">
-                                    {prediction.implications.slice(0, 2).map((implication: string, i: number) => (
-                                      <li key={i} className="text-blue-600 flex items-start">
-                                        <div className="w-1 h-1 bg-blue-500 rounded-full mr-2 mt-1.5 flex-shrink-0"></div>
-                                        {implication}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                  {/* Confidence & Implications Explanation */}
+                  <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start space-x-3">
+                      <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-blue-800">
+                        <div className="font-medium mb-1">Understanding Analysis Confidence</div>
+                        <p className="mb-2">
+                          <strong>Confidence Levels:</strong> 70-85% = High reliability based on current data | 
+                          50-69% = Moderate certainty with evolving factors | 
+                          30-49% = Lower confidence due to market volatility
+                        </p>
+                        <p>
+                          <strong>Investment Implications:</strong> Consider confidence levels alongside your risk tolerance. 
+                          Higher confidence predictions may warrant larger position sizes, while lower confidence scenarios 
+                          suggest smaller, diversified positions with close monitoring.
+                        </p>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </CardHeader>
-                <CardContent className="h-[320px] overflow-y-auto space-y-4">
+                <CardContent className="h-[400px] overflow-hidden">
+                  <Tabs defaultValue="predictions" className="h-full">
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
+                      <TabsTrigger value="predictions" className="text-xs">Predictions</TabsTrigger>
+                      <TabsTrigger value="insights" className="text-xs">Market Insights</TabsTrigger>
+                      <TabsTrigger value="storylines" className="text-xs">Storylines</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="predictions" className="h-[320px] overflow-y-auto space-y-4">
                       {predictionsLoading ? (
                         <div className="flex items-center justify-center h-32">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
@@ -618,174 +607,124 @@ export default function Home() {
                           <p className="text-sm text-slate-500">No predictions available for {selectedSector} sector</p>
                         </div>
                       )}
-                </CardContent>
-              </Card>
+                    </TabsContent>
 
-              {/* Market Insights */}
-              <Card className="bg-white/70 backdrop-blur">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <TrendingUp className="h-5 w-5 text-green-600 mr-2" />
-                      <CardTitle className="text-lg">Market Insights</CardTitle>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      Live Analysis
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    Current market sentiment and investment implications
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="h-[320px] overflow-y-auto space-y-4">
-                  {marketLoading ? (
-                    <div className="flex items-center justify-center h-32">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
-                    </div>
-                  ) : marketAnalysis ? (
-                    <div className="space-y-4">
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-slate-900 text-sm">Market Sentiment</h4>
-                          <Badge variant={marketAnalysis.overallSentiment === 'bullish' ? 'default' : 
-                                       marketAnalysis.overallSentiment === 'bearish' ? 'destructive' : 'secondary'}
-                                 className="text-xs">
-                            {marketAnalysis.overallSentiment?.toUpperCase()}
-                          </Badge>
+                    <TabsContent value="insights" className="h-[320px] overflow-y-auto space-y-4">
+                      {marketLoading ? (
+                        <div className="flex items-center justify-center h-32">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
                         </div>
-                        <p className="text-xs text-slate-700">{marketAnalysis.sectorOutlook}</p>
-                      </div>
-
-                      <div className="border rounded-lg p-3">
-                        <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          Key Drivers
-                        </h5>
-                        <ul className="space-y-1">
-                          {marketAnalysis.keyDrivers?.slice(0, 3).map((driver: string, i: number) => (
-                            <li key={i} className="text-xs text-slate-600 flex items-center">
-                              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></div>
-                              {driver}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="border rounded-lg p-3">
-                        <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          Risk Assessment
-                        </h5>
-                        <p className="text-xs text-slate-600">{marketAnalysis.riskAssessment}</p>
-                      </div>
-
-                      <div className="border rounded-lg p-3">
-                        <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
-                          <DollarSign className="h-3 w-3 mr-1" />
-                          Investment Implications
-                        </h5>
-                        <ul className="space-y-1">
-                          {marketAnalysis.investmentImplications?.slice(0, 3).map((implication: string, i: number) => (
-                            <li key={i} className="text-xs text-slate-600 flex items-center">
-                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
-                              {implication}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <BarChart3 className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm text-slate-500">No market analysis available</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Strategic Storylines */}
-              <Card className="bg-white/70 backdrop-blur">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Lightbulb className="h-5 w-5 text-purple-600 mr-2" />
-                      <CardTitle className="text-lg">Strategic Storylines</CardTitle>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      Scenario Analysis
-                    </Badge>
-                  </div>
-                  <CardDescription>
-                    Multiple strategic scenarios with probability assessments
-                  </CardDescription>
-                  
-                  {/* Storyline Selector */}
-                  {storylines?.length > 1 && (
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">Select Scenario:</span>
-                      <select 
-                        className="text-xs border rounded px-2 py-1 bg-white"
-                        value={selectedStorylineIndex}
-                        onChange={(e) => setSelectedStorylineIndex(parseInt(e.target.value))}
-                      >
-                        {storylines.map((storyline: any, index: number) => (
-                          <option key={index} value={index}>
-                            {storyline.title || `Storyline ${index + 1}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </CardHeader>
-                <CardContent className="h-[320px] overflow-y-auto space-y-4">
-                  {storylinesLoading ? (
-                    <div className="flex items-center justify-center h-32">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-                    </div>
-                  ) : storylines?.length > 0 && storylines[selectedStorylineIndex] ? (
-                    <div className="space-y-4">
-                      <div className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
-                        <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
-                        <p className="text-xs text-slate-700 mb-3">{storylines[selectedStorylineIndex].currentSituation}</p>
-                        
-                        <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
-                        <div className="space-y-2">
-                          {storylines[selectedStorylineIndex].possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
-                            <div key={i} className="bg-white rounded-lg p-2 border">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
-                                <div className="flex items-center">
-                                  <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
-                                  <span className="text-xs text-slate-600">{outcome.probability}%</span>
-                                </div>
-                              </div>
-                              <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
-                              <div className="flex items-center text-xs text-slate-500">
-                                <Clock className="h-2.5 w-2.5 mr-1" />
-                                {outcome.timeline}
-                              </div>
+                      ) : marketAnalysis ? (
+                        <div className="space-y-4">
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold text-slate-900 text-sm">Market Sentiment</h4>
+                              <Badge variant={marketAnalysis.overallSentiment === 'bullish' ? 'default' : 
+                                           marketAnalysis.overallSentiment === 'bearish' ? 'destructive' : 'secondary'}
+                                     className="text-xs">
+                                {marketAnalysis.overallSentiment?.toUpperCase()}
+                              </Badge>
                             </div>
-                          ))}
-                        </div>
+                            <p className="text-xs text-slate-700">{marketAnalysis.sectorOutlook}</p>
+                          </div>
 
-                        {storylines[selectedStorylineIndex].keyWatchPoints && storylines[selectedStorylineIndex].keyWatchPoints.length > 0 && (
-                          <div className="mt-3">
-                            <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
-                            <div className="flex flex-wrap gap-1">
-                              {storylines[selectedStorylineIndex].keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
-                                <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Key Drivers
+                            </h5>
+                            <ul className="space-y-1">
+                              {marketAnalysis.keyDrivers?.slice(0, 3).map((driver: string, i: number) => (
+                                <li key={i} className="text-xs text-slate-600 flex items-center">
+                                  <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></div>
+                                  {driver}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Risk Assessment
+                            </h5>
+                            <p className="text-xs text-slate-600">{marketAnalysis.riskAssessment}</p>
+                          </div>
+
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <DollarSign className="h-3 w-3 mr-1" />
+                              Investment Implications
+                            </h5>
+                            <ul className="space-y-1">
+                              {marketAnalysis.investmentImplications?.slice(0, 3).map((implication: string, i: number) => (
+                                <li key={i} className="text-xs text-slate-600 flex items-center">
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
+                                  {implication}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <BarChart3 className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No market analysis available</p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="storylines" className="h-[320px] overflow-y-auto space-y-4">
+                      {storylinesLoading ? (
+                        <div className="flex items-center justify-center h-32">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                        </div>
+                      ) : storylines?.length > 0 ? (
+                        storylines.map((storyline: any, index: number) => (
+                          <div key={index} className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+                            <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
+                            <p className="text-xs text-slate-700 mb-3">{storyline.currentSituation}</p>
+                            
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
+                            <div className="space-y-2">
+                              {storyline.possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
+                                <div key={i} className="bg-white rounded-lg p-2 border">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
+                                    <div className="flex items-center">
+                                      <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
+                                      <span className="text-xs text-slate-600">{outcome.probability}%</span>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
+                                  <div className="flex items-center text-xs text-slate-500">
+                                    <Clock className="h-2.5 w-2.5 mr-1" />
+                                    {outcome.timeline}
+                                  </div>
+                                </div>
                               ))}
                             </div>
+
+                            {storyline.keyWatchPoints && storyline.keyWatchPoints.length > 0 && (
+                              <div className="mt-3">
+                                <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
+                                <div className="flex flex-wrap gap-1">
+                                  {storyline.keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
-                    </div>
-                  )}
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
             </div>
