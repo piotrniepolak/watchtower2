@@ -2368,59 +2368,104 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
         return res.status(400).json({ message: 'Invalid difficulty' });
       }
 
-      // Generate sector-specific quiz directly for now
-      const sectorQuizzes = {
-        defense: {
-          id: `defense-quiz-${Date.now()}`,
-          question: "Which defense contractor has seen the largest stock price increase in 2024 due to ongoing global conflicts?",
-          options: [
-            "Lockheed Martin (LMT)",
-            "Raytheon Technologies (RTX)", 
-            "Northrop Grumman (NOC)",
-            "General Dynamics (GD)"
-          ],
+      // Generate sector-specific quiz with multiple variations
+      const defenseQuestions = [
+        {
+          question: "Which defense contractor has the largest market cap in 2024?",
+          options: ["Lockheed Martin (LMT)", "Boeing Defense (BA)", "Raytheon Technologies (RTX)", "Northrop Grumman (NOC)"],
           correctAnswer: 0,
-          explanation: "Lockheed Martin has experienced significant growth due to increased demand for missile defense systems and F-35 fighter jets amid global tensions, particularly with ongoing conflicts driving defense spending.",
-          sector: "defense",
-          difficulty: difficulty,
-          source: "Defense Market Analysis 2024",
-          tags: ["defense", "stocks", "conflict", "contractors"]
+          explanation: "Lockheed Martin maintains the largest market capitalization among pure-play defense contractors, driven by strong F-35 program performance and missile defense contracts.",
+          source: "Defense Industry Market Analysis 2024",
+          tags: ["defense", "market-cap", "contractors"]
         },
-        health: {
-          id: `health-quiz-${Date.now()}`,
-          question: "According to WHO data, which indicator has the strongest correlation with overall population health outcomes?",
-          options: [
-            "Healthcare expenditure per capita",
-            "Life expectancy at birth",
-            "Number of physicians per 1000 population",
-            "Government health spending as % of GDP"
-          ],
-          correctAnswer: 1,
-          explanation: "Life expectancy at birth is the strongest single indicator of population health, as it reflects the cumulative impact of healthcare systems, socioeconomic factors, and disease prevention across a population's lifespan.",
-          sector: "health",
-          difficulty: difficulty,
-          source: "WHO Global Health Observatory 2024",
-          tags: ["health", "WHO", "indicators", "life-expectancy"]
+        {
+          question: "What percentage of global defense spending does the United States represent in 2024?",
+          options: ["25%", "35%", "40%", "50%"],
+          correctAnswer: 2,
+          explanation: "The United States accounts for approximately 40% of global defense spending, reflecting its extensive military capabilities and international commitments.",
+          source: "SIPRI Military Expenditure Database 2024",
+          tags: ["defense", "spending", "global"]
         },
-        energy: {
-          id: `energy-quiz-${Date.now()}`,
-          question: "Which energy sector has shown the most volatility in 2024 due to geopolitical tensions?",
-          options: [
-            "Natural Gas",
-            "Crude Oil",
-            "Solar Energy",
-            "Nuclear Energy"
-          ],
+        {
+          question: "Which conflict zone has driven the highest increase in defense stock prices in 2024?",
+          options: ["Ukraine-Russia", "Middle East tensions", "Taiwan Strait", "Indo-Pacific region"],
           correctAnswer: 0,
-          explanation: "Natural gas markets have experienced extreme volatility due to supply disruptions from geopolitical tensions, pipeline infrastructure concerns, and shifting demand patterns across global markets.",
-          sector: "energy",
-          difficulty: difficulty,
-          source: "Energy Market Intelligence 2024",
-          tags: ["energy", "volatility", "gas", "geopolitics"]
+          explanation: "The ongoing Ukraine-Russia conflict has been the primary driver of defense stock appreciation, with increased NATO spending and weapons procurement.",
+          source: "Geopolitical Risk Assessment 2024",
+          tags: ["conflict", "ukraine", "stocks"]
         }
+      ];
+
+      const healthQuestions = [
+        {
+          question: "According to WHO data, which country has the highest life expectancy in 2024?",
+          options: ["Japan", "Switzerland", "Singapore", "Monaco"],
+          correctAnswer: 0,
+          explanation: "Japan continues to lead global life expectancy at 84.8 years, attributed to diet, healthcare access, and lifestyle factors documented in WHO statistics.",
+          source: "WHO Global Health Observatory 2024",
+          tags: ["health", "life-expectancy", "WHO"]
+        },
+        {
+          question: "What is the global average healthcare expenditure as percentage of GDP in 2024?",
+          options: ["8.5%", "9.8%", "11.2%", "12.5%"],
+          correctAnswer: 1,
+          explanation: "Global healthcare expenditure averages 9.8% of GDP, with significant variations between developed and developing nations according to WHO data.",
+          source: "WHO Global Health Expenditure Database 2024",
+          tags: ["healthcare", "GDP", "expenditure"]
+        },
+        {
+          question: "Which pharmaceutical sector has shown the strongest growth in 2024?",
+          options: ["Oncology", "Vaccines", "Diabetes care", "Mental health"],
+          correctAnswer: 0,
+          explanation: "Oncology continues to dominate pharmaceutical growth with breakthrough treatments and increased cancer incidence driving market expansion.",
+          source: "Pharmaceutical Market Research 2024",
+          tags: ["pharma", "oncology", "growth"]
+        }
+      ];
+
+      const energyQuestions = [
+        {
+          question: "Which energy commodity has shown the highest price volatility in 2024?",
+          options: ["Natural Gas", "Crude Oil", "Coal", "Uranium"],
+          correctAnswer: 0,
+          explanation: "Natural gas prices have experienced extreme volatility due to geopolitical tensions, supply disruptions, and seasonal demand fluctuations.",
+          source: "Energy Market Intelligence 2024",
+          tags: ["energy", "volatility", "gas"]
+        },
+        {
+          question: "What percentage of global energy consumption comes from renewable sources in 2024?",
+          options: ["15%", "18%", "22%", "28%"],
+          correctAnswer: 2,
+          explanation: "Renewable energy now accounts for approximately 22% of global energy consumption, showing accelerated adoption across major economies.",
+          source: "International Energy Agency 2024",
+          tags: ["renewable", "consumption", "global"]
+        },
+        {
+          question: "Which region has the largest proven oil reserves as of 2024?",
+          options: ["Middle East", "North America", "South America", "Russia/Central Asia"],
+          correctAnswer: 0,
+          explanation: "The Middle East continues to hold the largest proven oil reserves, accounting for approximately 48% of global reserves.",
+          source: "BP Statistical Review of World Energy 2024",
+          tags: ["oil", "reserves", "middle-east"]
+        }
+      ];
+
+      const questionSets = { defense: defenseQuestions, health: healthQuestions, energy: energyQuestions };
+      const questions = questionSets[sector as keyof typeof questionSets] || questionSets.defense;
+      const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+
+      const quiz = {
+        id: `${sector}-quiz-${Date.now()}`,
+        question: randomQuestion.question,
+        options: randomQuestion.options,
+        correctAnswer: randomQuestion.correctAnswer,
+        explanation: randomQuestion.explanation,
+        sector,
+        difficulty,
+        source: randomQuestion.source,
+        tags: randomQuestion.tags
       };
 
-      const quiz = sectorQuizzes[sector as keyof typeof sectorQuizzes] || sectorQuizzes.defense;
       res.json(quiz);
     } catch (error) {
       console.error('Error generating quiz:', error);
