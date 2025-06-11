@@ -60,6 +60,7 @@ interface ConflictStoryline {
 
 export default function Home() {
   const [selectedSector, setSelectedSector] = useState("defense");
+  const [selectedStorylineIndex, setSelectedStorylineIndex] = useState(0);
   const queryClient = useQueryClient();
   
   // Fetch global metrics for overview
@@ -124,6 +125,11 @@ export default function Home() {
     refetchOnWindowFocus: false,
     retry: false,
   });
+
+  // Reset storyline index when sector changes
+  useEffect(() => {
+    setSelectedStorylineIndex(0);
+  }, [selectedSector]);
 
   const sectors = [
     {
@@ -536,25 +542,38 @@ export default function Home() {
                     Complete sector analysis with predictions, market insights, and strategic storylines
                   </CardDescription>
                   
-                  {/* Confidence & Implications Explanation */}
-                  <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                    <div className="flex items-start space-x-3">
-                      <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div className="text-xs text-blue-800">
-                        <div className="font-medium mb-1">Understanding Analysis Confidence</div>
-                        <p className="mb-2">
-                          <strong>Confidence Levels:</strong> 70-85% = High reliability based on current data | 
-                          50-69% = Moderate certainty with evolving factors | 
-                          30-49% = Lower confidence due to market volatility
-                        </p>
-                        <p>
-                          <strong>Investment Implications:</strong> Consider confidence levels alongside your risk tolerance. 
-                          Higher confidence predictions may warrant larger position sizes, while lower confidence scenarios 
-                          suggest smaller, diversified positions with close monitoring.
-                        </p>
+                  {/* Specific Prediction Implications */}
+                  {predictions && predictions.length > 0 && (
+                    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                      <div className="flex items-start space-x-3">
+                        <Target className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <div className="text-xs text-blue-800">
+                          <div className="font-medium mb-1">Key Prediction Implications</div>
+                          <div className="space-y-2">
+                            {predictions.slice(0, 2).map((prediction: any, index: number) => (
+                              <div key={index} className="border-l-2 border-blue-300 pl-2">
+                                <div className="font-medium text-blue-900">{prediction.prediction}</div>
+                                <div className="text-blue-700 mt-1">
+                                  <strong>Confidence:</strong> {prediction.confidence}% | 
+                                  <strong> Timeline:</strong> {prediction.timeframe}
+                                </div>
+                                {prediction.implications && prediction.implications.length > 0 && (
+                                  <ul className="mt-1 space-y-1">
+                                    {prediction.implications.slice(0, 2).map((implication: string, i: number) => (
+                                      <li key={i} className="text-blue-600 flex items-start">
+                                        <div className="w-1 h-1 bg-blue-500 rounded-full mr-2 mt-1.5 flex-shrink-0"></div>
+                                        {implication}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </CardHeader>
                 <CardContent className="h-[400px] overflow-hidden">
                   <Tabs defaultValue="predictions" className="h-full">
