@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronDown, ChevronUp, Brain, Trophy, Timer, Target, Sparkles, Crown, Medal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -44,12 +45,11 @@ interface UserStats {
   totalQuestions: number;
 }
 
-interface LearningHubProps {
-  selectedSector: string;
-}
+interface LearningHubProps {}
 
-export function LearningHub({ selectedSector }: LearningHubProps) {
+export function LearningHub({}: LearningHubProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [learningSelectedSector, setLearningSelectedSector] = useState<string>('defense');
   const [currentQuiz, setCurrentQuiz] = useState<QuizQuestion | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -82,23 +82,23 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
     },
   };
 
-  const config = sectorConfig[selectedSector as keyof typeof sectorConfig] || sectorConfig.defense;
+  const config = sectorConfig[learningSelectedSector as keyof typeof sectorConfig] || sectorConfig.defense;
 
   // Fetch daily quiz for current sector
   const { data: dailyQuiz, isLoading: quizLoading } = useQuery<QuizQuestion>({
-    queryKey: [`/api/learning/daily-quiz/${selectedSector}`],
+    queryKey: [`/api/learning/daily-quiz/${learningSelectedSector}`],
     enabled: isExpanded,
   });
 
   // Fetch leaderboard
   const { data: leaderboard = [], isLoading: leaderboardLoading } = useQuery<LeaderboardEntry[]>({
-    queryKey: [`/api/learning/leaderboard/${selectedSector}`],
+    queryKey: [`/api/learning/leaderboard/${learningSelectedSector}`],
     enabled: isExpanded,
   });
 
   // Fetch user stats
   const { data: userStats } = useQuery<UserStats>({
-    queryKey: [`/api/learning/user-stats/${selectedSector}`],
+    queryKey: [`/api/learning/user-stats/${learningSelectedSector}`],
     enabled: isExpanded,
   });
 
@@ -110,7 +110,7 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...response,
-          sector: selectedSector
+          sector: learningSelectedSector
         })
       });
       return result.json();
@@ -127,7 +127,7 @@ export function LearningHub({ selectedSector }: LearningHubProps) {
       const result = await fetch('/api/learning/generate-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sector: selectedSector })
+        body: JSON.stringify({ sector: learningSelectedSector })
       });
       return result.json();
     },
