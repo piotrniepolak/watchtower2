@@ -2225,6 +2225,8 @@ export function LearningHub({}: LearningHubProps) {
     }
 
     if (step.type === 'quiz' || step.type === 'scenario') {
+      const allQuestionsAnswered = step.questions?.every(q => moduleAnswers[q.id]) || false;
+      
       return (
         <div className="space-y-6">
           {step.questions?.map((question, qIndex) => (
@@ -2236,11 +2238,14 @@ export function LearningHub({}: LearningHubProps) {
                     <button
                       key={oIndex}
                       onClick={() => handleModuleAnswer(question.id, option)}
+                      disabled={allQuestionsAnswered}
                       className={cn(
                         "w-full p-3 text-left rounded-lg border transition-colors",
-                        moduleAnswers[question.id] === option
+                        moduleAnswers[question.id] === option && !allQuestionsAnswered
                           ? "border-primary bg-primary/10"
-                          : "border-border hover:bg-muted/50"
+                          : "border-border hover:bg-muted/50",
+                        allQuestionsAnswered && option === question.correctAnswer && "border-green-500 bg-green-50 dark:bg-green-900/20",
+                        allQuestionsAnswered && moduleAnswers[question.id] === option && option !== question.correctAnswer && "border-red-500 bg-red-50 dark:bg-red-900/20"
                       )}
                     >
                       <span className="font-medium mr-2">{String.fromCharCode(65 + oIndex)}.</span>
@@ -2248,7 +2253,7 @@ export function LearningHub({}: LearningHubProps) {
                     </button>
                   ))}
                 </div>
-                {moduleAnswers[question.id] && (
+                {allQuestionsAnswered && (
                   <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
                       <strong>Explanation:</strong> {question.explanation}
@@ -2264,6 +2269,13 @@ export function LearningHub({}: LearningHubProps) {
               </div>
             </div>
           ))}
+          {!allQuestionsAnswered && (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground">
+                Answer all questions to see explanations and results
+              </p>
+            </div>
+          )}
         </div>
       );
     }

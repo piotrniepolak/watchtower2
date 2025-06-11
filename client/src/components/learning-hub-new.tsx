@@ -312,7 +312,7 @@ export function LearningHub({}: LearningHubProps) {
                       disabled={isAnswerSubmitted}
                       className={cn(
                         "w-full p-3 text-left rounded-lg border transition-colors",
-                        selectedAnswer === index
+                        selectedAnswer === index && !isAnswerSubmitted
                           ? "border-primary bg-primary/10"
                           : "border-border hover:bg-muted/50",
                         isAnswerSubmitted && index === currentQuestion.correctAnswer && "border-green-500 bg-green-50 dark:bg-green-900/20",
