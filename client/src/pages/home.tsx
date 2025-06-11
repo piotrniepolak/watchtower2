@@ -160,7 +160,7 @@ export default function Home() {
     {
       key: "health",
       name: "PharmaWatch", 
-      description: "Global Health & Disease Intelligence",
+      description: "Global Health Intelligence",
       icon: Pill,
       color: "from-green-600 to-teal-600",
       borderColor: "border-green-200",
@@ -180,7 +180,7 @@ export default function Home() {
     {
       key: "energy",
       name: "EnergyWatch",
-      description: "Oil & Gas Regulation Intelligence", 
+      description: "Energy Market Intelligence", 
       icon: Zap,
       color: "from-orange-600 to-red-600",
       borderColor: "border-orange-200",
@@ -299,7 +299,7 @@ export default function Home() {
                             <span className="text-slate-600">Defense Stocks</span>
                           </div>
                           <div className="text-center">
-                            <span className="text-slate-500">Real-time tracking</span>
+                            <span className="text-slate-500">Live tracking</span>
                           </div>
                         </>
                       )}
@@ -314,7 +314,7 @@ export default function Home() {
                             <span className="text-slate-600">Health Stocks</span>
                           </div>
                           <div className="text-center">
-                            <span className="text-slate-500">WHO data analysis</span>
+                            <span className="text-slate-500">WHO analysis</span>
                           </div>
                         </>
                       )}
@@ -329,7 +329,7 @@ export default function Home() {
                             <span className="text-slate-600">Energy Stocks</span>
                           </div>
                           <div className="text-center">
-                            <span className="text-slate-500">Market monitoring</span>
+                            <span className="text-slate-500">Live monitoring</span>
                           </div>
                         </>
                       )}
