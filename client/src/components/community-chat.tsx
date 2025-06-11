@@ -110,15 +110,34 @@ export function CommunityChat() {
       if (!response.ok) throw new Error('Failed to send message');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      const wasReplyingToQuestion = replyingTo?.username === "Daily Question";
+      
       setMessage("");
       setReplyingTo(null);
       // Clear replies cache to force refresh
       setReplies({});
       setExpandedThreads(new Set());
-      // Clear daily question replies to force refresh
-      setDailyQuestionReplies([]);
-      setShowDailyQuestionReplies(false);
+      
+      // If this was a daily question reply, refetch the daily question replies
+      if (wasReplyingToQuestion && dailyQuestion?.id) {
+        try {
+          const response = await fetch(`/api/daily-questions/${dailyQuestion.id}/replies?sector=${chatSector}`);
+          if (response.ok) {
+            const updatedReplies = await response.json();
+            setDailyQuestionReplies(updatedReplies);
+            // Keep the thread expanded to show the new reply
+            setShowDailyQuestionReplies(true);
+          }
+        } catch (error) {
+          console.error('Failed to refetch daily question replies:', error);
+        }
+      } else {
+        // Clear daily question replies for regular messages
+        setDailyQuestionReplies([]);
+        setShowDailyQuestionReplies(false);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
     },
   });
