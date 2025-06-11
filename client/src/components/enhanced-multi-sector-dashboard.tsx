@@ -294,7 +294,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             Real-time performance of oil, gas, and energy stocks
           </p>
         </div>
-        <EnhancedChartsSection />
+        <EnhancedChartsSection sector={currentSector} />
       </div>
 
       {/* Energy-specific content */}

@@ -316,17 +316,9 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-slate-100">
-                    {user?.profileImageUrl ? (
-                      <img 
-                        src={user.profileImageUrl} 
-                        alt={`${user.firstName || 'User'}'s profile`}
-                        className="w-8 h-8 rounded-full object-cover border-2 border-slate-200"
-                      />
-                    ) : (
-                      <div className={`w-8 h-8 bg-gradient-to-r ${config.color} rounded-full flex items-center justify-center text-white text-sm font-medium`}>
-                        {user?.firstName?.[0] || user?.email?.[0] || 'D'}
-                      </div>
-                    )}
+                    <div className={`w-8 h-8 bg-gradient-to-r ${config.color} rounded-full flex items-center justify-center text-white text-sm font-medium`}>
+                      {user?.firstName?.[0] || user?.email?.[0] || 'D'}
+                    </div>
                     <span className="hidden sm:inline font-medium text-slate-900">
                       {user?.username === 'demo_user' ? 'Demo User' : (user?.firstName || user?.username || user?.email?.split('@')[0] || 'Account')}
                     </span>
@@ -364,17 +356,9 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
                     <>
                       <div className="p-3">
                         <div className="flex items-center space-x-3">
-                          {user?.profileImageUrl ? (
-                            <img 
-                              src={user.profileImageUrl} 
-                              alt={`${user.firstName || 'User'}'s profile`}
-                              className="w-12 h-12 rounded-full object-cover border-2 border-slate-200"
-                            />
-                          ) : (
-                            <div className={`w-12 h-12 bg-gradient-to-r ${config.color} rounded-full flex items-center justify-center text-white text-lg font-medium`}>
-                              {user?.firstName?.[0] || user?.email?.[0] || 'U'}
-                            </div>
-                          )}
+                          <div className={`w-12 h-12 bg-gradient-to-r ${config.color} rounded-full flex items-center justify-center text-white text-lg font-medium`}>
+                            {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                          </div>
                           <div>
                             <div className="font-medium text-slate-900">
                               {user?.firstName && user?.lastName 
