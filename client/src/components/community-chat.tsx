@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -634,7 +634,7 @@ export function CommunityChat() {
                                         ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
                                         : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
                                     }`}>
-                                      {coFounderInfo.icon && <coFounderInfo.icon className={`w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`} />}
+                                      {coFounderInfo.icon && React.createElement(coFounderInfo.icon, { className: `w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}` })}
                                       <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[120px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`}>
                                         {coFounderInfo.sector === 'health' ? 'PharmaWatch Director' : 'ConflictWatch Director'}
                                       </span>
