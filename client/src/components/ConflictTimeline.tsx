@@ -206,7 +206,7 @@ export function ConflictTimeline({ conflictId, conflictName }: ConflictTimelineP
             </p>
           </div>
         ) : (
-          <div className="h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className="h-[32rem] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <div className="relative px-4 pb-4">
               {/* Timeline line */}
               <div className="absolute left-8 top-0 bottom-0 w-px bg-border" />
