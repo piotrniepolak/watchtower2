@@ -54,6 +54,8 @@ export function CommunityChat() {
   const [replyingTo, setReplyingTo] = useState<{ id: number; username: string } | null>(null);
   const [expandedThreads, setExpandedThreads] = useState<Set<number>>(new Set());
   const [replies, setReplies] = useState<{ [messageId: number]: ChatMessage[] }>({});
+  const [dailyQuestionReplies, setDailyQuestionReplies] = useState<ChatMessage[]>([]);
+  const [showDailyQuestionReplies, setShowDailyQuestionReplies] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 

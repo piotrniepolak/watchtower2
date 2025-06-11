@@ -1836,6 +1836,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Username and message are required' });
       }
 
+      // Handle daily question replies
+      const isDailyQuestionReply = replyToUser === "Daily Question";
+      const dailyQuestionId = isDailyQuestionReply ? replyToId : null;
+      
       // Direct database insertion to fix the method binding issue
       // Store "general" messages with null sector to separate them from other channels
       const messageToInsert = {
@@ -1843,10 +1847,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message,
         sector: sector === 'general' ? null : sector,
         isSystem: false,
-        replyToId: replyToId || null,
-        replyToUser: replyToUser || null,
-        isDailyQuestionReply: false,
-        dailyQuestionId: null,
+        replyToId: isDailyQuestionReply ? null : (replyToId || null), // Daily question replies are top-level
+        replyToUser: isDailyQuestionReply ? null : (replyToUser || null),
+        isDailyQuestionReply,
+        dailyQuestionId,
       };
       
       const { chatMessages } = await import('@shared/schema');
@@ -1879,6 +1883,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching message replies:', error);
       res.status(500).json({ error: 'Failed to fetch replies' });
+    }
+  });
+
+  // Get replies for a daily question
+  app.get('/api/daily-questions/:questionId/replies', async (req, res) => {
+    try {
+      const questionId = parseInt(req.params.questionId);
+      
+      if (!questionId) {
+        return res.status(400).json({ error: 'Invalid question ID' });
+      }
+
+      const { chatMessages } = await import('@shared/schema');
+      const { eq, desc } = await import('drizzle-orm');
+      
+      const replies = await db.select().from(chatMessages)
+        .where(eq(chatMessages.dailyQuestionId, questionId))
+        .orderBy(desc(chatMessages.timestamp));
+      
+      res.json(replies);
+    } catch (error) {
+      console.error('Error fetching daily question replies:', error);
+      res.status(500).json({ error: 'Failed to fetch daily question replies' });
     }
   });
 
