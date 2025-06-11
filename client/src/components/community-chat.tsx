@@ -144,51 +144,53 @@ export function CommunityChat({ selectedSector }: CommunityChatProps) {
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-4 pt-0">
+      <CardContent className="flex-1 flex flex-col p-4 pt-0 min-h-0">
         {/* Messages Area */}
-        <ScrollArea className="flex-1 pr-4 mb-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-slate-500">Loading messages...</div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="text-center text-slate-500">
-                <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>No messages yet. Start the conversation!</p>
+        <div className="flex-1 min-h-0 mb-4">
+          <ScrollArea className="h-full pr-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-slate-500">Loading messages...</div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {messages.map((msg: ChatMessage) => (
-                <div key={msg.id} className="group">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                      {msg.username.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
-                          {msg.username}
-                        </span>
-                        {msg.username === username && (
-                          <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
-                        )}
-                        <span className="text-xs text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">
-                          {formatTimestamp(msg.timestamp)}
-                        </span>
+            ) : messages.length === 0 ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-center text-slate-500">
+                  <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>No messages yet. Start the conversation!</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {messages.map((msg: ChatMessage) => (
+                  <div key={msg.id} className="group">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                        {msg.username.charAt(0).toUpperCase()}
                       </div>
-                      <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed break-words">
-                        {msg.message}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">
+                            {msg.username}
+                          </span>
+                          {msg.username === username && (
+                            <span className="text-xs text-blue-600 dark:text-blue-400">you</span>
+                          )}
+                          <span className="text-xs text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400">
+                            {formatTimestamp(msg.timestamp)}
+                          </span>
+                        </div>
+                        <div className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed break-words">
+                          {msg.message}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </ScrollArea>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </ScrollArea>
+        </div>
 
         {/* Username Display/Edit */}
         <div className="mb-3">
