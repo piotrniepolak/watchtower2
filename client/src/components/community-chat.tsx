@@ -633,23 +633,23 @@ export function CommunityChat() {
                               {/* Co-Founder Badge */}
                               {coFounderInfo.isCoFounder && (
                                 <>
-                                  <div className="group/badge relative">
-                                    <div className="flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 px-1 py-0.5 rounded-full border border-amber-200 dark:border-amber-700 cursor-pointer transition-all duration-200 group-hover/badge:px-2">
+                                  <div className="relative">
+                                    <div className="flex items-center bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-700">
                                       <Crown className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300 opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/badge:opacity-100 group-hover/badge:max-w-[80px] group-hover/badge:ml-1">
+                                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300 ml-1">
                                         Co-Founder
                                       </span>
                                     </div>
                                   </div>
-                                  {/* Sector Badge - Always Expanded */}
-                                  <div className="relative">
-                                    <div className={`flex items-center px-2 py-0.5 rounded-full border ${
+                                  {/* Sector Badge - Collapsible */}
+                                  <div className="group/sector relative">
+                                    <div className={`flex items-center px-1 py-0.5 rounded-full border cursor-pointer transition-all duration-200 group-hover/sector:px-2 ${
                                       coFounderInfo.sector === 'health' 
                                         ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700' 
                                         : 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
                                     }`}>
                                       {coFounderInfo.icon && React.createElement(coFounderInfo.icon, { className: `w-3 h-3 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}` })}
-                                      <span className={`text-xs font-medium ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`}>
+                                      <span className={`text-xs font-medium opacity-0 max-w-0 overflow-hidden transition-all duration-200 group-hover/sector:opacity-100 group-hover/sector:max-w-[120px] group-hover/sector:ml-1 ${coFounderInfo.color} dark:${coFounderInfo.color?.replace('text-', 'text-').replace('-600', '-400')}`}>
                                         {coFounderInfo.sector === 'health' ? 'PharmaWatch Director' : 'ConflictWatch Director'}
                                       </span>
                                     </div>
