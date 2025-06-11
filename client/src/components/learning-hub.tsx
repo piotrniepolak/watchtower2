@@ -385,6 +385,200 @@ export function LearningHub({}: LearningHubProps) {
 
         <Separator />
 
+        {/* Learning Modules Section */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold flex items-center">
+            <Brain className="h-5 w-5 mr-2" />
+            Learning Modules
+          </h3>
+          
+          {/* Sector-Specific Learning Content */}
+          {learningSelectedSector === 'defense' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Conflict Analysis Fundamentals</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Learn to analyze geopolitical tensions, defense spending patterns, and military readiness indicators.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Understanding conflict escalation patterns
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Defense stock correlation analysis
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Military spending impact assessment
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Defense Market Intelligence</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Master defense contractor analysis, procurement cycles, and strategic investment timing.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Defense contractor valuation methods
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Government contract analysis
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Risk-adjusted portfolio strategies
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {learningSelectedSector === 'health' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">Global Health Analytics</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Analyze WHO health indicators, pharmaceutical markets, and healthcare investment opportunities.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    WHO data interpretation techniques
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Health score calculation methods
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Pharmaceutical market analysis
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">Drug Development Pipeline</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Understand clinical trial phases, regulatory pathways, and biotech investment strategies.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Clinical trial success probability
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    FDA approval timeline analysis
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Biotech valuation frameworks
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {learningSelectedSector === 'energy' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">Energy Market Dynamics</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Master commodity trading, renewable energy trends, and energy security analysis.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    Oil and gas price forecasting
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    Renewable energy economics
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    Energy security risk assessment
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <h4 className="font-medium text-orange-900 dark:text-orange-100 mb-2">Green Energy Transition</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Analyze clean technology adoption, carbon markets, and sustainable energy investments.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    Carbon credit market dynamics
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    Clean technology valuation
+                  </div>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
+                    ESG investment strategies
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Study Resources Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold flex items-center">
+            <Target className="h-5 w-5 mr-2" />
+            Study Resources
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-4 text-center">
+              <Brain className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+              <h4 className="font-medium mb-2">Interactive Quizzes</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Test knowledge with AI-generated questions based on current market data
+              </p>
+              <Badge variant="secondary" className="text-xs">
+                3 Questions per Session
+              </Badge>
+            </Card>
+
+            <Card className="p-4 text-center">
+              <Trophy className="h-8 w-8 mx-auto mb-2 text-yellow-600" />
+              <h4 className="font-medium mb-2">Performance Tracking</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Monitor progress across sectors with detailed analytics and streaks
+              </p>
+              <Badge variant="secondary" className="text-xs">
+                Cross-Sector Stats
+              </Badge>
+            </Card>
+
+            <Card className="p-4 text-center">
+              <Sparkles className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+              <h4 className="font-medium mb-2">Real-Time Updates</h4>
+              <p className="text-xs text-muted-foreground mb-3">
+                Content updated with latest market developments and news
+              </p>
+              <Badge variant="secondary" className="text-xs">
+                Live Data Integration
+              </Badge>
+            </Card>
+          </div>
+        </div>
+
+        <Separator />
+
         {/* Stats and Leaderboard */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* User Stats */}
