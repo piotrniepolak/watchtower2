@@ -228,8 +228,20 @@ export function LearningHub({}: LearningHubProps) {
             <div className={cn("p-2 rounded-lg", config.bgColor)}>
               <IconComponent className={cn("h-5 w-5", config.color)} />
             </div>
-            <div>
-              <CardTitle className="text-lg font-semibold">{config.title}</CardTitle>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <CardTitle className="text-lg font-semibold">{config.title}</CardTitle>
+                <Select value={learningSelectedSector} onValueChange={setLearningSelectedSector}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="defense">ConflictWatch</SelectItem>
+                    <SelectItem value="health">PharmaWatch</SelectItem>
+                    <SelectItem value="energy">EnergyWatch</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <CardDescription>
                 Master intelligence analysis with real-time market quizzes
               </CardDescription>

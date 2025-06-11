@@ -924,7 +924,7 @@ export default function Home() {
 
         {/* Learning Hub Section */}
         <div className="mt-6">
-          <LearningHub selectedSector={selectedSector} />
+          <LearningHub />
         </div>
 
         {/* Meet the Team Section */}
