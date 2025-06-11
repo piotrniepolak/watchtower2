@@ -988,7 +988,7 @@ export function LearningHub({}: LearningHubProps) {
           title: 'Military Alliances & Defense Cooperation',
           description: 'Understand alliance structures, burden sharing, and cooperative defense programs',
           icon: Users,
-          difficulty: 'expert',
+          difficulty: 'advanced',
           points: 600,
           steps: [
             {
@@ -1828,7 +1828,7 @@ export function LearningHub({}: LearningHubProps) {
           title: 'Precision Medicine & Genomics',
           description: 'Explore personalized healthcare, genetic testing, and targeted therapy investments',
           icon: Dna,
-          difficulty: 'expert',
+          difficulty: 'advanced',
           points: 575,
           steps: [
             {
