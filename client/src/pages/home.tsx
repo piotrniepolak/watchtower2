@@ -451,7 +451,7 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Market Analysis */}
               <Card className="bg-white/70 backdrop-blur">
                 <CardHeader>
@@ -499,6 +499,11 @@ export default function Home() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Community Chat */}
+              <div className="lg:col-span-2">
+                <CommunityChat selectedSector={selectedSector} />
+              </div>
 
               {/* Comprehensive AI Analysis Hub */}
               <Card className="bg-white/70 backdrop-blur">

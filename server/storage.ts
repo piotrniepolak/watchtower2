@@ -1343,20 +1343,30 @@ export class MemStorage implements IStorage {
 
   // Chat Messages
   async getChatMessages(limit: number = 50, sector?: string): Promise<ChatMessage[]> {
-    let query = db.select().from(chatMessages).orderBy(desc(chatMessages.timestamp)).limit(limit);
-    
-    if (sector) {
-      const messages = await query.where(eq(chatMessages.sector, sector));
-      return messages.reverse();
+    try {
+      let query = db.select().from(chatMessages).orderBy(desc(chatMessages.timestamp)).limit(limit);
+      
+      if (sector) {
+        const messages = await query.where(eq(chatMessages.sector, sector));
+        return messages.reverse();
+      }
+      
+      const messages = await query;
+      return messages.reverse(); // Return in chronological order
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+      return [];
     }
-    
-    const messages = await query;
-    return messages.reverse(); // Return in chronological order
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    const [newMessage] = await db.insert(chatMessages).values(message).returning();
-    return newMessage;
+    try {
+      const [newMessage] = await db.insert(chatMessages).values(message).returning();
+      return newMessage;
+    } catch (error) {
+      console.error('Error creating chat message:', error);
+      throw error;
+    }
   }
 }
 

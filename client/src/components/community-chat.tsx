@@ -54,10 +54,15 @@ export function CommunityChat({ selectedSector }: CommunityChatProps) {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: { username: string; message: string; sector?: string }) => {
-      return apiRequest("/api/chat/messages", {
+      const response = await fetch("/api/chat/messages", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(messageData),
       });
+      if (!response.ok) throw new Error('Failed to send message');
+      return response.json();
     },
     onSuccess: () => {
       setMessage("");
