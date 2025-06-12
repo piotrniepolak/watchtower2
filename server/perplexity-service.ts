@@ -265,7 +265,7 @@ class PerplexityService {
       return { content, references: [] };
     }
 
-    // Remove all citation numbers [1], [2], etc. from the main content
+    // Aggressively remove ALL citation patterns and references from the main content
     let processedContent = content;
     
     console.log(`🔧 Before citation removal: ${processedContent.substring(0, 200)}...`);
@@ -273,7 +273,25 @@ class PerplexityService {
     // Remove all citation patterns like [1], [2], [3], including clustered ones like [1][3]
     processedContent = processedContent.replace(/\[\d+\]/g, '');
     
-    console.log(`🔧 After citation removal: ${processedContent.substring(0, 200)}...`);
+    // Remove any remaining reference patterns
+    processedContent = processedContent.replace(/\(\d+\)/g, ''); // Remove (1), (2), etc.
+    processedContent = processedContent.replace(/\[ref\s*\d+\]/gi, ''); // Remove [ref 1], [Ref 2], etc.
+    processedContent = processedContent.replace(/\[source:\s*\d+\]/gi, ''); // Remove [source: 1], etc.
+    processedContent = processedContent.replace(/\[\s*\d+\s*\]/g, ''); // Remove [ 1 ], etc. with spaces
+    
+    // Remove any numbered reference lists that might be embedded
+    processedContent = processedContent.replace(/^\d+\.\s+[\s\S]*?(?=\n\n|\n\d+\.|\n$|$)/gm, '');
+    
+    // Remove references sections completely
+    processedContent = processedContent.replace(/\*\*References:\*\*[\s\S]*$/i, '');
+    processedContent = processedContent.replace(/References:[\s\S]*$/i, '');
+    processedContent = processedContent.replace(/### References[\s\S]*$/i, '');
+    processedContent = processedContent.replace(/## References[\s\S]*$/i, '');
+    
+    // Remove any numbered links like "1. [Title](URL)"
+    processedContent = processedContent.replace(/\d+\.\s*\[[^\]]+\]\([^)]+\)/g, '');
+    
+    console.log(`🔧 After aggressive citation removal: ${processedContent.substring(0, 200)}...`);
     
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
