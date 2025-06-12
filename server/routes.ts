@@ -1729,15 +1729,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
               news.geopoliticalAnalysis || ''
             ].join(' ');
 
-            // Create comprehensive company name variations for matching
+            // Enhanced company name variations for matching
             const companyIdentifiers = [
               symbol,
               companyName,
+              // Add specific company name variations that appear in briefs
+              symbol === 'NUVB' ? 'nuvation' : '',
+              symbol === 'BAYRY' ? 'bayer' : '',
+              symbol === 'BMY' ? 'bristol myers' : '',
+              symbol === 'RHHBY' ? 'roche' : '',
+              symbol === 'SNY' ? 'sanofi' : '',
+              symbol === 'GSK' ? 'gsk' : '',
+              symbol === 'BIIB' ? 'biogen' : '',
+              symbol === 'LLY' ? 'eli lilly' : '',
+              symbol === 'JNJ' ? 'johnson' : '',
+              symbol === 'VRTX' ? 'vertex' : '',
+              symbol === 'RARE' ? 'ultragenyx' : '',
+              symbol === 'SLDB' ? 'solid' : '',
+              symbol === 'STOK' ? 'stoke' : '',
               // Add common variations from company-to-symbol mapping
               ...Object.entries(companyToSymbolMap)
                 .filter(([name, sym]) => sym === symbol)
                 .map(([name]) => name)
-            ];
+            ].filter(id => id && id.length > 0);
 
             // Clean the content and split into sentences
             const cleanContent = briefContent
