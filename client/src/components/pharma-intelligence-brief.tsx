@@ -17,7 +17,8 @@ import {
   DollarSign,
   Pill,
   Activity,
-  Shield
+  Shield,
+  FileText
 } from "lucide-react";
 import type { DailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
