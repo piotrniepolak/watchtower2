@@ -17,7 +17,14 @@ interface PerplexityResponse {
 
 interface PharmaceuticalIntelligence {
   title: string;
-  summary: string;
+  summary: {
+    content: string;
+    references: Array<{
+      number: number;
+      title: string;
+      url: string;
+    }>;
+  };
   keyDevelopments: string[];
   conflictUpdates: Array<{
     region: string;
