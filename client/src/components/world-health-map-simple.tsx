@@ -10526,7 +10526,7 @@ export default function WorldHealthMapSimple() {
         const width = 960;
         const height = 500;
         const projection = geoNaturalEarth1()
-          .scale(100)  // Maximum zoom out to show full world
+          .scale(120)  // Adjusted scale so Greenland/Antarctica touch edges
           .center([0, 0])  // Centered view
           .translate([width / 2, height / 2]);
         
@@ -10541,8 +10541,8 @@ export default function WorldHealthMapSimple() {
         if (countriesGroup) {
           countriesGroup.innerHTML = '';
           
-          // Add interactive zoom and pan functionality with maximum zoom out
-          let currentScale = 0.8;  // Start with maximum zoom out
+          // Add interactive zoom and pan functionality with Greenland/Antarctica edge limits
+          let currentScale = 1.0;  // Start at scale where Greenland/Antarctica touch edges
           let currentTranslateX = 0;
           let currentTranslateY = 0;
           let isDragging = false;
@@ -10559,7 +10559,7 @@ export default function WorldHealthMapSimple() {
             
             // Calculate zoom factor (smoother zooming)
             const zoomFactor = event.deltaY > 0 ? 0.95 : 1.05;
-            const newScale = Math.max(0.5, Math.min(10, currentScale * zoomFactor));
+            const newScale = Math.max(1.0, Math.min(10, currentScale * zoomFactor));  // Minimum scale 1.0 (Greenland/Antarctica touching edges)
             
             // Calculate new translation to zoom towards mouse position
             const scaleChange = newScale / currentScale;
