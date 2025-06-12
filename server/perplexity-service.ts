@@ -240,6 +240,12 @@ Ensure each reference includes the source name followed by a colon and the artic
       return mention.toUpperCase();
     }
     
+    // Handle specific uppercase company names that need special mapping
+    const upperCaseMention = mention.toUpperCase().trim();
+    if (upperCaseMention === 'ROCHE') return 'RHHBY';
+    if (upperCaseMention === 'MERCK') return 'MRK';
+    if (upperCaseMention === 'BAYER') return 'BAYRY';
+    
     // Look up company name
     return companyToSymbol[normalizedMention] || null;
   }
@@ -275,7 +281,13 @@ Ensure each reference includes the source name followed by a colon and the artic
     // Remove duplicates
     const uniqueSymbols = Array.from(new Set(stockSymbols));
 
-    console.log(`🔍 Extracted ${uniqueSymbols.length} pharmaceutical companies from brief content: ${uniqueSymbols.join(', ')}`);
+    console.log(`🔍 Extracted ${companyMentions.length} pharmaceutical companies from brief content: ${companyMentions.join(', ')}`);
+    
+    // Debug logging for company mapping
+    companyMentions.forEach(mention => {
+      const symbol = this.getStockSymbolFromMention(mention);
+      console.log(`📊 Mapping "${mention}" -> ${symbol || 'NOT FOUND'}`);
+    });
 
     if (uniqueSymbols.length === 0) {
       console.log('⚠️ No pharmaceutical companies found in content, using default set');
