@@ -279,11 +279,11 @@ export default function PharmaIntelligenceBrief() {
         severity: "high"
       }
     ],
-    defenseStockHighlights: [
+    defenseStockHighlights: [],
+    pharmaceuticalStockHighlights: [
       {
         symbol: "PFE",
         name: "Pfizer Inc",
-        price: 24.48,
         change: 0.18,
         changePercent: 0.74,
         reason: "Strong pipeline momentum in oncology with positive Phase III results"
@@ -291,7 +291,6 @@ export default function PharmaIntelligenceBrief() {
       {
         symbol: "JNJ",
         name: "Johnson & Johnson",
-        price: 155.26,
         change: -1.18,
         changePercent: -0.76,
         reason: "Medical devices segment showing consistent growth trajectory"
@@ -299,7 +298,6 @@ export default function PharmaIntelligenceBrief() {
       {
         symbol: "MRNA",
         name: "Moderna Inc",
-        price: 27.75,
         change: 0.07,
         changePercent: 0.25,
         reason: "mRNA platform expansion into new therapeutic areas"

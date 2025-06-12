@@ -191,13 +191,14 @@ export class PharmaNewsService {
           update: update.description,
           severity: update.severity as "medium" | "high" | "low" | "critical"
         })),
-        defenseStockHighlights: intelligenceBrief.defenseStockHighlights.map(stock => ({
+        defenseStockHighlights: [],
+        pharmaceuticalStockHighlights: intelligenceBrief.pharmaceuticalStockHighlights?.map(stock => ({
           symbol: stock.symbol,
           name: stock.company,
           change: stock.change,
           changePercent: stock.change,
           reason: stock.analysis
-        })),
+        })) || [],
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
       };
 
@@ -231,7 +232,8 @@ export class PharmaNewsService {
           severity: "high"
         }
       ],
-      defenseStockHighlights: [
+      defenseStockHighlights: [],
+      pharmaceuticalStockHighlights: [
         {
           symbol: "PFE",
           name: "Pfizer Inc",
@@ -274,6 +276,13 @@ export class PharmaNewsService {
           severity: update.severity as "medium" | "high" | "low" | "critical"
         })),
         defenseStockHighlights: intelligenceBrief.defenseStockHighlights.map(stock => ({
+          symbol: stock.symbol,
+          name: stock.company,
+          change: stock.change,
+          changePercent: stock.change,
+          reason: stock.analysis
+        })),
+        pharmaceuticalStockHighlights: intelligenceBrief.pharmaceuticalStockHighlights?.map(stock => ({
           symbol: stock.symbol,
           name: stock.company,
           change: stock.change,
