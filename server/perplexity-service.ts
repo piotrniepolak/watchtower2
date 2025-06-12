@@ -106,24 +106,57 @@ class PerplexityService {
   }
 
   private processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): string {
+    console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
+    
     if (!citations || citations.length === 0) {
+      console.log('⚠️ No citations provided for content processing');
+      return content;
+    }
+
+    // Debug log all citations
+    citations.forEach((citation, index) => {
+      console.log(`   Citation ${index + 1}: "${citation.title}" -> ${citation.url}`);
+    });
+
+    // Validate URLs and filter out invalid ones
+    const validCitations = citations.filter((citation, index) => {
+      const isValidUrl = citation.url && 
+                        (citation.url.startsWith('http://') || citation.url.startsWith('https://')) && 
+                        citation.url.length > 10 &&
+                        !citation.url.includes('undefined') &&
+                        !citation.url.includes('null');
+      
+      if (!isValidUrl) {
+        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
+      } else {
+        console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
+      }
+      return isValidUrl;
+    });
+
+    if (validCitations.length === 0) {
+      console.log('❌ No valid citations found after filtering, returning original content');
       return content;
     }
 
     // Replace citation numbers [1], [2], etc. with clickable links
     let processedContent = content;
-    citations.forEach((citation, index) => {
+    validCitations.forEach((citation, index) => {
       const citationNumber = `[${index + 1}]`;
-      const link = `<a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citationNumber}</a>`;
-      processedContent = processedContent.replace(new RegExp(`\\[${index + 1}\\]`, 'g'), link);
+      const link = `<a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline; font-weight: bold;">${citationNumber}</a>`;
+      const regex = new RegExp(`\\[${index + 1}\\]`, 'g');
+      const replacements = processedContent.match(regex)?.length || 0;
+      processedContent = processedContent.replace(regex, link);
+      console.log(`🔄 Replaced ${replacements} instances of [${index + 1}] with link to ${citation.url}`);
     });
 
     // Add references section with clickable links
-    if (citations.length > 0) {
+    if (validCitations.length > 0) {
       processedContent += '\n\n### References:\n';
-      citations.forEach((citation, index) => {
+      validCitations.forEach((citation, index) => {
         processedContent += `${index + 1}. <a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citation.title}</a>\n`;
       });
+      console.log(`✅ Added references section with ${validCitations.length} valid citations`);
     }
 
     return processedContent;

@@ -263,8 +263,10 @@ export class PharmaNewsService {
     try {
       this.isGenerating = true;
       console.log("🔬 Generating pharmaceutical intelligence brief using Perplexity AI...");
+      console.log("🔍 About to call Perplexity service...");
 
       const intelligenceBrief = await perplexityService.generateComprehensiveIntelligenceBrief();
+      console.log("🔍 Perplexity service returned:", !!intelligenceBrief);
 
       const newsData: InsertDailyNews = {
         date: new Date().toISOString().split('T')[0],
