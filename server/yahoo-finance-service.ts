@@ -17,6 +17,16 @@ export interface StockQuote {
   avgVolume: number;
   divYield: number | null;
   eps: number | null;
+  bid?: number;
+  ask?: number;
+  beta?: number;
+  earningsDate?: string;
+  exDividendDate?: string;
+  targetPrice?: number;
+  sharesOutstanding?: number;
+  floatShares?: number;
+  insiderPercent?: number;
+  institutionPercent?: number;
 }
 
 export interface HistoricalDataPoint {
@@ -40,11 +50,12 @@ class YahooFinanceService {
   private readonly quoteUrl = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary';
 
   /**
-   * Get detailed stock quote with comprehensive financial data
+   * Get detailed stock quote using the working chart endpoint
    */
   async getStockQuote(symbol: string): Promise<StockQuote | null> {
     try {
-      const url = `${this.quoteUrl}/${symbol}?modules=price,summaryDetail,defaultKeyStatistics`;
+      // Use the working chart API endpoint which provides comprehensive meta data
+      const url = `${this.baseUrl}/${symbol}`;
       
       const response = await fetch(url, {
         headers: {
@@ -53,50 +64,61 @@ class YahooFinanceService {
       });
 
       if (!response.ok) {
-        console.error(`Yahoo Finance quote API error: ${response.status}`);
+        console.error(`Yahoo Finance chart API error: ${response.status}`);
         return null;
       }
 
       const data = await response.json() as any;
-      const result = data.quoteSummary?.result?.[0];
+      const result = data.chart?.result?.[0];
       
       if (!result) {
-        console.error(`No quote data found for symbol: ${symbol}`);
+        console.error(`No chart data found for symbol: ${symbol}`);
         return null;
       }
 
-      const price = result.price;
-      const summaryDetail = result.summaryDetail;
-      const keyStats = result.defaultKeyStatistics;
-
-      if (!price) {
-        console.error(`No price data found for symbol: ${symbol}`);
+      const meta = result.meta;
+      if (!meta) {
+        console.error(`No meta data found for symbol: ${symbol}`);
         return null;
       }
 
-      const currentPrice = price.regularMarketPrice?.raw || price.postMarketPrice?.raw || 0;
-      const previousClose = price.regularMarketPreviousClose?.raw || 0;
+      const currentPrice = meta.regularMarketPrice || meta.previousClose || 0;
+      const previousClose = meta.previousClose || meta.chartPreviousClose || 0;
       const change = currentPrice - previousClose;
       const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0;
 
-      return {
+      // Extract comprehensive financial data from meta object
+      const quote: StockQuote = {
         symbol,
-        name: price.longName || price.shortName || symbol,
+        name: meta.longName || meta.shortName || symbol,
         price: currentPrice,
         change,
         changePercent,
-        open: price.regularMarketOpen?.raw || 0,
-        high: price.regularMarketDayHigh?.raw || 0,
-        low: price.regularMarketDayLow?.raw || 0,
-        volume: price.regularMarketVolume?.raw || 0,
-        marketCap: summaryDetail?.marketCap?.raw || 0,
-        peRatio: summaryDetail?.trailingPE?.raw || null,
-        week52High: summaryDetail?.fiftyTwoWeekHigh?.raw || 0,
-        week52Low: summaryDetail?.fiftyTwoWeekLow?.raw || 0,
-        avgVolume: summaryDetail?.averageVolume?.raw || 0,
-        divYield: summaryDetail?.dividendYield?.raw ? summaryDetail.dividendYield.raw * 100 : null,
-        eps: keyStats?.trailingEps?.raw || null
+        open: meta.regularMarketOpen || currentPrice,
+        high: meta.regularMarketDayHigh || currentPrice,
+        low: meta.regularMarketDayLow || currentPrice,
+        volume: meta.regularMarketVolume || 0,
+        marketCap: meta.marketCap || 0,
+        peRatio: meta.trailingPE || null,
+        week52High: meta.fiftyTwoWeekHigh || currentPrice,
+        week52Low: meta.fiftyTwoWeekLow || currentPrice,
+        avgVolume: meta.averageDailyVolume10Day || meta.averageDailyVolume3Month || 0,
+        divYield: meta.dividendYield ? meta.dividendYield * 100 : null,
+        eps: meta.epsTrailingTwelveMonths || null,
+        // Additional financial metrics from meta data
+        bid: meta.bid || null,
+        ask: meta.ask || null,
+        beta: meta.beta || null,
+        earningsDate: meta.earningsTimestamp ? new Date(meta.earningsTimestamp * 1000).toLocaleDateString() : null,
+        exDividendDate: meta.exDividendDate ? new Date(meta.exDividendDate * 1000).toLocaleDateString() : null,
+        targetPrice: meta.targetMeanPrice || null,
+        sharesOutstanding: meta.sharesOutstanding || null,
+        floatShares: meta.floatShares || null,
+        insiderPercent: meta.heldPercentInsiders ? meta.heldPercentInsiders * 100 : null,
+        institutionPercent: meta.heldPercentInstitutions ? meta.heldPercentInstitutions * 100 : null
       };
+
+      return quote;
     } catch (error) {
       console.error(`Error fetching stock quote for ${symbol}:`, error);
       return null;
