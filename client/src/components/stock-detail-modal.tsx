@@ -92,7 +92,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   const priceRange = maxPrice - minPrice || 1;
 
   // Helper function to format large numbers
-  const formatMarketCap = (value: number | null) => {
+  const formatMarketCap = (value: number | null | undefined) => {
     if (!value || value === 0) return '-';
     if (value >= 1e12) return `${(value / 1e12).toFixed(2)}T`;
     if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
@@ -100,12 +100,12 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
     return value.toLocaleString();
   };
 
-  const formatPercent = (value: number | null) => {
+  const formatPercent = (value: number | null | undefined) => {
     if (value === null || value === undefined) return '-';
     return `${value.toFixed(2)}%`;
   };
 
-  const formatCurrency = (value: number | null) => {
+  const formatCurrency = (value: number | null | undefined) => {
     if (!value) return '-';
     return `$${value.toFixed(2)}`;
   };
@@ -330,30 +330,30 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Open</div>
-                  <div className="text-sm font-semibold">{quote?.open ? formatCurrency(quote.open) : '-'}</div>
+                  <div className="text-sm font-semibold">{formatCurrency(quote?.open)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Day High</div>
-                  <div className="text-sm font-semibold">{quote?.high ? formatCurrency(quote.high) : '-'}</div>
+                  <div className="text-sm font-semibold">{formatCurrency(quote?.high)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Day Low</div>
-                  <div className="text-sm font-semibold">{quote?.low ? formatCurrency(quote.low) : '-'}</div>
+                  <div className="text-sm font-semibold">{formatCurrency(quote?.low)}</div>
                 </div>
               </div>
               
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Market Cap</div>
-                  <div className="text-sm font-semibold">{quote?.marketCap ? formatMarketCap(quote.marketCap) : '-'}</div>
+                  <div className="text-sm font-semibold">{formatMarketCap(quote?.marketCap)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">52W High</div>
-                  <div className="text-sm font-semibold">{quote?.week52High ? formatCurrency(quote.week52High) : '-'}</div>
+                  <div className="text-sm font-semibold">{formatCurrency(quote?.week52High)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">52W Low</div>
-                  <div className="text-sm font-semibold">{quote?.week52Low ? formatCurrency(quote.week52Low) : '-'}</div>
+                  <div className="text-sm font-semibold">{formatCurrency(quote?.week52Low)}</div>
                 </div>
               </div>
               
