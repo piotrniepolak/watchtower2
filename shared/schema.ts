@@ -274,6 +274,14 @@ export const insertDailyNewsSchema = createInsertSchema(dailyNews, {
     conflict: z.string(),
     update: z.string(),
     severity: z.enum(["low", "medium", "high", "critical"]),
+    // Enhanced features for comprehensive conflict intelligence
+    conflictName: z.string().optional(),
+    currentStatus: z.string().optional(),
+    developments: z.array(z.string()).optional(),
+    defenseImpact: z.string().optional(),
+    marketImplications: z.string().optional(),
+    sourceLinks: z.array(z.string()).optional(),
+    lastUpdated: z.string().optional(),
   })),
   defenseStockHighlights: z.array(z.object({
     symbol: z.string(),
@@ -301,6 +309,14 @@ export interface NewsConflictUpdate {
   conflict: string;
   update: string;
   severity: "low" | "medium" | "high" | "critical";
+  // Enhanced features for comprehensive conflict intelligence
+  conflictName?: string;
+  currentStatus?: string;
+  developments?: string[];
+  defenseImpact?: string;
+  marketImplications?: string;
+  sourceLinks?: string[];
+  lastUpdated?: string;
 }
 
 export interface NewsStockHighlight {
