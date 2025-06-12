@@ -292,118 +292,74 @@ Focus on events that would significantly impact defense markets, security analys
     this.isGenerating = true;
 
     try {
-      console.log("🔍 Generating fresh defense intelligence using Perplexity AI...");
+      console.log("🔍 Generating comprehensive defense intelligence using Perplexity AI...");
 
-      // Get current defense events from Perplexity API
-      const currentEvents = await this.fetchCurrentDefenseEvents();
+      // Use the comprehensive intelligence brief that already extracts defense companies
+      const intelligenceBrief = await perplexityService.generateComprehensiveIntelligenceBrief();
       
       // Get current conflicts and defense stocks for context
       const conflicts = await storage.getConflicts();
       const stocks = await storage.getStocks();
-      const defenseStocks = stocks.filter(stock => stock.sector === 'Defense');
-      const activeConflicts = conflicts.filter(c => c.status === "Active");
+      const defenseStocks = stocks.filter(stock => 
+        stock.sector === 'Defense' ||
+        ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'HII', 'LDOS', 'AVAV', 'KTOS'].includes(stock.symbol)
+      );
 
-      const defenseStockSymbols = defenseStocks.map(s => `${s.symbol} (${s.name})`).join(', ');
-      const conflictNames = activeConflicts.map(c => `${c.name} (${c.region})`).join(', ');
+      // Enhance defense stock highlights with real Yahoo Finance data
+      const enhancedDefenseStocks = await this.enhanceStockHighlights(
+        intelligenceBrief.defenseStockHighlights || [], 
+        defenseStocks
+      );
 
-      if (!process.env.OPENAI_API_KEY) {
-        console.warn("OPENAI_API_KEY not available, returning fallback defense intelligence");
-        return this.generateFallbackDefenseIntelligence(currentEvents, activeConflicts, defenseStocks);
-      }
+      // Detect and add new defense companies from the intelligence content
+      await this.detectAndAddDefenseCompanies(
+        intelligenceBrief.defenseStockHighlights || [], 
+        intelligenceBrief.summary + ' ' + (intelligenceBrief.keyDevelopments || []).join(' ')
+      );
 
-      const response = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a senior defense intelligence analyst creating comprehensive daily briefings for defense sector investors and security professionals. Your briefings must be:
-
-1. FACTUAL and based on real current events
-2. ANALYTICAL with strategic insights
-3. MARKET-FOCUSED for defense sector investments
-4. GEOPOLITICALLY AWARE of global security dynamics
-5. PROFESSIONALLY WRITTEN for executive consumption
-
-Current defense stocks being tracked: ${defenseStockSymbols}
-Active global conflicts: ${conflictNames}
-
-Create detailed analysis that connects current events to market implications and strategic considerations.`
-          },
-          {
-            role: "user",
-            content: `Based on these current defense and security developments:
-
-${currentEvents}
-
-Create a comprehensive Defense Intelligence Brief with these exact sections in JSON format:
-
-{
-  "title": "Defense Intelligence Brief - [Today's Date]",
-  "summary": "2-3 detailed sentences providing executive summary of key developments with specific impact assessments",
-  "keyDevelopments": [
-    "Detailed bullet point 1 with specific companies, contract values, and market implications",
-    "Detailed bullet point 2 with geopolitical analysis and defense contractor impacts",
-    "Continue with 8-10 comprehensive bullet points covering all major developments"
-  ],
-  "conflictUpdates": [
-    {
-      "conflictName": "Specific conflict name",
-      "region": "Geographic region",
-      "status": "Current operational status",
-      "severity": "high/medium/low",
-      "description": "4-5 detailed sentences covering recent developments, military equipment usage, casualty reports, and strategic implications",
-      "marketImpact": "2-3 sentences on specific defense contractor opportunities and market effects",
-      "keyPlayers": ["Country1", "Country2", "Organization1"],
-      "economicImpact": "Specific financial figures and market valuations affected"
-    }
-  ],
-  "defenseStockHighlights": [
-    {
-      "symbol": "Company stock symbol",
-      "companyName": "Full company name",
-      "sector": "Specific defense subsector",
-      "analysis": "4-5 detailed sentences covering recent performance, strategic position, competitive advantages, and market outlook",
-      "catalysts": "Specific contracts, technological developments, or market drivers affecting stock performance",
-      "recentNews": "Latest company-specific developments from the current events",
-      "competitivePosition": "Analysis of market position relative to competitors"
-    }
-  ],
-  "geopoliticalAnalysis": "3-4 detailed paragraphs analyzing: strategic implications of current conflicts and their evolution, alliance dynamics and international defense cooperation trends, policy implications for defense spending across major powers, regional security assessments and emerging threat vectors, economic warfare and sanctions impact on defense trade",
-  "marketImpact": "3-4 comprehensive paragraphs covering: defense sector performance outlook with specific projections, investment opportunities and risk assessments by subsector, supply chain challenges and manufacturing capacity issues, long-term strategic considerations for defense investors, emerging markets and technological disruption impacts"
-}
-
-Requirements:
-1. Include 6-8 defense companies in defenseStockHighlights with comprehensive analysis
-2. Cover 5-7 major conflicts in conflictUpdates with detailed status
-3. Each keyDevelopments bullet should be 2-3 sentences with specific details
-4. Automatically detect and analyze any defense companies mentioned in current events
-5. Include specific contract values, market capitalizations, and financial figures
-6. Provide actionable intelligence for executive decision-making
-7. Focus on factual analysis with strategic insights
-
-Return ONLY the JSON object with no additional text.`
-          }
+      const defenseIntelligence: DailyNews = {
+        id: Math.floor(Math.random() * 1000000),
+        title: intelligenceBrief.title || "Defense Intelligence Brief - " + new Date().toLocaleDateString(),
+        summary: intelligenceBrief.summary || "Comprehensive defense sector intelligence featuring current market analysis and geopolitical developments",
+        date: new Date().toISOString().split('T')[0],
+        createdAt: new Date(),
+        keyDevelopments: intelligenceBrief.keyDevelopments || [
+          "Defense contractors maintaining robust operational performance amid ongoing global security challenges",
+          "Geopolitical tensions driving strategic realignment of defense procurement priorities",
+          "Advanced weapons systems development accelerating across major defense programs",
+          "International defense cooperation expanding through NATO and bilateral agreements"
         ],
-        max_tokens: 3000,
-        temperature: 0.4
-      });
+        marketImpact: intelligenceBrief.marketImpact || "Defense sector demonstrating resilient performance with major contractors benefiting from sustained government spending and international cooperation agreements",
+        conflictUpdates: intelligenceBrief.conflictUpdates?.map(update => ({
+          conflict: update.region,
+          update: update.description,
+          severity: update.severity as "medium" | "high" | "low" | "critical"
+        })) || [],
+        defenseStockHighlights: enhancedDefenseStocks,
+        pharmaceuticalStockHighlights: [],
+        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis || "Current geopolitical environment characterized by multipolar security challenges requiring sustained defense investment across traditional allies and emerging partnerships"
+      };
 
-      const content = response.choices[0].message.content;
-      if (!content) {
-        console.error("❌ No content received from OpenAI for defense intelligence");
-        return this.generateFallbackDefenseIntelligence(currentEvents, activeConflicts, defenseStocks);
-      }
+      // Store in database
+      const insertData: InsertDailyNews = {
+        title: defenseIntelligence.title,
+        summary: defenseIntelligence.summary,
+        date: defenseIntelligence.date,
+        keyDevelopments: defenseIntelligence.keyDevelopments as string[],
+        marketImpact: defenseIntelligence.marketImpact,
+        conflictUpdates: defenseIntelligence.conflictUpdates as any,
+        defenseStockHighlights: defenseIntelligence.defenseStockHighlights as any,
+        pharmaceuticalStockHighlights: defenseIntelligence.pharmaceuticalStockHighlights as any,
+        geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis
+      };
 
-      console.log("🛡️ Successfully generated defense intelligence content");
-      return await this.parseAndStoreDefenseIntelligence(content, activeConflicts, defenseStocks);
+      await storage.createDailyNews(insertData);
+      console.log("✅ Defense intelligence brief stored successfully");
 
+      return defenseIntelligence;
     } catch (error) {
-      console.error("❌ Error generating defense intelligence brief:", error);
-      const conflicts = await storage.getConflicts();
-      const stocks = await storage.getStocks();
-      const defenseStocks = stocks.filter(stock => stock.sector === 'Defense');
-      const activeConflicts = conflicts.filter(c => c.status === "Active");
-      return this.generateFallbackDefenseIntelligence([], activeConflicts, defenseStocks);
+      console.error("❌ Error generating defense intelligence:", error);
+      return await this.generateFallbackDefenseIntelligence([], [], []);
     } finally {
       this.isGenerating = false;
     }
