@@ -360,11 +360,11 @@ Ensure each reference includes the source name followed by a colon and the artic
           .replace(/\s+/g, ' ') // Collapse multiple spaces
           .trim();
         
-        // Extract first meaningful sentence for one-line display
+        // Create concise one-line description
         const sentences = cleanAnalysis.split('. ');
-        const firstSentence = sentences[0] + (sentences.length > 1 ? '.' : '');
-        const shortAnalysis = firstSentence.length > 80 
-          ? firstSentence.substring(0, 80) + '...'
+        const firstSentence = sentences[0];
+        const shortAnalysis = firstSentence.length > 70 
+          ? firstSentence.substring(0, 67) + '...'
           : firstSentence;
         
         stockHighlights.push({
