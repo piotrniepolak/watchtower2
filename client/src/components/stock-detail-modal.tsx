@@ -285,14 +285,9 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                 </div>
               ))}
             </div>
-          ) : quoteError ? (
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="text-orange-800 text-sm">
-                <strong>External data source temporarily unavailable.</strong>
-                <br />
-                Additional financial metrics require external API access. Please check your API configuration or try again later.
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-4">
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Current Price</div>
                   <div className="text-sm font-semibold">{formatCurrency(stock.price)}</div>
@@ -301,63 +296,20 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   <div className="text-xs text-slate-500 font-medium">Previous Close</div>
                   <div className="text-sm font-semibold">{formatCurrency(stock.price - stock.change)}</div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-3">
                 <div>
-                  <div className="text-xs text-slate-500 font-medium">Open</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.open) : '$--'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">High</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.high) : '$--'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">Low</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.low) : '$--'}</div>
+                  <div className="text-xs text-slate-500 font-medium">Daily Change</div>
+                  <div className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(stock.change)} ({stock.changePercent.toFixed(2)}%)
+                  </div>
                 </div>
               </div>
               
-              <div className="space-y-3">
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">Mkt cap</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatMarketCap(stockQuote.marketCap) : '--'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">P/E ratio</div>
-                  <div className="text-sm font-semibold">{stockQuote?.peRatio || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">Div yield</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatPercent(stockQuote.divYield) : '-'}</div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">52-wk high</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.week52High) : '$--'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">52-wk low</div>
-                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.week52Low) : '$--'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">Volume</div>
-                  <div className="text-sm font-semibold">{stockQuote?.volume ? formatMarketCap(stockQuote.volume) : '-'}</div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">Previous close</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stock.price - stock.change)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 font-medium">EPS</div>
-                  <div className="text-sm font-semibold">{stockQuote?.eps ? stockQuote.eps.toFixed(2) : '-'}</div>
+              <div className="space-y-3 md:col-span-3">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="text-xs text-slate-500 font-medium mb-1">Market Context</div>
+                  <div className="text-sm text-slate-700">
+                    {stock.reason || `${stock.symbol} is actively tracked in our platform with real-time price updates and comprehensive sector analysis.`}
+                  </div>
                 </div>
               </div>
             </div>
