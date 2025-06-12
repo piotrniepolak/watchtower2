@@ -172,8 +172,14 @@ class PerplexityService {
       return content;
     }
 
-    // Keep citation numbers [1], [2], etc. as simple text (no inline links)
+    // Remove all citation numbers [1], [2], etc. from the main content
     let processedContent = content;
+    
+    // Remove all citation patterns like [1], [2], [3], including clustered ones like [1][3]
+    processedContent = processedContent.replace(/\[\d+\]/g, '');
+    
+    // Clean up any extra spaces left by removed citations
+    processedContent = processedContent.replace(/\s+/g, ' ').trim();
 
     // Add references table below the content
     if (validCitations.length > 0) {
