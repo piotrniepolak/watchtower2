@@ -58,6 +58,7 @@ export interface IStorage {
   // Daily News
   getDailyNews(date: string): Promise<DailyNews | undefined>;
   createDailyNews(news: InsertDailyNews): Promise<DailyNews>;
+  deleteDailyNews(date: string): Promise<void>;
   
   // Quiz Leaderboard
   getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]>;

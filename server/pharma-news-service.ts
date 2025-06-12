@@ -284,19 +284,20 @@ export class PharmaNewsService {
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
       };
 
-      // Try to create new entry, if duplicate constraint fails, return existing entry
+      // Delete existing entry for today and create fresh one with extracted companies
       try {
-        console.log("🆕 Creating new pharmaceutical intelligence brief");
+        console.log("🔄 Deleting existing entry and creating fresh pharmaceutical intelligence brief");
+        const today = new Date().toISOString().split('T')[0];
+        
+        // First delete any existing entry for today
+        await storage.deleteDailyNews(today);
+        
+        // Create fresh entry with extracted pharmaceutical companies
         const savedNews = await storage.createDailyNews(newsData);
-        console.log("✅ Pharmaceutical intelligence brief generated and saved successfully");
+        console.log("✅ Fresh pharmaceutical intelligence brief with extracted companies saved successfully");
         return savedNews;
       } catch (dbError: any) {
-        if (dbError.code === '23505') {
-          // Duplicate key constraint, get existing entry
-          console.log("📝 Daily news already exists, returning existing entry");
-          const existingNews = await storage.getDailyNews(newsData.date);
-          return existingNews || null;
-        }
+        console.error("❌ Error saving pharmaceutical intelligence brief:", dbError);
         throw dbError;
       }
     } catch (error) {
@@ -310,28 +311,9 @@ export class PharmaNewsService {
   async getTodaysPharmaNews(): Promise<DailyNews | null> {
     const today = new Date().toISOString().split('T')[0];
     
-    // Check if we already have today's news
-    const existingNews = await storage.getDailyNews(today);
-    if (existingNews) {
-      console.log(`📋 Using existing pharmaceutical intelligence brief for ${today}`);
-      return existingNews;
-    }
-    
-    // Only generate new intelligence during scheduled time or if none exists
-    // This prevents multiple generations per day
-    const todayET = new Date().toLocaleDateString('en-US', { 
-      timeZone: 'America/New_York',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).split('/').reverse().join('-').replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$2-$3');
-    
-    if (this.lastGenerationDate === todayET) {
-      console.log(`📋 Daily pharmaceutical intelligence already generated for ${todayET}, returning existing or null`);
-      return existingNews;
-    }
-    
-    // Generate new intelligence (this will be primary method for first-time generation)
+    // Always generate fresh pharmaceutical intelligence with extracted companies
+    // This ensures we get the latest company extractions from Perplexity AI
+    console.log(`🔄 Generating fresh pharmaceutical intelligence brief for ${today}`);
     return this.generateDailyPharmaNews(today);
   }
 }
