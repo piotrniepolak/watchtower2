@@ -3203,6 +3203,35 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
     }
   });
 
+  // Daily Pharmaceutical Database Updates API
+  app.get("/api/pharma/daily-updates", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const healthcareStocks = await storage.getStocks();
+      const pharmaStocks = healthcareStocks.filter(stock => stock.sector === 'Healthcare');
+      
+      res.json({
+        date: today,
+        totalPharmaCompanies: pharmaStocks.length,
+        recentlyAdded: pharmaStocks
+          .filter(stock => {
+            const stockDate = new Date(stock.lastUpdated || '').toISOString().split('T')[0];
+            return stockDate === today;
+          })
+          .map(stock => ({
+            symbol: stock.symbol,
+            name: stock.name,
+            addedAt: stock.lastUpdated
+          })),
+        status: 'active',
+        nextUpdateScheduled: 'Daily at midnight ET'
+      });
+    } catch (error) {
+      console.error("Error fetching daily pharmaceutical updates:", error);
+      res.status(500).json({ message: "Failed to fetch daily updates" });
+    }
+  });
+
   app.get("/api/users/:username/badges", async (req, res) => {
     try {
       const { username } = req.params;

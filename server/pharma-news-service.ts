@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { storage } from "./storage";
 import { perplexityService } from "./perplexity-service";
+import { dailyPharmaUpdateService } from "./daily-pharma-update-service";
 import type { DailyNews, InsertDailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
 export class PharmaNewsService {
@@ -304,6 +305,10 @@ export class PharmaNewsService {
         // Create fresh entry with extracted pharmaceutical companies
         const savedNews = await storage.createDailyNews(newsData);
         console.log("✅ Fresh pharmaceutical intelligence brief with extracted companies saved successfully");
+        
+        // Run daily pharmaceutical database update
+        await dailyPharmaUpdateService.scheduleDailyUpdate(savedNews);
+        
         return savedNews;
       } catch (dbError: any) {
         console.error("❌ Error saving pharmaceutical intelligence brief:", dbError);
