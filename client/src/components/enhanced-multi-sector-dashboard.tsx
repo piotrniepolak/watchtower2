@@ -16,6 +16,7 @@ import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
 import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
+import { DefenseIntelligenceBrief } from "@/components/defense-intelligence-brief";
 import TopOpportunityList from "@/components/top-opportunity-list";
 
 interface EnhancedMultiSectorDashboardProps {
@@ -99,9 +100,17 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <ActiveConflictsList />
       </div>
 
-      {/* News Section */}
+      {/* Defense Intelligence Brief Section */}
       <div className="w-full mb-8">
-        <DailyNews />
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            Defense Intelligence Brief
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Comprehensive analysis of global defense developments and market impact
+          </p>
+        </div>
+        <DefenseIntelligenceBrief />
       </div>
 
       {/* Additional Analysis Grid */}

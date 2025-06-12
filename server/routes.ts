@@ -2028,6 +2028,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Defense Intelligence Routes - Parallel to Pharma System
+  app.post("/api/news/defense/generate", async (req, res) => {
+    try {
+      console.log('🛡️ Manual defense intelligence brief generation requested...');
+      
+      // Delete existing entry for today first
+      const today = new Date().toISOString().split('T')[0];
+      await storage.deleteDailyNews(today);
+      
+      // Generate fresh defense intelligence using Perplexity AI
+      const news = await defenseNewsService.generatePerplexityDefenseIntelligenceBrief();
+      
+      if (!news) {
+        console.log('Defense intelligence generation failed, trying fallback method...');
+        const fallbackNews = await defenseNewsService.getTodaysDefenseNews();
+        if (!fallbackNews) {
+          return res.status(500).json({ error: "Failed to generate defense intelligence brief" });
+        }
+        return res.json(fallbackNews);
+      }
+      
+      console.log('✅ Fresh defense intelligence brief generated successfully');
+      res.json(news);
+    } catch (error) {
+      console.error("Error generating defense intelligence brief:", error);
+      res.status(500).json({ error: "Failed to generate defense intelligence brief" });
+    }
+  });
+
   // Dedicated Perplexity AI pharmaceutical intelligence endpoint
   app.get("/api/pharma-intelligence", async (req, res) => {
     try {
