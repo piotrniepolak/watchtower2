@@ -240,11 +240,14 @@ Ensure each reference includes the source name followed by a colon and the artic
       return mention.toUpperCase();
     }
     
-    // Handle specific uppercase company names that need special mapping
+    // Handle specific company names that need special mapping (case insensitive)
     const upperCaseMention = mention.toUpperCase().trim();
     if (upperCaseMention === 'ROCHE') return 'RHHBY';
     if (upperCaseMention === 'MERCK') return 'MRK';
     if (upperCaseMention === 'BAYER') return 'BAYRY';
+    if (normalizedMention === 'roche') return 'RHHBY';
+    if (normalizedMention === 'merck') return 'MRK';
+    if (normalizedMention === 'bayer') return 'BAYRY';
     
     // Look up company name
     return companyToSymbol[normalizedMention] || null;
@@ -286,7 +289,7 @@ Ensure each reference includes the source name followed by a colon and the artic
     // Debug logging for company mapping
     companyMentions.forEach(mention => {
       const symbol = this.getStockSymbolFromMention(mention);
-      console.log(`📊 Mapping "${mention}" -> ${symbol || 'NOT FOUND'}`);
+      console.log(`📊 Company "${mention}" -> Symbol: ${symbol || 'NOT FOUND'}`);
     });
 
     if (uniqueSymbols.length === 0) {
