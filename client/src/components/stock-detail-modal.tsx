@@ -49,25 +49,8 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
     retry: false, // Don't retry on API failures
   });
 
-  // Use authentic Yahoo Finance data when available
-  const quoteData = stockQuote ? (stockQuote as StockQuote) : {
-    symbol: stock.symbol,
-    name: stock.name,
-    price: stock.price,
-    change: stock.change,
-    changePercent: stock.changePercent,
-    open: stock.price * (0.98 + Math.random() * 0.04),
-    high: stock.price * (1.01 + Math.random() * 0.02),
-    low: stock.price * (0.97 + Math.random() * 0.02),
-    volume: Math.floor(1000000 + Math.random() * 10000000),
-    avgVolume: Math.floor(2000000 + Math.random() * 8000000),
-    marketCap: stock.price * (50000000 + Math.random() * 200000000),
-    peRatio: 15 + Math.random() * 25,
-    eps: (stock.price / (15 + Math.random() * 25)),
-    week52High: stock.price * (1.2 + Math.random() * 0.5),
-    week52Low: stock.price * (0.6 + Math.random() * 0.2),
-    divYield: Math.random() * 0.05
-  };
+  // Use only authentic Yahoo Finance data - no fallback synthetic data
+  const quoteData = stockQuote as StockQuote;
 
   // Fetch authentic chart data from Yahoo Finance with fallback
   const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
@@ -463,130 +446,119 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
             )}
           </div>
 
-          {/* Comprehensive Financial Data Sections - Yahoo Finance Layout */}
+          {/* Yahoo Finance Data Section - Authentic Data Only */}
           <div className="space-y-6">
-            {/* Primary Stock Information Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-sm">
-              {/* Left Column */}
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Previous Close</span>
-                  <span className="font-semibold">{formatCurrency(quoteData.price - quoteData.change)}</span>
+            {quoteData ? (
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-sm">
+                {/* Left Column */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Previous Close</span>
+                    <span className="font-semibold">{formatCurrency(quoteData.price - quoteData.change)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Open</span>
+                    <span className="font-semibold">{formatCurrency(quoteData.open)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Bid</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Ask</span>
+                    <span className="font-semibold">--</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Open</span>
-                  <span className="font-semibold">{formatCurrency(quoteData.open)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Bid</span>
-                  <span className="font-semibold">{formatCurrency(quoteData.price - 0.01)} x 5600</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Ask</span>
-                  <span className="font-semibold">{formatCurrency(quoteData.price + 0.01)} x 4400</span>
-                </div>
-              </div>
 
-              {/* Second Column */}
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Day's Range</span>
-                  <span className="font-semibold">
-                    {formatCurrency(quoteData.low)} - {formatCurrency(quoteData.high)}
-                  </span>
+                {/* Second Column */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Day's Range</span>
+                    <span className="font-semibold">
+                      {formatCurrency(quoteData.low)} - {formatCurrency(quoteData.high)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">52 Week Range</span>
+                    <span className="font-semibold">
+                      {formatCurrency(quoteData.week52Low)} - {formatCurrency(quoteData.week52High)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Volume</span>
+                    <span className="font-semibold">{quoteData.volume?.toLocaleString() || '--'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Avg. Volume</span>
+                    <span className="font-semibold">{quoteData.avgVolume?.toLocaleString() || '--'}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">52 Week Range</span>
-                  <span className="font-semibold">
-                    {formatCurrency(quoteData.week52Low)} - {formatCurrency(quoteData.week52High)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Volume</span>
-                  <span className="font-semibold">{quoteData.volume.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Avg. Volume</span>
-                  <span className="font-semibold">{quoteData.avgVolume.toLocaleString()}</span>
-                </div>
-              </div>
 
-              {/* Third Column */}
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Market Cap (intraday)</span>
-                  <span className="font-semibold">{formatMarketCap(quoteData.marketCap)}</span>
+                {/* Third Column */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Market Cap (intraday)</span>
+                    <span className="font-semibold">{formatMarketCap(quoteData.marketCap)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Beta (5Y Monthly)</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">PE Ratio (TTM)</span>
+                    <span className="font-semibold">{quoteData.peRatio ? quoteData.peRatio.toFixed(2) : '--'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">EPS (TTM)</span>
+                    <span className="font-semibold">{quoteData.eps ? quoteData.eps.toFixed(4) : '--'}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Beta (5Y Monthly)</span>
-                  <span className="font-semibold">{quoteData.peRatio ? (quoteData.peRatio / 10).toFixed(2) : '1.37'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">PE Ratio (TTM)</span>
-                  <span className="font-semibold">{quoteData.peRatio ? quoteData.peRatio.toFixed(2) : '--'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">EPS (TTM)</span>
-                  <span className="font-semibold">{quoteData.eps ? quoteData.eps.toFixed(4) : '-2.2000'}</span>
-                </div>
-              </div>
 
-              {/* Fourth Column */}
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Earnings Date</span>
-                  <span className="font-semibold">
-                    {new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
-                    })} - {new Date(Date.now() + 50 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
-                    })}
-                  </span>
+                {/* Fourth Column */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Earnings Date</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Forward Dividend & Yield</span>
+                    <span className="font-semibold">{quoteData.divYield ? `${formatCurrency(quoteData.divYield)} (${formatPercent(quoteData.divYield * 100)})` : '--'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Ex-Dividend Date</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">1y Target Est</span>
+                    <span className="font-semibold">--</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Forward Dividend & Yield</span>
-                  <span className="font-semibold">{quoteData.divYield ? `${formatCurrency(quoteData.divYield)} (${formatPercent(quoteData.divYield * 100)})` : '--'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Ex-Dividend Date</span>
-                  <span className="font-semibold">--</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">1y Target Est</span>
-                  <span className="font-semibold">
-                    {formatCurrency(quoteData.price * (1.1 + Math.random() * 0.3))}
-                  </span>
-                </div>
-              </div>
 
-              {/* Fifth Column - Additional Data */}
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Shares Outstanding</span>
-                  <span className="font-semibold">
-                    {formatMarketCap(quoteData.marketCap / quoteData.price)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Float</span>
-                  <span className="font-semibold">
-                    {formatMarketCap((quoteData.marketCap / quoteData.price) * 0.85)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">% Held by Insiders</span>
-                  <span className="font-semibold">{(Math.random() * 20).toFixed(2)}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-600">% Held by Institutions</span>
-                  <span className="font-semibold">{(60 + Math.random() * 30).toFixed(2)}%</span>
+                {/* Fifth Column - Additional Data */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Shares Outstanding</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">Float</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">% Held by Insiders</span>
+                    <span className="font-semibold">--</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">% Held by Institutions</span>
+                    <span className="font-semibold">--</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="p-6 bg-slate-50 rounded-lg text-center">
+                <p className="text-slate-600">Detailed financial data unavailable - Yahoo Finance API connection required</p>
+              </div>
+            )}
 
             {/* Loading State */}
             {quoteLoading && (
