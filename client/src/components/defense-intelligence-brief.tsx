@@ -167,9 +167,13 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-3">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {defenseNews?.summary || 'No summary available'}
-              </p>
+              <div className="text-sm leading-relaxed text-muted-foreground space-y-3">
+                {(defenseNews?.summary || 'No summary available').split('\n\n').map((paragraph: string, index: number) => (
+                  <p key={index} className="mb-3">
+                    {paragraph.trim()}
+                  </p>
+                ))}
+              </div>
               
               {/* Key Developments */}
               {defenseNews?.keyDevelopments && Array.isArray(defenseNews.keyDevelopments) && (

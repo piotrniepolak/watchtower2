@@ -310,15 +310,15 @@ export class PerplexityDefenseService {
   }
 
   private extractSummary(content: string): string {
-    console.log('🔍 Generating comprehensive executive summary from Perplexity content...');
+    console.log('🔍 Generating well-formatted defense intelligence summary...');
     
-    // Generate a comprehensive executive summary from the content
+    // Clean and parse the content for better formatting
     const paragraphs = content.split('\n').filter(p => p.trim().length > 50);
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 30);
     
     let summary = '';
     
-    // Extract key themes and developments from actual content
+    // Extract key themes from actual Perplexity content
     const keyThemes = [];
     const contentLower = content.toLowerCase();
     
@@ -338,33 +338,30 @@ export class PerplexityDefenseService {
       keyThemes.push('military procurement and strategic initiatives');
     }
     
-    // Build comprehensive summary with real content integration
-    summary += `Today's comprehensive defense intelligence analysis reveals significant developments across multiple sectors of the global defense industry, driven by evolving geopolitical dynamics and sustained technological advancement. `;
+    // Create well-structured, readable summary
+    summary += `Today's defense intelligence analysis reveals significant developments across the global defense industry, driven by evolving geopolitical dynamics and technological advancement.\n\n`;
     
     if (keyThemes.length > 0) {
-      summary += `Key areas of current focus include ${keyThemes.join(', ')}, each presenting unique opportunities and strategic implications for defense contractors, government agencies, and institutional investors. `;
+      summary += `Key focus areas include ${keyThemes.join(', ')}, each presenting strategic implications for defense contractors and institutional investors.\n\n`;
     }
     
-    // Extract and incorporate specific details from Perplexity content
-    const specificDevelopments = [];
-    
-    // Look for specific dollar amounts, company mentions, and developments
+    // Extract specific financial and company information
     const dollarMatches = content.match(/\$[\d,]+\.?\d*\s*(million|billion|M|B)/gi) || [];
     const companyMatches = content.match(/(Lockheed Martin|Boeing|Raytheon|Northrop Grumman|General Dynamics|L3Harris|LMT|BA|RTX|NOC|GD|LHX)/gi) || [];
     
     if (dollarMatches.length > 0) {
-      summary += `Notable financial developments include significant contract awards valued at ${dollarMatches.slice(0, 2).join(' and ')}, demonstrating continued government investment in defense capabilities. `;
+      summary += `Notable financial developments include contract awards valued at ${dollarMatches.slice(0, 2).join(' and ')}, demonstrating continued government investment in defense capabilities.\n\n`;
     }
     
     if (companyMatches.length > 0) {
-      const uniqueCompanies = [...new Set(companyMatches.slice(0, 3))];
-      summary += `Major defense contractors including ${uniqueCompanies.join(', ')} are central to current market developments and strategic initiatives. `;
+      const uniqueCompanies = Array.from(new Set(companyMatches.slice(0, 3)));
+      summary += `Major defense contractors including ${uniqueCompanies.join(', ')} are central to current market developments and strategic initiatives.\n\n`;
     }
     
-    // Add market context and analysis
-    summary += `The current security environment continues to drive elevated defense spending priorities across NATO allies and Indo-Pacific partners, creating sustained demand for traditional platforms while accelerating investment in next-generation capabilities including hypersonic weapons, autonomous systems, space-based defense technologies, and cybersecurity infrastructure. `;
+    // Add market context with proper formatting
+    summary += `The current security environment drives elevated defense spending across NATO allies and Indo-Pacific partners, creating sustained demand for traditional platforms while accelerating investment in next-generation capabilities.\n\n`;
     
-    // Incorporate specific content insights with proper context
+    // Incorporate specific content insights with clean formatting
     const relevantParagraphs = paragraphs.filter(p => 
       p.toLowerCase().includes('million') || 
       p.toLowerCase().includes('contract') || 
@@ -375,26 +372,28 @@ export class PerplexityDefenseService {
     
     for (const paragraph of relevantParagraphs) {
       if (paragraph.length > 100) {
-        const cleanParagraph = paragraph.replace(/^\W+/, '').replace(/\[\d+\]/g, '').trim();
+        const cleanParagraph = paragraph.replace(/^\W+/, '').replace(/\[\d+\]/g, '').replace(/\*\*/g, '').trim();
         if (cleanParagraph.length > 80 && !summary.includes(cleanParagraph.substring(0, 50))) {
-          summary += `Recent developments include ${cleanParagraph.substring(0, 250)}. `;
+          summary += `${cleanParagraph.substring(0, 200)}.\n\n`;
         }
       }
     }
     
-    // Add strategic and forward-looking analysis
-    summary += `Defense industry fundamentals remain exceptionally robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements across all service branches. The sector continues benefiting from sustained innovation cycles, particularly in artificial intelligence applications, space-based defense systems, and next-generation missile defense platforms. `;
+    // Add forward-looking analysis with clean structure
+    summary += `Defense industry fundamentals remain robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements. The sector benefits from sustained innovation in artificial intelligence, space-based defense systems, and next-generation missile defense platforms.\n\n`;
     
-    summary += `Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological breakthrough developments. Investors should monitor ongoing geopolitical developments, Pentagon budget allocations, and major contract award announcements as primary drivers of sector performance and individual company growth trajectories.`;
+    summary += `Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological developments. Monitor geopolitical developments, Pentagon budget allocations, and major contract announcements as primary performance drivers.`;
     
-    console.log(`✅ Generated comprehensive summary: ${summary.length} characters`);
+    console.log(`✅ Generated well-formatted summary: ${summary.length} characters`);
     
-    // Always return the comprehensive summary - never use fallback for shorter content
-    return summary;
+    return summary.trim();
   }
 
   private extractKeyDevelopments(content: string): string[] {
     const developments: string[] = [];
+    
+    // Clean the content for better parsing
+    const cleanContent = content.replace(/\*\*/g, '').replace(/\[\d+\]/g, '');
     
     // Look for bullet points, numbered lists, or key developments
     const bulletRegex = /[•\-\*]\s*(.+)/g;
