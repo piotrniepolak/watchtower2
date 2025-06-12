@@ -10728,9 +10728,9 @@ export default function WorldHealthMapSimple() {
             <div>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Activity className="h-5 w-5 text-blue-600" />
-                Global Health Map
+                Global Health Map - WHO Statistical Annex Data
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">WHO Statistical Annex data visualization</p>
+              <p className="text-sm text-gray-600 mt-1">Real-time global health monitoring with comprehensive WHO indicators and pharmaceutical market insights</p>
             </div>
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1">
