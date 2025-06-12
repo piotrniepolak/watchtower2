@@ -87,6 +87,14 @@ class PerplexityService {
       }
 
       const data = await response.json() as PerplexityResponse;
+      
+      // Debug logging for citations
+      console.log('🔍 Perplexity API Response Debug:');
+      console.log('Citations received:', data.citations?.length || 0);
+      if (data.citations && data.citations.length > 0) {
+        console.log('First citation:', data.citations[0]);
+      }
+      
       return {
         content: data.choices[0]?.message?.content || '',
         citations: data.citations || []

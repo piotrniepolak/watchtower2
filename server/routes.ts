@@ -1898,6 +1898,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate new pharmaceutical intelligence brief
+  app.post("/api/news/pharma/generate", async (req, res) => {
+    try {
+      console.log('🔬 Manual pharmaceutical intelligence brief generation requested...');
+      
+      // Delete existing entry for today first
+      const today = new Date().toISOString().split('T')[0];
+      await storage.deleteDailyNews(today);
+      
+      // Generate fresh pharmaceutical intelligence using Perplexity AI
+      const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      
+      if (!news) {
+        console.log('Perplexity AI generation failed, trying fallback method...');
+        const fallbackNews = await pharmaNewsService.getTodaysPharmaNews();
+        if (!fallbackNews) {
+          return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
+        }
+        return res.json(fallbackNews);
+      }
+      
+      console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');
+      res.json(news);
+    } catch (error) {
+      console.error("Error generating pharmaceutical intelligence brief:", error);
+      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
+    }
+  });
+
   // Dedicated Perplexity AI pharmaceutical intelligence endpoint
   app.get("/api/pharma-intelligence", async (req, res) => {
     try {
