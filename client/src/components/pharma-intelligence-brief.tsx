@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import type { DailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
-// Content formatting utility
+// Content formatting utility with enhanced source extraction
 const cleanContent = (text: string | undefined): string => {
   if (!text) return '';
   return text
@@ -31,15 +31,58 @@ const cleanContent = (text: string | undefined): string => {
     .trim();
 };
 
-// Add publication links
-const addPublicationLinks = (text: string | undefined): string => {
-  if (!text) return 'Loading pharmaceutical intelligence...';
-  const cleaned = cleanContent(text);
-  if (!cleaned) return 'Loading pharmaceutical intelligence...';
+// Extract and format sources from content
+const extractSources = (text: string | undefined): string[] => {
+  if (!text) return [];
   
-  return `${cleaned}
+  const sourcePatterns = [
+    /(?:FDA\.gov|fda\.gov)[^\s,.]*/gi,
+    /(?:BioPharma Dive|biopharma-dive\.com)[^\s,.]*/gi,
+    /(?:STAT News|statnews\.com)[^\s,.]*/gi,
+    /(?:Reuters Health|reuters\.com)[^\s,.]*/gi,
+    /(?:company press release|press release)[^\s,.]*/gi
+  ];
+  
+  const sources = new Set<string>();
+  sourcePatterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) {
+      matches.forEach(match => sources.add(match));
+    }
+  });
+  
+  return Array.from(sources);
+};
 
-Sources: FDA.gov, BioPharma Dive, STAT News, Reuters Health`;
+// Enhanced content display with integrated sources
+const formatContentWithSources = (text: string | undefined): JSX.Element => {
+  if (!text) {
+    return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
+  }
+  
+  const cleaned = cleanContent(text);
+  const sources = extractSources(text);
+  
+  return (
+    <div className="space-y-3">
+      <p className="leading-relaxed">{cleaned}</p>
+      {sources.length > 0 && (
+        <div className="mt-3 pt-2 border-t border-slate-200">
+          <p className="text-xs font-medium text-slate-600 mb-1">Referenced Sources:</p>
+          <div className="flex flex-wrap gap-2">
+            {sources.map((source, index) => (
+              <span 
+                key={index} 
+                className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-200"
+              >
+                {source}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default function PharmaIntelligenceBrief() {
@@ -192,7 +235,9 @@ export default function PharmaIntelligenceBrief() {
         {/* Executive Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Executive Summary</h3>
-          <p className="text-blue-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.summary)}</p>
+          <div className="text-blue-800 text-sm">
+            {formatContentWithSources(displayNews.summary)}
+          </div>
         </div>
 
         {/* Key Developments */}
@@ -280,7 +325,9 @@ export default function PharmaIntelligenceBrief() {
                 <DollarSign className="w-4 h-4" />
                 Pharmaceutical Market Impact
               </h4>
-              <p className="text-green-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.marketImpact)}</p>
+              <div className="text-green-800 text-sm">
+                {formatContentWithSources(displayNews.marketImpact)}
+              </div>
             </div>
 
             {/* Regulatory Analysis */}
@@ -289,7 +336,9 @@ export default function PharmaIntelligenceBrief() {
                 <Globe className="w-4 h-4" />
                 Regulatory & Policy Analysis
               </h4>
-              <p className="text-purple-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.geopoliticalAnalysis)}</p>
+              <div className="text-purple-800 text-sm">
+                {formatContentWithSources(displayNews.geopoliticalAnalysis)}
+              </div>
             </div>
 
 

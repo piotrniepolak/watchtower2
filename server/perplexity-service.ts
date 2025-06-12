@@ -82,7 +82,7 @@ class PerplexityService {
   }
 
   async generateExecutiveSummary(): Promise<string> {
-    const prompt = `Provide a concise executive summary of today's most important pharmaceutical industry developments, including major drug approvals, clinical trial results, regulatory updates, and market-moving news. Focus on developments from the past 24-48 hours. Keep it under 150 words.`;
+    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements. Provide detailed context about the implications for the industry. Include specific article titles and publication sources (FDA.gov, BioPharma Dive, STAT News, Reuters Health) that support each major point. Format with clear attribution to sources.`;
     
     return await this.queryPerplexity(prompt);
   }
@@ -183,27 +183,13 @@ class PerplexityService {
   }
 
   async generateMarketImpactAnalysis(): Promise<string> {
-    const prompt = `Analyze the current pharmaceutical market trends and their broader economic impact, including:
-    - Drug pricing pressures and policy implications
-    - Generic drug competition effects
-    - Biosimilar market growth
-    - Healthcare innovation investment trends
-    - Global pharmaceutical trade dynamics
-    
-    Provide a comprehensive 200-word analysis focusing on market-moving factors.`;
+    const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Reference specific news articles and sources (BioPharma Dive, STAT News, Reuters Health, company press releases) that support each market development. Provide substantial detail about market drivers and financial implications.`;
     
     return await this.queryPerplexity(prompt);
   }
 
   async generateRegulatoryAnalysis(): Promise<string> {
-    const prompt = `Provide analysis of current pharmaceutical regulatory landscape including:
-    - Recent FDA guidance documents and policy changes
-    - European Medicines Agency (EMA) regulatory updates
-    - Global harmonization efforts in drug approval processes
-    - Digital health and AI/ML regulatory frameworks
-    - Biosafety and manufacturing compliance trends
-    
-    Focus on regulatory developments affecting drug development timelines and market access. Keep to 200 words.`;
+    const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Reference specific FDA.gov announcements, regulatory guidance documents, and policy updates with their publication dates and sources. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.`;
     
     return await this.queryPerplexity(prompt);
   }
