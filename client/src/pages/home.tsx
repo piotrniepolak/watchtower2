@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
+import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
 import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
 interface SectorMetrics {
@@ -62,10 +63,21 @@ interface ConflictStoryline {
 }
 
 export default function Home() {
-  const [selectedSector, setSelectedSector] = useState("defense");
+  // Get sector from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const sectorFromUrl = urlParams.get('sector') || 'defense';
+  
+  const [selectedSector, setSelectedSector] = useState(sectorFromUrl);
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
-  const [isAIAnalysisExpanded, setIsAIAnalysisExpanded] = useState(false);
+  const [isAIAnalysisExpanded, setIsAIAnalysisExpanded] = useState(sectorFromUrl !== 'defense');
   const queryClient = useQueryClient();
+  
+  // Update URL when sector changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sector', selectedSector);
+    window.history.replaceState({}, '', url.toString());
+  }, [selectedSector]);
   
   // Fetch global metrics for overview
   const { data: globalMetrics } = useQuery({

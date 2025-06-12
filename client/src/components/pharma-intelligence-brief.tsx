@@ -253,16 +253,6 @@ export default function PharmaIntelligenceBrief() {
   };
 
   const displayNews = news || fallbackNews;
-  
-  // Debug logging to see what content we're getting
-  console.log('Pharma Intelligence Brief Data:', {
-    title: displayNews.title,
-    summaryLength: displayNews.summary?.length,
-    marketImpactLength: displayNews.marketImpact?.length,
-    geopoliticalLength: displayNews.geopoliticalAnalysis?.length,
-    hasNews: !!news,
-    isFallback: !news
-  });
 
   if (error) {
     return (

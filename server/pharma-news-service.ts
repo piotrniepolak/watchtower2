@@ -281,21 +281,21 @@ Make all content specific to healthcare and pharmaceuticals - no military or def
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
       };
 
-      // Try to get existing news first, create only if it doesn't exist
-      const existingNews = await storage.getDailyNewsByDate(today);
-      let savedNews;
-      
-      if (existingNews) {
-        console.log("📝 Updating existing pharmaceutical intelligence brief");
-        // Update existing entry
-        savedNews = await storage.updateDailyNews(existingNews.id, newsData);
-      } else {
+      // Try to create new entry, if duplicate constraint fails, return existing entry
+      try {
         console.log("🆕 Creating new pharmaceutical intelligence brief");
-        savedNews = await storage.createDailyNews(newsData);
+        const savedNews = await storage.createDailyNews(newsData);
+        console.log("✅ Pharmaceutical intelligence brief generated and saved successfully");
+        return savedNews;
+      } catch (dbError: any) {
+        if (dbError.code === '23505') {
+          // Duplicate key constraint, get existing entry
+          console.log("📝 Daily news already exists, returning existing entry");
+          const existingNews = await storage.getDailyNews(newsData.date);
+          return existingNews || null;
+        }
+        throw dbError;
       }
-      
-      console.log("✅ Pharmaceutical intelligence brief generated and saved successfully");
-      return savedNews;
     } catch (error) {
       console.error("❌ Error generating pharmaceutical intelligence brief:", error);
       return null;
