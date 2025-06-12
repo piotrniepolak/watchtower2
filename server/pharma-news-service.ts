@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { storage } from "./storage";
+import { perplexityService } from "./perplexity-service";
 import type { DailyNews, InsertDailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
 export class PharmaNewsService {
@@ -245,6 +246,49 @@ Make all content specific to healthcare and pharmaceuticals - no military or def
       ],
       geopoliticalAnalysis: "Global healthcare policies continue evolving with emphasis on pandemic preparedness and equitable access to essential medicines. Regulatory harmonization efforts between major markets facilitate faster drug development timelines while maintaining safety standards."
     };
+  }
+
+  async generatePerplexityIntelligenceBrief(): Promise<DailyNews | null> {
+    if (this.isGenerating) {
+      console.log("Pharmaceutical intelligence generation already in progress, skipping...");
+      return null;
+    }
+
+    try {
+      this.isGenerating = true;
+      console.log("🔬 Generating pharmaceutical intelligence brief using Perplexity AI...");
+
+      const intelligenceBrief = await perplexityService.generateComprehensiveIntelligenceBrief();
+
+      const newsData: InsertDailyNews = {
+        title: intelligenceBrief.title,
+        summary: intelligenceBrief.summary,
+        content: JSON.stringify({
+          keyDevelopments: intelligenceBrief.keyDevelopments,
+          conflictUpdates: intelligenceBrief.conflictUpdates,
+          defenseStockHighlights: intelligenceBrief.defenseStockHighlights,
+          marketImpact: intelligenceBrief.marketImpact,
+          geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
+        }),
+        sector: "pharmaceutical",
+        keyDevelopments: intelligenceBrief.keyDevelopments,
+        conflictUpdates: intelligenceBrief.conflictUpdates,
+        defenseStockHighlights: intelligenceBrief.defenseStockHighlights,
+        marketImpact: intelligenceBrief.marketImpact,
+        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
+        createdAt: new Date()
+      };
+
+      const savedNews = await storage.createDailyNews(newsData);
+      console.log("✅ Pharmaceutical intelligence brief generated and saved successfully");
+      
+      return savedNews;
+    } catch (error) {
+      console.error("❌ Error generating pharmaceutical intelligence brief:", error);
+      return null;
+    } finally {
+      this.isGenerating = false;
+    }
   }
 
   async getTodaysPharmaNews(): Promise<DailyNews | null> {
