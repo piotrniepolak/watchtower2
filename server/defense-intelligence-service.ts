@@ -114,10 +114,10 @@ export class DefenseIntelligenceService {
         title: defenseIntelligence.title,
         summary: defenseIntelligence.summary,
         date: defenseIntelligence.date,
-        keyDevelopments: defenseIntelligence.keyDevelopments,
+        keyDevelopments: Array.isArray(defenseIntelligence.keyDevelopments) ? defenseIntelligence.keyDevelopments : [],
         marketImpact: defenseIntelligence.marketImpact,
-        conflictUpdates: defenseIntelligence.conflictUpdates,
-        defenseStockHighlights: defenseIntelligence.defenseStockHighlights,
+        conflictUpdates: Array.isArray(defenseIntelligence.conflictUpdates) ? defenseIntelligence.conflictUpdates : [],
+        defenseStockHighlights: Array.isArray(defenseIntelligence.defenseStockHighlights) ? defenseIntelligence.defenseStockHighlights : [],
         pharmaceuticalStockHighlights: [],
         geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis
       };
@@ -193,7 +193,7 @@ export class DefenseIntelligenceService {
       }
     }
 
-    for (const symbol of detectedCompanies) {
+    for (const symbol of Array.from(detectedCompanies)) {
       try {
         const existingStock = await storage.getStocks();
         const stockExists = existingStock.some(s => s.symbol === symbol);
@@ -208,7 +208,7 @@ export class DefenseIntelligenceService {
               change: quote.change || 0,
               changePercent: quote.changePercent || 0,
               volume: quote.volume || 0,
-              marketCap: quote.marketCap || null,
+              marketCap: quote.marketCap ? quote.marketCap.toString() : null,
               sector: "Defense"
             };
 
