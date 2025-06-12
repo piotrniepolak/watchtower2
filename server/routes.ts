@@ -2072,7 +2072,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conflictUpdates: activeConflicts.slice(0, 5).map(conflict => ({
           conflict: conflict.name,
           update: `Situation in ${conflict.region} remains active with ongoing security operations`,
-          severity: conflict.severity === 8 ? "high" : conflict.severity >= 6 ? "medium" : "low"
+          severity: conflict.severity.toLowerCase() === "high" ? "high" : 
+                   conflict.severity.toLowerCase() === "medium" ? "medium" : "low"
         })),
         defenseStockHighlights: defenseOnlyStocks.slice(0, 5).map(stock => ({
           symbol: stock.symbol,
@@ -2120,7 +2121,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conflictUpdates: activeConflicts.slice(0, 5).map(conflict => ({
           conflict: conflict.name,
           update: `Situation in ${conflict.region} remains active with ongoing security operations`,
-          severity: conflict.severity === 8 ? "high" : conflict.severity >= 6 ? "medium" : "low"
+          severity: conflict.severity.toLowerCase() === "high" ? "high" : 
+                   conflict.severity.toLowerCase() === "medium" ? "medium" : "low"
         })),
         defenseStockHighlights: defenseOnlyStocks.slice(0, 5).map(stock => ({
           symbol: stock.symbol,
