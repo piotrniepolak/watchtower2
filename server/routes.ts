@@ -1720,12 +1720,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return descriptors[symbol] || `${name} operates in the pharmaceutical and biotechnology sector.`;
           };
 
+          const extractCompanyQuote = (symbol: string, companyName: string): string => {
+            // Get all content from the brief
+            const briefContent = [
+              news.summary || '',
+              ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
+              news.marketImpact || '',
+              news.geopoliticalAnalysis || ''
+            ].join(' ');
+
+            // Create specific mappings for companies mentioned in brief
+            const companyMentions: { [key: string]: string } = {
+              'NUVB': 'Nuvation Bio',
+              'BAYRY': 'Bayer',
+              'BMY': 'Bristol Myers',
+              'RHHBY': 'Roche', 
+              'SNY': 'Sanofi',
+              'GSK': 'GSK',
+              'BIIB': 'Biogen',
+              'JNJ': 'Johnson & Johnson',
+              'VRTX': 'Vertex',
+              'RARE': 'Ultragenyx',
+              'STOK': 'Stoke',
+              'SLDB': 'Solid'
+            };
+
+            const searchTerms = [
+              symbol,
+              companyName,
+              companyMentions[symbol] || ''
+            ].filter(term => term.length > 0);
+
+            // Split content more aggressively to capture sentences
+            const allText = briefContent.replace(/\*\*/g, '').replace(/###?\s*/g, '');
+            const sentences = allText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 40);
+            
+            // Look for sentences containing company mentions
+            for (const sentence of sentences) {
+              const lowerSentence = sentence.toLowerCase();
+              
+              for (const searchTerm of searchTerms) {
+                if (searchTerm && lowerSentence.includes(searchTerm.toLowerCase())) {
+                  // Clean the sentence
+                  let cleanSentence = sentence
+                    .replace(/\[(\d+)\]/g, '') // Remove citations
+                    .replace(/^\s*[-*]\s*/, '') // Remove bullet points
+                    .trim();
+                  
+                  if (!cleanSentence.match(/[.!?]$/)) {
+                    cleanSentence += '.';
+                  }
+                  
+                  // Only return substantial content
+                  if (cleanSentence.length > 60 && 
+                      !cleanSentence.startsWith('References') &&
+                      !cleanSentence.includes('Executive Summary')) {
+                    return cleanSentence;
+                  }
+                }
+              }
+            }
+
+            return '';
+          };
+
           const generateDetailedDescription = (): string => {
             const baseDescription = getCompanyDescriptor(stock.symbol, stock.name);
             
-            // For companies mentioned in the brief, add context about their inclusion
-            if (mentionedSymbols.has(stock.symbol)) {
-              return `${baseDescription} Featured in today's pharmaceutical intelligence brief for market developments and industry analysis.`;
+            // Extract actual quote from the brief
+            const briefQuote = extractCompanyQuote(stock.symbol, stock.name);
+            
+            if (briefQuote && briefQuote.length > 30) {
+              return `${baseDescription} Brief excerpt: "${briefQuote}"`;
             }
             
             return baseDescription;
