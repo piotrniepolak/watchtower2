@@ -28,6 +28,7 @@ const cleanContent = (text: string | undefined): string => {
     .replace(/#\w+/g, '') // Remove hashtags like #FDA
     .replace(/^#+\s*/, '') // Remove hashtags from beginning of text
     .replace(/\s*#+\s*$/, '') // Remove hashtags from end of text
+    .replace(/^Executive Summary:?\s*/i, '') // Remove "Executive Summary" from beginning
     .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove double asterisks formatting
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim();
