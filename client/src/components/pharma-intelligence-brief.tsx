@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useEnhancedPharmaNews, useStockPrices } from "@/hooks/useStockPrices";
+import { StockDetailModal } from "./stock-detail-modal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -216,11 +217,32 @@ export default function PharmaIntelligenceBrief() {
     marketImpact: true
   });
 
+  const [selectedStock, setSelectedStock] = useState<{
+    symbol: string;
+    name: string;
+    price: number;
+    change: number;
+    changePercent: number;
+    reason?: string;
+  } | null>(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const toggleSection = (section: keyof typeof sectionsCollapsed) => {
     setSectionsCollapsed(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
+  };
+
+  const handleStockClick = (stock: any) => {
+    setSelectedStock(stock);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedStock(null);
   };
 
   const { data: news, isLoading, error } = useEnhancedPharmaNews();
@@ -357,6 +379,7 @@ export default function PharmaIntelligenceBrief() {
   });
 
   return (
+    <>
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -455,7 +478,11 @@ export default function PharmaIntelligenceBrief() {
             <div className="px-4 pb-4">
               <div className="grid gap-2">
                 {stockHighlights.map((stock, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
+                  <button
+                    key={index}
+                    onClick={() => handleStockClick(stock)}
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer w-full text-left"
+                  >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{stock.symbol}</span>
@@ -471,7 +498,7 @@ export default function PharmaIntelligenceBrief() {
                         ({stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
                       </p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -537,5 +564,15 @@ export default function PharmaIntelligenceBrief() {
         </div>
       </CardContent>
     </Card>
+
+    {/* Stock Detail Modal */}
+    {selectedStock && (
+      <StockDetailModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        stock={selectedStock}
+      />
+    )}
+    </>
   );
 }
