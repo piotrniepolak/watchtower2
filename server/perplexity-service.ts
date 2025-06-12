@@ -33,11 +33,10 @@ interface PharmaceuticalIntelligence {
   }>;
   pharmaceuticalStockHighlights: Array<{
     symbol: string;
-    name: string;
+    company: string;
     price: number;
     change: number;
-    changePercent: number;
-    reason: string;
+    analysis: string;
   }>;
   marketImpact: string;
   geopoliticalAnalysis: string;
@@ -418,11 +417,10 @@ class PerplexityService {
         
         stockHighlights.push({
           symbol: stockData.symbol,
-          name: stockData.name,
+          company: stockData.name,
           price: stockData.price,
           change: stockData.change,
-          changePercent: stockData.changePercent,
-          reason: shortAnalysis
+          analysis: shortAnalysis
         });
       } catch (error) {
         console.error(`Error generating analysis for ${symbol}:`, error);
@@ -433,11 +431,10 @@ class PerplexityService {
         
         stockHighlights.push({
           symbol: stockData.symbol,
-          name: stockData.name,
+          company: stockData.name,
           price: stockData.price,
           change: stockData.change,
-          changePercent: stockData.changePercent,
-          reason: fallbackAnalysis
+          analysis: fallbackAnalysis
         });
       }
     }
@@ -446,31 +443,17 @@ class PerplexityService {
   }
 
   async generateMarketImpactAnalysis(): Promise<string> {
-    const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Provide substantial detail about market drivers and financial implications.
-
-At the end, include a "References:" section with specific article titles in this exact format:
-- BioPharma Dive: "The biopharma industry outlook on 2025: Uncertainty and..."
-- STAT News: "Pharmaceutical stock market performance Q4 2024"
-- Reuters Health: "Merger activity drives pharmaceutical sector growth"
-- Bloomberg: "Drug pricing policy impacts on market valuations"
-
-Ensure each reference includes the source name followed by a colon and the article title in quotes.`;
+    const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Provide substantial detail about market drivers and financial implications.`;
     
-    return await this.queryPerplexity(prompt);
+    const result = await this.queryPerplexity(prompt);
+    return this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateRegulatoryAnalysis(): Promise<string> {
-    const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.
-
-At the end, include a "References:" section with specific article titles in this exact format:
-- FDA.gov: "FDA Approvals and Safety Notifications December 2024"
-- STAT News: "Regulatory pathway changes impact drug development timelines"
-- Reuters Health: "European Medicines Agency policy updates Q4 2024"
-- PubMed: "Regulatory compliance trends in pharmaceutical manufacturing"
-
-Ensure each reference includes the source name followed by a colon and the article title in quotes.`;
+    const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.`;
     
-    return await this.queryPerplexity(prompt);
+    const result = await this.queryPerplexity(prompt);
+    return this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateComprehensiveIntelligenceBrief(): Promise<PharmaceuticalIntelligence> {
