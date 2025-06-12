@@ -1792,13 +1792,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
                        lowerSentence.includes('price') || lowerSentence.includes('shot') ||
                        lowerSentence.includes('investment') || lowerSentence.includes('agreement'))) {
                     
-                    // Clean and format the sentence
-                    let cleanSentence = sentence.trim();
-                    if (!cleanSentence.match(/[.!?]$/)) {
-                      cleanSentence += '.';
+                    // Extract only the portion directly relevant to this specific company
+                    let relevantPortion = sentence.trim();
+                    
+                    // Find the position of the company mention
+                    const companyMentionIndex = lowerSentence.indexOf(identifier.toLowerCase());
+                    
+                    if (companyMentionIndex !== -1) {
+                      // Try multiple extraction strategies to get company-specific content
+                      
+                      // Strategy 1: Extract clause containing the company name
+                      const clauses = sentence.split(/[,;]/);
+                      for (const clause of clauses) {
+                        const lowerClause = clause.toLowerCase();
+                        if (lowerClause.includes(identifier.toLowerCase())) {
+                          // Check if this clause is specifically about this company (not mentioning other companies)
+                          const otherCompanies = ['bristol myers', 'roche', 'sanofi', 'gsk', 'biogen', 'johnson', 'vertex', 'bayer', 'eli lilly'];
+                          const mentionsOtherCompanies = otherCompanies.some(other => 
+                            other !== identifier.toLowerCase() && lowerClause.includes(other)
+                          );
+                          
+                          if (!mentionsOtherCompanies && clause.trim().length > 25) {
+                            relevantPortion = clause.trim();
+                            break;
+                          }
+                        }
+                      }
+                      
+                      // Strategy 2: If no good clause found, extract substring around company mention
+                      if (relevantPortion === sentence.trim()) {
+                        const startPos = Math.max(0, companyMentionIndex - 50);
+                        const endPos = Math.min(sentence.length, companyMentionIndex + identifier.length + 100);
+                        const substring = sentence.substring(startPos, endPos).trim();
+                        
+                        // Find sentence boundaries within the substring
+                        const sentenceStart = substring.search(/[.!?]\s+/);
+                        const actualStart = sentenceStart !== -1 ? sentenceStart + 2 : 0;
+                        
+                        const extractedText = substring.substring(actualStart);
+                        if (extractedText.length > 25) {
+                          relevantPortion = extractedText;
+                        }
+                      }
                     }
                     
-                    return cleanSentence;
+                    // Clean and format the relevant portion
+                    relevantPortion = relevantPortion.replace(/^[,;\s]+/, ''); // Remove leading punctuation
+                    if (!relevantPortion.match(/[.!?]$/)) {
+                      relevantPortion += '.';
+                    }
+                    
+                    return relevantPortion;
                   }
                 }
               }
