@@ -656,14 +656,14 @@ class PerplexityService {
     const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Provide substantial detail about market drivers and financial implications.`;
     
     const result = await this.queryPerplexity(prompt);
-    return this.processContentWithLinks(result.content, result.citations);
+    return await this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateRegulatoryAnalysis(): Promise<string> {
     const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.`;
     
     const result = await this.queryPerplexity(prompt);
-    return this.processContentWithLinks(result.content, result.citations);
+    return await this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateComprehensiveIntelligenceBrief(): Promise<PharmaceuticalIntelligence> {
