@@ -24,11 +24,25 @@ import {
 } from "lucide-react";
 import type { DailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
-// Content formatting utility with enhanced source extraction
+// Content formatting utility - split content from references
+const splitContentAndReferences = (text: string | undefined): { content: string; references: string } => {
+  if (!text) return { content: '', references: '' };
+  
+  // Split content at "References:" section
+  const referencesMatch = text.match(/^([\s\S]*?)\*\*References:\*\*([\s\S]*)$/);
+  if (referencesMatch) {
+    const content = referencesMatch[1].trim();
+    const references = referencesMatch[2].trim();
+    return { content, references };
+  }
+  
+  return { content: text, references: '' };
+};
+
+// Clean content while preserving citation numbers
 const cleanContent = (text: string | undefined): string => {
   if (!text) return '';
   return text
-    .replace(/\[\d+\]/g, '') // Remove bracketed numbers like [1], [2]
     .replace(/#\w+/g, '') // Remove hashtags like #FDA
     .replace(/^#+\s*/, '') // Remove hashtags from beginning of text
     .replace(/\s*#+\s*$/, '') // Remove hashtags from end of text
@@ -158,16 +172,15 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
   return sources;
 };
 
-// Enhanced content display with clickable references
+// Enhanced content display with table-based references
 const formatContentWithSources = (text: string | undefined): JSX.Element => {
   if (!text) {
     return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
   }
   
-  // Remove the References section from the main content
-  const contentWithoutRefs = text.replace(/References:\s*([\s\S]*?)(?:\n\n|\n$|$)/i, '').trim();
-  const cleaned = cleanContent(contentWithoutRefs);
-  const detailedSources = extractDetailedSources(text);
+  // Split content and references using the new function
+  const { content, references } = splitContentAndReferences(text);
+  const cleaned = cleanContent(content);
   
   return (
     <div className="space-y-4">
@@ -177,31 +190,12 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
         ))}
       </div>
       
-      {detailedSources.length > 0 && (
+      {references && (
         <div className="mt-4 pt-3 border-t border-slate-200">
-          <h5 className="text-sm font-semibold text-slate-700 mb-2">References:</h5>
-          <div className="space-y-1">
-            {detailedSources.map((ref, index) => (
-              <div key={index} className="flex items-start gap-2 text-xs">
-                <span className="text-slate-400 mt-0.5">•</span>
-                <div className="flex-1">
-                  <span className="font-medium text-slate-700">{ref.source}:</span>
-                  {ref.url ? (
-                    <a 
-                      href={ref.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="ml-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                    >
-                      "{ref.title}"
-                    </a>
-                  ) : (
-                    <span className="ml-1 text-slate-600">"{ref.title}"</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <div 
+            className="text-sm" 
+            dangerouslySetInnerHTML={{ __html: references }}
+          />
         </div>
       )}
     </div>
