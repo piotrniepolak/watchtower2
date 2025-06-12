@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import { storage } from "./storage";
 import { perplexityService } from "./perplexity-service";
-import type { DailyNews, InsertDailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
+import { yahooFinanceService } from "./yahoo-finance-service";
+import type { DailyNews, InsertDailyNews, NewsConflictUpdate, NewsStockHighlight, InsertStock } from "@shared/schema";
 
 export class DefenseNewsService {
   private openai: OpenAI;
@@ -100,24 +101,32 @@ export class DefenseNewsService {
           messages: [
             {
               role: 'system',
-              content: 'You are a defense intelligence analyst providing current global security developments, military conflicts, defense contractor news, and geopolitical events affecting defense markets. Focus on factual, up-to-date information.'
+              content: 'You are a senior defense intelligence analyst providing comprehensive current global security developments, military conflicts, defense contractor news, and geopolitical events affecting defense markets. Include specific company names, contract values, stock symbols, and detailed financial impacts.'
             },
             {
               role: 'user',
-              content: `Provide a comprehensive overview of current global defense and security developments from the past 24-48 hours, including:
+              content: `Provide a comprehensive and detailed overview of current global defense and security developments from the past 24-48 hours, including:
 
-1. Active military conflicts and their current status
-2. Defense contractor developments, earnings, or major contracts
-3. Geopolitical tensions affecting defense markets
-4. Military technology developments or announcements
-5. International defense cooperation or arms deals
-6. Security threats or intelligence developments
-7. Defense budget allocations or policy changes
+1. ACTIVE MILITARY CONFLICTS: Current status, recent developments, casualty reports, territory changes, military equipment usage, international involvement
+2. DEFENSE CONTRACTOR NEWS: Earnings reports, major contracts awarded (with specific dollar amounts), new product announcements, executive changes, merger/acquisition activity
+3. GEOPOLITICAL TENSIONS: Diplomatic developments, sanctions, trade restrictions, alliance changes affecting defense markets
+4. MILITARY TECHNOLOGY: New weapons systems, cybersecurity developments, AI/autonomous systems, space defense capabilities
+5. INTERNATIONAL DEFENSE COOPERATION: Arms deals with specific values, joint military exercises, defense partnership agreements
+6. SECURITY THREATS: Cybersecurity incidents, terrorism developments, intelligence operations
+7. DEFENSE BUDGET ALLOCATIONS: Government spending announcements, budget changes, procurement decisions
 
-Focus on events that would impact defense markets, security analysis, and military readiness. Provide specific details, company names, countries involved, and financial figures where available.`
+For each item, provide:
+- Specific company names and stock symbols when mentioned
+- Exact contract values and financial figures
+- Countries and regions involved
+- Timeline of developments
+- Source references where possible
+- Market impact analysis
+
+Focus on events that would significantly impact defense markets, security analysis, and military readiness. Include both major defense contractors (Lockheed Martin, Raytheon, Northrop Grumman, etc.) and smaller specialized companies.`
             }
           ],
-          max_tokens: 2000,
+          max_tokens: 3500,
           temperature: 0.3
         })
       });
@@ -132,6 +141,126 @@ Focus on events that would impact defense markets, security analysis, and milita
       console.error('Error fetching current defense events for news:', error);
       return 'Unable to fetch current defense events. Using general geopolitical knowledge.';
     }
+  }
+
+  private async detectAndAddDefenseCompanies(stockHighlights: any[], content: string): Promise<void> {
+    const knownDefenseCompanies = [
+      { symbol: 'LMT', name: 'Lockheed Martin', patterns: ['lockheed martin', 'lockheed', 'LMT'] },
+      { symbol: 'RTX', name: 'Raytheon Technologies', patterns: ['raytheon', 'RTX', 'raytheon technologies'] },
+      { symbol: 'NOC', name: 'Northrop Grumman', patterns: ['northrop grumman', 'northrop', 'NOC'] },
+      { symbol: 'GD', name: 'General Dynamics', patterns: ['general dynamics', 'GD'] },
+      { symbol: 'BA', name: 'Boeing', patterns: ['boeing', 'BA'] },
+      { symbol: 'LDOS', name: 'Leidos Holdings', patterns: ['leidos', 'LDOS'] },
+      { symbol: 'HII', name: 'Huntington Ingalls Industries', patterns: ['huntington ingalls', 'HII'] },
+      { symbol: 'LHX', name: 'L3Harris Technologies', patterns: ['l3harris', 'harris', 'LHX'] },
+      { symbol: 'AVAV', name: 'AeroVironment', patterns: ['aerovironment', 'AVAV'] },
+      { symbol: 'KTOS', name: 'Kratos Defense', patterns: ['kratos', 'KTOS'] },
+      { symbol: 'TDG', name: 'TransDigm Group', patterns: ['transdigm', 'TDG'] },
+      { symbol: 'CW', name: 'Curtiss-Wright', patterns: ['curtiss-wright', 'CW'] },
+      { symbol: 'MRCY', name: 'Mercury Systems', patterns: ['mercury systems', 'MRCY'] },
+      { symbol: 'AJRD', name: 'Aerojet Rocketdyne', patterns: ['aerojet', 'rocketdyne', 'AJRD'] },
+      { symbol: 'ESLT', name: 'Elbit Systems', patterns: ['elbit', 'ESLT'] }
+    ];
+
+    const contentLower = content.toLowerCase();
+    const detectedCompanies = new Set<string>();
+
+    // Detect companies from content
+    for (const company of knownDefenseCompanies) {
+      for (const pattern of company.patterns) {
+        if (contentLower.includes(pattern.toLowerCase())) {
+          detectedCompanies.add(company.symbol);
+          break;
+        }
+      }
+    }
+
+    // Detect companies from stock highlights
+    for (const highlight of stockHighlights) {
+      if (highlight.symbol) {
+        detectedCompanies.add(highlight.symbol);
+      }
+    }
+
+    // Add detected companies to database if not already present
+    const existingStocks = await storage.getStocks();
+    const existingSymbols = new Set(existingStocks.map(s => s.symbol));
+
+    for (const symbol of detectedCompanies) {
+      if (!existingSymbols.has(symbol)) {
+        const company = knownDefenseCompanies.find(c => c.symbol === symbol);
+        if (company) {
+          try {
+            console.log(`🔍 Detecting new defense company: ${symbol} (${company.name})`);
+            
+            // Fetch current stock data from Yahoo Finance
+            const stockData = await yahooFinanceService.getStockQuote(symbol);
+            
+            if (stockData) {
+              const newStock: InsertStock = {
+                symbol: symbol,
+                name: company.name,
+                sector: 'Defense',
+                currentPrice: stockData.currentPrice,
+                priceChange: stockData.priceChange,
+                percentChange: stockData.percentChange,
+                volume: stockData.volume || 0,
+                marketCap: stockData.marketCap || 0,
+                hasDefense: true,
+                hasHealthcare: false,
+                hasEnergy: false
+              };
+
+              await storage.createStock(newStock);
+              console.log(`✅ Added new defense stock: ${symbol} at $${stockData.currentPrice}`);
+            }
+          } catch (error) {
+            console.error(`❌ Error adding defense stock ${symbol}:`, error);
+          }
+        }
+      }
+    }
+  }
+
+  private async enhanceStockHighlights(highlights: any[], existingStocks: any[]): Promise<NewsStockHighlight[]> {
+    const enhanced: NewsStockHighlight[] = [];
+    
+    for (const highlight of highlights) {
+      const stockData = existingStocks.find(s => s.symbol === highlight.symbol);
+      
+      enhanced.push({
+        symbol: highlight.symbol || '',
+        companyName: highlight.companyName || stockData?.name || '',
+        sector: highlight.sector || 'Defense',
+        currentPrice: stockData?.currentPrice || 0,
+        priceChange: highlight.priceChange || stockData?.percentChange || '0%',
+        analysis: highlight.analysis || '',
+        catalysts: highlight.catalysts || '',
+        recentNews: highlight.recentNews || '',
+        competitivePosition: highlight.competitivePosition || ''
+      });
+    }
+
+    return enhanced;
+  }
+
+  private async enhanceConflictUpdates(updates: any[], existingConflicts: any[]): Promise<NewsConflictUpdate[]> {
+    const enhanced: NewsConflictUpdate[] = [];
+    
+    for (const update of updates) {
+      enhanced.push({
+        conflictName: update.conflictName || '',
+        region: update.region || '',
+        status: update.status || '',
+        severity: update.severity || 'medium',
+        description: update.description || '',
+        marketImpact: update.marketImpact || '',
+        keyPlayers: update.keyPlayers || [],
+        economicImpact: update.economicImpact || ''
+      });
+    }
+
+    return enhanced;
   }
 
   async generatePerplexityDefenseIntelligenceBrief(): Promise<DailyNews | null> {
@@ -186,28 +315,53 @@ Create detailed analysis that connects current events to market implications and
 
 ${currentEvents}
 
-Create a comprehensive Defense Intelligence Brief with these exact sections:
+Create a comprehensive Defense Intelligence Brief with these exact sections in JSON format:
 
-TITLE: "Defense Intelligence Brief - [Today's Date]"
+{
+  "title": "Defense Intelligence Brief - [Today's Date]",
+  "summary": "2-3 detailed sentences providing executive summary of key developments with specific impact assessments",
+  "keyDevelopments": [
+    "Detailed bullet point 1 with specific companies, contract values, and market implications",
+    "Detailed bullet point 2 with geopolitical analysis and defense contractor impacts",
+    "Continue with 8-10 comprehensive bullet points covering all major developments"
+  ],
+  "conflictUpdates": [
+    {
+      "conflictName": "Specific conflict name",
+      "region": "Geographic region",
+      "status": "Current operational status",
+      "severity": "high/medium/low",
+      "description": "4-5 detailed sentences covering recent developments, military equipment usage, casualty reports, and strategic implications",
+      "marketImpact": "2-3 sentences on specific defense contractor opportunities and market effects",
+      "keyPlayers": ["Country1", "Country2", "Organization1"],
+      "economicImpact": "Specific financial figures and market valuations affected"
+    }
+  ],
+  "defenseStockHighlights": [
+    {
+      "symbol": "Company stock symbol",
+      "companyName": "Full company name",
+      "sector": "Specific defense subsector",
+      "analysis": "4-5 detailed sentences covering recent performance, strategic position, competitive advantages, and market outlook",
+      "catalysts": "Specific contracts, technological developments, or market drivers affecting stock performance",
+      "recentNews": "Latest company-specific developments from the current events",
+      "competitivePosition": "Analysis of market position relative to competitors"
+    }
+  ],
+  "geopoliticalAnalysis": "3-4 detailed paragraphs analyzing: strategic implications of current conflicts and their evolution, alliance dynamics and international defense cooperation trends, policy implications for defense spending across major powers, regional security assessments and emerging threat vectors, economic warfare and sanctions impact on defense trade",
+  "marketImpact": "3-4 comprehensive paragraphs covering: defense sector performance outlook with specific projections, investment opportunities and risk assessments by subsector, supply chain challenges and manufacturing capacity issues, long-term strategic considerations for defense investors, emerging markets and technological disruption impacts"
+}
 
-SUMMARY: 2-3 sentence executive summary of key developments
+Requirements:
+1. Include 6-8 defense companies in defenseStockHighlights with comprehensive analysis
+2. Cover 5-7 major conflicts in conflictUpdates with detailed status
+3. Each keyDevelopments bullet should be 2-3 sentences with specific details
+4. Automatically detect and analyze any defense companies mentioned in current events
+5. Include specific contract values, market capitalizations, and financial figures
+6. Provide actionable intelligence for executive decision-making
+7. Focus on factual analysis with strategic insights
 
-KEY DEVELOPMENTS: 5-7 bullet points covering:
-- Active conflict status updates
-- Defense contractor news and contracts
-- Geopolitical developments affecting defense markets
-- Military technology or capability developments
-- International defense partnerships or arms deals
-
-MARKET IMPACT: Detailed analysis of how current events affect defense sector markets, including specific implications for major defense contractors
-
-CONFLICT UPDATES: Analysis of 3-5 most significant active conflicts with current status and defense implications
-
-DEFENSE STOCK HIGHLIGHTS: Specific analysis of how current events might affect major defense stocks (LMT, RTX, NOC, GD, BA, LDOS, etc.)
-
-GEOPOLITICAL ANALYSIS: Strategic assessment of current global security environment and its implications for defense spending and military preparedness
-
-Keep analysis professional, factual, and focused on actionable intelligence for defense sector decision-making.`
+Return ONLY the JSON object with no additional text.`
           }
         ],
         max_tokens: 3000,
