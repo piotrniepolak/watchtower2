@@ -15,7 +15,7 @@ import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { pharmaNewsService } from "./pharma-news-service";
-import { defenseNewsService } from "./defense-news-service";
+import { defenseIntelligenceService } from "./defense-intelligence-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
@@ -1572,7 +1572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Daily News Routes - Modern Defense Intelligence System
   app.get("/api/news/today", async (req, res) => {
     try {
-      const news = await defenseNewsService.getTodaysDefenseNews();
+      const news = await defenseIntelligenceService.getTodaysDefenseIntelligence();
       if (!news) {
         return res.status(404).json({ error: "No defense intelligence available for today" });
       }
@@ -2038,11 +2038,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteDailyNews(today);
       
       // Generate fresh defense intelligence using Perplexity AI
-      const news = await defenseNewsService.generatePerplexityDefenseIntelligenceBrief();
+      const news = await defenseIntelligenceService.generateComprehensiveDefenseIntelligence();
       
       if (!news) {
         console.log('Defense intelligence generation failed, trying fallback method...');
-        const fallbackNews = await defenseNewsService.getTodaysDefenseNews();
+        const fallbackNews = await defenseIntelligenceService.getTodaysDefenseIntelligence();
         if (!fallbackNews) {
           return res.status(500).json({ error: "Failed to generate defense intelligence brief" });
         }

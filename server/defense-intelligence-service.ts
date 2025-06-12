@@ -147,6 +147,7 @@ export class DefenseIntelligenceService {
           name: highlight.companyName || highlight.name || stockData?.name || highlight.symbol,
           change: quote?.change || 0,
           changePercent: quote?.changePercent || 0,
+          price: quote?.price || 0,
           reason: highlight.analysis || `Defense sector performance continues with market activity`
         });
       } catch (error) {
@@ -156,6 +157,7 @@ export class DefenseIntelligenceService {
           name: highlight.companyName || highlight.name || highlight.symbol,
           change: 0,
           changePercent: 0,
+          price: 0,
           reason: highlight.analysis || "Analysis pending"
         });
       }
