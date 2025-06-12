@@ -228,12 +228,32 @@ Focus on events that would significantly impact defense markets, security analys
     for (const highlight of highlights) {
       const stockData = existingStocks.find(s => s.symbol === highlight.symbol);
       
+      // Fetch fresh stock data if not found or outdated
+      let currentStockData = stockData;
+      if (!stockData || !stockData.currentPrice) {
+        try {
+          const freshData = await yahooFinanceService.getStockQuote(highlight.symbol);
+          if (freshData) {
+            currentStockData = {
+              symbol: highlight.symbol,
+              name: highlight.companyName || freshData.displayName || highlight.symbol,
+              currentPrice: freshData.regularMarketPrice || 0,
+              percentChange: freshData.regularMarketChangePercent?.toFixed(2) + '%' || '0%',
+              volume: freshData.regularMarketVolume || 0,
+              marketCap: freshData.marketCap || 0
+            };
+          }
+        } catch (error) {
+          console.error(`Error fetching fresh data for ${highlight.symbol}:`, error);
+        }
+      }
+      
       enhanced.push({
         symbol: highlight.symbol || '',
-        companyName: highlight.companyName || stockData?.name || '',
+        name: highlight.companyName || currentStockData?.name || '',
         sector: highlight.sector || 'Defense',
-        currentPrice: stockData?.currentPrice || 0,
-        priceChange: highlight.priceChange || stockData?.percentChange || '0%',
+        currentPrice: currentStockData?.currentPrice || 0,
+        priceChange: currentStockData?.percentChange || '0%',
         analysis: highlight.analysis || '',
         catalysts: highlight.catalysts || '',
         recentNews: highlight.recentNews || '',
