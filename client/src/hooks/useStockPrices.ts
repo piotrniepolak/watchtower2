@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Stock } from '@/../../shared/schema';
+import type { Stock, DailyNews, NewsStockHighlight } from '@/../../shared/schema';
 
 export function useStockPrices() {
   return useQuery<Stock[]>({
@@ -10,7 +10,7 @@ export function useStockPrices() {
 }
 
 export function useEnhancedPharmaNews() {
-  const { data: news, isLoading: newsLoading, error: newsError } = useQuery({
+  const { data: news, isLoading: newsLoading, error: newsError } = useQuery<DailyNews>({
     queryKey: ["/api/news/pharma/today"],
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 30 * 60 * 1000, // 30 minutes
@@ -21,15 +21,20 @@ export function useEnhancedPharmaNews() {
   // Enhance pharmaceutical stock highlights with real-time prices
   const enhancedNews = news && stocks ? {
     ...news,
-    pharmaceuticalStockHighlights: news.pharmaceuticalStockHighlights?.map(highlight => {
-      const stock = stocks.find(s => s.symbol === highlight.symbol);
-      return stock ? {
-        ...highlight,
-        price: stock.price,
-        change: stock.change,
-        changePercent: stock.changePercent
-      } : highlight;
-    })
+    pharmaceuticalStockHighlights: Array.isArray(news.pharmaceuticalStockHighlights) 
+      ? news.pharmaceuticalStockHighlights.map((highlight: any) => {
+          const stock = stocks.find(s => s.symbol === highlight.symbol);
+          if (stock && stock.price > 0) {
+            return {
+              ...highlight,
+              price: stock.price,
+              change: stock.change,
+              changePercent: stock.changePercent
+            };
+          }
+          return highlight;
+        })
+      : news.pharmaceuticalStockHighlights
   } : news;
 
   return {

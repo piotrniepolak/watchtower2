@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useEnhancedPharmaNews } from "@/hooks/useStockPrices";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -222,11 +223,7 @@ export default function PharmaIntelligenceBrief() {
     }));
   };
 
-  const { data: news, isLoading, error } = useQuery<DailyNews>({
-    queryKey: ["/api/news/pharma/today"],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 30 * 60 * 1000, // 30 minutes
-  });
+  const { data: news, isLoading, error } = useEnhancedPharmaNews();
 
   if (isLoading) {
     return (
