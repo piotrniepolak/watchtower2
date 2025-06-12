@@ -346,12 +346,16 @@ class PerplexityService {
           }
         }
         
-        processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
+        referencesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
       }
       
       console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
     }
 
+    // Return content with separated references section
+    if (referencesSection) {
+      return processedContent + '\n\n' + referencesSection;
+    }
     return processedContent;
   }
 

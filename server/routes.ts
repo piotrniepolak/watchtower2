@@ -1667,14 +1667,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ) : [])
       ].join(' ');
 
-      // Remove any URLs, references, and citations that might contain company names to prevent false positives
+      // More aggressive content cleaning to remove all reference-related content
       const cleanBriefContent = briefTextContent
+        .replace(/\*\*References:\*\*[\s\S]*$/i, '') // Remove entire references section with markdown formatting
+        .replace(/### References:[\s\S]*$/i, '') // Remove entire references section with header
+        .replace(/References:[\s\S]*$/i, '') // Remove references section without formatting
         .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
         .replace(/www\.[^\s]+/g, '') // Remove www domains
-        .replace(/### References:[\s\S]*$/i, '') // Remove entire references section
         .replace(/- [^:]+: "[^"]*"[^\n]*/g, '') // Remove citation lines
         .replace(/\([^)]*20\d{2}[^)]*\)/g, '') // Remove date citations like (2025-06-12)
-        .replace(/BioPharma Dive|STAT News|Reuters|Bloomberg/gi, '') // Remove news source names
+        .replace(/BioPharma Dive|STAT News|Reuters|Bloomberg|FiercePharma|Pharmaceutical Executive|BioWorld/gi, '') // Remove news source names
+        .replace(/\d+\.\s*\[[^\]]+\]\([^)]+\)/g, '') // Remove numbered reference links like "1. [Title](URL)"
+        .replace(/\[\d+\]/g, '') // Remove citation numbers [1], [2], etc.
+        .replace(/Source from [^\n]*/gi, '') // Remove "Source from" lines
         .toLowerCase();
 
       // Find all pharmaceutical companies mentioned in the brief content
