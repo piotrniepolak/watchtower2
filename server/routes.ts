@@ -2074,6 +2074,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Defense Intelligence Latest Endpoint
+  app.get("/api/news/defense/latest", async (req, res) => {
+    try {
+      const news = await perplexityDefenseService.getTodaysDefenseIntelligence();
+      if (!news) {
+        return res.status(404).json({ error: "No defense intelligence available" });
+      }
+      res.json(news);
+    } catch (error) {
+      console.error("Error fetching latest defense intelligence:", error);
+      res.status(500).json({ error: "Failed to fetch defense intelligence" });
+    }
+  });
+
   // Defense News Routes
   app.get("/api/news/defense/today", async (req, res) => {
     try {
