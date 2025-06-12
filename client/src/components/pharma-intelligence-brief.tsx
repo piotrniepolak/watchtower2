@@ -206,12 +206,12 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
 };
 
 export default function PharmaIntelligenceBrief() {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [sectionsCollapsed, setSectionsCollapsed] = useState({
-    executiveSummary: false,
-    healthCrisis: false,
-    stockHighlights: false,
-    policyAnalysis: false
+    executiveSummary: true,
+    healthCrisis: true,
+    stockHighlights: true,
+    policyAnalysis: true,
+    marketImpact: true
   });
 
   const toggleSection = (section: keyof typeof sectionsCollapsed) => {
@@ -363,21 +363,28 @@ export default function PharmaIntelligenceBrief() {
       
       <CardContent className="space-y-6">
         {/* Executive Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="border border-slate-200 rounded-lg">
           <button
             onClick={() => toggleSection('executiveSummary')}
-            className="w-full p-4 flex items-center justify-between hover:bg-blue-100 transition-colors"
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
           >
-            <h3 className="font-semibold text-blue-900">Executive Summary</h3>
+            <h3 className="font-semibold flex items-center gap-2">
+              <FileText className="w-4 h-4 text-slate-600" />
+              Executive Summary
+            </h3>
             {sectionsCollapsed.executiveSummary ? (
-              <ChevronDown className="w-4 h-4 text-blue-700" />
+              <ChevronDown className="w-4 h-4 text-slate-600" />
             ) : (
-              <ChevronUp className="w-4 h-4 text-blue-700" />
+              <ChevronUp className="w-4 h-4 text-slate-600" />
             )}
           </button>
           {!sectionsCollapsed.executiveSummary && (
-            <div className="px-4 pb-4 text-blue-800 text-sm">
-              {formatContentWithSources(displayNews.summary)}
+            <div className="px-4 pb-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="text-blue-800 text-sm">
+                  {formatContentWithSources(displayNews.summary)}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -401,7 +408,7 @@ export default function PharmaIntelligenceBrief() {
           {!sectionsCollapsed.healthCrisis && (
             <div className="px-4 pb-4">
               <div className="grid gap-2">
-                {conflictUpdates.slice(0, isExpanded ? undefined : 2).map((update, index) => (
+                {conflictUpdates.map((update, index) => (
                   <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
                     <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
                       {update.severity.toUpperCase()}
@@ -436,7 +443,7 @@ export default function PharmaIntelligenceBrief() {
           {!sectionsCollapsed.stockHighlights && (
             <div className="px-4 pb-4">
               <div className="grid gap-2">
-                {stockHighlights.slice(0, isExpanded ? undefined : 2).map((stock, index) => (
+                {stockHighlights.map((stock, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -487,31 +494,36 @@ export default function PharmaIntelligenceBrief() {
           )}
         </div>
 
-        {/* Collapsible Market Impact & Analysis */}
-        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" className="w-full justify-between">
-              <span className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Market Impact & Analysis
-              </span>
-              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </Button>
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="space-y-4 mt-4">
-            {/* Market Impact */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Pharmaceutical Market Impact
-              </h4>
-              <div className="text-green-800 text-sm">
-                {formatContentWithSources(displayNews.marketImpact)}
+        {/* Market Impact & Analysis */}
+        <div className="border border-slate-200 rounded-lg">
+          <button
+            onClick={() => toggleSection('marketImpact')}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          >
+            <h3 className="font-semibold flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-slate-600" />
+              Market Impact & Analysis
+            </h3>
+            {sectionsCollapsed.marketImpact ? (
+              <ChevronDown className="w-4 h-4 text-slate-600" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+          {!sectionsCollapsed.marketImpact && (
+            <div className="px-4 pb-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Pharmaceutical Market Impact
+                </h4>
+                <div className="text-green-800 text-sm">
+                  {formatContentWithSources(displayNews.marketImpact)}
+                </div>
               </div>
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
