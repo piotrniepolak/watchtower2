@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import * as cheerio from 'cheerio';
 import { storage } from './storage';
 
 interface PerplexityResponse {
@@ -190,18 +191,62 @@ class PerplexityService {
       processedContent += '\n\n**References:**\n\n';
       
       validCitations.forEach((citation, index) => {
-        // Extract article title from URL if generic title is used
+        // Use the actual title from citation if available, otherwise extract from URL
         let displayTitle = citation.title;
-        if (displayTitle.includes('Source from') || displayTitle.toLowerCase().includes('biopharmadive.com') || displayTitle.toLowerCase().includes('statnews.com')) {
-          // Extract article title from URL pattern
+        
+        // If title is generic, contains source domain, or is just a number, extract from URL
+        if (!displayTitle || 
+            displayTitle.includes('Source from') || 
+            displayTitle.toLowerCase().includes('biopharmadive.com') || 
+            displayTitle.toLowerCase().includes('statnews.com') ||
+            displayTitle.match(/^\d+$/) || // Just a number
+            displayTitle.length < 3) { // Too short to be meaningful
+          
+          // Extract meaningful article title from URL structure
           const urlParts = citation.url.split('/');
-          const articleSlug = urlParts[urlParts.length - 2] || urlParts[urlParts.length - 1];
-          if (articleSlug) {
+          let articleSlug = '';
+          
+          // Handle different URL patterns with better slug extraction
+          if (citation.url.includes('biopharmadive.com/news/')) {
+            // BioPharma Dive: /news/article-slug/
+            const newsIndex = urlParts.findIndex(part => part === 'news');
+            if (newsIndex !== -1 && urlParts[newsIndex + 1]) {
+              articleSlug = urlParts[newsIndex + 1];
+            }
+          } else if (citation.url.includes('statnews.com/')) {
+            // STAT News: various patterns, try multiple approaches
+            const lastPart = urlParts[urlParts.length - 1];
+            const secondLastPart = urlParts[urlParts.length - 2];
+            
+            // If last part looks like article slug (not just year/date), use it
+            if (lastPart && !lastPart.match(/^\d{4}$/) && lastPart.length > 3) {
+              articleSlug = lastPart;
+            } else if (secondLastPart && secondLastPart.length > 3) {
+              articleSlug = secondLastPart;
+            }
+          } else {
+            // Generic fallback - look for meaningful slug in URL
+            for (let i = urlParts.length - 1; i >= 0; i--) {
+              const part = urlParts[i];
+              if (part && part.length > 3 && !part.match(/^\d+$/) && part !== 'news' && part !== 'articles') {
+                articleSlug = part;
+                break;
+              }
+            }
+          }
+          
+          if (articleSlug && articleSlug !== '') {
+            // Convert URL slug to readable title
             displayTitle = articleSlug
               .replace(/-/g, ' ')
               .replace(/\b\w/g, l => l.toUpperCase())
-              .replace(/\d+/g, match => match) // Keep numbers as is
+              .replace(/\b(And|Of|The|In|On|At|To|For|With|By)\b/g, word => word.toLowerCase())
+              .replace(/\b(A|An)\b/g, word => word.toLowerCase())
               .trim();
+          } else {
+            // Final fallback - use domain
+            const domain = new URL(citation.url).hostname.replace('www.', '');
+            displayTitle = `Article from ${domain}`;
           }
         }
         
