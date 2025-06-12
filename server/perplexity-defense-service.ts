@@ -1,5 +1,6 @@
 import { yahooFinanceService } from './yahoo-finance-service.js';
 import { storage } from './storage.js';
+import { perplexityConflictService } from './perplexity-conflict-service.js';
 import type { DailyNews, InsertDailyNews, NewsStockHighlight, NewsConflictUpdate, InsertStock } from '../shared/schema.js';
 
 interface PerplexityResponse {
@@ -116,6 +117,23 @@ export class PerplexityDefenseService {
       // Detect and add new companies mentioned in the research
       await this.detectAndAddDefenseCompanies(intelligenceBrief.rawContent);
 
+      // Generate comprehensive conflict updates with Perplexity AI
+      console.log('🌍 Generating comprehensive global conflict intelligence...');
+      const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
+      
+      // Enhance conflict updates with deep intelligence and source links
+      const enhancedConflictUpdates = conflictIntelligence.map(conflict => ({
+        conflict: conflict.conflictName,
+        region: conflict.region,
+        update: conflict.currentStatus,
+        severity: conflict.severity,
+        developments: conflict.recentDevelopments,
+        defenseImpact: conflict.defenseImpact,
+        marketImplications: conflict.marketImplications,
+        sourceLinks: conflict.sourceLinks,
+        lastUpdated: conflict.lastUpdated
+      }));
+
       // Create comprehensive defense intelligence object
       const defenseIntelligence: DailyNews = {
         id: Math.floor(Math.random() * 1000000),
@@ -125,11 +143,7 @@ export class PerplexityDefenseService {
         createdAt: new Date(),
         keyDevelopments: intelligenceBrief.keyDevelopments,
         marketImpact: intelligenceBrief.marketImpact,
-        conflictUpdates: intelligenceBrief.conflictUpdates.map(update => ({
-          conflict: update.region,
-          update: update.description,
-          severity: update.severity
-        })),
+        conflictUpdates: enhancedConflictUpdates,
         defenseStockHighlights: enhancedStockHighlights,
         pharmaceuticalStockHighlights: [],
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis

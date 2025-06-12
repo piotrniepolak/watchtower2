@@ -16,6 +16,7 @@ import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { pharmaNewsService } from "./pharma-news-service";
 import { perplexityDefenseService } from "./perplexity-defense-service";
+import { perplexityConflictService } from "./perplexity-conflict-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
@@ -2119,7 +2120,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Global Conflict Intelligence Routes
+  app.get("/api/conflicts/intelligence", async (req, res) => {
+    try {
+      console.log('🌍 Fetching comprehensive global conflict intelligence...');
+      
+      // Generate fresh conflict intelligence with Perplexity AI
+      const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
+      
+      if (!conflictIntelligence || conflictIntelligence.length === 0) {
+        return res.status(404).json({ error: "No conflict intelligence available" });
+      }
 
+      res.json({
+        timestamp: new Date().toISOString(),
+        conflictCount: conflictIntelligence.length,
+        conflicts: conflictIntelligence
+      });
+    } catch (error) {
+      console.error("Error fetching global conflict intelligence:", error);
+      res.status(500).json({ error: "Failed to fetch conflict intelligence" });
+    }
+  });
+
+  app.post("/api/conflicts/intelligence/generate", async (req, res) => {
+    try {
+      console.log('🌍 Generating fresh global conflict intelligence...');
+      
+      const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
+      
+      if (!conflictIntelligence || conflictIntelligence.length === 0) {
+        return res.status(500).json({ error: "Failed to generate conflict intelligence" });
+      }
+
+      console.log(`✅ Generated intelligence for ${conflictIntelligence.length} conflict regions`);
+      
+      res.json({
+        success: true,
+        timestamp: new Date().toISOString(),
+        conflictCount: conflictIntelligence.length,
+        conflicts: conflictIntelligence
+      });
+    } catch (error) {
+      console.error("Error generating global conflict intelligence:", error);
+      res.status(500).json({ error: "Failed to generate conflict intelligence" });
+    }
+  });
 
   // Daily Quiz Routes
   app.get("/api/quiz/today", async (req, res) => {
