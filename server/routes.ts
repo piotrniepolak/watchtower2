@@ -1642,11 +1642,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
       const comprehensiveStockHighlights = Array.from(mentionedSymbols).map(symbol => {
         const stock = healthcareStocks.find(s => s.symbol === symbol);
-        if (stock && stock.price > 0) {
+        if (stock) {
           // Check if there's existing analysis from the original highlights
           const existingHighlight = Array.isArray(news.pharmaceuticalStockHighlights) 
             ? news.pharmaceuticalStockHighlights.find((h: any) => h.symbol === symbol)
             : null;
+
+          // Handle companies without current market data (price = 0)
+          if (stock.price === 0) {
+            return {
+              symbol: stock.symbol,
+              name: stock.name,
+              price: 0,
+              change: 0,
+              changePercent: 0,
+              reason: 'Private/unlisted pharmaceutical company mentioned in intelligence brief'
+            };
+          }
 
           return {
             symbol: stock.symbol,
