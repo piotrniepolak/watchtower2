@@ -16,6 +16,7 @@ import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
 import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
+import TopOpportunityList from "@/components/top-opportunity-list";
 
 interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
@@ -227,7 +228,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
           </CardContent>
         </Card>
 
-
+        <TopOpportunityList />
       </div>
     </div>
   );
