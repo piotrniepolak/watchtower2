@@ -142,24 +142,32 @@ export class PerplexityDefenseService {
           }));
           console.log(`✅ Enhanced ${enhancedConflictUpdates.length} conflict updates with comprehensive intelligence`);
         } else {
-          console.log('⚠️ No conflict intelligence received, using enhanced conflict extraction from brief');
-          enhancedConflictUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent).map(update => ({
+          console.log('⚠️ No conflict intelligence received, creating enhanced conflict updates from brief content');
+          const basicUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent);
+          enhancedConflictUpdates = basicUpdates.map(update => ({
             ...update,
-            developments: [],
-            defenseImpact: "Analysis pending - monitoring for defense sector implications",
-            marketImplications: "Defense market impact under assessment",
+            conflictName: update.conflict,
+            currentStatus: update.update,
+            developments: this.extractDevelopmentsFromContent(intelligenceBrief.rawContent, update.conflict),
+            defenseImpact: this.extractDefenseImpactFromContent(intelligenceBrief.rawContent, update.conflict),
+            marketImplications: this.extractMarketImplicationsFromContent(intelligenceBrief.rawContent, update.conflict),
             sourceLinks: intelligenceBrief.citations || []
           }));
+          console.log(`✅ Enhanced ${enhancedConflictUpdates.length} conflict updates with comprehensive analysis`);
         }
       } catch (error) {
-        console.error('❌ Error generating conflict intelligence, using fallback:', error);
-        enhancedConflictUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent).map(update => ({
+        console.error('❌ Error generating conflict intelligence, creating enhanced fallback:', error);
+        const basicUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent);
+        enhancedConflictUpdates = basicUpdates.map(update => ({
           ...update,
-          developments: [],
-          defenseImpact: "Analysis pending - monitoring for defense sector implications",
-          marketImplications: "Defense market impact under assessment",
+          conflictName: update.conflict,
+          currentStatus: update.update,
+          developments: this.extractDevelopmentsFromContent(intelligenceBrief.rawContent, update.conflict),
+          defenseImpact: this.extractDefenseImpactFromContent(intelligenceBrief.rawContent, update.conflict),
+          marketImplications: this.extractMarketImplicationsFromContent(intelligenceBrief.rawContent, update.conflict),
           sourceLinks: intelligenceBrief.citations || []
         }));
+        console.log(`✅ Enhanced ${enhancedConflictUpdates.length} conflict updates with comprehensive fallback analysis`);
       }
 
       // Create comprehensive defense intelligence object
@@ -643,6 +651,61 @@ export class PerplexityDefenseService {
       pharmaceuticalStockHighlights: [],
       geopoliticalAnalysis: "Current global security environment characterized by multiple regional tensions requiring sustained defense investment and enhanced international cooperation. Strategic competition dynamics continue influencing defense procurement priorities, with emphasis on technological superiority and alliance strengthening initiatives across key theaters of operation."
     };
+  }
+
+  private extractDevelopmentsFromContent(content: string, conflictName: string): string[] {
+    const developments = [];
+    const contentLines = content.split('\n').filter(line => line.trim().length > 20);
+    
+    // Look for recent developments related to the conflict
+    const conflictKeywords = conflictName.toLowerCase().split(/[\s-]+/);
+    
+    for (const line of contentLines) {
+      const lineLower = line.toLowerCase();
+      if (conflictKeywords.some(keyword => lineLower.includes(keyword))) {
+        if (lineLower.includes('recent') || lineLower.includes('latest') || lineLower.includes('new') || 
+            lineLower.includes('today') || lineLower.includes('yesterday') || lineLower.includes('this week')) {
+          developments.push(line.trim());
+        }
+      }
+    }
+    
+    return developments.slice(0, 3); // Limit to 3 key developments
+  }
+
+  private extractDefenseImpactFromContent(content: string, conflictName: string): string {
+    const contentLower = content.toLowerCase();
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 30);
+    
+    // Look for defense-related impact statements
+    for (const sentence of sentences) {
+      const sentenceLower = sentence.toLowerCase();
+      if ((sentenceLower.includes('defense') || sentenceLower.includes('military') || 
+           sentenceLower.includes('weapons') || sentenceLower.includes('contractor')) &&
+          (sentenceLower.includes('impact') || sentenceLower.includes('effect') || 
+           sentenceLower.includes('influence') || sentenceLower.includes('opportunity'))) {
+        return sentence.trim();
+      }
+    }
+    
+    return `Defense sector monitoring ${conflictName} for potential procurement opportunities and strategic implications affecting major contractors and military technology development.`;
+  }
+
+  private extractMarketImplicationsFromContent(content: string, conflictName: string): string {
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 30);
+    
+    // Look for market-related implications
+    for (const sentence of sentences) {
+      const sentenceLower = sentence.toLowerCase();
+      if ((sentenceLower.includes('market') || sentenceLower.includes('stock') || 
+           sentenceLower.includes('investor') || sentenceLower.includes('financial')) &&
+          (sentenceLower.includes('impact') || sentenceLower.includes('effect') || 
+           sentenceLower.includes('opportunity') || sentenceLower.includes('growth'))) {
+        return sentence.trim();
+      }
+    }
+    
+    return `Market analysts tracking ${conflictName} developments for potential impacts on defense sector valuations, contract awards, and institutional investment flows.`;
   }
 
   async getTodaysDefenseIntelligence(): Promise<DailyNews | null> {
