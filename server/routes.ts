@@ -1670,12 +1670,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Find all pharmaceutical companies mentioned in the brief content
       const mentionedSymbols = new Set<string>();
       
-      // Check for company name mentions
-      Object.entries(companyToSymbolMap).forEach(([companyName, symbol]) => {
+      // Check for company name mentions and add to database if needed
+      for (const [companyName, symbol] of Object.entries(companyToSymbolMap)) {
         if (allBriefContent.includes(companyName)) {
           mentionedSymbols.add(symbol);
+          
+          // Immediately check if this company exists in database
+          const existingStock = healthcareStocks.find(s => s.symbol === symbol);
+          if (!existingStock) {
+            // Company name mapping for database entries
+            const companyNames: { [key: string]: string } = {
+              'BNTX': 'BioNTech SE',
+              'CVAC': 'CureVac N.V.',
+              'CTLT': 'Catalent Inc.',
+              'IQV': 'IQVIA Holdings Inc.',
+              'SYNH': 'Syneos Health Inc.',
+              'TMO': 'Thermo Fisher Scientific Inc.',
+              'DHR': 'Danaher Corporation',
+              'ILMN': 'Illumina Inc.'
+            };
+            
+            const properCompanyName = companyNames[symbol] || 
+              companyName.split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+              ).join(' ');
+            
+            // Add the new pharmaceutical company to database immediately
+            try {
+              await storage.createStock({
+                symbol,
+                name: properCompanyName,
+                sector: 'Healthcare',
+                price: 0,
+                change: 0,
+                changePercent: 0,
+                volume: 0
+              });
+              
+              console.log(`✅ Auto-added pharmaceutical company: ${symbol} - ${properCompanyName}`);
+              
+              // Add to healthcare stocks array for immediate use
+              healthcareStocks.push({
+                id: Date.now(),
+                symbol,
+                name: properCompanyName,
+                lastUpdated: new Date(),
+                sector: 'Healthcare',
+                price: 0,
+                change: 0,
+                changePercent: 0,
+                volume: 0,
+                marketCap: null
+              });
+              
+            } catch (error) {
+              console.log(`⚠️ Could not auto-add ${symbol} to database:`, error);
+            }
+          }
         }
-      });
+      }
 
       // Check for direct stock symbol mentions
       healthcareStocks.forEach(stock => {
@@ -1686,6 +1739,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       console.log(`🔍 Extracted ${mentionedSymbols.size} pharmaceutical companies from brief content: ${Array.from(mentionedSymbols).join(', ')}`);
+
+      // Refresh healthcare stocks list after any auto-additions
+      const allStocksRefreshed = await storage.getStocks();
+      const refreshedHealthcareStocks = allStocksRefreshed.filter(stock => stock.sector === 'Healthcare');
 
       // Generate comprehensive pharmaceutical stock highlights for mentioned companies
 
