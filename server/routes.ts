@@ -18,7 +18,7 @@ import { pharmaNewsService } from "./pharma-news-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
-
+import { yahooFinanceService } from "./yahoo-finance-service";
 
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
@@ -700,6 +700,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching sector stocks:', error);
       res.status(500).json({ error: 'Failed to fetch sector stocks' });
+    }
+  });
+
+  // Yahoo Finance stock quote endpoint
+  app.get('/api/stocks/:symbol/quote', async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const quote = await yahooFinanceService.getStockQuote(symbol.toUpperCase());
+      
+      if (!quote) {
+        return res.status(404).json({ error: `Stock quote not found for symbol: ${symbol}` });
+      }
+      
+      res.json(quote);
+    } catch (error) {
+      console.error(`Error fetching quote for ${req.params.symbol}:`, error);
+      res.status(500).json({ error: 'Failed to fetch stock quote' });
+    }
+  });
+
+  // Yahoo Finance historical chart data endpoint
+  app.get('/api/stocks/:symbol/chart', async (req, res) => {
+    try {
+      const { symbol } = req.params;
+      const { timeRange = '1D' } = req.query;
+      
+      const validTimeRanges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'Max'];
+      const selectedTimeRange = validTimeRanges.includes(timeRange as string) ? timeRange as string : '1D';
+      
+      const chartData = await yahooFinanceService.getStockChart(symbol.toUpperCase(), selectedTimeRange);
+      
+      if (!chartData) {
+        return res.status(404).json({ error: `Chart data not found for symbol: ${symbol}` });
+      }
+      
+      res.json(chartData);
+    } catch (error) {
+      console.error(`Error fetching chart for ${req.params.symbol}:`, error);
+      res.status(500).json({ error: 'Failed to fetch chart data' });
     }
   });
 

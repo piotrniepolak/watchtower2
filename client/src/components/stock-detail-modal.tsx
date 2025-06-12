@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, TrendingUp, TrendingDown, Calendar, DollarSign, BarChart3, Star } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 interface StockDetailModalProps {
   isOpen: boolean;
@@ -18,49 +19,55 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   const [timeRange, setTimeRange] = useState('1D');
   const [isFollowing, setIsFollowing] = useState(false);
 
+  // Fetch authentic stock quote data from Yahoo Finance
+  const { data: stockQuote, isLoading: quoteLoading } = useQuery({
+    queryKey: [`/api/stocks/${stock.symbol}/quote`],
+    enabled: isOpen && !!stock.symbol,
+    refetchInterval: 30000, // Refresh every 30 seconds when modal is open
+  });
+
+  // Fetch authentic chart data from Yahoo Finance
+  const { data: chartData, isLoading: chartLoading } = useQuery({
+    queryKey: [`/api/stocks/${stock.symbol}/chart`, timeRange],
+    enabled: isOpen && !!stock.symbol,
+    refetchInterval: timeRange === '1D' ? 60000 : 300000, // More frequent for intraday
+  });
+
   if (!isOpen) return null;
 
   const isPositive = stock.changePercent >= 0;
   const timeRanges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'Max'];
 
-  // Mock financial data - in a real app, this would come from an API
-  const mockData = {
-    open: stock.price - (stock.change * 0.8),
-    high: stock.price + Math.abs(stock.change * 1.2),
-    low: stock.price - Math.abs(stock.change * 1.5),
-    marketCap: stock.symbol === 'STOK' ? '627.86M' : 
-               stock.symbol === 'PFE' ? '140.2B' :
-               stock.symbol === 'JNJ' ? '392.1B' : '2.5B',
-    peRatio: stock.symbol === 'STOK' ? '14.62' :
-             stock.symbol === 'PFE' ? '15.2' :
-             stock.symbol === 'JNJ' ? '16.8' : '-',
-    week52High: stock.price * 1.4,
-    week52Low: stock.price * 0.6,
-    divYield: stock.symbol === 'PFE' ? '5.8%' :
-              stock.symbol === 'JNJ' ? '2.9%' : '-',
-    qtrlyDivAmt: stock.symbol === 'PFE' ? '0.42' :
-                 stock.symbol === 'JNJ' ? '1.19' : '-'
+  // Use authentic Yahoo Finance data or display loading state
+  const displayData = stockQuote || {
+    open: 0,
+    high: 0,
+    low: 0,
+    marketCap: 0,
+    peRatio: null,
+    week52High: 0,
+    week52Low: 0,
+    divYield: null,
+    eps: null
   };
 
-  // Generate mock chart data points
-  const generateChartData = () => {
-    const points = 50;
-    const data = [];
-    let currentPrice = stock.price - stock.change;
-    
-    for (let i = 0; i < points; i++) {
-      const variation = (Math.random() - 0.5) * (Math.abs(stock.change) * 0.1);
-      currentPrice += variation;
-      if (i === points - 1) currentPrice = stock.price; // End at current price
-      data.push({ x: i, y: currentPrice });
+  // Process authentic chart data for display
+  const processChartData = () => {
+    if (!chartData || !chartData.data || chartData.data.length === 0) {
+      return [];
     }
-    return data;
+    
+    return chartData.data.map((point: any, index: number) => ({
+      x: index,
+      y: point.close,
+      timestamp: point.date
+    }));
   };
 
-  const chartData = generateChartData();
-  const minPrice = Math.min(...chartData.map(d => d.y));
-  const maxPrice = Math.max(...chartData.map(d => d.y));
-  const priceRange = maxPrice - minPrice;
+  const processedChartData = processChartData();
+  const minPrice = processedChartData.length > 0 ? Math.min(...processedChartData.map(d => d.y)) : 0;
+  const maxPrice = processedChartData.length > 0 ? Math.max(...processedChartData.map(d => d.y)) : 0;
+  const priceRange = maxPrice - minPrice || 1;
 
   const createPath = (data: Array<{x: number, y: number}>) => {
     if (data.length === 0) return '';
