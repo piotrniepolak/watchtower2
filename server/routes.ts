@@ -1632,6 +1632,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'merck': 'MRK',
         'abbvie': 'ABBV',
         'novartis': 'NVS',
+        'novo nordisk': 'NVO',
         'astrazeneca': 'AZN',
         'bristol myers': 'BMY',
         'bristol-myers squibb': 'BMY',
@@ -1643,7 +1644,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'solid': 'SLDB',
         'solid biosciences': 'SLDB',
         'stoke': 'STOK',
-        'stoke therapeutics': 'STOK'
+        'stoke therapeutics': 'STOK',
+        'biontech': 'BNTX',
+        'curevac': 'CVAC',
+        'catalent': 'CTLT',
+        'iqvia': 'IQV',
+        'syneos': 'SYNH',
+        'thermo fisher': 'TMO',
+        'danaher': 'DHR',
+        'illumina': 'ILMN'
       };
 
       // Extract all text content from the entire brief
@@ -1683,6 +1692,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
       const comprehensiveStockHighlights = Array.from(mentionedSymbols).map(symbol => {
         const stock = healthcareStocks.find(s => s.symbol === symbol);
+        
+        // Handle companies not in the main database
+        if (!stock) {
+          console.log(`📊 Stock ${symbol} not found in database, adding as mentioned company`);
+          
+          // Get company name from reverse mapping
+          const companyName = Object.keys(companyToSymbolMap).find(key => 
+            companyToSymbolMap[key] === symbol
+          );
+          
+          // Company descriptors for non-tracked companies
+          const nonTrackedDescriptors: { [key: string]: string } = {
+            'BNTX': 'German biotechnology company focused on immunotherapies for cancer and infectious diseases, including COVID-19 vaccines.',
+            'CVAC': 'German biopharmaceutical company developing mRNA-based vaccines and therapies for infectious diseases and cancer.',
+            'CTLT': 'Contract development and manufacturing organization providing services to pharmaceutical and biotechnology companies.',
+            'IQV': 'Contract research organization providing clinical trial services and healthcare data analytics.',
+            'SYNH': 'Contract research organization offering clinical development and commercialization services.',
+            'TMO': 'Life sciences company providing analytical instruments, equipment, reagents, and consumables.',
+            'DHR': 'Global science and technology company serving the diagnostics, life sciences, and environmental markets.',
+            'ILMN': 'Biotechnology company developing sequencing and microarray technologies for genetic analysis.'
+          };
+          
+          return {
+            symbol,
+            name: companyName ? companyName.split(' ').map(word => 
+              word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ') : `${symbol} Pharmaceuticals`,
+            price: 0,
+            change: 0,
+            changePercent: 0,
+            reason: nonTrackedDescriptors[symbol] || `${symbol} represents a pharmaceutical entity highlighted in current intelligence analysis.`
+          };
+        }
+        
         if (stock) {
           // Check if there's existing analysis from the original highlights
           const existingHighlight = Array.isArray(news.pharmaceuticalStockHighlights) 
