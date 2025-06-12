@@ -408,8 +408,9 @@ Ensure each reference includes the source name followed by a colon and the artic
         
         stockHighlights.push({
           symbol: stockData.symbol,
-          company: stockData.name,
+          name: stockData.name,
           price: stockData.price,
+          change: stockData.change,
           changePercent: stockData.changePercent,
           reason: fallbackAnalysis
         });
