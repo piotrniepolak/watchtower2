@@ -85,7 +85,7 @@ export class PharmaNewsService {
       return {
         id: Math.floor(Math.random() * 1000000),
         date,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
         ...newsData
       } as DailyNews;
     } catch (error) {

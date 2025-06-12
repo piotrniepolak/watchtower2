@@ -101,9 +101,9 @@ export default function PharmaIntelligenceBrief() {
     return "text-slate-600";
   };
 
-  const conflictUpdates = news.conflictUpdates as NewsConflictUpdate[];
-  const stockHighlights = news.defenseStockHighlights as NewsStockHighlight[];
-  const keyDevelopments = news.keyDevelopments as string[];
+  const conflictUpdates = (news.conflictUpdates as NewsConflictUpdate[]) || [];
+  const stockHighlights = (news.defenseStockHighlights as NewsStockHighlight[]) || [];
+  const keyDevelopments = (news.keyDevelopments as string[]) || [];
 
   return (
     <Card className="w-full">
@@ -112,7 +112,7 @@ export default function PharmaIntelligenceBrief() {
           <div className="flex items-center gap-2">
             <Pill className="w-5 h-5 text-blue-600" />
             <div>
-              <CardTitle className="text-lg">{adaptToPharmaContext(news.title)}</CardTitle>
+              <CardTitle className="text-lg">{news.title}</CardTitle>
               <CardDescription className="mt-1">
                 Daily Pharmaceutical Intelligence Brief
               </CardDescription>
@@ -128,7 +128,7 @@ export default function PharmaIntelligenceBrief() {
         {/* Executive Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Executive Summary</h3>
-          <p className="text-blue-800 text-sm leading-relaxed">{adaptToPharmaContext(news.summary)}</p>
+          <p className="text-blue-800 text-sm leading-relaxed">{news.summary}</p>
         </div>
 
         {/* Key Developments */}
@@ -141,7 +141,7 @@ export default function PharmaIntelligenceBrief() {
             {keyDevelopments.slice(0, isExpanded ? undefined : 3).map((development, index) => (
               <div key={index} className="flex items-start gap-2 text-sm">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                <p className="text-slate-700">{adaptToPharmaContext(development)}</p>
+                <p className="text-slate-700">{development}</p>
               </div>
             ))}
           </div>
@@ -154,7 +154,7 @@ export default function PharmaIntelligenceBrief() {
             Global Health Crisis Updates
           </h3>
           <div className="grid gap-2">
-            {healthCrisisUpdates.slice(0, isExpanded ? undefined : 2).map((update, index) => (
+            {conflictUpdates.slice(0, isExpanded ? undefined : 2).map((update, index) => (
               <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
                 <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
                   {update.severity.toUpperCase()}
@@ -175,7 +175,7 @@ export default function PharmaIntelligenceBrief() {
             Pharmaceutical Stock Highlights
           </h3>
           <div className="grid gap-2">
-            {pharmaStockHighlights.slice(0, isExpanded ? undefined : 2).map((stock, index) => (
+            {stockHighlights.slice(0, isExpanded ? undefined : 2).map((stock, index) => (
               <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
@@ -216,7 +216,7 @@ export default function PharmaIntelligenceBrief() {
                 <DollarSign className="w-4 h-4" />
                 Pharmaceutical Market Impact
               </h4>
-              <p className="text-green-800 text-sm leading-relaxed">{adaptToPharmaContext(news.marketImpact)}</p>
+              <p className="text-green-800 text-sm leading-relaxed">{news.marketImpact}</p>
             </div>
 
             {/* Regulatory Analysis */}
@@ -225,7 +225,7 @@ export default function PharmaIntelligenceBrief() {
                 <Globe className="w-4 h-4" />
                 Regulatory & Policy Analysis
               </h4>
-              <p className="text-purple-800 text-sm leading-relaxed">{adaptToPharmaContext(news.geopoliticalAnalysis)}</p>
+              <p className="text-purple-800 text-sm leading-relaxed">{news.geopoliticalAnalysis}</p>
             </div>
 
             {/* Additional Key Developments */}
@@ -236,7 +236,7 @@ export default function PharmaIntelligenceBrief() {
                   {keyDevelopments.slice(3).map((development, index) => (
                     <div key={index + 3} className="flex items-start gap-2 text-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                      <p className="text-slate-700">{adaptToPharmaContext(development)}</p>
+                      <p className="text-slate-700">{development}</p>
                     </div>
                   ))}
                 </div>
@@ -244,11 +244,11 @@ export default function PharmaIntelligenceBrief() {
             )}
 
             {/* Additional Health Crisis Updates */}
-            {healthCrisisUpdates.length > 2 && (
+            {conflictUpdates.length > 2 && (
               <div className="space-y-2">
                 <h4 className="font-semibold text-slate-900">Additional Health Crisis Updates</h4>
                 <div className="grid gap-2">
-                  {healthCrisisUpdates.slice(2).map((update, index) => (
+                  {conflictUpdates.slice(2).map((update, index) => (
                     <div key={index + 2} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
                       <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
                         {update.severity.toUpperCase()}
@@ -264,11 +264,11 @@ export default function PharmaIntelligenceBrief() {
             )}
 
             {/* Additional Stock Highlights */}
-            {pharmaStockHighlights.length > 2 && (
+            {stockHighlights.length > 2 && (
               <div className="space-y-2">
                 <h4 className="font-semibold text-slate-900">Additional Stock Movements</h4>
                 <div className="grid gap-2">
-                  {pharmaStockHighlights.slice(2).map((stock, index) => (
+                  {stockHighlights.slice(2).map((stock, index) => (
                     <div key={index + 2} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
