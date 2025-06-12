@@ -124,6 +124,8 @@ class PerplexityService {
         }
       });
 
+      console.log(`✅ Normalized ${normalizedCitations.length} citations:`, normalizedCitations.map(c => c.url));
+
       return {
         content: data.choices[0]?.message?.content || '',
         citations: normalizedCitations
@@ -136,6 +138,7 @@ class PerplexityService {
 
   private processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): string {
     console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
+    console.log(`🔗 Citations received in processContentWithLinks:`, JSON.stringify(citations, null, 2));
     
     if (!citations || citations.length === 0) {
       console.log('⚠️ No citations provided for content processing');
