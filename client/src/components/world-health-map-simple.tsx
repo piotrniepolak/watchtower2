@@ -10526,7 +10526,7 @@ export default function WorldHealthMapSimple() {
         const width = 960;
         const height = 500;
         const projection = geoNaturalEarth1()
-          .scale(150)  // Increased scale so Greenland/Antarctica actually touch edges
+          .scale(180)  // Further increased scale for Greenland/Antarctica to touch edges
           .center([0, 0])  // Centered view
           .translate([width / 2, height / 2]);
         
