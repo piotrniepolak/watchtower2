@@ -187,6 +187,7 @@ Ensure each reference includes the source name followed by a colon and the artic
       'novartis': 'NVS',
       'roche': 'RHHBY',
       'merck': 'MRK',
+      'bayer': 'BAYRY',
       'bristol myers squibb': 'BMY',
       'bristol-myers squibb': 'BMY',
       'bms': 'BMY',
