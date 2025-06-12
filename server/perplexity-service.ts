@@ -236,9 +236,9 @@ Ensure each reference includes the source name followed by a colon and the artic
 
     const normalizedMention = mention.toLowerCase().trim();
     
-    // Check if it's already a stock symbol
-    if (/^[A-Z]{2,5}$/.test(mention.toUpperCase())) {
-      return mention.toUpperCase();
+    // Check if it's already a stock symbol (only if it's already in uppercase)
+    if (/^[A-Z]{2,5}$/.test(mention) && mention === mention.toUpperCase()) {
+      return mention;
     }
     
 
@@ -284,6 +284,10 @@ Ensure each reference includes the source name followed by a colon and the artic
     companyMentions.forEach(mention => {
       const symbol = this.getStockSymbolFromMention(mention);
       console.log(`📊 Company "${mention}" -> Symbol: ${symbol || 'NOT FOUND'}`);
+      // Additional debug for problematic mappings
+      if (mention.toLowerCase() === 'roche' || mention.toLowerCase() === 'bayer') {
+        console.log(`🐛 Debug mapping for "${mention}": normalized="${mention.toLowerCase()}", symbol="${symbol}"`);
+      }
     });
 
     if (uniqueSymbols.length === 0) {
