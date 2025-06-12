@@ -1721,7 +1721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
 
           const extractCompanyQuote = (symbol: string, companyName: string): string => {
-            // Get all content from the brief
+            // Get all content from the daily pharmaceutical brief
             const briefContent = [
               news.summary || '',
               ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
@@ -1729,52 +1729,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
               news.geopoliticalAnalysis || ''
             ].join(' ');
 
-            // Create specific mappings for companies mentioned in brief
-            const companyMentions: { [key: string]: string } = {
-              'NUVB': 'Nuvation Bio',
-              'BAYRY': 'Bayer',
-              'BMY': 'Bristol Myers',
-              'RHHBY': 'Roche', 
-              'SNY': 'Sanofi',
-              'GSK': 'GSK',
-              'BIIB': 'Biogen',
-              'JNJ': 'Johnson & Johnson',
-              'VRTX': 'Vertex',
-              'RARE': 'Ultragenyx',
-              'STOK': 'Stoke',
-              'SLDB': 'Solid'
-            };
-
-            const searchTerms = [
+            // Create comprehensive company name variations for matching
+            const companyIdentifiers = [
               symbol,
               companyName,
-              companyMentions[symbol] || ''
-            ].filter(term => term.length > 0);
+              // Add common variations from company-to-symbol mapping
+              ...Object.entries(companyToSymbolMap)
+                .filter(([name, sym]) => sym === symbol)
+                .map(([name]) => name)
+            ];
 
-            // Split content more aggressively to capture sentences
-            const allText = briefContent.replace(/\*\*/g, '').replace(/###?\s*/g, '');
-            const sentences = allText.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 40);
-            
-            // Look for sentences containing company mentions
+            // Clean the content and split into sentences
+            const cleanContent = briefContent
+              .replace(/\*\*/g, '') // Remove markdown bold
+              .replace(/###?\s*/g, '') // Remove headers
+              .replace(/\[(\d+)\]/g, '') // Remove citation numbers
+              .replace(/^\s*[-*]\s*/gm, ''); // Remove bullet points
+
+            // Split into sentences using multiple delimiters
+            const sentences = cleanContent
+              .split(/[.!?]+/)
+              .map(s => s.trim())
+              .filter(s => s.length > 40); // Only meaningful sentences
+
+            // Find the best sentence mentioning this company
             for (const sentence of sentences) {
               const lowerSentence = sentence.toLowerCase();
               
-              for (const searchTerm of searchTerms) {
-                if (searchTerm && lowerSentence.includes(searchTerm.toLowerCase())) {
-                  // Clean the sentence
-                  let cleanSentence = sentence
-                    .replace(/\[(\d+)\]/g, '') // Remove citations
-                    .replace(/^\s*[-*]\s*/, '') // Remove bullet points
-                    .trim();
-                  
-                  if (!cleanSentence.match(/[.!?]$/)) {
-                    cleanSentence += '.';
-                  }
-                  
-                  // Only return substantial content
-                  if (cleanSentence.length > 60 && 
-                      !cleanSentence.startsWith('References') &&
-                      !cleanSentence.includes('Executive Summary')) {
+              // Check if sentence contains any variation of the company name
+              for (const identifier of companyIdentifiers) {
+                if (identifier && lowerSentence.includes(identifier.toLowerCase())) {
+                  // Ensure it's a substantial, informative sentence
+                  if (sentence.length > 60 && 
+                      !sentence.toLowerCase().includes('executive summary') &&
+                      !sentence.toLowerCase().includes('references') &&
+                      !sentence.toLowerCase().startsWith('the pharmaceutical industry') &&
+                      (sentence.includes('FDA') || sentence.includes('approved') || 
+                       sentence.includes('announced') || sentence.includes('acquired') ||
+                       sentence.includes('cleared') || sentence.includes('agreed') ||
+                       sentence.includes('secured') || sentence.includes('raised'))) {
+                    
+                    // Clean and format the sentence
+                    let cleanSentence = sentence.trim();
+                    if (!cleanSentence.match(/[.!?]$/)) {
+                      cleanSentence += '.';
+                    }
+                    
                     return cleanSentence;
                   }
                 }
@@ -1791,7 +1791,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const briefQuote = extractCompanyQuote(stock.symbol, stock.name);
             
             if (briefQuote && briefQuote.length > 30) {
-              return `${baseDescription} Brief excerpt: "${briefQuote}"`;
+              return `${baseDescription} Intelligence Brief: "${briefQuote}"`;
             }
             
             return baseDescription;
