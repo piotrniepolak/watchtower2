@@ -6,6 +6,8 @@ import type { DailyNews, InsertDailyNews, NewsConflictUpdate, NewsStockHighlight
 export class PharmaNewsService {
   private openai: OpenAI;
   private isGenerating = false;
+  private scheduledGeneration: NodeJS.Timeout | null = null;
+  private lastGenerationDate: string | null = null;
 
   constructor() {
     if (!process.env.OPENAI_API_KEY) {
@@ -15,6 +17,69 @@ export class PharmaNewsService {
       console.warn("PERPLEXITY_API_KEY environment variable is missing - current healthcare events fetching will be limited");
     }
     this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'dummy-key' });
+    this.initializeDailyScheduler();
+  }
+
+  private initializeDailyScheduler(): void {
+    console.log("📅 Initializing daily pharmaceutical intelligence scheduler");
+    this.scheduleNextGeneration();
+  }
+
+  private scheduleNextGeneration(): void {
+    if (this.scheduledGeneration) {
+      clearTimeout(this.scheduledGeneration);
+    }
+
+    const now = new Date();
+    const nextMidnightET = this.getNextMidnightET();
+    const msUntilMidnight = nextMidnightET.getTime() - now.getTime();
+
+    console.log(`⏰ Next pharmaceutical intelligence generation scheduled for: ${nextMidnightET.toLocaleString('en-US', { timeZone: 'America/New_York' })} ET`);
+    console.log(`⏱️  Time until next generation: ${Math.round(msUntilMidnight / 1000 / 60)} minutes`);
+
+    this.scheduledGeneration = setTimeout(async () => {
+      await this.performScheduledGeneration();
+      this.scheduleNextGeneration(); // Schedule the next day
+    }, msUntilMidnight);
+  }
+
+  private getNextMidnightET(): Date {
+    const now = new Date();
+    const etNow = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+    
+    // Create next midnight in ET
+    const nextMidnightET = new Date(etNow);
+    nextMidnightET.setHours(24, 0, 0, 0); // Set to midnight of next day
+    
+    // Convert back to UTC for setTimeout
+    const offset = etNow.getTime() - now.getTime();
+    return new Date(nextMidnightET.getTime() - offset);
+  }
+
+  private async performScheduledGeneration(): Promise<void> {
+    const todayET = new Date().toLocaleDateString('en-US', { 
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).split('/').reverse().join('-').replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$2-$3');
+
+    if (this.lastGenerationDate === todayET) {
+      console.log(`📋 Daily pharmaceutical intelligence already generated for ${todayET}, skipping scheduled generation`);
+      return;
+    }
+
+    console.log(`🕛 Performing scheduled midnight ET pharmaceutical intelligence generation for ${todayET}`);
+    
+    try {
+      const result = await this.generatePerplexityIntelligenceBrief();
+      if (result) {
+        this.lastGenerationDate = todayET;
+        console.log(`✅ Scheduled pharmaceutical intelligence generation completed successfully for ${todayET}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error in scheduled pharmaceutical intelligence generation for ${todayET}:`, error);
+    }
   }
 
   private async fetchCurrentHealthcareEvents(): Promise<string> {
@@ -306,6 +371,29 @@ Make all content specific to healthcare and pharmaceuticals - no military or def
 
   async getTodaysPharmaNews(): Promise<DailyNews | null> {
     const today = new Date().toISOString().split('T')[0];
+    
+    // Check if we already have today's news
+    const existingNews = await storage.getDailyNews(today);
+    if (existingNews) {
+      console.log(`📋 Using existing pharmaceutical intelligence brief for ${today}`);
+      return existingNews;
+    }
+    
+    // Only generate new intelligence during scheduled time or if none exists
+    // This prevents multiple generations per day
+    const todayET = new Date().toLocaleDateString('en-US', { 
+      timeZone: 'America/New_York',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).split('/').reverse().join('-').replace(/(\d{4})-(\d{2})-(\d{2})/, '$1-$2-$3');
+    
+    if (this.lastGenerationDate === todayET) {
+      console.log(`📋 Daily pharmaceutical intelligence already generated for ${todayET}, returning existing or null`);
+      return existingNews;
+    }
+    
+    // Generate new intelligence (this will be primary method for first-time generation)
     return this.generateDailyPharmaNews(today);
   }
 }

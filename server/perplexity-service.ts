@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { storage } from './storage';
 
 interface PerplexityResponse {
   choices: Array<{
@@ -153,41 +154,212 @@ Ensure each reference includes the source name followed by a colon and the artic
     return updates;
   }
 
-  async generatePharmaceuticalStockAnalysis(): Promise<Array<{
+  private extractCompanyMentions(content: string): string[] {
+    // Common pharmaceutical company patterns to match
+    const pharmaPatterns = [
+      // Full company names
+      /\b(Pfizer|Johnson\s*&\s*Johnson|Moderna|AstraZeneca|Novartis|Roche|Merck|Bristol\s*Myers\s*Squibb|Eli\s*Lilly|Abbott|Amgen|Gilead|Biogen|Regeneron|Vertex|AbbVie|Sanofi|GlaxoSmithKline|GSK|Bayer|Boehringer\s*Ingelheim|Takeda|Daiichi\s*Sankyo|Astellas|Eisai|Ono\s*Pharmaceutical|Chugai|Shionogi|Sumitomo\s*Dainippon|Mitsubishi\s*Tanabe|Kyowa\s*Kirin|Otsuka|Teva|Mylan|Viatris|Allergan|Celgene|Kite\s*Pharma|Juno\s*Therapeutics|CAR-T|Immunomedics|Seattle\s*Genetics|Seagen|BioNTech|CureVac|Inovio|Novavax|Valneva|Bavarian\s*Nordic|Emergent\s*BioSolutions|CSL\s*Behring|Grifols|Octapharma|Kedrion|Biotest|LFB|Plasma\s*Protein\s*Therapeutics|Association)\b/gi,
+      // Stock ticker patterns
+      /\b(PFE|JNJ|MRNA|AZN|NVS|RHHBY|MRK|BMY|LLY|ABT|AMGN|GILD|BIIB|REGN|VRTX|ABBV|SNY|GSK|BAYRY|BMRN|TAK|DSNKY|ALPMY|ESALY|SHTDY|SUMIY|MTBHY|KYKHY|OTSKY|TEVA|MYL|VTRS|AGN|CELG|KITE|JUNO|CART|IMMU|SGEN|BNTX|CVAC|INO|NVAX|VALN|BVNRY|EBS|CSL|GRFS|OCTA|KEDR|BIOTEST|LFB|PPTA)\b/g
+    ];
+
+    const mentions = new Set<string>();
+    
+    pharmaPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        matches.forEach(match => mentions.add(match.trim()));
+      }
+    });
+
+    return Array.from(mentions);
+  }
+
+  private getStockSymbolFromMention(mention: string): string | null {
+    // Map company names and variations to stock symbols
+    const companyToSymbol: Record<string, string> = {
+      'pfizer': 'PFE',
+      'johnson & johnson': 'JNJ',
+      'johnson&johnson': 'JNJ',
+      'j&j': 'JNJ',
+      'moderna': 'MRNA',
+      'astrazeneca': 'AZN',
+      'novartis': 'NVS',
+      'roche': 'RHHBY',
+      'merck': 'MRK',
+      'bristol myers squibb': 'BMY',
+      'bristol-myers squibb': 'BMY',
+      'bms': 'BMY',
+      'eli lilly': 'LLY',
+      'lilly': 'LLY',
+      'abbott': 'ABT',
+      'amgen': 'AMGN',
+      'gilead': 'GILD',
+      'biogen': 'BIIB',
+      'regeneron': 'REGN',
+      'vertex': 'VRTX',
+      'abbvie': 'ABBV',
+      'sanofi': 'SNY',
+      'glaxosmithkline': 'GSK',
+      'gsk': 'GSK',
+      'bayer': 'BAYRY',
+      'biomarin': 'BMRN',
+      'takeda': 'TAK',
+      'daiichi sankyo': 'DSNKY',
+      'astellas': 'ALPMY',
+      'eisai': 'ESALY',
+      'shionogi': 'SHTDY',
+      'sumitomo dainippon': 'SUMIY',
+      'mitsubishi tanabe': 'MTBHY',
+      'kyowa kirin': 'KYKHY',
+      'otsuka': 'OTSKY',
+      'teva': 'TEVA',
+      'mylan': 'MYL',
+      'viatris': 'VTRS',
+      'allergan': 'AGN',
+      'celgene': 'CELG',
+      'seattle genetics': 'SGEN',
+      'seagen': 'SGEN',
+      'biontech': 'BNTX',
+      'curevac': 'CVAC',
+      'inovio': 'INO',
+      'novavax': 'NVAX',
+      'valneva': 'VALN',
+      'bavarian nordic': 'BVNRY',
+      'emergent biosolutions': 'EBS',
+      'csl behring': 'CSL',
+      'grifols': 'GRFS',
+      'octapharma': 'OCTA'
+    };
+
+    const normalizedMention = mention.toLowerCase().trim();
+    
+    // Check if it's already a stock symbol
+    if (/^[A-Z]{2,5}$/.test(mention.toUpperCase())) {
+      return mention.toUpperCase();
+    }
+    
+    // Look up company name
+    return companyToSymbol[normalizedMention] || null;
+  }
+
+  async generatePharmaceuticalStockAnalysis(
+    executiveSummary: string = '',
+    keyDevelopments: string[] = [],
+    healthCrisisUpdates: any[] = [],
+    marketImpact: string = '',
+    regulatoryAnalysis: string = ''
+  ): Promise<Array<{
     symbol: string;
     company: string;
     price: number;
     change: number;
     analysis: string;
   }>> {
-    const prompt = `Provide current analysis of major pharmaceutical stocks including Pfizer (PFE), Johnson & Johnson (JNJ), Moderna (MRNA), focusing on recent developments affecting their stock performance, pipeline updates, and market outlook. Include specific catalysts driving price movements.`;
-    
-    const response = await this.queryPerplexity(prompt);
-    
-    // Return structured stock highlights with current market data
-    return [
-      {
-        symbol: "PFE",
-        company: "Pfizer Inc.",
-        price: 24.48,
-        change: 0.74,
-        analysis: "Strong pipeline momentum with multiple Phase 3 trials ongoing, particularly in oncology and rare diseases"
-      },
-      {
-        symbol: "JNJ",
-        company: "Johnson & Johnson",
-        price: 155.26,
-        change: -0.76,
-        analysis: "Diversified healthcare portfolio showing resilience amid ongoing pharmaceutical innovation investments"
-      },
-      {
-        symbol: "MRNA",
-        company: "Moderna Inc.",
-        price: 27.75,
-        change: 0.25,
-        analysis: "mRNA platform expansion beyond COVID-19 into cancer vaccines and other therapeutic areas"
+    // Combine all content from other sections
+    const allContent = [
+      executiveSummary,
+      ...keyDevelopments,
+      ...healthCrisisUpdates.map(update => `${update.region} ${update.description} ${update.healthImpact}`),
+      marketImpact,
+      regulatoryAnalysis
+    ].join(' ');
+
+    // Extract company mentions from all sections
+    const companyMentions = this.extractCompanyMentions(allContent);
+    const stockSymbols = companyMentions
+      .map(mention => this.getStockSymbolFromMention(mention))
+      .filter((symbol): symbol is string => symbol !== null);
+
+    // Remove duplicates
+    const uniqueSymbols = Array.from(new Set(stockSymbols));
+
+    console.log(`🔍 Extracted ${uniqueSymbols.length} pharmaceutical companies from brief content: ${uniqueSymbols.join(', ')}`);
+
+    if (uniqueSymbols.length === 0) {
+      console.log('⚠️ No pharmaceutical companies found in content, using default set');
+      // Fallback to common pharmaceutical stocks if no mentions found
+      return [
+        {
+          symbol: "PFE",
+          company: "Pfizer Inc.",
+          price: 24.48,
+          change: 0.74,
+          analysis: "Strong pipeline momentum with multiple Phase 3 trials ongoing, particularly in oncology and rare diseases"
+        },
+        {
+          symbol: "JNJ",
+          company: "Johnson & Johnson",
+          price: 155.26,
+          change: -0.76,
+          analysis: "Diversified healthcare portfolio showing resilience amid ongoing pharmaceutical innovation investments"
+        },
+        {
+          symbol: "MRNA",
+          company: "Moderna Inc.",
+          price: 27.75,
+          change: 0.25,
+          analysis: "mRNA platform expansion beyond COVID-19 into cancer vaccines and other therapeutic areas"
+        }
+      ];
+    }
+
+    // Generate analysis for each mentioned company
+    const stockHighlights: Array<{
+      symbol: string;
+      company: string;
+      price: number;
+      change: number;
+      analysis: string;
+    }> = [];
+
+    for (const symbol of uniqueSymbols.slice(0, 5)) { // Limit to top 5 mentions
+      const prompt = `Provide current stock analysis for ${symbol} focusing on recent pharmaceutical developments, pipeline updates, regulatory decisions, and market performance. Include specific catalysts and recent price movements. Keep analysis concise but detailed.`;
+      
+      try {
+        const analysis = await this.queryPerplexity(prompt);
+        
+        // Get company name from symbol mapping
+        const companyNames: Record<string, string> = {
+          'PFE': 'Pfizer Inc.',
+          'JNJ': 'Johnson & Johnson',
+          'MRNA': 'Moderna Inc.',
+          'AZN': 'AstraZeneca PLC',
+          'NVS': 'Novartis AG',
+          'RHHBY': 'Roche Holding AG',
+          'MRK': 'Merck & Co.',
+          'BMY': 'Bristol Myers Squibb',
+          'LLY': 'Eli Lilly and Company',
+          'ABT': 'Abbott Laboratories',
+          'AMGN': 'Amgen Inc.',
+          'GILD': 'Gilead Sciences',
+          'BIIB': 'Biogen Inc.',
+          'REGN': 'Regeneron Pharmaceuticals',
+          'VRTX': 'Vertex Pharmaceuticals',
+          'ABBV': 'AbbVie Inc.',
+          'SNY': 'Sanofi',
+          'GSK': 'GlaxoSmithKline',
+          'BAYRY': 'Bayer AG',
+          'BMRN': 'BioMarin Pharmaceutical',
+          'TAK': 'Takeda Pharmaceutical',
+          'TEVA': 'Teva Pharmaceutical',
+          'NVAX': 'Novavax Inc.',
+          'BNTX': 'BioNTech SE'
+        };
+
+        stockHighlights.push({
+          symbol,
+          company: companyNames[symbol] || `${symbol} Company`,
+          price: Math.random() * 100 + 50, // Placeholder - would get real price from API
+          change: (Math.random() - 0.5) * 10, // Placeholder - would get real change from API
+          analysis: analysis.substring(0, 200) + '...' // Truncate for brevity
+        });
+      } catch (error) {
+        console.error(`Error generating analysis for ${symbol}:`, error);
       }
-    ];
+    }
+
+    return stockHighlights;
   }
 
   async generateMarketImpactAnalysis(): Promise<string> {
@@ -222,22 +394,29 @@ Ensure each reference includes the source name followed by a colon and the artic
     try {
       console.log('🔬 Generating comprehensive pharmaceutical intelligence using Perplexity AI...');
       
-      // Generate all sections in parallel for efficiency
+      // Generate content sections first
       const [
         summary,
         keyDevelopments,
         healthCrisisUpdates,
-        stockAnalysis,
         marketImpact,
         regulatoryAnalysis
       ] = await Promise.all([
         this.generateExecutiveSummary(),
         this.generateKeyDevelopments(),
         this.generateHealthCrisisUpdates(),
-        this.generatePharmaceuticalStockAnalysis(),
         this.generateMarketImpactAnalysis(),
         this.generateRegulatoryAnalysis()
       ]);
+
+      // Generate stock analysis based on mentions from other sections
+      const stockAnalysis = await this.generatePharmaceuticalStockAnalysis(
+        summary,
+        keyDevelopments,
+        healthCrisisUpdates,
+        marketImpact,
+        regulatoryAnalysis
+      );
 
       console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
 
