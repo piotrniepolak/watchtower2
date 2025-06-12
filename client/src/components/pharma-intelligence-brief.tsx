@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useEnhancedPharmaNews } from "@/hooks/useStockPrices";
+import { useEnhancedPharmaNews, useStockPrices } from "@/hooks/useStockPrices";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -224,6 +224,7 @@ export default function PharmaIntelligenceBrief() {
   };
 
   const { data: news, isLoading, error } = useEnhancedPharmaNews();
+  const { data: stocks } = useStockPrices();
 
   if (isLoading) {
     return (
@@ -338,8 +339,22 @@ export default function PharmaIntelligenceBrief() {
   };
 
   const conflictUpdates = (displayNews.conflictUpdates as NewsConflictUpdate[]) || [];
-  const stockHighlights = (displayNews.pharmaceuticalStockHighlights as NewsStockHighlight[]) || [];
+  const rawStockHighlights = (displayNews.pharmaceuticalStockHighlights as NewsStockHighlight[]) || [];
   const keyDevelopments = (displayNews.keyDevelopments as string[]) || [];
+
+  // Enhance stock highlights with real-time prices if available
+  const stockHighlights = rawStockHighlights.map(highlight => {
+    const stock = stocks?.find(s => s.symbol === highlight.symbol);
+    if (stock && stock.price > 0) {
+      return {
+        ...highlight,
+        price: stock.price,
+        change: stock.change,
+        changePercent: stock.changePercent
+      };
+    }
+    return highlight;
+  });
 
   return (
     <Card className="w-full">

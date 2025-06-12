@@ -1566,6 +1566,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!news) {
         return res.status(404).json({ error: "No pharma news available for today" });
       }
+
+      // Enhance pharmaceutical stock highlights with real-time prices
+      if (news.pharmaceuticalStockHighlights && Array.isArray(news.pharmaceuticalStockHighlights)) {
+        const allStocks = await storage.getStocks();
+        news.pharmaceuticalStockHighlights = news.pharmaceuticalStockHighlights.map((highlight: any) => {
+          const stock = allStocks.find(s => s.symbol === highlight.symbol);
+          if (stock && stock.price > 0) {
+            return {
+              ...highlight,
+              price: stock.price,
+              change: stock.change,
+              changePercent: stock.changePercent
+            };
+          }
+          return highlight;
+        });
+      }
+
       res.json(news);
     } catch (error) {
       console.error("Error fetching today's pharma news:", error);
