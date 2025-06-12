@@ -488,7 +488,9 @@ export default function PharmaIntelligenceBrief() {
                         <span className="font-medium text-sm">{stock.symbol}</span>
                         <span className="text-xs text-slate-600">{stock.name}</span>
                       </div>
-                      <p className="text-xs text-slate-600 mt-1">{stock.reason}</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        {stock.reason.split('.')[0] + '.'}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-sm text-slate-900">

@@ -1728,7 +1728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                                   stock.price > 50 ? 'mid-cap pharmaceutical company' :
                                   'emerging pharmaceutical entity';
 
-            return `${stock.name} (${stock.symbol}) exhibits ${performanceContext} as a ${sectorContext} within the current pharmaceutical landscape. The company's market dynamics reflect broader industry trends including regulatory developments, pipeline progress, and competitive positioning. "${quotedSentence}"`;
+            return `${stock.name} (${stock.symbol}) exhibits ${performanceContext} as a ${sectorContext}. The company's market dynamics reflect broader industry trends including regulatory developments, pipeline progress, and competitive positioning. "${quotedSentence}"`;
           };
 
           // Handle companies without current market data (price = 0)
@@ -1739,7 +1739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               price: 0,
               change: 0,
               changePercent: 0,
-              reason: `${stock.name} represents a private or unlisted pharmaceutical entity highlighted in current intelligence analysis. While not publicly traded, the company's activities and developments contribute to the broader pharmaceutical sector narrative. "${quotedSentence}"`
+              reason: `${stock.name} represents a private or unlisted pharmaceutical entity highlighted in current intelligence analysis. "${quotedSentence}"`
             };
           }
 
