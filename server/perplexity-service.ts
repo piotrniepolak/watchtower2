@@ -335,7 +335,7 @@ Ensure each reference includes the source name followed by a colon and the artic
     // Get all stocks from database to match pharmaceutical companies
     const allStocks = await storage.getStocks();
     
-    for (const symbol of uniqueSymbols.slice(0, 5)) { // Limit to top 5 mentions
+    for (const symbol of uniqueSymbols) { // Show all extracted companies
       // Find stock in database
       const stockData = allStocks.find(stock => stock.symbol === symbol);
       
@@ -344,17 +344,33 @@ Ensure each reference includes the source name followed by a colon and the artic
         continue;
       }
 
-      const prompt = `Provide current stock analysis for ${symbol} focusing on recent pharmaceutical developments, pipeline updates, regulatory decisions, and market performance. Include specific catalysts and recent price movements. Keep analysis concise but detailed.`;
+      const prompt = `Provide brief stock analysis for ${symbol} in 2-3 sentences focusing on recent developments and market performance. No headers or formatting.`;
       
       try {
-        const analysis = await this.queryPerplexity(prompt);
+        const rawAnalysis = await this.queryPerplexity(prompt);
+        
+        // Clean up analysis text by removing headers and verbose formatting
+        const cleanAnalysis = rawAnalysis
+          .replace(/###?\s*[^:]*:?\s*/g, '') // Remove markdown headers
+          .replace(/####?\s*[^:]*:?\s*/g, '') // Remove sub-headers
+          .replace(/\*\*[^*]*\*\*/g, '') // Remove bold formatting
+          .replace(/\*[^*]*\*/g, '') // Remove italic formatting
+          .replace(/^\s*-\s*/gm, '') // Remove bullet points
+          .replace(/\n+/g, ' ') // Replace newlines with spaces
+          .replace(/\s+/g, ' ') // Collapse multiple spaces
+          .trim();
+        
+        // Take first 120 characters for concise display
+        const shortAnalysis = cleanAnalysis.length > 120 
+          ? cleanAnalysis.substring(0, 120) + '...'
+          : cleanAnalysis;
         
         stockHighlights.push({
           symbol: stockData.symbol,
           company: stockData.name,
           price: stockData.price,
           change: stockData.changePercent,
-          analysis: analysis.substring(0, 200) + '...' // Truncate for brevity
+          analysis: shortAnalysis
         });
       } catch (error) {
         console.error(`Error generating analysis for ${symbol}:`, error);
