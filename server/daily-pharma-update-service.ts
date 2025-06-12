@@ -34,8 +34,8 @@ export class DailyPharmaUpdateService {
         .map(stock => stock.symbol)
     );
 
-    // Extract all text content from the brief
-    const allBriefContent = [
+    // Extract only the actual brief text content, excluding reference URLs
+    const briefTextContent = [
       briefData.title || '',
       briefData.summary || '',
       ...(Array.isArray(briefData.keyDevelopments) ? briefData.keyDevelopments : []),
@@ -44,6 +44,12 @@ export class DailyPharmaUpdateService {
       ...(Array.isArray(briefData.conflictUpdates) ? 
         briefData.conflictUpdates.map((update: any) => update.update || '') : [])
     ].join(' ');
+
+    // Remove any URLs that might contain company names to prevent false positives
+    const cleanBriefContent = briefTextContent
+      .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
+      .replace(/www\.[^\s]+/g, '') // Remove www domains
+      .toLowerCase();
 
     // Enhanced pharmaceutical company mapping with newly discovered patterns
     const companyToSymbolMap: Record<string, string> = {

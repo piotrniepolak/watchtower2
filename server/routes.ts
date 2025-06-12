@@ -1655,8 +1655,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'illumina': 'ILMN'
       };
 
-      // Extract all text content from the entire brief
-      const allBriefContent = [
+      // Extract only the actual brief text content, excluding reference URLs
+      const briefTextContent = [
         news.title || '',
         news.summary || '',
         ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
@@ -1665,14 +1665,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(Array.isArray(news.conflictUpdates) ? news.conflictUpdates.map((update: any) => 
           `${update.conflict} ${update.update}`
         ) : [])
-      ].join(' ').toLowerCase();
+      ].join(' ');
+
+      // Remove any URLs that might contain company names to prevent false positives
+      const cleanBriefContent = briefTextContent
+        .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
+        .replace(/www\.[^\s]+/g, '') // Remove www domains
+        .toLowerCase();
 
       // Find all pharmaceutical companies mentioned in the brief content
       const mentionedSymbols = new Set<string>();
       
       // Check for company name mentions and add to database if needed
       for (const [companyName, symbol] of Object.entries(companyToSymbolMap)) {
-        if (allBriefContent.includes(companyName)) {
+        if (cleanBriefContent.includes(companyName)) {
           mentionedSymbols.add(symbol);
           
           // Immediately check if this company exists in database
@@ -1732,8 +1738,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for direct stock symbol mentions
       healthcareStocks.forEach(stock => {
-        if (allBriefContent.includes(stock.symbol.toLowerCase()) || 
-            allBriefContent.includes(stock.name.toLowerCase())) {
+        if (cleanBriefContent.includes(stock.symbol.toLowerCase()) || 
+            cleanBriefContent.includes(stock.name.toLowerCase())) {
           mentionedSymbols.add(stock.symbol);
         }
       });
