@@ -1678,6 +1678,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Extracted ${mentionedSymbols.size} pharmaceutical companies from brief content: ${Array.from(mentionedSymbols).join(', ')}`);
 
+      // Function to extract relevant quoted sentences for each company
+      const extractQuotedSentence = (symbol: string, companyName: string): string => {
+        const allContent = [
+          news.title || '',
+          news.summary || '',
+          ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
+          news.marketImpact || '',
+          news.geopoliticalAnalysis || ''
+        ].join(' ');
+
+        // Split into sentences and find ones mentioning the company
+        const sentences = allContent.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 10);
+        
+        // Look for sentences containing the company name or symbol
+        const relevantSentence = sentences.find(sentence => {
+          const lowerSentence = sentence.toLowerCase();
+          return lowerSentence.includes(symbol.toLowerCase()) || 
+                 lowerSentence.includes(companyName.toLowerCase()) ||
+                 Object.entries(companyToSymbolMap).some(([name, sym]) => 
+                   sym === symbol && lowerSentence.includes(name)
+                 );
+        });
+
+        return relevantSentence || sentences[0] || "Company mentioned in pharmaceutical intelligence brief";
+      };
+
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
       const comprehensiveStockHighlights = Array.from(mentionedSymbols).map(symbol => {
         const stock = healthcareStocks.find(s => s.symbol === symbol);
@@ -1687,6 +1713,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? news.pharmaceuticalStockHighlights.find((h: any) => h.symbol === symbol)
             : null;
 
+          // Extract relevant quoted sentence from the brief
+          const quotedSentence = extractQuotedSentence(stock.symbol, stock.name);
+
+          // Generate detailed description based on market performance and sector context
+          const generateDetailedDescription = (): string => {
+            const performanceContext = stock.changePercent > 2 ? 'strong upward momentum' :
+                                     stock.changePercent > 0 ? 'positive market sentiment' :
+                                     stock.changePercent < -2 ? 'market correction pressures' :
+                                     stock.changePercent < 0 ? 'slight market headwinds' :
+                                     'stable market positioning';
+
+            const sectorContext = stock.price > 100 ? 'large-cap pharmaceutical leader' :
+                                  stock.price > 50 ? 'mid-cap pharmaceutical company' :
+                                  'emerging pharmaceutical entity';
+
+            return `${stock.name} (${stock.symbol}) exhibits ${performanceContext} as a ${sectorContext} within the current pharmaceutical landscape. The company's market dynamics reflect broader industry trends including regulatory developments, pipeline progress, and competitive positioning. "${quotedSentence}"`;
+          };
+
           // Handle companies without current market data (price = 0)
           if (stock.price === 0) {
             return {
@@ -1695,7 +1739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               price: 0,
               change: 0,
               changePercent: 0,
-              reason: 'Private/unlisted pharmaceutical company mentioned in intelligence brief'
+              reason: `${stock.name} represents a private or unlisted pharmaceutical entity highlighted in current intelligence analysis. While not publicly traded, the company's activities and developments contribute to the broader pharmaceutical sector narrative. "${quotedSentence}"`
             };
           }
 
@@ -1705,8 +1749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             price: stock.price,
             change: stock.change,
             changePercent: stock.changePercent,
-            reason: existingHighlight?.reason || 
-              `Featured in pharmaceutical intelligence brief with ${stock.changePercent > 0 ? 'positive momentum' : stock.changePercent < 0 ? 'market adjustments' : 'stable positioning'} amid sector developments`
+            reason: existingHighlight?.reason || generateDetailedDescription()
           };
         }
         return null;
