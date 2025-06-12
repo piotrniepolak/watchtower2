@@ -63,14 +63,21 @@ interface ConflictStoryline {
 }
 
 export default function Home() {
-  // Get sector from URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const sectorFromUrl = urlParams.get('sector') || 'defense';
-  
-  const [selectedSector, setSelectedSector] = useState(sectorFromUrl);
+  // Get sector from URL parameters with proper initialization
+  const [selectedSector, setSelectedSector] = useState("defense");
   const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
-  const [isAIAnalysisExpanded, setIsAIAnalysisExpanded] = useState(sectorFromUrl !== 'defense');
+  const [isAIAnalysisExpanded, setIsAIAnalysisExpanded] = useState(false);
   const queryClient = useQueryClient();
+
+  // Initialize sector from URL parameters on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sectorFromUrl = urlParams.get('sector');
+    if (sectorFromUrl && ['defense', 'health', 'energy'].includes(sectorFromUrl)) {
+      setSelectedSector(sectorFromUrl);
+      setIsAIAnalysisExpanded(true);
+    }
+  }, []);
   
   // Update URL when sector changes
   useEffect(() => {
@@ -898,6 +905,13 @@ export default function Home() {
           </CardContent>
           )}
         </Card>
+
+        {/* Pharmaceutical Intelligence Brief - Health Sector Only */}
+        {selectedSector === 'health' && (
+          <div className="mt-6">
+            <PharmaIntelligenceBrief />
+          </div>
+        )}
 
         {/* Community Chat Section */}
         <div className="mt-6">
