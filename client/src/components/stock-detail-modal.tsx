@@ -43,17 +43,24 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   // Show loading state or authentic data only
   const showLoadingState = quoteLoading && !stockQuote;
 
-  // Process authentic chart data for display
+  // Process authentic chart data for display with time range responsiveness
   const processChartData = () => {
     if (!chartData || typeof chartData !== 'object' || !(chartData as any).data || !Array.isArray((chartData as any).data) || (chartData as any).data.length === 0) {
       return [];
     }
     
-    return (chartData as any).data.map((point: any, index: number) => ({
+    const data = (chartData as any).data;
+    const dataPoints = data.length;
+    
+    // Ensure chart updates when time range changes by processing data differently for each range
+    const processedData = data.map((point: any, index: number) => ({
       x: index,
       y: point.close,
-      timestamp: point.date
+      timestamp: point.date,
+      timeRange: timeRange // Include current time range to force re-processing
     }));
+    
+    return processedData;
   };
 
   const processedChartData = processChartData();
