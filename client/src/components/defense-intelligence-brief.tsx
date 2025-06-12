@@ -39,8 +39,8 @@ export function DefenseIntelligenceBrief() {
 
   const { data: defenseNews, isLoading, error } = useQuery<any>({
     queryKey: ["/api/news/defense/today"],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 30 * 60 * 1000, // 30 minutes
+    staleTime: 0, // Always fetch fresh data
+    refetchInterval: 60 * 1000, // 1 minute
   });
 
   const generateMutation = useMutation({
