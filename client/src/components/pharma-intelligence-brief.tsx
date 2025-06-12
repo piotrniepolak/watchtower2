@@ -27,6 +27,8 @@ const cleanContent = (text: string | undefined): string => {
     .replace(/\[\d+\]/g, '') // Remove bracketed numbers like [1], [2]
     .replace(/#\w+/g, '') // Remove hashtags like #FDA
     .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove double asterisks formatting
+    .replace(/^#+\s*/, '') // Remove hashtags from beginning
+    .replace(/\s*#+\s*$/, '') // Remove hashtags from end
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim();
 };
@@ -293,19 +295,9 @@ export default function PharmaIntelligenceBrief() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Pill className="w-5 h-5 text-blue-600" />
-            <div>
-              <CardTitle className="text-lg">{displayNews.title}</CardTitle>
-              <CardDescription className="mt-1">
-                Daily Pharmaceutical Intelligence Brief
-              </CardDescription>
-            </div>
-          </div>
-          <Badge variant="outline" className="text-xs">
-            {new Date(displayNews.createdAt || '').toLocaleDateString()}
-          </Badge>
+        <div className="flex items-center gap-2">
+          <Pill className="w-5 h-5 text-blue-600" />
+          <CardTitle className="text-lg">{displayNews.title}</CardTitle>
         </div>
       </CardHeader>
       
@@ -314,23 +306,7 @@ export default function PharmaIntelligenceBrief() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Executive Summary</h3>
           <div className="text-blue-800 text-sm">
-            {formatContentWithSources(displayNews.summary)}
-          </div>
-        </div>
-
-        {/* Key Developments */}
-        <div className="space-y-3">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Activity className="w-4 h-4 text-slate-600" />
-            Key Healthcare Developments
-          </h3>
-          <div className="grid gap-2">
-            {keyDevelopments.slice(0, isExpanded ? undefined : 3).map((development, index) => (
-              <div key={index} className="flex items-start gap-2 text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                <p className="text-slate-700">{development}</p>
-              </div>
-            ))}
+            {formatContentWithSources(cleanContent(displayNews.summary))}
           </div>
         </div>
 
