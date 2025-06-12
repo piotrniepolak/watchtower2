@@ -10526,8 +10526,8 @@ export default function WorldHealthMapSimple() {
         const width = 960;
         const height = 500;
         const projection = geoNaturalEarth1()
-          .scale(140)  // Reduced scale to show all countries
-          .center([0, 10])  // Slightly raised center
+          .scale(120)  // Maximum zoom out to show full world
+          .center([0, 0])  // Centered view
           .translate([width / 2, height / 2]);
         
         const path = geoPath().projection(projection);
@@ -10717,41 +10717,34 @@ export default function WorldHealthMapSimple() {
     <div className="space-y-6">
       {/* World Map */}
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-600" />
-            Global Health Map - WHO Statistical Annex Data
-          </CardTitle>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Interactive world health visualization based on 55 authentic WHO health indicators. Coverage: 16 major countries with complete WHO Statistical Annex data (expanding to full global coverage)</p>
-            <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#065f46'}}></div>
-                <span className="text-gray-600">80-100</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#10b981'}}></div>
-                <span className="text-gray-600">60-79</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#f59e0b'}}></div>
-                <span className="text-gray-600">40-59</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#dc2626'}}></div>
-                <span className="text-gray-600">20-39</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#7f1d1d'}}></div>
-                <span className="text-gray-600">0-19</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
-                <span className="text-gray-600">No Data</span>
-              </div>
+        <CardContent className="p-2 pb-0">
+          <div className="flex items-center justify-end gap-3 text-xs mb-2">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#065f46'}}></div>
+              <span className="text-gray-600">80-100</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#10b981'}}></div>
+              <span className="text-gray-600">60-79</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#f59e0b'}}></div>
+              <span className="text-gray-600">40-59</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#dc2626'}}></div>
+              <span className="text-gray-600">20-39</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#7f1d1d'}}></div>
+              <span className="text-gray-600">0-19</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
+              <span className="text-gray-600">No Data</span>
             </div>
           </div>
-        </CardHeader>
+        </CardContent>
         <CardContent className="p-0">
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-400 to-blue-300 rounded-lg border border-gray-200 relative overflow-hidden">
             <svg 
