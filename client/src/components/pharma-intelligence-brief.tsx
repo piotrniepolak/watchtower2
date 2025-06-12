@@ -26,6 +26,8 @@ const cleanContent = (text: string | undefined): string => {
   return text
     .replace(/\[\d+\]/g, '') // Remove bracketed numbers like [1], [2]
     .replace(/#\w+/g, '') // Remove hashtags like #FDA
+    .replace(/^#+\s*/, '') // Remove hashtags from beginning of text
+    .replace(/\s*#+\s*$/, '') // Remove hashtags from end of text
     .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove double asterisks formatting
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim();
@@ -293,11 +295,16 @@ export default function PharmaIntelligenceBrief() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Pill className="w-5 h-5 text-blue-600" />
-          <div>
-            <CardTitle className="text-lg">Daily Pharmaceutical Intelligence Brief</CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Pill className="w-5 h-5 text-blue-600" />
+            <div>
+              <CardTitle className="text-lg">Daily Pharmaceutical Intelligence Brief</CardTitle>
+            </div>
           </div>
+          <Badge variant="outline" className="text-xs">
+            {new Date(displayNews.createdAt || '').toLocaleDateString()}
+          </Badge>
         </div>
       </CardHeader>
       
