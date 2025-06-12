@@ -15,6 +15,7 @@ import DailyNews from "@/components/daily-news";
 import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
+import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
 
 interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
@@ -175,6 +176,11 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
           </p>
         </div>
         <EnhancedChartsSection sector={currentSector} />
+      </div>
+
+      {/* Pharma Intelligence Brief Section */}
+      <div className="w-full mb-8">
+        <PharmaIntelligenceBrief />
       </div>
 
       {/* Global Health Map Section */}
