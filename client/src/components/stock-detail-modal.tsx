@@ -69,26 +69,64 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   // Process authentic chart data for display with time range responsiveness
   const processChartData = () => {
     if (!chartData || typeof chartData !== 'object' || !(chartData as any).data || !Array.isArray((chartData as any).data) || (chartData as any).data.length === 0) {
-      return [];
+      return { chartPoints: [], timeLabels: [] };
     }
     
     const data = (chartData as any).data;
     const dataPoints = data.length;
     
-    // Ensure chart updates when time range changes by processing data differently for each range
-    const processedData = data.map((point: any, index: number) => ({
+    // Create chart points
+    const chartPoints = data.map((point: any, index: number) => ({
       x: index,
       y: point.close,
       timestamp: point.date,
-      timeRange: timeRange // Include current time range to force re-processing
+      timeRange: timeRange
     }));
     
-    return processedData;
+    // Generate dynamic time labels based on actual data
+    const timeLabels = [];
+    const labelCount = 5;
+    
+    for (let i = 0; i < labelCount; i++) {
+      const dataIndex = Math.floor((i / (labelCount - 1)) * (dataPoints - 1));
+      const point = data[dataIndex];
+      
+      if (point && point.date) {
+        const date = new Date(point.date);
+        
+        if (timeRange === '1D') {
+          timeLabels.push(date.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+          }));
+        } else if (timeRange === '5D') {
+          timeLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        } else if (timeRange === '1M') {
+          timeLabels.push(date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+          }));
+        } else if (timeRange === '6M' || timeRange === 'YTD') {
+          timeLabels.push(date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            year: '2-digit' 
+          }));
+        } else {
+          timeLabels.push(date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            year: 'numeric' 
+          }));
+        }
+      }
+    }
+    
+    return { chartPoints, timeLabels };
   };
 
-  const processedChartData = processChartData();
-  const minPrice = processedChartData.length > 0 ? Math.min(...processedChartData.map((d: any) => d.y)) : 0;
-  const maxPrice = processedChartData.length > 0 ? Math.max(...processedChartData.map((d: any) => d.y)) : 0;
+  const { chartPoints, timeLabels } = processChartData();
+  const minPrice = chartPoints.length > 0 ? Math.min(...chartPoints.map((d: any) => d.y)) : 0;
+  const maxPrice = chartPoints.length > 0 ? Math.max(...chartPoints.map((d: any) => d.y)) : 0;
   const priceRange = maxPrice - minPrice || 1;
 
   // Helper function to format large numbers
@@ -222,7 +260,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   ))}
                 </div>
               </div>
-            ) : processedChartData.length > 0 ? (
+            ) : chartPoints.length > 0 ? (
               <div className="relative">
                 <svg width="100%" height="120" viewBox="0 0 400 120" className="overflow-visible">
                   <defs>
@@ -247,46 +285,24 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   
                   {/* Area under curve */}
                   <path
-                    d={`${createPath(processedChartData)} L 400,120 L 0,120 Z`}
+                    d={`${createPath(chartPoints)} L 400,120 L 0,120 Z`}
                     fill="url(#chartGradient)"
                   />
                   
                   {/* Price line */}
                   <path
-                    d={createPath(processedChartData)}
+                    d={createPath(chartPoints)}
                     fill="none"
                     stroke={isPositive ? "#10b981" : "#ef4444"}
                     strokeWidth="2"
                   />
                 </svg>
                 
-                {/* Dynamic time labels based on time range */}
+                {/* Dynamic time labels based on actual chart data */}
                 <div className="flex justify-between text-xs text-slate-500 mt-2">
-                  {timeRange === '1D' ? (
-                    <>
-                      <span>9:30 AM</span>
-                      <span>11:00 AM</span>
-                      <span>1:00 PM</span>
-                      <span>3:00 PM</span>
-                      <span>4:00 PM</span>
-                    </>
-                  ) : timeRange === '5D' ? (
-                    <>
-                      <span>Mon</span>
-                      <span>Tue</span>
-                      <span>Wed</span>
-                      <span>Thu</span>
-                      <span>Fri</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Start</span>
-                      <span>25%</span>
-                      <span>50%</span>
-                      <span>75%</span>
-                      <span>End</span>
-                    </>
-                  )}
+                  {timeLabels.map((label, index) => (
+                    <span key={index}>{label}</span>
+                  ))}
                 </div>
               </div>
             ) : (

@@ -1701,7 +1701,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
                  );
         });
 
-        return relevantSentence || sentences[0] || "Company mentioned in pharmaceutical intelligence brief";
+        if (relevantSentence) {
+          // Extract only the portion about this specific company
+          const companyMentions = [
+            symbol.toLowerCase(),
+            companyName.toLowerCase(),
+            ...Object.entries(companyToSymbolMap)
+              .filter(([name, sym]) => sym === symbol)
+              .map(([name]) => name.toLowerCase())
+          ];
+          
+          // Find the specific mention and extract a focused phrase around it
+          const lowerSentence = relevantSentence.toLowerCase();
+          let bestMatch = '';
+          let bestScore = 0;
+          
+          for (const mention of companyMentions) {
+            const index = lowerSentence.indexOf(mention);
+            if (index !== -1) {
+              // Extract context around the company mention (up to 100 characters)
+              const start = Math.max(0, index - 20);
+              const end = Math.min(relevantSentence.length, index + mention.length + 80);
+              const extract = relevantSentence.substring(start, end).trim();
+              
+              // Score based on specificity (shorter, more focused extracts are better)
+              const score = 100 - extract.length + (extract.split(',').length > 2 ? -50 : 0);
+              
+              if (score > bestScore) {
+                bestScore = score;
+                bestMatch = extract;
+              }
+            }
+          }
+          
+          return bestMatch || relevantSentence;
+        }
+
+        return `${companyName} mentioned in pharmaceutical intelligence brief`;
       };
 
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
