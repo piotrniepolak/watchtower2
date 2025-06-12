@@ -443,7 +443,7 @@ export default function PharmaIntelligenceBrief() {
           >
             <h3 className="font-semibold flex items-center gap-2">
               <Building2 className="w-4 h-4 text-slate-600" />
-              Pharmaceutical Stock Highlights
+              Pharmaceutical Stock Highlights Mentioned in this Brief
             </h3>
             {sectionsCollapsed.stockHighlights ? (
               <ChevronDown className="w-4 h-4 text-slate-600" />
