@@ -163,8 +163,26 @@ export function DefenseIntelligenceBrief() {
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-3">
               <p className="text-sm leading-relaxed text-muted-foreground">
-                {String(defenseNews.summary)}
+                {defenseNews?.summary || 'No summary available'}
               </p>
+              
+              {/* Key Developments */}
+              {defenseNews?.keyDevelopments && Array.isArray(defenseNews.keyDevelopments) && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                    <Target className="h-4 w-4 text-blue-600" />
+                    Key Developments
+                  </h4>
+                  <ul className="space-y-2">
+                    {defenseNews.keyDevelopments.map((development: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground leading-relaxed">{development}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border">
@@ -200,7 +218,7 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-              {defenseNews.conflictUpdates && Array.isArray(defenseNews.conflictUpdates) ? (
+              {defenseNews?.conflictUpdates && Array.isArray(defenseNews.conflictUpdates) ? (
                 <div className="space-y-4">
                   {defenseNews.conflictUpdates.map((update: any, index: number) => {
                     const severityColor = update.severity === 'high' ? 'border-red-500' : 
@@ -241,7 +259,7 @@ export function DefenseIntelligenceBrief() {
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm leading-relaxed">{String(defenseNews.conflictUpdates)}</p>
+                      <p className="text-sm leading-relaxed">{String(defenseNews?.conflictUpdates || 'No conflict updates available')}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Clock className="h-3 w-3 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">
@@ -269,7 +287,7 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-              {defenseNews.defenseStockHighlights && Array.isArray(defenseNews.defenseStockHighlights) ? (
+              {defenseNews?.defenseStockHighlights && Array.isArray(defenseNews.defenseStockHighlights) ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {defenseNews.defenseStockHighlights.map((stock: any, index: number) => (
                     <div key={index} className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
@@ -296,7 +314,7 @@ export function DefenseIntelligenceBrief() {
               ) : (
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    {String(defenseNews.defenseStockHighlights)}
+                    {String(defenseNews?.defenseStockHighlights || 'No defense stock highlights available')}
                   </p>
                 </div>
               )}
@@ -323,7 +341,7 @@ export function DefenseIntelligenceBrief() {
                   Strategic Analysis
                 </h4>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {String(defenseNews.geopoliticalAnalysis)}
+                  {defenseNews?.geopoliticalAnalysis || 'No geopolitical analysis available'}
                 </p>
               </div>
               
@@ -370,7 +388,7 @@ export function DefenseIntelligenceBrief() {
                   Market Outlook
                 </h4>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {String(defenseNews.marketImpact)}
+                  {defenseNews?.marketImpact || 'No market impact analysis available'}
                 </p>
               </div>
 
