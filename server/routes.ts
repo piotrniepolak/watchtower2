@@ -2093,44 +2093,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Get defense-specific news focusing on conflicts and defense markets
-      const conflicts = await storage.getConflicts();
-      const activeConflicts = conflicts.filter(c => c.status === "Active");
-      const defenseStocks = await storage.getStocks();
-      const defenseOnlyStocks = defenseStocks.filter(stock => stock.sector === 'Defense');
+      // First try to get existing data from database
+      let news = await storage.getDailyNews(today);
       
-      const defenseNews = {
-        id: Math.floor(Math.random() * 1000000),
-        date: today,
-        createdAt: new Date(),
-        title: `Defense Intelligence Brief - ${new Date().toLocaleDateString()}`,
-        summary: `Today's defense intelligence covers ${activeConflicts.length} active global conflicts and their impact on defense markets. Defense sector stocks continue to respond to geopolitical developments across multiple regions.`,
-        keyDevelopments: [
-          `Monitoring ${activeConflicts.length} active global conflicts affecting defense procurement`,
-          "Defense contractors reporting steady order flow from international allies",
-          "Geopolitical tensions driving increased defense spending across NATO members",
-          "Advanced weapons systems development accelerating in response to evolving threats",
-          "Regional security partnerships strengthening through joint defense initiatives"
-        ],
-        marketImpact: "Defense markets show resilience amid global uncertainty, with major contractors benefiting from increased government spending and international partnerships. Ongoing conflicts continue to drive demand for advanced defense technologies.",
-        conflictUpdates: activeConflicts.slice(0, 5).map(conflict => ({
-          conflict: conflict.name,
-          update: `Situation in ${conflict.region} remains active with ongoing security operations`,
-          severity: conflict.severity.toLowerCase() === "high" ? "high" : 
-                   conflict.severity.toLowerCase() === "medium" ? "medium" : "low"
-        })),
-        defenseStockHighlights: defenseOnlyStocks.slice(0, 5).map(stock => ({
-          symbol: stock.symbol,
-          name: stock.name,
-          change: stock.change,
-          changePercent: stock.changePercent,
-          reason: `${stock.changePercent >= 0 ? 'Positive' : 'Negative'} market response to defense sector developments`
-        })),
-        pharmaceuticalStockHighlights: [],
-        geopoliticalAnalysis: `Current global security environment features ${activeConflicts.length} active conflicts requiring continued defense sector engagement. Regional tensions across Eastern Europe, Middle East, and Asia-Pacific are driving sustained demand for defense capabilities and international security cooperation.`
-      };
+      // If no existing data, generate new comprehensive defense intelligence
+      if (!news) {
+        console.log('No existing defense intelligence found, generating fresh data...');
+        news = await perplexityDefenseService.generateComprehensiveDefenseIntelligence();
+        
+        // If Perplexity AI fails, fallback to existing method
+        if (!news) {
+          console.log('Perplexity AI defense intelligence generation failed, trying fallback method...');
+          news = await perplexityDefenseService.getTodaysDefenseIntelligence();
+        }
+      }
       
-      res.json(defenseNews);
+      if (!news) {
+        return res.status(404).json({ error: "No defense news available for today" });
+      }
+      
+      res.json(news);
     } catch (error) {
       console.error("Error fetching defense news:", error);
       res.status(500).json({ error: "Failed to fetch defense news" });
