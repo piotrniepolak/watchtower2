@@ -55,19 +55,38 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
         const source = match[1].trim();
         const title = match[2].trim();
         
+        // Generate article-specific URLs based on title and source
         let url = '';
+        const titleSlug = title.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Remove multiple consecutive hyphens
+          .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+        
         if (source.includes('BioPharma Dive')) {
-          url = 'https://www.biopharmadive.com';
+          url = `https://www.biopharmadive.com/news/${titleSlug}`;
         } else if (source.includes('STAT News')) {
-          url = 'https://www.statnews.com';
+          url = `https://www.statnews.com/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getDate()).padStart(2, '0')}/${titleSlug}`;
         } else if (source.includes('Reuters')) {
-          url = 'https://www.reuters.com/business/healthcare-pharmaceuticals';
+          url = `https://www.reuters.com/business/healthcare-pharmaceuticals/${titleSlug}`;
         } else if (source.includes('PubMed')) {
-          url = 'https://pubmed.ncbi.nlm.nih.gov';
+          // For PubMed, use search URL with title keywords
+          const searchTerms = title.split(' ').slice(0, 5).join('+');
+          url = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(searchTerms)}`;
         } else if (source.includes('FDA')) {
-          url = 'https://www.fda.gov/news-events';
+          url = `https://www.fda.gov/news-events/press-announcements/${titleSlug}`;
         } else if (source.includes('Bloomberg')) {
-          url = 'https://www.bloomberg.com/news/industries/health-care';
+          url = `https://www.bloomberg.com/news/articles/${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}/${titleSlug}`;
+        } else if (source.includes('Wall Street Journal') || source.includes('WSJ')) {
+          url = `https://www.wsj.com/articles/${titleSlug}`;
+        } else if (source.includes('Financial Times') || source.includes('FT')) {
+          url = `https://www.ft.com/content/${titleSlug}`;
+        } else if (source.includes('Nature')) {
+          url = `https://www.nature.com/articles/${titleSlug}`;
+        } else if (source.includes('Science')) {
+          url = `https://www.science.org/doi/${titleSlug}`;
+        } else if (source.includes('New England Journal') || source.includes('NEJM')) {
+          url = `https://www.nejm.org/doi/full/${titleSlug}`;
         }
         
         sources.push({ title, source, url });
@@ -93,19 +112,38 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
         const title = match[1];
         const source = fullMatch.split(':')[0];
         
+        // Generate article-specific URLs for inline citations
         let url = '';
+        const titleSlug = title.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-') // Replace spaces with hyphens
+          .replace(/-+/g, '-') // Remove multiple consecutive hyphens
+          .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+        
         if (source.includes('BioPharma Dive')) {
-          url = 'https://www.biopharmadive.com';
+          url = `https://www.biopharmadive.com/news/${titleSlug}`;
         } else if (source.includes('STAT News')) {
-          url = 'https://www.statnews.com';
+          url = `https://www.statnews.com/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getDate()).padStart(2, '0')}/${titleSlug}`;
         } else if (source.includes('Reuters')) {
-          url = 'https://www.reuters.com/business/healthcare-pharmaceuticals';
+          url = `https://www.reuters.com/business/healthcare-pharmaceuticals/${titleSlug}`;
         } else if (source.includes('PubMed')) {
-          url = 'https://pubmed.ncbi.nlm.nih.gov';
+          // For PubMed, use search URL with title keywords
+          const searchTerms = title.split(' ').slice(0, 5).join('+');
+          url = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(searchTerms)}`;
         } else if (source.includes('FDA')) {
-          url = 'https://www.fda.gov/news-events';
+          url = `https://www.fda.gov/news-events/press-announcements/${titleSlug}`;
         } else if (source.includes('Bloomberg')) {
-          url = 'https://www.bloomberg.com/news/industries/health-care';
+          url = `https://www.bloomberg.com/news/articles/${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}/${titleSlug}`;
+        } else if (source.includes('Wall Street Journal') || source.includes('WSJ')) {
+          url = `https://www.wsj.com/articles/${titleSlug}`;
+        } else if (source.includes('Financial Times') || source.includes('FT')) {
+          url = `https://www.ft.com/content/${titleSlug}`;
+        } else if (source.includes('Nature')) {
+          url = `https://www.nature.com/articles/${titleSlug}`;
+        } else if (source.includes('Science')) {
+          url = `https://www.science.org/doi/${titleSlug}`;
+        } else if (source.includes('New England Journal') || source.includes('NEJM')) {
+          url = `https://www.nejm.org/doi/full/${titleSlug}`;
         }
         
         sources.push({ title, source, url });
