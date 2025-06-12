@@ -7,6 +7,11 @@ interface PerplexityResponse {
       content: string;
     };
   }>;
+  citations?: Array<{
+    url: string;
+    title: string;
+    snippet?: string;
+  }>;
 }
 
 interface PharmaceuticalIntelligence {
@@ -50,7 +55,7 @@ class PerplexityService {
     }
   }
 
-  private async queryPerplexity(prompt: string): Promise<string> {
+  private async queryPerplexity(prompt: string): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     try {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
@@ -83,25 +88,45 @@ class PerplexityService {
       }
 
       const data = await response.json() as PerplexityResponse;
-      return data.choices[0]?.message?.content || '';
+      return {
+        content: data.choices[0]?.message?.content || '',
+        citations: data.citations || []
+      };
     } catch (error) {
       console.error('Error querying Perplexity:', error);
       throw error;
     }
   }
 
+  private processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): string {
+    if (!citations || citations.length === 0) {
+      return content;
+    }
+
+    // Replace citation numbers [1], [2], etc. with clickable links
+    let processedContent = content;
+    citations.forEach((citation, index) => {
+      const citationNumber = `[${index + 1}]`;
+      const link = `<a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citationNumber}</a>`;
+      processedContent = processedContent.replace(new RegExp(`\\[${index + 1}\\]`, 'g'), link);
+    });
+
+    // Add references section with clickable links
+    if (citations.length > 0) {
+      processedContent += '\n\n### References:\n';
+      citations.forEach((citation, index) => {
+        processedContent += `${index + 1}. <a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citation.title}</a>\n`;
+      });
+    }
+
+    return processedContent;
+  }
+
   async generateExecutiveSummary(): Promise<string> {
-    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements. Provide detailed context about the implications for the industry. 
-
-At the end, include a "References:" section with specific article titles in this exact format:
-- BioPharma Dive: "Pharma Outlook 2025: Trump, Obesity, Immunology, Vaccines"
-- STAT News: "FDA approvals surge in Q4 2024 pharmaceutical review"
-- Reuters Health: "Global pharmaceutical market trends analysis"
-- PubMed: "Projections of Public Spending on Pharmaceuticals"
-
-Ensure each reference includes the source name followed by a colon and the article title in quotes.`;
+    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements. Provide detailed context about the implications for the industry. Focus on verifiable, recent information from reputable sources.`;
     
-    return await this.queryPerplexity(prompt);
+    const result = await this.queryPerplexity(prompt);
+    return this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
@@ -114,10 +139,10 @@ Ensure each reference includes the source name followed by a colon and the artic
     
     Format as a numbered list with brief descriptions (2-3 sentences each).`;
     
-    const response = await this.queryPerplexity(prompt);
+    const result = await this.queryPerplexity(prompt);
     
     // Parse the numbered list into array
-    const developments = response
+    const developments = result.content
       .split(/\d+\./)
       .slice(1)
       .map(item => item.trim())
@@ -359,10 +384,10 @@ Ensure each reference includes the source name followed by a colon and the artic
       const prompt = `Provide one concise sentence analyzing ${symbol} stock performance focusing on recent key developments or market factors. Maximum 80 characters. No headers, formatting, or bullet points.`;
       
       try {
-        const rawAnalysis = await this.queryPerplexity(prompt);
+        const result = await this.queryPerplexity(prompt);
         
         // Clean up analysis text and create one-line descriptions
-        const cleanAnalysis = rawAnalysis
+        const cleanAnalysis = result.content
           .replace(/###?\s*[^:]*:?\s*/g, '') // Remove markdown headers
           .replace(/####?\s*[^:]*:?\s*/g, '') // Remove sub-headers
           .replace(/\*\*[^*]*\*\*/g, '') // Remove bold formatting
