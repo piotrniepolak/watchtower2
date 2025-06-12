@@ -344,12 +344,12 @@ Ensure each reference includes the source name followed by a colon and the artic
         continue;
       }
 
-      const prompt = `Provide brief stock analysis for ${symbol} in 2-3 sentences focusing on recent developments and market performance. No headers or formatting.`;
+      const prompt = `Provide one concise sentence analyzing ${symbol} stock performance focusing on recent key developments or market factors. Maximum 80 characters. No headers, formatting, or bullet points.`;
       
       try {
         const rawAnalysis = await this.queryPerplexity(prompt);
         
-        // Clean up analysis text by removing headers and verbose formatting
+        // Clean up analysis text and create one-line descriptions
         const cleanAnalysis = rawAnalysis
           .replace(/###?\s*[^:]*:?\s*/g, '') // Remove markdown headers
           .replace(/####?\s*[^:]*:?\s*/g, '') // Remove sub-headers
@@ -360,10 +360,12 @@ Ensure each reference includes the source name followed by a colon and the artic
           .replace(/\s+/g, ' ') // Collapse multiple spaces
           .trim();
         
-        // Take first 120 characters for concise display
-        const shortAnalysis = cleanAnalysis.length > 120 
-          ? cleanAnalysis.substring(0, 120) + '...'
-          : cleanAnalysis;
+        // Extract first meaningful sentence for one-line display
+        const sentences = cleanAnalysis.split('. ');
+        const firstSentence = sentences[0] + (sentences.length > 1 ? '.' : '');
+        const shortAnalysis = firstSentence.length > 80 
+          ? firstSentence.substring(0, 80) + '...'
+          : firstSentence;
         
         stockHighlights.push({
           symbol: stockData.symbol,
@@ -375,13 +377,16 @@ Ensure each reference includes the source name followed by a colon and the artic
       } catch (error) {
         console.error(`Error generating analysis for ${symbol}:`, error);
         
-        // Use stock data without Perplexity analysis if API fails
+        // Generate concise fallback analysis based on stock performance
+        const changeDirection = stockData.changePercent > 0 ? "gains" : stockData.changePercent < 0 ? "declines" : "stability";
+        const fallbackAnalysis = `${stockData.name} shows ${changeDirection} amid pharmaceutical sector trends.`;
+        
         stockHighlights.push({
           symbol: stockData.symbol,
           company: stockData.name,
           price: stockData.price,
           change: stockData.changePercent,
-          analysis: `${stockData.name} shows recent market activity with current trading patterns reflecting broader pharmaceutical sector dynamics.`
+          analysis: fallbackAnalysis
         });
       }
     }
