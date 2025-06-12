@@ -172,24 +172,22 @@ class PerplexityService {
       return content;
     }
 
-    // Replace citation numbers [1], [2], etc. with clickable links
+    // Keep citation numbers [1], [2], etc. as simple text (no inline links)
     let processedContent = content;
-    validCitations.forEach((citation, index) => {
-      const citationNumber = `[${index + 1}]`;
-      const link = `<a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline; font-weight: bold;">${citationNumber}</a>`;
-      const regex = new RegExp(`\\[${index + 1}\\]`, 'g');
-      const replacements = processedContent.match(regex)?.length || 0;
-      processedContent = processedContent.replace(regex, link);
-      console.log(`🔄 Replaced ${replacements} instances of [${index + 1}] with link to ${citation.url}`);
-    });
 
-    // Add references section with clickable links
+    // Add references table below the content
     if (validCitations.length > 0) {
-      processedContent += '\n\n### References:\n';
+      processedContent += '\n\n**References:**\n\n';
+      processedContent += '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">\n';
+      processedContent += '<thead><tr style="background-color: #f5f5f5;"><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">#</th><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Source</th></tr></thead>\n';
+      processedContent += '<tbody>\n';
+      
       validCitations.forEach((citation, index) => {
-        processedContent += `${index + 1}. <a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citation.title}</a>\n`;
+        processedContent += `<tr><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">[${index + 1}]</td><td style="border: 1px solid #ddd; padding: 8px;"><a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citation.title}</a></td></tr>\n`;
       });
-      console.log(`✅ Added references section with ${validCitations.length} valid citations`);
+      
+      processedContent += '</tbody>\n</table>\n';
+      console.log(`✅ Added references table with ${validCitations.length} valid citations`);
     }
 
     return processedContent;
