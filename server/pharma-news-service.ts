@@ -177,90 +177,28 @@ export class PharmaNewsService {
 
   private async generatePharmaNewsContent(stocks: any[], currentEvents: string): Promise<Omit<DailyNews, 'id' | 'date' | 'createdAt'>> {
     try {
-      if (!process.env.OPENAI_API_KEY) {
-        return this.getFallbackPharmaContent();
-      }
-
-      const stockList = stocks.map(s => `${s.symbol} (${s.name})`).join(', ');
-
-      const prompt = `You are an expert pharmaceutical intelligence analyst. Based on the following current healthcare events and pharmaceutical stock data, generate a comprehensive daily intelligence brief.
-
-Current Healthcare Events:
-${currentEvents}
-
-Healthcare Stocks Being Monitored:
-${stockList}
-
-Generate a pharmaceutical intelligence briefing with the following structure:
-
-1. TITLE: A compelling headline for today's pharmaceutical briefing
-2. SUMMARY: 2-3 sentence executive summary of key healthcare developments
-3. KEY_DEVELOPMENTS: Array of 4-5 bullet points covering major healthcare events, pharmaceutical industry news, and medical developments
-4. MARKET_IMPACT: Analysis of how today's events affect pharmaceutical markets and investor sentiment
-5. HEALTH_CRISIS_UPDATES: Array of specific updates for current health emergencies, disease outbreaks, or public health developments with severity levels
-6. PHARMA_STOCK_HIGHLIGHTS: Array of notable pharmaceutical stock movements with explanations
-7. REGULATORY_ANALYSIS: Strategic analysis of broader healthcare policy and regulatory implications
-
-Return as JSON in this exact format:
-{
-  "title": "string",
-  "summary": "string", 
-  "keyDevelopments": ["string1", "string2", ...],
-  "marketImpact": "string",
-  "conflictUpdates": [
-    {
-      "conflict": "string (health crisis name)",
-      "update": "string", 
-      "severity": "low|medium|high|critical"
-    }
-  ],
-  "defenseStockHighlights": [
-    {
-      "symbol": "string",
-      "name": "string",
-      "change": number,
-      "changePercent": number,
-      "reason": "string"
-    }
-  ],
-  "geopoliticalAnalysis": "string (regulatory and policy analysis)"
-}
-
-Focus on:
-- Disease outbreaks and public health emergencies
-- FDA drug approvals and regulatory decisions
-- Clinical trial results and medical breakthroughs
-- Pharmaceutical company earnings and mergers
-- Healthcare policy changes and their market impact
-- Global health initiatives and vaccination programs
-- Biotechnology innovations and research developments
-
-Make all content specific to healthcare and pharmaceuticals - no military or defense references.`;
-
-      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-        temperature: 0.3,
-        max_tokens: 2000,
-      });
-
-      const content = completion.choices[0].message.content;
-      if (!content) {
-        throw new Error("No content generated from OpenAI");
-      }
-
-      const parsed = JSON.parse(content);
+      // Use the comprehensive intelligence brief that already extracts pharmaceutical companies
+      console.log("🔬 Generating comprehensive pharmaceutical intelligence using Perplexity AI...");
+      const intelligenceBrief = await perplexityService.generateComprehensiveIntelligenceBrief();
       
       return {
-        title: parsed.title,
-        summary: parsed.summary,
-        keyDevelopments: parsed.keyDevelopments,
-        marketImpact: parsed.marketImpact,
-        conflictUpdates: parsed.conflictUpdates || [],
-        defenseStockHighlights: parsed.defenseStockHighlights || [],
-        geopoliticalAnalysis: parsed.geopoliticalAnalysis
+        title: intelligenceBrief.title,
+        summary: intelligenceBrief.summary,
+        keyDevelopments: intelligenceBrief.keyDevelopments,
+        marketImpact: intelligenceBrief.marketImpact,
+        conflictUpdates: intelligenceBrief.conflictUpdates.map(update => ({
+          conflict: update.region,
+          update: update.description,
+          severity: update.severity as "medium" | "high" | "low" | "critical"
+        })),
+        defenseStockHighlights: intelligenceBrief.defenseStockHighlights.map(stock => ({
+          symbol: stock.symbol,
+          name: stock.company,
+          change: stock.change,
+          changePercent: stock.change,
+          reason: stock.analysis
+        })),
+        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
       };
 
     } catch (error) {
