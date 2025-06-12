@@ -229,13 +229,13 @@ class PerplexityService {
     }
   }
 
-  private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<string> {
+  private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<{content: string, references: Array<{number: number, title: string, url: string}>}> {
     console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
     console.log(`🔗 Citations received in processContentWithLinks:`, JSON.stringify(citations, null, 2));
     
     if (!citations || citations.length === 0) {
       console.log('⚠️ No citations provided for content processing');
-      return content;
+      return { content, references: [] };
     }
 
     // Debug log all citations
@@ -278,11 +278,10 @@ class PerplexityService {
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
 
-    // Build references section separately instead of appending to content
-    let referencesSection = '';
+    // Build references array separately from content
+    const references: Array<{number: number, title: string, url: string}> = [];
+    
     if (validCitations.length > 0) {
-      referencesSection = '**References:**\n\n';
-      
       // Use for loop to enable async/await for web scraping
       for (let index = 0; index < validCitations.length; index++) {
         const citation = validCitations[index];
@@ -346,17 +345,18 @@ class PerplexityService {
           }
         }
         
-        referencesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
+        references.push({
+          number: index + 1,
+          title: displayTitle,
+          url: citation.url
+        });
       }
       
-      console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
+      console.log(`✅ Built references array with ${validCitations.length} valid citations`);
     }
 
-    // Return content with separated references section
-    if (referencesSection) {
-      return processedContent + '\n\n' + referencesSection;
-    }
-    return processedContent;
+    // Return content and references as separate structures
+    return { content: processedContent, references };
   }
 
   async generateExecutiveSummary(): Promise<string> {
@@ -375,8 +375,8 @@ class PerplexityService {
       console.log(`🎯 Executive Summary - First citation: ${result.citations[0].url || result.citations[0]}`);
     }
     const processed = await this.processContentWithLinks(result.content, result.citations);
-    console.log(`🎯 Executive Summary - Processed length: ${processed.length}, Has references: ${processed.includes('**References:**')}`);
-    return processed;
+    console.log(`🎯 Executive Summary - Processed length: ${processed.content.length}, References count: ${processed.references.length}`);
+    return processed.content;
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
