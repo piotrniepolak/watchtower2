@@ -10526,7 +10526,7 @@ export default function WorldHealthMapSimple() {
         const width = 960;
         const height = 500;
         const projection = geoNaturalEarth1()
-          .scale(120)  // Maximum zoom out to show full world
+          .scale(100)  // Maximum zoom out to show full world
           .center([0, 0])  // Centered view
           .translate([width / 2, height / 2]);
         
@@ -10541,8 +10541,8 @@ export default function WorldHealthMapSimple() {
         if (countriesGroup) {
           countriesGroup.innerHTML = '';
           
-          // Add interactive zoom and pan functionality
-          let currentScale = 1;
+          // Add interactive zoom and pan functionality with maximum zoom out
+          let currentScale = 0.8;  // Start with maximum zoom out
           let currentTranslateX = 0;
           let currentTranslateY = 0;
           let isDragging = false;
@@ -10692,6 +10692,12 @@ export default function WorldHealthMapSimple() {
             countriesGroup.appendChild(pathElement);
           });
           
+          // Apply initial zoom transform
+          if (countriesGroup instanceof HTMLElement || countriesGroup instanceof SVGElement) {
+            countriesGroup.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+            countriesGroup.style.transformOrigin = '0 0';
+          }
+          
           console.log(`Loaded ${countries.features.length} countries, ${healthData.size} with health data`);
         }
       } catch (error) {
@@ -10717,34 +10723,43 @@ export default function WorldHealthMapSimple() {
     <div className="space-y-6">
       {/* World Map */}
       <Card className="w-full">
-        <CardContent className="p-2 pb-0">
-          <div className="flex items-center justify-end gap-3 text-xs mb-2">
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#065f46'}}></div>
-              <span className="text-gray-600">80-100</span>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Activity className="h-5 w-5 text-blue-600" />
+                Global Health Map
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">WHO Statistical Annex data visualization</p>
             </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#10b981'}}></div>
-              <span className="text-gray-600">60-79</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#f59e0b'}}></div>
-              <span className="text-gray-600">40-59</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#dc2626'}}></div>
-              <span className="text-gray-600">20-39</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#7f1d1d'}}></div>
-              <span className="text-gray-600">0-19</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
-              <span className="text-gray-600">No Data</span>
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#065f46'}}></div>
+                <span className="text-gray-600">80-100</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#10b981'}}></div>
+                <span className="text-gray-600">60-79</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#f59e0b'}}></div>
+                <span className="text-gray-600">40-59</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#dc2626'}}></div>
+                <span className="text-gray-600">20-39</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-sm" style={{backgroundColor: '#7f1d1d'}}></div>
+                <span className="text-gray-600">0-19</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
+                <span className="text-gray-600">No Data</span>
+              </div>
             </div>
           </div>
-        </CardContent>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="w-full h-96 md:h-[400px] bg-gradient-to-br from-blue-400 to-blue-300 rounded-lg border border-gray-200 relative overflow-hidden">
             <svg 
