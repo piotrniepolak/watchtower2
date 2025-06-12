@@ -278,9 +278,10 @@ class PerplexityService {
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
 
-    // Add clean reference list below the content
+    // Build references section separately instead of appending to content
+    let referencesSection = '';
     if (validCitations.length > 0) {
-      processedContent += '\n\n**References:**\n\n';
+      referencesSection = '**References:**\n\n';
       
       // Use for loop to enable async/await for web scraping
       for (let index = 0; index < validCitations.length; index++) {

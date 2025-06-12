@@ -1667,10 +1667,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ) : [])
       ].join(' ');
 
-      // Remove any URLs that might contain company names to prevent false positives
+      // Remove any URLs, references, and citations that might contain company names to prevent false positives
       const cleanBriefContent = briefTextContent
         .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
         .replace(/www\.[^\s]+/g, '') // Remove www domains
+        .replace(/### References:[\s\S]*$/i, '') // Remove entire references section
+        .replace(/- [^:]+: "[^"]*"[^\n]*/g, '') // Remove citation lines
+        .replace(/\([^)]*20\d{2}[^)]*\)/g, '') // Remove date citations like (2025-06-12)
+        .replace(/BioPharma Dive|STAT News|Reuters|Bloomberg/gi, '') // Remove news source names
         .toLowerCase();
 
       // Find all pharmaceutical companies mentioned in the brief content
