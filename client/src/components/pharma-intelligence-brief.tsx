@@ -37,52 +37,75 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
   
   const sources: Array<{title: string, source: string, url?: string}> = [];
   
-  // Pattern to match article titles in quotes with sources
-  const titlePatterns = [
-    /BioPharma Dive:\s*["']([^"']+)["']/gi,
-    /STAT News:\s*["']([^"']+)["']/gi,
-    /Reuters Health:\s*["']([^"']+)["']/gi,
-    /PubMed:\s*["']([^"']+)["']/gi,
-    /FDA\.gov:\s*["']([^"']+)["']/gi
-  ];
-  
-  titlePatterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-      const fullMatch = match[0];
-      const title = match[1];
-      const source = fullMatch.split(':')[0];
-      
-      let url = '';
-      if (source.includes('BioPharma Dive')) {
-        url = 'https://www.biopharmadive.com';
-      } else if (source.includes('STAT News')) {
-        url = 'https://www.statnews.com';
-      } else if (source.includes('Reuters')) {
-        url = 'https://www.reuters.com/business/healthcare-pharmaceuticals';
-      } else if (source.includes('PubMed')) {
-        url = 'https://pubmed.ncbi.nlm.nih.gov';
-      } else if (source.includes('FDA')) {
-        url = 'https://www.fda.gov/news-events';
+  // Look for "References:" section first
+  const referencesMatch = text.match(/References:\s*([\s\S]*?)(?:\n\n|\n$|$)/i);
+  if (referencesMatch) {
+    const referencesText = referencesMatch[1];
+    
+    // Extract individual reference lines
+    const referenceLines = referencesText.split('\n').filter(line => line.trim().startsWith('-'));
+    
+    referenceLines.forEach(line => {
+      // Match pattern: - Source: "Title"
+      const match = line.match(/^-\s*([^:]+):\s*[""]([^""]+)[""]?/);
+      if (match) {
+        const source = match[1].trim();
+        const title = match[2].trim();
+        
+        let url = '';
+        if (source.includes('BioPharma Dive')) {
+          url = 'https://www.biopharmadive.com';
+        } else if (source.includes('STAT News')) {
+          url = 'https://www.statnews.com';
+        } else if (source.includes('Reuters')) {
+          url = 'https://www.reuters.com/business/healthcare-pharmaceuticals';
+        } else if (source.includes('PubMed')) {
+          url = 'https://pubmed.ncbi.nlm.nih.gov';
+        } else if (source.includes('FDA')) {
+          url = 'https://www.fda.gov/news-events';
+        } else if (source.includes('Bloomberg')) {
+          url = 'https://www.bloomberg.com/news/industries/health-care';
+        }
+        
+        sources.push({ title, source, url });
       }
-      
-      sources.push({ title, source, url });
-    }
-  });
+    });
+  }
   
-  // Fallback to generic source mentions if no detailed references found
+  // If no references section found, look for inline citations
   if (sources.length === 0) {
-    const genericPatterns = [
-      { pattern: /BioPharma Dive/gi, source: 'BioPharma Dive', url: 'https://www.biopharmadive.com' },
-      { pattern: /STAT News/gi, source: 'STAT News', url: 'https://www.statnews.com' },
-      { pattern: /Reuters Health/gi, source: 'Reuters Health', url: 'https://www.reuters.com/business/healthcare-pharmaceuticals' },
-      { pattern: /PubMed/gi, source: 'PubMed', url: 'https://pubmed.ncbi.nlm.nih.gov' },
-      { pattern: /FDA\.gov/gi, source: 'FDA.gov', url: 'https://www.fda.gov/news-events' }
+    const titlePatterns = [
+      /BioPharma Dive:\s*[""]([^""]+)[""]?/gi,
+      /STAT News:\s*[""]([^""]+)[""]?/gi,
+      /Reuters Health:\s*[""]([^""]+)[""]?/gi,
+      /PubMed:\s*[""]([^""]+)[""]?/gi,
+      /FDA\.gov:\s*[""]([^""]+)[""]?/gi,
+      /Bloomberg:\s*[""]([^""]+)[""]?/gi
     ];
     
-    genericPatterns.forEach(({ pattern, source, url }) => {
-      if (pattern.test(text)) {
-        sources.push({ title: 'Latest pharmaceutical developments', source, url });
+    titlePatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const fullMatch = match[0];
+        const title = match[1];
+        const source = fullMatch.split(':')[0];
+        
+        let url = '';
+        if (source.includes('BioPharma Dive')) {
+          url = 'https://www.biopharmadive.com';
+        } else if (source.includes('STAT News')) {
+          url = 'https://www.statnews.com';
+        } else if (source.includes('Reuters')) {
+          url = 'https://www.reuters.com/business/healthcare-pharmaceuticals';
+        } else if (source.includes('PubMed')) {
+          url = 'https://pubmed.ncbi.nlm.nih.gov';
+        } else if (source.includes('FDA')) {
+          url = 'https://www.fda.gov/news-events';
+        } else if (source.includes('Bloomberg')) {
+          url = 'https://www.bloomberg.com/news/industries/health-care';
+        }
+        
+        sources.push({ title, source, url });
       }
     });
   }
@@ -96,21 +119,23 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
     return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
   }
   
-  const cleaned = cleanContent(text);
+  // Remove the References section from the main content
+  const contentWithoutRefs = text.replace(/References:\s*([\s\S]*?)(?:\n\n|\n$|$)/i, '').trim();
+  const cleaned = cleanContent(contentWithoutRefs);
   const detailedSources = extractDetailedSources(text);
   
   return (
     <div className="space-y-4">
-      <div className="leading-relaxed">
-        {cleaned.split('\n').map((paragraph: string, index: number) => (
-          <p key={index} className="mb-3 last:mb-0">{paragraph}</p>
+      <div className="leading-relaxed text-sm">
+        {cleaned.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
+          <p key={index} className="mb-3 last:mb-0">{paragraph.trim()}</p>
         ))}
       </div>
       
       {detailedSources.length > 0 && (
         <div className="mt-4 pt-3 border-t border-slate-200">
           <h5 className="text-sm font-semibold text-slate-700 mb-2">References:</h5>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {detailedSources.map((ref, index) => (
               <div key={index} className="flex items-start gap-2 text-xs">
                 <span className="text-slate-400 mt-0.5">•</span>
