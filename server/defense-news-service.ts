@@ -186,7 +186,7 @@ Focus on events that would significantly impact defense markets, security analys
     const existingStocks = await storage.getStocks();
     const existingSymbols = new Set(existingStocks.map(s => s.symbol));
 
-    for (const symbol of detectedCompanies) {
+    for (const symbol of Array.from(detectedCompanies)) {
       if (!existingSymbols.has(symbol)) {
         const company = knownDefenseCompanies.find(c => c.symbol === symbol);
         if (company) {
@@ -201,10 +201,10 @@ Focus on events that would significantly impact defense markets, security analys
                 symbol: symbol,
                 name: company.name,
                 sector: 'Defense',
-                currentPrice: stockData.currentPrice,
-                priceChange: stockData.priceChange,
-                percentChange: stockData.percentChange,
-                volume: stockData.volume || 0,
+                currentPrice: stockData.regularMarketPrice || 0,
+                priceChange: stockData.regularMarketChange || 0,
+                percentChange: stockData.regularMarketChangePercent?.toFixed(2) + '%' || '0%',
+                volume: stockData.regularMarketVolume || 0,
                 marketCap: stockData.marketCap || 0,
                 hasDefense: true,
                 hasHealthcare: false,
@@ -212,7 +212,7 @@ Focus on events that would significantly impact defense markets, security analys
               };
 
               await storage.createStock(newStock);
-              console.log(`✅ Added new defense stock: ${symbol} at $${stockData.currentPrice}`);
+              console.log(`✅ Added new defense stock: ${symbol} at $${stockData.regularMarketPrice}`);
             }
           } catch (error) {
             console.error(`❌ Error adding defense stock ${symbol}:`, error);

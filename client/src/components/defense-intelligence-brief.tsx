@@ -9,6 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   Shield, 
   TrendingUp, 
@@ -21,7 +22,11 @@ import {
   Globe,
   BarChart3,
   Users,
-  Building2
+  Building2,
+  DollarSign,
+  ExternalLink,
+  Award,
+  Activity
 } from "lucide-react";
 
 export function DefenseIntelligenceBrief() {
@@ -290,25 +295,137 @@ export function DefenseIntelligenceBrief() {
               {defenseNews?.defenseStockHighlights && Array.isArray(defenseNews.defenseStockHighlights) ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {defenseNews.defenseStockHighlights.map((stock: any, index: number) => (
-                    <div key={index} className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-sm">{stock.symbol}</span>
-                          <span className="text-xs text-muted-foreground">{stock.name}</span>
+                    <Dialog key={index}>
+                      <DialogTrigger asChild>
+                        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border cursor-pointer hover:border-blue-500 transition-colors">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-blue-600 hover:text-blue-700">{stock.symbol || 'N/A'}</span>
+                              <span className="text-xs text-muted-foreground truncate">{stock.companyName || stock.name || 'Defense Company'}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-semibold">${stock.currentPrice?.toFixed(2) || '0.00'}</div>
+                              <div className={`text-xs ${stock.priceChange?.toString().includes('-') ? 'text-red-500' : 'text-green-500'}`}>
+                                {stock.priceChange || '0%'}
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {stock.analysis || stock.catalysts || 'Analysis pending...'}
+                          </p>
+                          <div className="flex items-center justify-between mt-3">
+                            <Badge variant="outline" className="text-xs">
+                              {stock.sector || 'Defense'}
+                            </Badge>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </div>
                         </div>
-                        <div className="flex flex-col items-end">
-                          <Badge variant={stock.change > 0 ? "default" : "destructive"} className="text-xs">
-                            {stock.change > 0 ? '+' : ''}{stock.change?.toFixed(2) || 'N/A'}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {stock.changePercent > 0 ? '+' : ''}{stock.changePercent?.toFixed(2)}%
-                          </span>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-3">
+                            <Building2 className="h-6 w-6 text-blue-600" />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl font-bold text-blue-600">{stock.symbol || 'N/A'}</span>
+                                <Badge variant="outline">{stock.sector || 'Defense'}</Badge>
+                              </div>
+                              <div className="text-sm text-muted-foreground font-normal">
+                                {stock.companyName || stock.name || 'Defense Company'}
+                              </div>
+                            </div>
+                          </DialogTitle>
+                        </DialogHeader>
+                        
+                        <div className="space-y-6">
+                          {/* Stock Performance */}
+                          <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 flex items-center gap-2">
+                              <Activity className="h-4 w-4" />
+                              Current Performance
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="text-sm text-muted-foreground">Current Price</div>
+                                <div className="text-xl font-bold">${stock.currentPrice?.toFixed(2) || '0.00'}</div>
+                              </div>
+                              <div>
+                                <div className="text-sm text-muted-foreground">Change</div>
+                                <div className={`text-xl font-bold ${stock.priceChange?.toString().includes('-') ? 'text-red-500' : 'text-green-500'}`}>
+                                  {stock.priceChange || '0%'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Intelligence Analysis */}
+                          {stock.analysis && (
+                            <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-4">
+                              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <Target className="h-4 w-4" />
+                                Intelligence Analysis
+                              </h3>
+                              <p className="text-sm leading-relaxed">{stock.analysis}</p>
+                            </div>
+                          )}
+
+                          {/* Strategic Catalysts */}
+                          {stock.catalysts && (
+                            <div className="bg-green-50 dark:bg-green-950 rounded-lg p-4">
+                              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4" />
+                                Strategic Catalysts
+                              </h3>
+                              <p className="text-sm leading-relaxed">{stock.catalysts}</p>
+                            </div>
+                          )}
+
+                          {/* Recent News */}
+                          {stock.recentNews && (
+                            <div className="bg-yellow-50 dark:bg-yellow-950 rounded-lg p-4">
+                              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Recent Developments
+                              </h3>
+                              <p className="text-sm leading-relaxed">{stock.recentNews}</p>
+                            </div>
+                          )}
+
+                          {/* Competitive Position */}
+                          {stock.competitivePosition && (
+                            <div className="bg-purple-50 dark:bg-purple-950 rounded-lg p-4">
+                              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <Award className="h-4 w-4" />
+                                Competitive Position
+                              </h3>
+                              <p className="text-sm leading-relaxed">{stock.competitivePosition}</p>
+                            </div>
+                          )}
+
+                          {/* External Links */}
+                          <div className="flex gap-2 pt-4 border-t">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => window.open(`https://finance.yahoo.com/quote/${stock.symbol}`, '_blank')}
+                              className="flex items-center gap-2"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Yahoo Finance
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(stock.companyName || stock.name || stock.symbol)} defense contracts news`, '_blank')}
+                              className="flex items-center gap-2"
+                            >
+                              <Globe className="h-4 w-4" />
+                              Latest News
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {stock.reason || String(stock)}
-                      </p>
-                    </div>
+                      </DialogContent>
+                    </Dialog>
                   ))}
                 </div>
               ) : (
