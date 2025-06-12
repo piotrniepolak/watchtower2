@@ -11,6 +11,7 @@ import {
   Building2, 
   ChevronDown, 
   ChevronUp,
+  ExternalLink,
   Newspaper,
   Target,
   DollarSign,
