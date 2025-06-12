@@ -261,22 +261,24 @@ Make all content specific to healthcare and pharmaceuticals - no military or def
       const intelligenceBrief = await perplexityService.generateComprehensiveIntelligenceBrief();
 
       const newsData: InsertDailyNews = {
+        date: new Date().toISOString().split('T')[0],
         title: intelligenceBrief.title,
         summary: intelligenceBrief.summary,
-        content: JSON.stringify({
-          keyDevelopments: intelligenceBrief.keyDevelopments,
-          conflictUpdates: intelligenceBrief.conflictUpdates,
-          defenseStockHighlights: intelligenceBrief.defenseStockHighlights,
-          marketImpact: intelligenceBrief.marketImpact,
-          geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
-        }),
-        sector: "pharmaceutical",
         keyDevelopments: intelligenceBrief.keyDevelopments,
-        conflictUpdates: intelligenceBrief.conflictUpdates,
-        defenseStockHighlights: intelligenceBrief.defenseStockHighlights,
+        conflictUpdates: intelligenceBrief.conflictUpdates.map(update => ({
+          conflict: update.region,
+          update: update.description,
+          severity: update.severity as "medium" | "high" | "low" | "critical"
+        })),
+        defenseStockHighlights: intelligenceBrief.defenseStockHighlights.map(stock => ({
+          symbol: stock.symbol,
+          name: stock.company,
+          change: stock.change,
+          changePercent: stock.change,
+          reason: stock.analysis
+        })),
         marketImpact: intelligenceBrief.marketImpact,
-        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-        createdAt: new Date()
+        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
       };
 
       const savedNews = await storage.createDailyNews(newsData);

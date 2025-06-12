@@ -1546,7 +1546,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pharma News Routes
   app.get("/api/news/pharma/today", async (req, res) => {
     try {
-      const news = await pharmaNewsService.getTodaysPharmaNews();
+      // First try to generate comprehensive pharmaceutical intelligence using Perplexity AI
+      let news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      
+      // If Perplexity AI fails, fallback to existing method
+      if (!news) {
+        console.log('Perplexity AI pharmaceutical intelligence generation failed, trying fallback method...');
+        news = await pharmaNewsService.getTodaysPharmaNews();
+      }
+      
       if (!news) {
         return res.status(404).json({ error: "No pharma news available for today" });
       }
@@ -1554,6 +1562,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching today's pharma news:", error);
       res.status(500).json({ error: "Failed to fetch today's pharma news" });
+    }
+  });
+
+  // Dedicated Perplexity AI pharmaceutical intelligence endpoint
+  app.get("/api/pharma-intelligence", async (req, res) => {
+    try {
+      console.log('Generating fresh pharmaceutical intelligence using Perplexity AI...');
+      const intelligence = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      
+      if (!intelligence) {
+        return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
+      }
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("Error generating pharmaceutical intelligence:", error);
+      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
     }
   });
   
