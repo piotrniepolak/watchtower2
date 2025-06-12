@@ -1990,8 +1990,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return null;
       }).filter(Boolean);
 
-      // Update the pharmaceutical stock highlights with comprehensive list
-      news.pharmaceuticalStockHighlights = comprehensiveStockHighlights;
+      // Only use comprehensive stock highlights if database highlights are empty or missing
+      if (!news.pharmaceuticalStockHighlights || 
+          !Array.isArray(news.pharmaceuticalStockHighlights) || 
+          news.pharmaceuticalStockHighlights.length === 0) {
+        news.pharmaceuticalStockHighlights = comprehensiveStockHighlights;
+      } else {
+        // Enhance existing database highlights with current stock prices
+        news.pharmaceuticalStockHighlights = news.pharmaceuticalStockHighlights.map((highlight: any) => {
+          const stock = healthcareStocks.find(s => s.symbol === highlight.symbol);
+          if (stock && stock.price > 0) {
+            return {
+              ...highlight,
+              price: stock.price,
+              change: stock.change,
+              changePercent: stock.changePercent
+            };
+          }
+          return highlight;
+        });
+      }
 
       res.json(news);
     } catch (error) {
