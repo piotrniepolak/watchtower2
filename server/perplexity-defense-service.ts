@@ -145,13 +145,16 @@ export class PerplexityDefenseService {
           console.log('⚠️ No conflict intelligence received, creating enhanced conflict updates from brief content');
           const basicUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent);
           enhancedConflictUpdates = basicUpdates.map(update => ({
-            ...update,
-            conflictName: update.conflict,
-            currentStatus: update.update,
-            developments: this.extractDevelopmentsFromContent(intelligenceBrief.rawContent, update.conflict),
-            defenseImpact: this.extractDefenseImpactFromContent(intelligenceBrief.rawContent, update.conflict),
-            marketImplications: this.extractMarketImplicationsFromContent(intelligenceBrief.rawContent, update.conflict),
-            sourceLinks: intelligenceBrief.citations || []
+            conflict: update.region, // Map region to conflict field for schema compatibility
+            update: update.description, // Map description to update field
+            severity: update.severity,
+            conflictName: update.region,
+            currentStatus: update.description,
+            developments: this.extractDevelopmentsFromContent(intelligenceBrief.rawContent, update.region),
+            defenseImpact: this.extractDefenseImpactFromContent(intelligenceBrief.rawContent, update.region),
+            marketImplications: this.extractMarketImplicationsFromContent(intelligenceBrief.rawContent, update.region),
+            sourceLinks: intelligenceBrief.citations || [],
+            lastUpdated: new Date().toISOString()
           }));
           console.log(`✅ Enhanced ${enhancedConflictUpdates.length} conflict updates with comprehensive analysis`);
         }
@@ -159,13 +162,16 @@ export class PerplexityDefenseService {
         console.error('❌ Error generating conflict intelligence, creating enhanced fallback:', error);
         const basicUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent);
         enhancedConflictUpdates = basicUpdates.map(update => ({
-          ...update,
-          conflictName: update.conflict,
-          currentStatus: update.update,
-          developments: this.extractDevelopmentsFromContent(intelligenceBrief.rawContent, update.conflict),
-          defenseImpact: this.extractDefenseImpactFromContent(intelligenceBrief.rawContent, update.conflict),
-          marketImplications: this.extractMarketImplicationsFromContent(intelligenceBrief.rawContent, update.conflict),
-          sourceLinks: intelligenceBrief.citations || []
+          conflict: update.region, // Map region to conflict field for schema compatibility
+          update: update.description, // Map description to update field
+          severity: update.severity,
+          conflictName: update.region,
+          currentStatus: update.description,
+          developments: this.extractDevelopmentsFromContent(intelligenceBrief.rawContent, update.region),
+          defenseImpact: this.extractDefenseImpactFromContent(intelligenceBrief.rawContent, update.region),
+          marketImplications: this.extractMarketImplicationsFromContent(intelligenceBrief.rawContent, update.region),
+          sourceLinks: intelligenceBrief.citations || [],
+          lastUpdated: new Date().toISOString()
         }));
         console.log(`✅ Enhanced ${enhancedConflictUpdates.length} conflict updates with comprehensive fallback analysis`);
       }
