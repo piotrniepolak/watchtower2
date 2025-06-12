@@ -287,6 +287,10 @@ export class DatabaseStorage implements IStorage {
     return news;
   }
 
+  async deleteDailyNews(date: string): Promise<void> {
+    await db.delete(dailyNews).where(eq(dailyNews.date, date));
+  }
+
   async updateDailyNews(id: number, updateData: Partial<InsertDailyNews>): Promise<DailyNews> {
     const [news] = await db.update(dailyNews).set(updateData).where(eq(dailyNews.id, id)).returning();
     return news;

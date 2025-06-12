@@ -263,6 +263,7 @@ export const dailyNews = pgTable("daily_news", {
   marketImpact: text("market_impact").notNull(),
   conflictUpdates: jsonb("conflict_updates").notNull(),
   defenseStockHighlights: jsonb("defense_stock_highlights").notNull(),
+  pharmaceuticalStockHighlights: jsonb("pharmaceutical_stock_highlights"),
   geopoliticalAnalysis: text("geopolitical_analysis").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -281,6 +282,13 @@ export const insertDailyNewsSchema = createInsertSchema(dailyNews, {
     changePercent: z.number(),
     reason: z.string(),
   })),
+  pharmaceuticalStockHighlights: z.array(z.object({
+    symbol: z.string(),
+    name: z.string(),
+    change: z.number(),
+    changePercent: z.number(),
+    reason: z.string(),
+  })).optional(),
 }).omit({
   id: true,
   createdAt: true,
