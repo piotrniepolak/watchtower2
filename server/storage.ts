@@ -286,6 +286,11 @@ export class DatabaseStorage implements IStorage {
     return news;
   }
 
+  async updateDailyNews(id: number, updateData: Partial<InsertDailyNews>): Promise<DailyNews> {
+    const [news] = await db.update(dailyNews).set(updateData).where(eq(dailyNews.id, id)).returning();
+    return news;
+  }
+
   async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {
     const quiz = await this.getDailyQuiz(date);
     console.log(`DatabaseStorage leaderboard: date=${date}, quiz found:`, quiz?.id);
