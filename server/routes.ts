@@ -1600,7 +1600,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'gilead': 'GILD',
         'moderna': 'MRNA',
         'regeneron': 'REGN',
-        'novavax': 'NVAX'
+        'novavax': 'NVAX',
+        'solid': 'SLDB',
+        'solid biosciences': 'SLDB',
+        'stoke': 'STOK',
+        'stoke therapeutics': 'STOK'
       };
 
       // Extract all text content from the entire brief
