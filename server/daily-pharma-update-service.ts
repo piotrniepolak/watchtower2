@@ -34,8 +34,8 @@ export class DailyPharmaUpdateService {
         .map(stock => stock.symbol)
     );
 
-    // Extract only the actual brief text content, excluding reference URLs
-    const briefTextContent = [
+    // Extract all text content from the brief
+    const allBriefContent = [
       briefData.title || '',
       briefData.summary || '',
       ...(Array.isArray(briefData.keyDevelopments) ? briefData.keyDevelopments : []),
@@ -44,16 +44,6 @@ export class DailyPharmaUpdateService {
       ...(Array.isArray(briefData.conflictUpdates) ? 
         briefData.conflictUpdates.map((update: any) => update.update || '') : [])
     ].join(' ');
-
-    // Remove any URLs, references, and citations that might contain company names to prevent false positives
-    const cleanBriefContent = briefTextContent
-      .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
-      .replace(/www\.[^\s]+/g, '') // Remove www domains
-      .replace(/### References:[\s\S]*$/i, '') // Remove entire references section
-      .replace(/- [^:]+: "[^"]*"[^\n]*/g, '') // Remove citation lines
-      .replace(/\([^)]*20\d{2}[^)]*\)/g, '') // Remove date citations like (2025-06-12)
-      .replace(/BioPharma Dive|STAT News|Reuters|Bloomberg/gi, '') // Remove news source names
-      .toLowerCase();
 
     // Enhanced pharmaceutical company mapping with newly discovered patterns
     const companyToSymbolMap: Record<string, string> = {
@@ -129,10 +119,10 @@ export class DailyPharmaUpdateService {
     // Detect all mentioned pharmaceutical companies
     const mentionedSymbols = new Set<string>();
 
-    // Search through cleaned text content for company mentions (excluding URLs)
+    // Search through all text content for company mentions
     Object.entries(companyToSymbolMap).forEach(([companyName, symbol]) => {
       const regex = new RegExp(`\\b${companyName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-      if (regex.test(cleanBriefContent)) {
+      if (regex.test(allBriefContent)) {
         mentionedSymbols.add(symbol);
         console.log(`📊 Detected pharmaceutical company: ${companyName} -> ${symbol}`);
       }
@@ -153,7 +143,7 @@ export class DailyPharmaUpdateService {
             symbol,
             name: this.formatCompanyName(companyName),
             detectedIn: briefData.title || 'Daily Pharmaceutical Intelligence Brief',
-            context: this.extractContext(cleanBriefContent, companyName)
+            context: this.extractContext(allBriefContent, companyName)
           });
         }
       }

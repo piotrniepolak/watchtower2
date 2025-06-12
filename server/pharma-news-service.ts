@@ -184,7 +184,7 @@ export class PharmaNewsService {
       
       return {
         title: intelligenceBrief.title,
-        summary: intelligenceBrief.summary, // This will now be a structured object with content and references
+        summary: intelligenceBrief.summary,
         keyDevelopments: intelligenceBrief.keyDevelopments,
         marketImpact: intelligenceBrief.marketImpact,
         conflictUpdates: intelligenceBrief.conflictUpdates.map(update => ({

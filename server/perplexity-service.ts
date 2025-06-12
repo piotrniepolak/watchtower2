@@ -17,14 +17,7 @@ interface PerplexityResponse {
 
 interface PharmaceuticalIntelligence {
   title: string;
-  summary: {
-    content: string;
-    references: Array<{
-      number: number;
-      title: string;
-      url: string;
-    }>;
-  };
+  summary: string;
   keyDevelopments: string[];
   conflictUpdates: Array<{
     region: string;
@@ -236,13 +229,13 @@ class PerplexityService {
     }
   }
 
-  private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<{content: string, references: Array<{number: number, title: string, url: string}>}> {
+  private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<string> {
     console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
     console.log(`🔗 Citations received in processContentWithLinks:`, JSON.stringify(citations, null, 2));
     
     if (!citations || citations.length === 0) {
       console.log('⚠️ No citations provided for content processing');
-      return { content, references: [] };
+      return content;
     }
 
     // Debug log all citations
@@ -269,10 +262,10 @@ class PerplexityService {
 
     if (validCitations.length === 0) {
       console.log('❌ No valid citations found after filtering, returning original content');
-      return { content, references: [] };
+      return content;
     }
 
-    // Aggressively remove ALL citation patterns and references from the main content
+    // Remove all citation numbers [1], [2], etc. from the main content
     let processedContent = content;
     
     console.log(`🔧 Before citation removal: ${processedContent.substring(0, 200)}...`);
@@ -280,33 +273,15 @@ class PerplexityService {
     // Remove all citation patterns like [1], [2], [3], including clustered ones like [1][3]
     processedContent = processedContent.replace(/\[\d+\]/g, '');
     
-    // Remove any remaining reference patterns
-    processedContent = processedContent.replace(/\(\d+\)/g, ''); // Remove (1), (2), etc.
-    processedContent = processedContent.replace(/\[ref\s*\d+\]/gi, ''); // Remove [ref 1], [Ref 2], etc.
-    processedContent = processedContent.replace(/\[source:\s*\d+\]/gi, ''); // Remove [source: 1], etc.
-    processedContent = processedContent.replace(/\[\s*\d+\s*\]/g, ''); // Remove [ 1 ], etc. with spaces
-    
-    // Remove any numbered reference lists that might be embedded
-    processedContent = processedContent.replace(/^\d+\.\s+[\s\S]*?(?=\n\n|\n\d+\.|\n$|$)/gm, '');
-    
-    // Remove references sections completely
-    processedContent = processedContent.replace(/\*\*References:\*\*[\s\S]*$/i, '');
-    processedContent = processedContent.replace(/References:[\s\S]*$/i, '');
-    processedContent = processedContent.replace(/### References[\s\S]*$/i, '');
-    processedContent = processedContent.replace(/## References[\s\S]*$/i, '');
-    
-    // Remove any numbered links like "1. [Title](URL)"
-    processedContent = processedContent.replace(/\d+\.\s*\[[^\]]+\]\([^)]+\)/g, '');
-    
-    console.log(`🔧 After aggressive citation removal: ${processedContent.substring(0, 200)}...`);
+    console.log(`🔧 After citation removal: ${processedContent.substring(0, 200)}...`);
     
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
 
-    // Build references array separately from content
-    const references: Array<{number: number, title: string, url: string}> = [];
-    
+    // Add clean reference list below the content
     if (validCitations.length > 0) {
+      processedContent += '\n\n**References:**\n\n';
+      
       // Use for loop to enable async/await for web scraping
       for (let index = 0; index < validCitations.length; index++) {
         const citation = validCitations[index];
@@ -370,21 +345,16 @@ class PerplexityService {
           }
         }
         
-        references.push({
-          number: index + 1,
-          title: displayTitle,
-          url: citation.url
-        });
+        processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
       }
       
-      console.log(`✅ Built references array with ${validCitations.length} valid citations`);
+      console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
     }
 
-    // Return content and references as separate structures
-    return { content: processedContent, references };
+    return processedContent;
   }
 
-  async generateExecutiveSummary(): Promise<{content: string, references: Array<{number: number, title: string, url: string}>}> {
+  async generateExecutiveSummary(): Promise<string> {
     const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Search specifically for recent articles from:
     - STAT News (statnews.com)
     - BioPharma Dive (biopharmadive.com) 
@@ -400,7 +370,7 @@ class PerplexityService {
       console.log(`🎯 Executive Summary - First citation: ${result.citations[0].url || result.citations[0]}`);
     }
     const processed = await this.processContentWithLinks(result.content, result.citations);
-    console.log(`🎯 Executive Summary - Processed length: ${processed.content.length}, References count: ${processed.references.length}`);
+    console.log(`🎯 Executive Summary - Processed length: ${processed.length}, Has references: ${processed.includes('**References:**')}`);
     return processed;
   }
 
@@ -729,16 +699,14 @@ class PerplexityService {
     const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Provide substantial detail about market drivers and financial implications.`;
     
     const result = await this.queryPerplexity(prompt);
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    return processed.content;
+    return await this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateRegulatoryAnalysis(): Promise<string> {
     const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.`;
     
     const result = await this.queryPerplexity(prompt);
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    return processed.content;
+    return await this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateComprehensiveIntelligenceBrief(): Promise<PharmaceuticalIntelligence> {
@@ -762,7 +730,7 @@ class PerplexityService {
 
       // Generate stock analysis based on mentions from other sections
       const stockAnalysis = await this.generatePharmaceuticalStockAnalysis(
-        summary.content,
+        summary,
         keyDevelopments,
         healthCrisisUpdates,
         marketImpact,

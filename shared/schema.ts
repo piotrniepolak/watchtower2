@@ -258,7 +258,7 @@ export const dailyNews = pgTable("daily_news", {
   id: serial("id").primaryKey(),
   date: varchar("date").notNull().unique(),
   title: varchar("title").notNull(),
-  summary: jsonb("summary").notNull(),
+  summary: text("summary").notNull(),
   keyDevelopments: jsonb("key_developments").notNull(),
   marketImpact: text("market_impact").notNull(),
   conflictUpdates: jsonb("conflict_updates").notNull(),
@@ -269,17 +269,6 @@ export const dailyNews = pgTable("daily_news", {
 });
 
 export const insertDailyNewsSchema = createInsertSchema(dailyNews, {
-  summary: z.union([
-    z.string(), // Legacy string format
-    z.object({  // New structured format
-      content: z.string(),
-      references: z.array(z.object({
-        number: z.number(),
-        title: z.string(),
-        url: z.string(),
-      })),
-    }),
-  ]),
   keyDevelopments: z.array(z.string()),
   conflictUpdates: z.array(z.object({
     conflict: z.string(),

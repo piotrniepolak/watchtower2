@@ -1655,8 +1655,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'illumina': 'ILMN'
       };
 
-      // Extract only the actual brief text content, excluding reference URLs
-      const briefTextContent = [
+      // Extract all text content from the entire brief
+      const allBriefContent = [
         news.title || '',
         news.summary || '',
         ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
@@ -1665,29 +1665,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(Array.isArray(news.conflictUpdates) ? news.conflictUpdates.map((update: any) => 
           `${update.conflict} ${update.update}`
         ) : [])
-      ].join(' ');
-
-      // More aggressive content cleaning to remove all reference-related content
-      const cleanBriefContent = briefTextContent
-        .replace(/\*\*References:\*\*[\s\S]*$/i, '') // Remove entire references section with markdown formatting
-        .replace(/### References:[\s\S]*$/i, '') // Remove entire references section with header
-        .replace(/References:[\s\S]*$/i, '') // Remove references section without formatting
-        .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
-        .replace(/www\.[^\s]+/g, '') // Remove www domains
-        .replace(/- [^:]+: "[^"]*"[^\n]*/g, '') // Remove citation lines
-        .replace(/\([^)]*20\d{2}[^)]*\)/g, '') // Remove date citations like (2025-06-12)
-        .replace(/BioPharma Dive|STAT News|Reuters|Bloomberg|FiercePharma|Pharmaceutical Executive|BioWorld/gi, '') // Remove news source names
-        .replace(/\d+\.\s*\[[^\]]+\]\([^)]+\)/g, '') // Remove numbered reference links like "1. [Title](URL)"
-        .replace(/\[\d+\]/g, '') // Remove citation numbers [1], [2], etc.
-        .replace(/Source from [^\n]*/gi, '') // Remove "Source from" lines
-        .toLowerCase();
+      ].join(' ').toLowerCase();
 
       // Find all pharmaceutical companies mentioned in the brief content
       const mentionedSymbols = new Set<string>();
       
       // Check for company name mentions and add to database if needed
       for (const [companyName, symbol] of Object.entries(companyToSymbolMap)) {
-        if (cleanBriefContent.includes(companyName)) {
+        if (allBriefContent.includes(companyName)) {
           mentionedSymbols.add(symbol);
           
           // Immediately check if this company exists in database
@@ -1747,8 +1732,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for direct stock symbol mentions
       healthcareStocks.forEach(stock => {
-        if (cleanBriefContent.includes(stock.symbol.toLowerCase()) || 
-            cleanBriefContent.includes(stock.name.toLowerCase())) {
+        if (allBriefContent.includes(stock.symbol.toLowerCase()) || 
+            allBriefContent.includes(stock.name.toLowerCase())) {
           mentionedSymbols.add(stock.symbol);
         }
       });

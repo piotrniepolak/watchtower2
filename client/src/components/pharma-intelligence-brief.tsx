@@ -194,62 +194,48 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
   return sources;
 };
 
-// Enhanced content display with structured references
-const formatContentWithSources = (data: any): JSX.Element => {
-  // Handle both old string format and new structured format
-  if (typeof data === 'string') {
-    // Legacy string format - clean and display without references
-    const cleaned = cleanContent(data);
-    return (
+// Enhanced content display with table-based references
+const formatContentWithSources = (text: string | undefined): JSX.Element => {
+  if (!text) {
+    return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
+  }
+  
+  // Split content and references using the new function
+  const { content, references } = splitContentAndReferences(text);
+  const cleaned = cleanContent(content);
+  
+  return (
+    <div className="space-y-4">
       <div className="leading-relaxed text-sm">
         {cleaned.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
           <p key={index} className="mb-3 last:mb-0">{paragraph.trim()}</p>
         ))}
       </div>
-    );
-  }
-  
-  // New structured format with separate content and references
-  if (data && typeof data === 'object' && data.content) {
-    const cleaned = cleanContent(data.content);
-    const references = data.references || [];
-    
-    return (
-      <div className="space-y-4">
-        <div className="leading-relaxed text-sm">
-          {cleaned.split('\n\n').filter(p => p.trim()).map((paragraph: string, index: number) => (
-            <p key={index} className="mb-3 last:mb-0">{paragraph.trim()}</p>
-          ))}
-        </div>
-        
-        {references.length > 0 && (
-          <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-            <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">References</h4>
-            <div className="space-y-2">
-              {references.map((ref: any) => (
-                <div key={ref.number} className="flex items-start gap-2 text-sm">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium min-w-[20px]">
-                    {ref.number}.
-                  </span>
-                  <a 
-                    href={ref.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors flex-1"
-                  >
-                    {ref.title}
+      
+      {references && (
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">References</h4>
+          <div className="space-y-2">
+            {parseReferences(references).map((ref) => (
+              <div key={ref.number} className="flex items-start gap-2 text-sm">
+                <span className="text-slate-500 dark:text-slate-400 font-medium min-w-[20px]">
+                  {ref.number}.
+                </span>
+                <a 
+                  href={ref.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors flex-1"
+                >
+                  {ref.title}
                 </a>
               </div>
             ))}
           </div>
         </div>
       )}
-      </div>
-    );
-  }
-  
-  // Fallback for undefined or null data
-  return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
+    </div>
+  );
 };
 
 export default function PharmaIntelligenceBrief() {
