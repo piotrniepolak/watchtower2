@@ -1678,111 +1678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Extracted ${mentionedSymbols.size} pharmaceutical companies from brief content: ${Array.from(mentionedSymbols).join(', ')}`);
 
-      // Function to extract relevant quoted sentences for each company
-      const extractQuotedSentence = (symbol: string, companyName: string): string => {
-        // Get comprehensive content including original pharmaceutical stock highlights
-        const allContent = [
-          news.title || '',
-          news.summary || '',
-          ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
-          news.marketImpact || '',
-          news.geopoliticalAnalysis || '',
-          // Include existing pharmaceutical highlights content
-          ...(Array.isArray(news.pharmaceuticalStockHighlights) ? 
-            news.pharmaceuticalStockHighlights.map((h: any) => h.reason || '') : [])
-        ].join(' ');
-
-        // Create comprehensive company name variations for better matching
-        const companyVariations = [
-          symbol.toLowerCase(),
-          companyName.toLowerCase(),
-          ...Object.entries(companyToSymbolMap)
-            .filter(([name, sym]) => sym === symbol)
-            .map(([name]) => name.toLowerCase()),
-          // Add common company name variations
-          companyName.toLowerCase().replace(/\s+(inc|corp|ltd|plc|ag)\.?$/i, ''),
-          companyName.toLowerCase().replace(/\s+&\s+/, ' and '),
-        ].filter((v, i, arr) => arr.indexOf(v) === i); // Remove duplicates
-
-        // Split into sentences with better delimiters and include context
-        const sentences = allContent.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 10);
-        
-        // Find sentences mentioning this company with improved matching
-        const relevantSentences = sentences.filter(sentence => {
-          const lowerSentence = sentence.toLowerCase();
-          return companyVariations.some(variation => lowerSentence.includes(variation));
-        });
-
-        if (relevantSentences.length > 0) {
-          // Process each relevant sentence to find the best company-specific extract
-          let bestMatch = '';
-          let bestScore = 0;
-          
-          for (const sentence of relevantSentences) {
-            // Split by multiple delimiters to isolate company-specific clauses
-            const clauses = sentence.split(/,\s*(?=and\s)|,\s*(?=while\s)|,\s*(?=but\s)|,\s*(?=however\s)|,\s*(?=with\s)|;\s*(?=[A-Z])|(?:\.\s+)(?=[A-Z])/);
-            
-            for (const clause of clauses) {
-              const lowerClause = clause.toLowerCase().trim();
-              
-              // Check if this clause mentions our company
-              const mentionsThisCompany = companyVariations.some(variation => 
-                lowerClause.includes(variation)
-              );
-              
-              if (mentionsThisCompany && clause.trim().length > 15) {
-                // Count other company mentions in this clause
-                const otherCompanyCount = Object.entries(companyToSymbolMap)
-                  .filter(([name, sym]) => sym !== symbol)
-                  .reduce((count, [name, sym]) => {
-                    if (lowerClause.includes(name.toLowerCase()) || lowerClause.includes(sym.toLowerCase())) {
-                      return count + 1;
-                    }
-                    return count;
-                  }, 0);
-                
-                // Score based on specificity and content quality
-                const hasActionWords = /\b(announced|reported|launched|developed|approved|acquired|partnered|expanded|increased|decreased|filed|completed|initiated)\b/i.test(clause);
-                const hasFinancialInfo = /\b(revenue|profit|sales|earnings|billion|million|percent|%|\$)\b/i.test(clause);
-                const baseScore = clause.length + (hasActionWords ? 50 : 0) + (hasFinancialInfo ? 30 : 0);
-                const score = baseScore - (otherCompanyCount * 40);
-                
-                if (score > bestScore || (!bestMatch && otherCompanyCount <= 1)) {
-                  bestScore = score;
-                  bestMatch = clause.trim();
-                  
-                  // Stop if we found a high-quality clause with specific company content
-                  if (otherCompanyCount === 0 && (hasActionWords || hasFinancialInfo)) break;
-                }
-              }
-            }
-            
-            if (bestMatch && bestScore > 0) break;
-          }
-          
-          // Clean up the extracted text
-          if (bestMatch) {
-            // Remove leading conjunctions and unnecessary phrases
-            bestMatch = bestMatch.replace(/^(and\s+|while\s+|but\s+|however\s+|with\s+|also\s+)/i, '');
-            bestMatch = bestMatch.replace(/^\s*,\s*/, ''); // Remove leading comma
-            
-            // Capitalize first letter
-            if (bestMatch.length > 0) {
-              bestMatch = bestMatch.charAt(0).toUpperCase() + bestMatch.slice(1);
-            }
-            
-            // Ensure proper ending
-            if (!bestMatch.match(/[.!?]$/)) {
-              bestMatch += '.';
-            }
-            
-            return bestMatch;
-          }
-        }
-
-        // Fallback message when no specific content is found
-        return `${companyName} highlighted in pharmaceutical intelligence brief.`;
-      };
+      // Generate comprehensive pharmaceutical stock highlights for mentioned companies
 
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
       const comprehensiveStockHighlights = Array.from(mentionedSymbols).map(symbol => {
@@ -1793,8 +1689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? news.pharmaceuticalStockHighlights.find((h: any) => h.symbol === symbol)
             : null;
 
-          // Extract relevant quoted sentence from the brief
-          const quotedSentence = extractQuotedSentence(stock.symbol, stock.name);
+          // Note: Company is mentioned in pharmaceutical intelligence brief
 
           // Company-specific descriptors based on actual business profiles
           const getCompanyDescriptor = (symbol: string, name: string): string => {
