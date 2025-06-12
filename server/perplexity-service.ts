@@ -26,6 +26,13 @@ interface PharmaceuticalIntelligence {
     change: number;
     analysis: string;
   }>;
+  pharmaceuticalStockHighlights: Array<{
+    symbol: string;
+    company: string;
+    price: number;
+    change: number;
+    analysis: string;
+  }>;
   marketImpact: string;
   geopoliticalAnalysis: string;
   createdAt: string;
@@ -203,8 +210,6 @@ Ensure each reference includes the source name followed by a colon and the artic
       'sanofi': 'SNY',
       'glaxosmithkline': 'GSK',
       'gsk': 'GSK',
-      'bayer': 'BAYRY',
-      'roche': 'RHHBY',
       'biomarin': 'BMRN',
       'takeda': 'TAK',
       'daiichi sankyo': 'DSNKY',
@@ -344,15 +349,11 @@ Ensure each reference includes the source name followed by a colon and the artic
       try {
         const analysis = await this.queryPerplexity(prompt);
         
-        // Calculate price change percentage
-        const changePercent = stockData.currentPrice > 0 ? 
-          ((stockData.currentPrice - stockData.previousClose) / stockData.previousClose * 100) : 0;
-
         stockHighlights.push({
           symbol: stockData.symbol,
           company: stockData.name,
-          price: stockData.currentPrice,
-          change: changePercent,
+          price: stockData.price,
+          change: stockData.changePercent,
           analysis: analysis.substring(0, 200) + '...' // Truncate for brevity
         });
       } catch (error) {
@@ -438,7 +439,8 @@ Ensure each reference includes the source name followed by a colon and the artic
         summary,
         keyDevelopments,
         conflictUpdates: healthCrisisUpdates,
-        defenseStockHighlights: stockAnalysis,
+        defenseStockHighlights: [],
+        pharmaceuticalStockHighlights: stockAnalysis,
         marketImpact,
         geopoliticalAnalysis: regulatoryAnalysis,
         createdAt: new Date().toISOString()
