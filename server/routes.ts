@@ -1744,13 +1744,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .replace(/\*\*/g, '') // Remove markdown bold
               .replace(/###?\s*/g, '') // Remove headers
               .replace(/\[(\d+)\]/g, '') // Remove citation numbers
-              .replace(/^\s*[-*]\s*/gm, ''); // Remove bullet points
+              .replace(/^\s*[-*]\s*/gm, '') // Remove bullet points
+              .replace(/"/g, '') // Remove quotes that might break JSON
+              .replace(/\n/g, ' '); // Replace newlines with spaces
 
             // Split into sentences using multiple delimiters
             const sentences = cleanContent
               .split(/[.!?]+/)
               .map(s => s.trim())
-              .filter(s => s.length > 40); // Only meaningful sentences
+              .filter(s => s.length > 30); // Only meaningful sentences
 
             // Find the best sentence mentioning this company
             for (const sentence of sentences) {
@@ -1759,15 +1761,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Check if sentence contains any variation of the company name
               for (const identifier of companyIdentifiers) {
                 if (identifier && lowerSentence.includes(identifier.toLowerCase())) {
-                  // Ensure it's a substantial, informative sentence
-                  if (sentence.length > 60 && 
-                      !sentence.toLowerCase().includes('executive summary') &&
-                      !sentence.toLowerCase().includes('references') &&
-                      !sentence.toLowerCase().startsWith('the pharmaceutical industry') &&
-                      (sentence.includes('FDA') || sentence.includes('approved') || 
-                       sentence.includes('announced') || sentence.includes('acquired') ||
-                       sentence.includes('cleared') || sentence.includes('agreed') ||
-                       sentence.includes('secured') || sentence.includes('raised'))) {
+                  // More flexible criteria for meaningful content
+                  if (sentence.length > 40 && 
+                      !lowerSentence.includes('executive summary') &&
+                      !lowerSentence.includes('references') &&
+                      !lowerSentence.includes('### ') &&
+                      // Look for meaningful pharmaceutical content or company actions
+                      (lowerSentence.includes('fda') || lowerSentence.includes('approved') || 
+                       lowerSentence.includes('announced') || lowerSentence.includes('acquired') ||
+                       lowerSentence.includes('cleared') || lowerSentence.includes('agreed') ||
+                       lowerSentence.includes('secured') || lowerSentence.includes('raised') ||
+                       lowerSentence.includes('drug') || lowerSentence.includes('therapy') ||
+                       lowerSentence.includes('treatment') || lowerSentence.includes('cancer') ||
+                       lowerSentence.includes('million') || lowerSentence.includes('billion') ||
+                       lowerSentence.includes('compete') || lowerSentence.includes('market') ||
+                       lowerSentence.includes('price') || lowerSentence.includes('shot') ||
+                       lowerSentence.includes('investment') || lowerSentence.includes('agreement'))) {
                     
                     // Clean and format the sentence
                     let cleanSentence = sentence.trim();
