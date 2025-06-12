@@ -115,24 +115,30 @@ class PerplexityService {
 
     // Debug log all citations
     citations.forEach((citation, index) => {
-      console.log(`   Citation ${index + 1}: "${citation.title}" -> ${citation.url}`);
+      console.log(`   Citation ${index + 1}: Title="${citation.title || 'No title'}" URL="${citation.url || 'No URL'}"`);
     });
 
-    // Validate URLs and filter out invalid ones
-    const validCitations = citations.filter((citation, index) => {
-      const isValidUrl = citation.url && 
-                        (citation.url.startsWith('http://') || citation.url.startsWith('https://')) && 
-                        citation.url.length > 10 &&
-                        !citation.url.includes('undefined') &&
-                        !citation.url.includes('null');
-      
-      if (!isValidUrl) {
-        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
-      } else {
-        console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
-      }
-      return isValidUrl;
-    });
+    // Validate URLs and fix missing titles
+    const validCitations = citations
+      .filter((citation, index) => {
+        const isValidUrl = citation.url && 
+                          (citation.url.startsWith('http://') || citation.url.startsWith('https://')) && 
+                          citation.url.length > 10 &&
+                          !citation.url.includes('undefined') &&
+                          !citation.url.includes('null');
+        
+        if (!isValidUrl) {
+          console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
+          return false;
+        } else {
+          console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
+          return true;
+        }
+      })
+      .map((citation, index) => ({
+        ...citation,
+        title: citation.title || `Source ${index + 1}` // Provide fallback title if missing
+      }));
 
     if (validCitations.length === 0) {
       console.log('❌ No valid citations found after filtering, returning original content');
