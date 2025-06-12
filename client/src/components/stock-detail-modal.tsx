@@ -326,14 +326,6 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
               </div>
             ) : chartPoints.length > 0 ? (
               <div className="relative">
-                {/* Hover info display */}
-                {cursorPosition.visible && hoveredPrice && (
-                  <div className="absolute top-2 left-2 bg-slate-800 text-white px-3 py-2 rounded text-sm z-10">
-                    <div className="font-bold">${hoveredPrice.toFixed(2)}</div>
-                    <div className="text-xs text-slate-300">{hoveredDate}</div>
-                  </div>
-                )}
-
                 <div className="flex">
                   {/* Y-axis price labels */}
                   <div className="flex flex-col justify-between h-32 pr-2 text-xs text-slate-500 w-16">
@@ -429,6 +421,27 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                     <span key={index}>{label}</span>
                   ))}
                 </div>
+
+                {/* Tracking Blocks Below Chart */}
+                {cursorPosition.visible && hoveredPrice && (
+                  <div className="mt-4 flex gap-4">
+                    {/* Price Tracking Block */}
+                    <div className="flex-1 p-3 bg-slate-800 rounded-lg border">
+                      <div className="text-sm text-slate-300 mb-1">Price at Cursor</div>
+                      <div className="text-xl font-bold text-white">
+                        ${hoveredPrice.toFixed(2)}
+                      </div>
+                    </div>
+
+                    {/* Date/Time Tracking Block */}
+                    <div className="flex-1 p-3 bg-slate-800 rounded-lg border">
+                      <div className="text-sm text-slate-300 mb-1">Date & Time</div>
+                      <div className="text-lg font-semibold text-white">
+                        {hoveredDate}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="h-32 flex items-center justify-center text-slate-500">
