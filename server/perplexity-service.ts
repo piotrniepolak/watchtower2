@@ -313,49 +313,48 @@ Ensure each reference includes the source name followed by a colon and the artic
       analysis: string;
     }> = [];
 
+    // Get all stocks from database to match pharmaceutical companies
+    const allStocks = await storage.getStocks();
+    
     for (const symbol of uniqueSymbols.slice(0, 5)) { // Limit to top 5 mentions
+      // Find stock in database
+      const stockData = allStocks.find(stock => stock.symbol === symbol);
+      
+      if (!stockData) {
+        console.log(`📊 Stock ${symbol} not found in database, skipping`);
+        continue;
+      }
+
       const prompt = `Provide current stock analysis for ${symbol} focusing on recent pharmaceutical developments, pipeline updates, regulatory decisions, and market performance. Include specific catalysts and recent price movements. Keep analysis concise but detailed.`;
       
       try {
         const analysis = await this.queryPerplexity(prompt);
         
-        // Get company name from symbol mapping
-        const companyNames: Record<string, string> = {
-          'PFE': 'Pfizer Inc.',
-          'JNJ': 'Johnson & Johnson',
-          'MRNA': 'Moderna Inc.',
-          'AZN': 'AstraZeneca PLC',
-          'NVS': 'Novartis AG',
-          'RHHBY': 'Roche Holding AG',
-          'MRK': 'Merck & Co.',
-          'BMY': 'Bristol Myers Squibb',
-          'LLY': 'Eli Lilly and Company',
-          'ABT': 'Abbott Laboratories',
-          'AMGN': 'Amgen Inc.',
-          'GILD': 'Gilead Sciences',
-          'BIIB': 'Biogen Inc.',
-          'REGN': 'Regeneron Pharmaceuticals',
-          'VRTX': 'Vertex Pharmaceuticals',
-          'ABBV': 'AbbVie Inc.',
-          'SNY': 'Sanofi',
-          'GSK': 'GlaxoSmithKline',
-          'BAYRY': 'Bayer AG',
-          'BMRN': 'BioMarin Pharmaceutical',
-          'TAK': 'Takeda Pharmaceutical',
-          'TEVA': 'Teva Pharmaceutical',
-          'NVAX': 'Novavax Inc.',
-          'BNTX': 'BioNTech SE'
-        };
+        // Calculate price change percentage
+        const changePercent = stockData.currentPrice > 0 ? 
+          ((stockData.currentPrice - stockData.previousClose) / stockData.previousClose * 100) : 0;
 
         stockHighlights.push({
-          symbol,
-          company: companyNames[symbol] || `${symbol} Company`,
-          price: Math.random() * 100 + 50, // Placeholder - would get real price from API
-          change: (Math.random() - 0.5) * 10, // Placeholder - would get real change from API
+          symbol: stockData.symbol,
+          company: stockData.name,
+          price: stockData.currentPrice,
+          change: changePercent,
           analysis: analysis.substring(0, 200) + '...' // Truncate for brevity
         });
       } catch (error) {
         console.error(`Error generating analysis for ${symbol}:`, error);
+        
+        // Use stock data without Perplexity analysis if API fails
+        const changePercent = stockData.currentPrice > 0 ? 
+          ((stockData.currentPrice - stockData.previousClose) / stockData.previousClose * 100) : 0;
+          
+        stockHighlights.push({
+          symbol: stockData.symbol,
+          company: stockData.name,
+          price: stockData.currentPrice,
+          change: changePercent,
+          analysis: `${stockData.name} shows recent market activity with current trading patterns reflecting broader pharmaceutical sector dynamics.`
+        });
       }
     }
 
