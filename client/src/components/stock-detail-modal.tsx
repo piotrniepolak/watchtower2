@@ -19,18 +19,20 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   const [timeRange, setTimeRange] = useState('1D');
   const [isFollowing, setIsFollowing] = useState(false);
 
-  // Fetch authentic stock quote data from Yahoo Finance
-  const { data: stockQuote, isLoading: quoteLoading } = useQuery({
+  // Fetch authentic stock quote data from Yahoo Finance with fallback
+  const { data: stockQuote, isLoading: quoteLoading, error: quoteError } = useQuery({
     queryKey: [`/api/stocks/${stock.symbol}/quote`],
     enabled: isOpen && !!stock.symbol,
     refetchInterval: 30000, // Refresh every 30 seconds when modal is open
+    retry: false, // Don't retry on API failures
   });
 
-  // Fetch authentic chart data from Yahoo Finance
-  const { data: chartData, isLoading: chartLoading } = useQuery({
+  // Fetch authentic chart data from Yahoo Finance with fallback
+  const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
     queryKey: [`/api/stocks/${stock.symbol}/chart`, timeRange],
     enabled: isOpen && !!stock.symbol,
     refetchInterval: timeRange === '1D' ? 60000 : 300000, // More frequent for intraday
+    retry: false, // Don't retry on API failures
   });
 
   if (!isOpen) return null;
@@ -38,19 +40,8 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   const isPositive = stock.changePercent >= 0;
   const timeRanges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'Max'];
 
-  // Use authentic Yahoo Finance data or display loading state
-  const displayData = stockQuote ? stockQuote : {
-    open: 0,
-    high: 0,
-    low: 0,
-    marketCap: 0,
-    peRatio: null,
-    week52High: 0,
-    week52Low: 0,
-    divYield: null,
-    eps: null,
-    volume: 0
-  };
+  // Show loading state or authentic data only
+  const showLoadingState = quoteLoading && !stockQuote;
 
   // Process authentic chart data for display
   const processChartData = () => {
@@ -286,6 +277,24 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   </div>
                 </div>
               ))}
+            </div>
+          ) : quoteError ? (
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="text-orange-800 text-sm">
+                <strong>External data source temporarily unavailable.</strong>
+                <br />
+                Additional financial metrics require external API access. Please check your API configuration or try again later.
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Current Price</div>
+                  <div className="text-sm font-semibold">{formatCurrency(stock.price)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Previous Close</div>
+                  <div className="text-sm font-semibold">{formatCurrency(stock.price - stock.change)}</div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
