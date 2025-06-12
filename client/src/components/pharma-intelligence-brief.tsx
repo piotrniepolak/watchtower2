@@ -46,7 +46,7 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
     const referenceLines = referencesText.split('\n').filter(line => line.trim().startsWith('-'));
     
     referenceLines.forEach(line => {
-      // Match pattern: - Source: "Title"
+      // Match pattern: - Source: "Title" (handle various quote styles, including apostrophes)
       const match = line.match(/^-\s*([^:]+):\s*[""]([^""]+)[""]?/);
       if (match) {
         const source = match[1].trim();
