@@ -137,7 +137,58 @@ class PerplexityService {
     }
   }
 
-  private processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): string {
+  private async fetchArticleTitle(url: string): Promise<string | null> {
+    try {
+      console.log(`🔍 Fetching title for: ${url}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.log(`❌ Failed to fetch ${url}: ${response.status}`);
+        return null;
+      }
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+
+      // Try multiple selectors to find the article title
+      let title = $('h1').first().text().trim() || 
+                  $('title').text().trim() || 
+                  $('meta[property="og:title"]').attr('content') || 
+                  $('meta[name="twitter:title"]').attr('content') || 
+                  $('.article-title').text().trim() ||
+                  $('.headline').text().trim();
+
+      // Clean up the title
+      if (title) {
+        // Remove site name suffixes like " - STAT" or " | BioPharma Dive"
+        title = title.replace(/\s*[-|]\s*(STAT|BioPharma Dive|Pharmalot).*$/i, '');
+        title = title.replace(/\s+/g, ' ').trim();
+        
+        if (title.length > 3) {
+          console.log(`✅ Extracted title: "${title}"`);
+          return title;
+        }
+      }
+
+      console.log(`⚠️ No meaningful title found for ${url}`);
+      return null;
+    } catch (error) {
+      console.log(`❌ Error fetching title for ${url}:`, error);
+      return null;
+    }
+  }
+
+  private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<string> {
     console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
     console.log(`🔗 Citations received in processContentWithLinks:`, JSON.stringify(citations, null, 2));
     
@@ -190,11 +241,12 @@ class PerplexityService {
     if (validCitations.length > 0) {
       processedContent += '\n\n**References:**\n\n';
       
-      validCitations.forEach((citation, index) => {
-        // Use the actual title from citation if available, otherwise extract from URL
+      // Use for loop to enable async/await for web scraping
+      for (let index = 0; index < validCitations.length; index++) {
+        const citation = validCitations[index];
         let displayTitle = citation.title;
         
-        // If title is generic, contains source domain, or is just a number, extract from URL
+        // If title is generic, contains source domain, or is just a number, fetch from web
         if (!displayTitle || 
             displayTitle.includes('Source from') || 
             displayTitle.toLowerCase().includes('biopharmadive.com') || 
@@ -202,56 +254,56 @@ class PerplexityService {
             displayTitle.match(/^\d+$/) || // Just a number
             displayTitle.length < 3) { // Too short to be meaningful
           
-          // Extract meaningful article title from URL structure
-          const urlParts = citation.url.split('/');
-          let articleSlug = '';
+          // Fetch the actual title from the web page
+          const webTitle = await this.fetchArticleTitle(citation.url);
           
-          // Handle different URL patterns with better slug extraction
-          if (citation.url.includes('biopharmadive.com/news/')) {
-            // BioPharma Dive: /news/article-slug/
-            const newsIndex = urlParts.findIndex(part => part === 'news');
-            if (newsIndex !== -1 && urlParts[newsIndex + 1]) {
-              articleSlug = urlParts[newsIndex + 1];
-            }
-          } else if (citation.url.includes('statnews.com/')) {
-            // STAT News: various patterns, try multiple approaches
-            const lastPart = urlParts[urlParts.length - 1];
-            const secondLastPart = urlParts[urlParts.length - 2];
-            
-            // If last part looks like article slug (not just year/date), use it
-            if (lastPart && !lastPart.match(/^\d{4}$/) && lastPart.length > 3) {
-              articleSlug = lastPart;
-            } else if (secondLastPart && secondLastPart.length > 3) {
-              articleSlug = secondLastPart;
-            }
+          if (webTitle) {
+            displayTitle = webTitle;
           } else {
-            // Generic fallback - look for meaningful slug in URL
-            for (let i = urlParts.length - 1; i >= 0; i--) {
-              const part = urlParts[i];
-              if (part && part.length > 3 && !part.match(/^\d+$/) && part !== 'news' && part !== 'articles') {
-                articleSlug = part;
-                break;
+            // Fallback to URL parsing if web scraping fails
+            const urlParts = citation.url.split('/');
+            let articleSlug = '';
+            
+            if (citation.url.includes('biopharmadive.com/news/')) {
+              const newsIndex = urlParts.findIndex(part => part === 'news');
+              if (newsIndex !== -1 && urlParts[newsIndex + 1]) {
+                articleSlug = urlParts[newsIndex + 1];
+              }
+            } else if (citation.url.includes('statnews.com/')) {
+              const lastPart = urlParts[urlParts.length - 1];
+              const secondLastPart = urlParts[urlParts.length - 2];
+              
+              if (lastPart && !lastPart.match(/^\d{4}$/) && lastPart.length > 3) {
+                articleSlug = lastPart;
+              } else if (secondLastPart && secondLastPart.length > 3) {
+                articleSlug = secondLastPart;
+              }
+            } else {
+              for (let i = urlParts.length - 1; i >= 0; i--) {
+                const part = urlParts[i];
+                if (part && part.length > 3 && !part.match(/^\d+$/) && part !== 'news' && part !== 'articles') {
+                  articleSlug = part;
+                  break;
+                }
               }
             }
-          }
-          
-          if (articleSlug && articleSlug !== '') {
-            // Convert URL slug to readable title
-            displayTitle = articleSlug
-              .replace(/-/g, ' ')
-              .replace(/\b\w/g, l => l.toUpperCase())
-              .replace(/\b(And|Of|The|In|On|At|To|For|With|By)\b/g, word => word.toLowerCase())
-              .replace(/\b(A|An)\b/g, word => word.toLowerCase())
-              .trim();
-          } else {
-            // Final fallback - use domain
-            const domain = new URL(citation.url).hostname.replace('www.', '');
-            displayTitle = `Article from ${domain}`;
+            
+            if (articleSlug && articleSlug !== '') {
+              displayTitle = articleSlug
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase())
+                .replace(/\b(And|Of|The|In|On|At|To|For|With|By)\b/g, word => word.toLowerCase())
+                .replace(/\b(A|An)\b/g, word => word.toLowerCase())
+                .trim();
+            } else {
+              const domain = new URL(citation.url).hostname.replace('www.', '');
+              displayTitle = `Article from ${domain}`;
+            }
           }
         }
         
         processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
-      });
+      }
       
       console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
     }
@@ -274,7 +326,7 @@ class PerplexityService {
     if (result.citations.length > 0) {
       console.log(`🎯 Executive Summary - First citation: ${result.citations[0].url || result.citations[0]}`);
     }
-    const processed = this.processContentWithLinks(result.content, result.citations);
+    const processed = await this.processContentWithLinks(result.content, result.citations);
     console.log(`🎯 Executive Summary - Processed length: ${processed.length}, Has references: ${processed.includes('**References:**')}`);
     return processed;
   }
