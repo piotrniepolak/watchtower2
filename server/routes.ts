@@ -1567,22 +1567,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No pharma news available for today" });
       }
 
-      // Enhance pharmaceutical stock highlights with real-time prices
-      if (news.pharmaceuticalStockHighlights && Array.isArray(news.pharmaceuticalStockHighlights)) {
-        const allStocks = await storage.getStocks();
-        news.pharmaceuticalStockHighlights = news.pharmaceuticalStockHighlights.map((highlight: any) => {
-          const stock = allStocks.find(s => s.symbol === highlight.symbol);
-          if (stock && stock.price > 0) {
-            return {
-              ...highlight,
-              price: stock.price,
-              change: stock.change,
-              changePercent: stock.changePercent
-            };
-          }
-          return highlight;
-        });
-      }
+      // Extract ALL pharmaceutical companies mentioned throughout the entire brief content
+      const allStocks = await storage.getStocks();
+      const healthcareStocks = allStocks.filter(stock => stock.sector === 'Healthcare');
+      
+      // Create a comprehensive mapping of pharmaceutical companies mentioned in the brief
+      const companyToSymbolMap: Record<string, string> = {
+        'nuvation bio': 'NUVB',
+        'nuvation': 'NUVB',
+        'bayer': 'BAYRY',
+        'bayer healthcare': 'BAYRY',
+        'biogen': 'BIIB',
+        'eli lilly': 'LLY',
+        'lilly': 'LLY',
+        'gsk': 'GSK',
+        'glaxosmithkline': 'GSK',
+        'johnson & johnson': 'JNJ',
+        'j&j': 'JNJ',
+        'roche': 'RHHBY',
+        'sanofi': 'SNY',
+        'ultragenyx': 'RARE',
+        'vertex': 'VRTX',
+        'vertex pharmaceuticals': 'VRTX',
+        'pfizer': 'PFE',
+        'merck': 'MRK',
+        'abbvie': 'ABBV',
+        'novartis': 'NVS',
+        'astrazeneca': 'AZN',
+        'bristol myers': 'BMY',
+        'bristol-myers squibb': 'BMY',
+        'amgen': 'AMGN',
+        'gilead': 'GILD',
+        'moderna': 'MRNA',
+        'regeneron': 'REGN',
+        'novavax': 'NVAX'
+      };
+
+      // Extract all text content from the entire brief
+      const allBriefContent = [
+        news.title || '',
+        news.summary || '',
+        ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
+        news.marketImpact || '',
+        news.geopoliticalAnalysis || '',
+        ...(Array.isArray(news.conflictUpdates) ? news.conflictUpdates.map((update: any) => 
+          `${update.conflict} ${update.update}`
+        ) : [])
+      ].join(' ').toLowerCase();
+
+      // Find all pharmaceutical companies mentioned in the brief content
+      const mentionedSymbols = new Set<string>();
+      
+      // Check for company name mentions
+      Object.entries(companyToSymbolMap).forEach(([companyName, symbol]) => {
+        if (allBriefContent.includes(companyName)) {
+          mentionedSymbols.add(symbol);
+        }
+      });
+
+      // Check for direct stock symbol mentions
+      healthcareStocks.forEach(stock => {
+        if (allBriefContent.includes(stock.symbol.toLowerCase()) || 
+            allBriefContent.includes(stock.name.toLowerCase())) {
+          mentionedSymbols.add(stock.symbol);
+        }
+      });
+
+      console.log(`🔍 Extracted ${mentionedSymbols.size} pharmaceutical companies from brief content: ${Array.from(mentionedSymbols).join(', ')}`);
+
+      // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
+      const comprehensiveStockHighlights = Array.from(mentionedSymbols).map(symbol => {
+        const stock = healthcareStocks.find(s => s.symbol === symbol);
+        if (stock && stock.price > 0) {
+          // Check if there's existing analysis from the original highlights
+          const existingHighlight = Array.isArray(news.pharmaceuticalStockHighlights) 
+            ? news.pharmaceuticalStockHighlights.find((h: any) => h.symbol === symbol)
+            : null;
+
+          return {
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            reason: existingHighlight?.reason || 
+              `Featured in pharmaceutical intelligence brief with ${stock.changePercent > 0 ? 'positive momentum' : stock.changePercent < 0 ? 'market adjustments' : 'stable positioning'} amid sector developments`
+          };
+        }
+        return null;
+      }).filter(Boolean);
+
+      // Update the pharmaceutical stock highlights with comprehensive list
+      news.pharmaceuticalStockHighlights = comprehensiveStockHighlights;
 
       res.json(news);
     } catch (error) {
