@@ -1711,26 +1711,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .map(([name]) => name.toLowerCase())
           ];
           
-          // Find the specific mention and extract a focused phrase around it
-          const lowerSentence = relevantSentence.toLowerCase();
-          let bestMatch = '';
-          let bestScore = 0;
+          // Split sentence by common delimiters to isolate company-specific parts
+          const parts = relevantSentence.split(/,\s*(?=and\s)|,\s*(?=while\s)|,\s*(?=but\s)|,\s*(?=however\s)|;\s*|\.\s+/);
           
-          for (const mention of companyMentions) {
-            const index = lowerSentence.indexOf(mention);
-            if (index !== -1) {
-              // Extract context around the company mention (up to 100 characters)
-              const start = Math.max(0, index - 20);
-              const end = Math.min(relevantSentence.length, index + mention.length + 80);
-              const extract = relevantSentence.substring(start, end).trim();
+          // Find the part that mentions this specific company
+          let bestMatch = '';
+          
+          for (const part of parts) {
+            const lowerPart = part.toLowerCase().trim();
+            
+            // Check if this part mentions our specific company
+            const mentionsThisCompany = companyMentions.some(mention => 
+              lowerPart.includes(mention)
+            );
+            
+            if (mentionsThisCompany) {
+              // Check if this part mentions other companies (to avoid it)
+              const mentionsOtherCompanies = Object.entries(companyToSymbolMap).some(([name, sym]) => {
+                if (sym === symbol) return false; // Skip our own company
+                return lowerPart.includes(name.toLowerCase()) || lowerPart.includes(sym.toLowerCase());
+              });
               
-              // Score based on specificity (shorter, more focused extracts are better)
-              const score = 100 - extract.length + (extract.split(',').length > 2 ? -50 : 0);
-              
-              if (score > bestScore) {
-                bestScore = score;
-                bestMatch = extract;
+              // Prefer parts that only mention this company
+              if (!mentionsOtherCompanies || !bestMatch) {
+                bestMatch = part.trim();
+                if (!mentionsOtherCompanies) break; // Stop if we found a clean match
               }
+            }
+          }
+          
+          // Clean up the extracted text
+          if (bestMatch) {
+            // Remove leading conjunctions and fix capitalization
+            bestMatch = bestMatch.replace(/^(and\s+|while\s+|but\s+|however\s+)/i, '');
+            bestMatch = bestMatch.charAt(0).toUpperCase() + bestMatch.slice(1);
+            
+            // Ensure it ends properly
+            if (!bestMatch.match(/[.!?]$/)) {
+              bestMatch += '.';
             }
           }
           
