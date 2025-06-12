@@ -92,11 +92,11 @@ class PerplexityService {
       console.log('🔍 Perplexity API Response Debug:');
       console.log('Citations received:', data.citations?.length || 0);
       if (data.citations && data.citations.length > 0) {
-        console.log('First citation object:', JSON.stringify(data.citations[0], null, 2));
-        console.log('All citations:', JSON.stringify(data.citations, null, 2));
+        console.log('First citation:', data.citations[0]);
       }
       
       // Normalize citations to consistent format
+      console.log('🔄 Normalizing citations...');
       const normalizedCitations: Array<{ url: string; title: string; snippet: string }> = (data.citations || []).map((citation, index) => {
         if (typeof citation === 'string') {
           // Extract domain for title fallback
@@ -147,27 +147,22 @@ class PerplexityService {
       console.log(`   Citation ${index + 1}: Title="${citation.title || 'No title'}" URL="${citation.url || 'No URL'}"`);
     });
 
-    // Validate URLs and fix missing titles
-    const validCitations = citations
-      .filter((citation, index) => {
-        const isValidUrl = citation.url && 
-                          (citation.url.startsWith('http://') || citation.url.startsWith('https://')) && 
-                          citation.url.length > 10 &&
-                          !citation.url.includes('undefined') &&
-                          !citation.url.includes('null');
-        
-        if (!isValidUrl) {
-          console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
-          return false;
-        } else {
-          console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
-          return true;
-        }
-      })
-      .map((citation, index) => ({
-        ...citation,
-        title: citation.title || `Source ${index + 1}` // Provide fallback title if missing
-      }));
+    // The citations are already normalized at this point, so validate the URLs
+    const validCitations = citations.filter((citation, index) => {
+      const isValidUrl = citation.url && 
+                        (citation.url.startsWith('http://') || citation.url.startsWith('https://')) && 
+                        citation.url.length > 10 &&
+                        !citation.url.includes('undefined') &&
+                        !citation.url.includes('null');
+      
+      if (!isValidUrl) {
+        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
+        return false;
+      } else {
+        console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
+        return true;
+      }
+    });
 
     if (validCitations.length === 0) {
       console.log('❌ No valid citations found after filtering, returning original content');
@@ -198,21 +193,35 @@ class PerplexityService {
   }
 
   async generateExecutiveSummary(): Promise<string> {
-    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements. Provide detailed context about the implications for the industry. Focus on verifiable, recent information from reputable sources.`;
+    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Search specifically for recent articles from:
+    - STAT News (statnews.com)
+    - BioPharma Dive (biopharmadive.com) 
+    - FiercePharma (fiercepharma.com)
+    - Pharmaceutical Executive (pharmexec.com)
+    - BioWorld (bioworld.com)
+    
+    Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements with direct quotes and references to the source articles. Each claim should be backed by a specific URL from these pharmaceutical news sources. Use numbered citations [1], [2], [3] to reference specific articles.`;
     
     const result = await this.queryPerplexity(prompt);
     return this.processContentWithLinks(result.content, result.citations);
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
-    const prompt = `List 5 specific, recent pharmaceutical industry developments from the past week, including:
+    const prompt = `Search for 5 specific, recent pharmaceutical industry developments from the past week from these news sources:
+    - STAT News (statnews.com)
+    - BioPharma Dive (biopharmadive.com)
+    - FiercePharma (fiercepharma.com)
+    - Reuters Health (reuters.com/business/healthcare-pharmaceuticals/)
+    - Wall Street Journal Health section
+    
+    Include:
     1. FDA drug approvals or regulatory decisions
-    2. Major clinical trial results or announcements
+    2. Major clinical trial results or announcements  
     3. Pharmaceutical company mergers, acquisitions, or partnerships
     4. New drug discoveries or breakthrough therapies
     5. Healthcare policy changes affecting the pharmaceutical sector
     
-    Format as a numbered list with brief descriptions (2-3 sentences each).`;
+    Each development should cite the specific article URL. Format as numbered list with brief descriptions and include citation references [1], [2], etc.`;
     
     const result = await this.queryPerplexity(prompt);
     
