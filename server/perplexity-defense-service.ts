@@ -173,91 +173,28 @@ export class PerplexityDefenseService {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama-3.1-sonar-large-128k-online',
+          model: 'llama-3.1-sonar-small-128k-online',
           messages: [
             {
               role: 'system',
-              content: `You are a senior defense industry analyst conducting comprehensive real-time research for institutional investors. Provide detailed, factual analysis of current defense sector developments with specific focus on:
-
-              - Breaking news and market-moving events
-              - Earnings reports, guidance updates, and analyst revisions
-              - Defense contract awards with specific dollar amounts
-              - Geopolitical developments affecting defense spending
-              - New weapons systems and technology developments
-              - International defense partnerships and arms sales
-              - Pentagon budget allocations and policy changes
-              - Stock price movements and trading volumes
-
-              Always include:
-              - Specific company names and stock symbols (NYSE/NASDAQ)
-              - Exact dollar amounts for contracts, earnings, market caps
-              - Percentage changes in stock prices and trading volumes
-              - Analyst price targets and recommendation changes
-              - Forward-looking guidance and outlook statements`
+              content: 'You are a defense industry analyst. Provide current, factual information about defense sector developments, geopolitical events, and military contractor activities. Include specific company names, stock symbols, and quantifiable market impacts.'
             },
             {
               role: 'user',
-              content: `Generate a comprehensive defense industry intelligence brief for ${new Date().toLocaleDateString()} covering:
-
-              **BREAKING NEWS & MARKET MOVERS:**
-              - Latest defense contract awards announced today/this week
-              - Earnings reports from major defense contractors (LMT, RTX, NOC, GD, BA, LHX, HII, LDOS)
-              - Analyst upgrades/downgrades and price target changes
-              - Stock price movements and unusual trading activity
-
-              **GEOPOLITICAL DEVELOPMENTS:**
-              - Ukraine conflict updates affecting defense spending
-              - China/Taiwan tensions and Indo-Pacific defense posture
-              - NATO defense spending commitments and requirements
-              - Middle East tensions and arms sale implications
-              - Cyber warfare and space defense developments
-
-              **TECHNOLOGY & CONTRACTS:**
-              - F-35 program updates and international sales
-              - Hypersonic weapons development progress
-              - Missile defense system deployments
-              - Naval shipbuilding contracts and delays
-              - Space Force and satellite defense contracts
-
-              **MARKET ANALYSIS:**
-              - Defense ETF (ITA, XAR, PPA) performance
-              - Sector rotation and institutional flows
-              - Valuation metrics vs historical averages
-              - Dividend yields and shareholder returns
-
-              Provide specific details including:
-              - Contract values in exact dollar amounts
-              - Stock price changes with percentages
-              - Trading volumes and market cap changes
-              - Analyst firm names and specific recommendations
-              - Timeline for contract deliveries and milestones
-
-              Format as a comprehensive investment-grade research report with actionable insights for portfolio managers.`
+              content: 'What are the most significant defense industry developments, geopolitical events, and military contractor activities happening today? Include specific companies, contracts, and market movements for defense contractors like Lockheed Martin (LMT), Raytheon (RTX), Northrop Grumman (NOC), General Dynamics (GD), Boeing (BA), and L3Harris (LHX).'
             }
           ],
-          max_tokens: 6000,
-          temperature: 0.1,
+          max_tokens: 2000,
+          temperature: 0.2,
           top_p: 0.9,
-          return_related_questions: false,
-          return_images: false,
-          search_recency_filter: 'day',
-          search_domain_filter: [
-            "reuters.com",
-            "bloomberg.com", 
-            "wsj.com",
-            "defensenews.com",
-            "janes.com",
-            "marketwatch.com",
-            "cnbc.com",
-            "yahoo.com",
-            "fool.com",
-            "seeking-alpha.com",
-            "barrons.com"
-          ]
+          return_citations: true,
+          search_domain_filter: ["reuters.com", "bloomberg.com", "wsj.com", "defensenews.com", "marketwatch.com", "cnbc.com"]
         })
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Perplexity API error response:', errorText);
         throw new Error(`Perplexity API error: ${response.status} ${response.statusText}`);
       }
 
