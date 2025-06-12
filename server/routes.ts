@@ -1680,82 +1680,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Function to extract relevant quoted sentences for each company
       const extractQuotedSentence = (symbol: string, companyName: string): string => {
+        // Get comprehensive content including original pharmaceutical stock highlights
         const allContent = [
           news.title || '',
           news.summary || '',
           ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
           news.marketImpact || '',
-          news.geopoliticalAnalysis || ''
+          news.geopoliticalAnalysis || '',
+          // Include existing pharmaceutical highlights content
+          ...(Array.isArray(news.pharmaceuticalStockHighlights) ? 
+            news.pharmaceuticalStockHighlights.map((h: any) => h.reason || '') : [])
         ].join(' ');
 
-        // Split into sentences and find ones mentioning the company
-        const sentences = allContent.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 10);
+        // Create comprehensive company name variations for better matching
+        const companyVariations = [
+          symbol.toLowerCase(),
+          companyName.toLowerCase(),
+          ...Object.entries(companyToSymbolMap)
+            .filter(([name, sym]) => sym === symbol)
+            .map(([name]) => name.toLowerCase()),
+          // Add common company name variations
+          companyName.toLowerCase().replace(/\s+(inc|corp|ltd|plc|ag)\.?$/i, ''),
+          companyName.toLowerCase().replace(/\s+&\s+/, ' and '),
+        ].filter((v, i, arr) => arr.indexOf(v) === i); // Remove duplicates
+
+        // Split into sentences with better delimiters
+        const sentences = allContent.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
         
-        // Look for sentences containing the company name or symbol
-        const relevantSentence = sentences.find(sentence => {
+        // Find sentences mentioning this company with improved matching
+        const relevantSentences = sentences.filter(sentence => {
           const lowerSentence = sentence.toLowerCase();
-          return lowerSentence.includes(symbol.toLowerCase()) || 
-                 lowerSentence.includes(companyName.toLowerCase()) ||
-                 Object.entries(companyToSymbolMap).some(([name, sym]) => 
-                   sym === symbol && lowerSentence.includes(name)
-                 );
+          return companyVariations.some(variation => lowerSentence.includes(variation));
         });
 
-        if (relevantSentence) {
-          // Extract only the portion about this specific company
-          const companyMentions = [
-            symbol.toLowerCase(),
-            companyName.toLowerCase(),
-            ...Object.entries(companyToSymbolMap)
-              .filter(([name, sym]) => sym === symbol)
-              .map(([name]) => name.toLowerCase())
-          ];
-          
-          // Split sentence by common delimiters to isolate company-specific parts
-          const parts = relevantSentence.split(/,\s*(?=and\s)|,\s*(?=while\s)|,\s*(?=but\s)|,\s*(?=however\s)|;\s*|\.\s+/);
-          
-          // Find the part that mentions this specific company
+        if (relevantSentences.length > 0) {
+          // Process each relevant sentence to find the best company-specific extract
           let bestMatch = '';
+          let bestScore = 0;
           
-          for (const part of parts) {
-            const lowerPart = part.toLowerCase().trim();
+          for (const sentence of relevantSentences) {
+            // Split by multiple delimiters to isolate company-specific clauses
+            const clauses = sentence.split(/,\s*(?=and\s)|,\s*(?=while\s)|,\s*(?=but\s)|,\s*(?=however\s)|,\s*(?=with\s)|;\s*(?=[A-Z])|(?:\.\s+)(?=[A-Z])/);
             
-            // Check if this part mentions our specific company
-            const mentionsThisCompany = companyMentions.some(mention => 
-              lowerPart.includes(mention)
-            );
-            
-            if (mentionsThisCompany) {
-              // Check if this part mentions other companies (to avoid it)
-              const mentionsOtherCompanies = Object.entries(companyToSymbolMap).some(([name, sym]) => {
-                if (sym === symbol) return false; // Skip our own company
-                return lowerPart.includes(name.toLowerCase()) || lowerPart.includes(sym.toLowerCase());
-              });
+            for (const clause of clauses) {
+              const lowerClause = clause.toLowerCase().trim();
               
-              // Prefer parts that only mention this company
-              if (!mentionsOtherCompanies || !bestMatch) {
-                bestMatch = part.trim();
-                if (!mentionsOtherCompanies) break; // Stop if we found a clean match
+              // Check if this clause mentions our company
+              const mentionsThisCompany = companyVariations.some(variation => 
+                lowerClause.includes(variation)
+              );
+              
+              if (mentionsThisCompany && clause.trim().length > 20) {
+                // Count other company mentions in this clause
+                const otherCompanyCount = Object.entries(companyToSymbolMap)
+                  .filter(([name, sym]) => sym !== symbol)
+                  .reduce((count, [name, sym]) => {
+                    if (lowerClause.includes(name.toLowerCase()) || lowerClause.includes(sym.toLowerCase())) {
+                      return count + 1;
+                    }
+                    return count;
+                  }, 0);
+                
+                // Score based on specificity (prefer clauses with fewer other companies)
+                const score = clause.length - (otherCompanyCount * 50);
+                
+                if (score > bestScore || (otherCompanyCount === 0 && !bestMatch)) {
+                  bestScore = score;
+                  bestMatch = clause.trim();
+                  
+                  // Stop if we found a clause with only our company
+                  if (otherCompanyCount === 0) break;
+                }
               }
             }
+            
+            if (bestMatch && bestScore > 0) break;
           }
           
           // Clean up the extracted text
           if (bestMatch) {
-            // Remove leading conjunctions and fix capitalization
-            bestMatch = bestMatch.replace(/^(and\s+|while\s+|but\s+|however\s+)/i, '');
-            bestMatch = bestMatch.charAt(0).toUpperCase() + bestMatch.slice(1);
+            // Remove leading conjunctions and unnecessary phrases
+            bestMatch = bestMatch.replace(/^(and\s+|while\s+|but\s+|however\s+|with\s+|also\s+)/i, '');
+            bestMatch = bestMatch.replace(/^\s*,\s*/, ''); // Remove leading comma
             
-            // Ensure it ends properly
+            // Capitalize first letter
+            if (bestMatch.length > 0) {
+              bestMatch = bestMatch.charAt(0).toUpperCase() + bestMatch.slice(1);
+            }
+            
+            // Ensure proper ending
             if (!bestMatch.match(/[.!?]$/)) {
               bestMatch += '.';
             }
+            
+            return bestMatch;
           }
-          
-          return bestMatch || relevantSentence;
         }
 
-        return `${companyName} mentioned in pharmaceutical intelligence brief`;
+        // Enhanced fallback with market context
+        const marketContext = stock?.changePercent > 1 ? 'showing strong performance' :
+                             stock?.changePercent > 0 ? 'demonstrating positive momentum' :
+                             stock?.changePercent < -1 ? 'facing market pressures' :
+                             'maintaining stable positioning';
+        
+        return `${companyName} highlighted in pharmaceutical intelligence brief, ${marketContext} in current market conditions.`;
       };
 
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
