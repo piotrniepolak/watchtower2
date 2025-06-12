@@ -225,7 +225,13 @@ class PerplexityService {
     Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements with direct quotes and references to the source articles. Each claim should be backed by a specific URL from these pharmaceutical news sources. Use numbered citations [1], [2], [3] to reference specific articles.`;
     
     const result = await this.queryPerplexity(prompt);
-    return this.processContentWithLinks(result.content, result.citations);
+    console.log(`🎯 Executive Summary - Citations received: ${result.citations.length}`);
+    if (result.citations.length > 0) {
+      console.log(`🎯 Executive Summary - First citation: ${result.citations[0].url || result.citations[0]}`);
+    }
+    const processed = this.processContentWithLinks(result.content, result.citations);
+    console.log(`🎯 Executive Summary - Processed length: ${processed.length}, Has references: ${processed.includes('**References:**')}`);
+    return processed;
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
