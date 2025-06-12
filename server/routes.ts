@@ -1828,9 +1828,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const generateDetailedDescription = (): string => {
             const baseDescription = getCompanyDescriptor(stock.symbol, stock.name);
             
-            // Add the quoted sentence from the brief if available
-            if (quotedSentence && quotedSentence !== `${stock.name} highlighted in pharmaceutical intelligence brief.`) {
-              return `${baseDescription} "${quotedSentence}"`;
+            // For companies mentioned in the brief, add context about their inclusion
+            if (mentionedSymbols.has(stock.symbol)) {
+              return `${baseDescription} Featured in today's pharmaceutical intelligence brief for market developments and industry analysis.`;
             }
             
             return baseDescription;
@@ -1844,7 +1844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               price: 0,
               change: 0,
               changePercent: 0,
-              reason: `${stock.name} represents a private or unlisted pharmaceutical entity highlighted in current intelligence analysis. "${quotedSentence}"`
+              reason: `${stock.name} represents a private or unlisted pharmaceutical entity highlighted in current intelligence analysis.`
             };
           }
 
