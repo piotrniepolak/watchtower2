@@ -239,6 +239,7 @@ Ensure each reference includes the source name followed by a colon and the artic
       'octapharma': 'OCTA',
       'nuvation': 'NUVB',
       'ultragenyx': 'RARE',
+      'ultragenyx': 'RARE',
       'argenx': 'ARGX',
       'incyte': 'INCY',
       'blueprint medicines': 'BPMC',
