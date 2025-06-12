@@ -549,7 +549,7 @@ Return ONLY the JSON object with no additional text.`
     }
   }
 
-  private generateFallbackDefenseIntelligence(currentEvents: string | any[], conflicts: any[], defenseStocks: any[]): DailyNews {
+  private async generateFallbackDefenseIntelligence(currentEvents: string | any[], conflicts: any[], defenseStocks: any[]): Promise<DailyNews> {
     const today = new Date().toISOString().split('T')[0];
     const activeConflicts = conflicts.filter(c => c.status === "Active");
 
@@ -574,16 +574,61 @@ Return ONLY the JSON object with no additional text.`
         severity: conflict.severity.toLowerCase() === "high" ? "high" as const : 
                  conflict.severity.toLowerCase() === "medium" ? "medium" as const : "low" as const
       })),
-      defenseStockHighlights: defenseStocks.slice(0, 6).map(stock => ({
-        symbol: stock.symbol,
-        name: stock.name,
-        change: stock.change,
-        changePercent: stock.changePercent,
-        reason: `${stock.changePercent >= 0 ? 'Positive' : 'Negative'} market response to current defense sector developments and geopolitical environment`
-      })),
+      defenseStockHighlights: await this.generateEnhancedDefenseStockHighlights(defenseStocks.slice(0, 6)),
       pharmaceuticalStockHighlights: [],
       geopoliticalAnalysis: `Current global security environment features ${activeConflicts.length} active conflicts requiring continued defense sector engagement. Regional tensions across Eastern Europe, Middle East, and Asia-Pacific are driving sustained demand for defense capabilities and international security cooperation. Defense spending remains prioritized across allied nations as security challenges continue to evolve.`
     };
+  }
+
+  private async generateEnhancedDefenseStockHighlights(defenseStocks: any[]): Promise<any[]> {
+    const enhanced = [];
+    
+    for (const stock of defenseStocks) {
+      try {
+        // Fetch fresh Yahoo Finance data
+        const freshData = await yahooFinanceService.getStockQuote(stock.symbol);
+        
+        if (freshData) {
+          enhanced.push({
+            symbol: stock.symbol,
+            name: stock.name || freshData.displayName || stock.symbol,
+            currentPrice: freshData.regularMarketPrice || 0,
+            priceChange: freshData.regularMarketChangePercent?.toFixed(2) + '%' || '0%',
+            analysis: `${stock.name} demonstrates strong competitive positioning in defense sector with established government contracts and technological capabilities. Current market performance reflects ongoing operational strength and strategic contract pipeline.`,
+            catalysts: "Government defense contracts, international partnerships, and technological innovation driving market positioning",
+            recentNews: "Monitoring latest defense procurement opportunities and strategic partnership developments",
+            competitivePosition: `Leading defense contractor with proven track record in government relations and advanced military systems development`
+          });
+        } else {
+          // Fallback with existing data
+          enhanced.push({
+            symbol: stock.symbol,
+            name: stock.name,
+            currentPrice: stock.currentPrice || 0,
+            priceChange: stock.percentChange || '0%',
+            analysis: `${stock.name} maintains strategic defense sector positioning with ongoing contract execution and market presence.`,
+            catalysts: "Defense spending initiatives and contract opportunities",
+            recentNews: "Current defense market developments under monitoring",
+            competitivePosition: "Established defense contractor with government relationships"
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching data for ${stock.symbol}:`, error);
+        // Include stock with existing data
+        enhanced.push({
+          symbol: stock.symbol,
+          name: stock.name,
+          currentPrice: stock.currentPrice || 0,
+          priceChange: stock.percentChange || '0%',
+          analysis: `${stock.name} defense sector positioning continues with ongoing operations.`,
+          catalysts: "Defense market developments",
+          recentNews: "Market monitoring in progress",
+          competitivePosition: "Defense sector participant"
+        });
+      }
+    }
+    
+    return enhanced;
   }
 
   async getTodaysDefenseNews(): Promise<DailyNews | null> {
