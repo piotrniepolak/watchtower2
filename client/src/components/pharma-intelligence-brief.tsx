@@ -39,6 +39,28 @@ const splitContentAndReferences = (text: string | undefined): { content: string;
   return { content: text, references: '' };
 };
 
+// Parse markdown-style references into structured data
+const parseReferences = (referencesText: string): Array<{number: number, title: string, url: string}> => {
+  if (!referencesText) return [];
+  
+  const references: Array<{number: number, title: string, url: string}> = [];
+  const lines = referencesText.split('\n').filter(line => line.trim());
+  
+  lines.forEach(line => {
+    // Match pattern: "1. [Title](URL)"
+    const match = line.match(/^(\d+)\.\s*\[([^\]]+)\]\(([^)]+)\)/);
+    if (match) {
+      references.push({
+        number: parseInt(match[1]),
+        title: match[2],
+        url: match[3]
+      });
+    }
+  });
+  
+  return references;
+};
+
 // Clean content while preserving citation numbers
 const cleanContent = (text: string | undefined): string => {
   if (!text) return '';
@@ -191,11 +213,25 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
       </div>
       
       {references && (
-        <div className="mt-4 pt-3 border-t border-slate-200">
-          <div 
-            className="text-sm" 
-            dangerouslySetInnerHTML={{ __html: references }}
-          />
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">References</h4>
+          <div className="space-y-2">
+            {parseReferences(references).map((ref) => (
+              <div key={ref.number} className="flex items-start gap-2 text-sm">
+                <span className="text-slate-500 dark:text-slate-400 font-medium min-w-[20px]">
+                  {ref.number}.
+                </span>
+                <a 
+                  href={ref.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors flex-1"
+                >
+                  {ref.title}
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

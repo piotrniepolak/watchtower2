@@ -185,19 +185,30 @@ class PerplexityService {
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
 
-    // Add references table below the content
+    // Add clean reference list below the content
     if (validCitations.length > 0) {
       processedContent += '\n\n**References:**\n\n';
-      processedContent += '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">\n';
-      processedContent += '<thead><tr style="background-color: #f5f5f5;"><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">#</th><th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Source</th></tr></thead>\n';
-      processedContent += '<tbody>\n';
       
       validCitations.forEach((citation, index) => {
-        processedContent += `<tr><td style="border: 1px solid #ddd; padding: 8px; text-align: center;">[${index + 1}]</td><td style="border: 1px solid #ddd; padding: 8px;"><a href="${citation.url}" target="_blank" rel="noopener noreferrer" style="color: #0066cc; text-decoration: underline;">${citation.title}</a></td></tr>\n`;
+        // Extract article title from URL if generic title is used
+        let displayTitle = citation.title;
+        if (displayTitle.includes('Source from') || displayTitle.toLowerCase().includes('biopharmadive.com') || displayTitle.toLowerCase().includes('statnews.com')) {
+          // Extract article title from URL pattern
+          const urlParts = citation.url.split('/');
+          const articleSlug = urlParts[urlParts.length - 2] || urlParts[urlParts.length - 1];
+          if (articleSlug) {
+            displayTitle = articleSlug
+              .replace(/-/g, ' ')
+              .replace(/\b\w/g, l => l.toUpperCase())
+              .replace(/\d+/g, match => match) // Keep numbers as is
+              .trim();
+          }
+        }
+        
+        processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
       });
       
-      processedContent += '</tbody>\n</table>\n';
-      console.log(`✅ Added references table with ${validCitations.length} valid citations`);
+      console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
     }
 
     return processedContent;
