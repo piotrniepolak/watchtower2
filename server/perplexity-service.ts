@@ -384,7 +384,7 @@ class PerplexityService {
     return { content: processedContent, references };
   }
 
-  async generateExecutiveSummary(): Promise<string> {
+  async generateExecutiveSummary(): Promise<{content: string, references: Array<{number: number, title: string, url: string}>}> {
     const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Search specifically for recent articles from:
     - STAT News (statnews.com)
     - BioPharma Dive (biopharmadive.com) 
@@ -401,7 +401,7 @@ class PerplexityService {
     }
     const processed = await this.processContentWithLinks(result.content, result.citations);
     console.log(`🎯 Executive Summary - Processed length: ${processed.content.length}, References count: ${processed.references.length}`);
-    return processed.content;
+    return processed;
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
@@ -762,7 +762,7 @@ class PerplexityService {
 
       // Generate stock analysis based on mentions from other sections
       const stockAnalysis = await this.generatePharmaceuticalStockAnalysis(
-        summary,
+        summary.content,
         keyDevelopments,
         healthCrisisUpdates,
         marketImpact,
