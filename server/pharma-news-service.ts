@@ -62,7 +62,11 @@ export class PharmaNewsService {
   async generateDailyPharmaNews(date: string): Promise<DailyNews | null> {
     if (this.isGenerating) {
       console.log("Pharma news generation already in progress...");
-      return null;
+      // Reset the flag if it's been stuck for more than 2 minutes
+      setTimeout(() => {
+        this.isGenerating = false;
+      }, 120000);
+      return this.getFallbackPharmaNews();
     }
 
     this.isGenerating = true;
@@ -90,10 +94,19 @@ export class PharmaNewsService {
       } as DailyNews;
     } catch (error) {
       console.error("Error generating pharma news:", error);
-      return null;
+      return this.getFallbackPharmaNews();
     } finally {
       this.isGenerating = false;
     }
+  }
+
+  private getFallbackPharmaNews(): DailyNews {
+    return {
+      id: Math.floor(Math.random() * 1000000),
+      date: new Date().toISOString().split('T')[0],
+      createdAt: new Date(),
+      ...this.getFallbackPharmaContent()
+    } as DailyNews;
   }
 
   private async generatePharmaNewsContent(stocks: any[], currentEvents: string): Promise<Omit<DailyNews, 'id' | 'date' | 'createdAt'>> {
