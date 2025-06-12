@@ -206,6 +206,19 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
 
 export default function PharmaIntelligenceBrief() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [sectionsCollapsed, setSectionsCollapsed] = useState({
+    executiveSummary: false,
+    healthCrisis: false,
+    stockHighlights: false,
+    policyAnalysis: false
+  });
+
+  const toggleSection = (section: keyof typeof sectionsCollapsed) => {
+    setSectionsCollapsed(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const { data: news, isLoading, error } = useQuery<DailyNews>({
     queryKey: ["/api/news/pharma/today"],
@@ -349,61 +362,128 @@ export default function PharmaIntelligenceBrief() {
       
       <CardContent className="space-y-6">
         {/* Executive Summary */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 mb-2">Executive Summary</h3>
-          <div className="text-blue-800 text-sm">
-            {formatContentWithSources(displayNews.summary)}
-          </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg">
+          <button
+            onClick={() => toggleSection('executiveSummary')}
+            className="w-full p-4 flex items-center justify-between hover:bg-blue-100 transition-colors"
+          >
+            <h3 className="font-semibold text-blue-900">Executive Summary</h3>
+            {sectionsCollapsed.executiveSummary ? (
+              <ChevronDown className="w-4 h-4 text-blue-700" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-blue-700" />
+            )}
+          </button>
+          {!sectionsCollapsed.executiveSummary && (
+            <div className="px-4 pb-4 text-blue-800 text-sm">
+              {formatContentWithSources(displayNews.summary)}
+            </div>
+          )}
         </div>
 
         {/* Health Crisis Updates */}
-        <div className="space-y-3">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Shield className="w-4 h-4 text-slate-600" />
-            Global Health Crisis Updates
-          </h3>
-          <div className="grid gap-2">
-            {conflictUpdates.slice(0, isExpanded ? undefined : 2).map((update, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
-                <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
-                  {update.severity.toUpperCase()}
-                </Badge>
-                <div className="flex-1">
-                  <p className="font-medium text-sm text-slate-900">{update.conflict}</p>
-                  <p className="text-xs text-slate-600 mt-1">{update.update}</p>
-                </div>
+        <div className="border border-slate-200 rounded-lg">
+          <button
+            onClick={() => toggleSection('healthCrisis')}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          >
+            <h3 className="font-semibold flex items-center gap-2">
+              <Shield className="w-4 h-4 text-slate-600" />
+              Global Health Crisis Updates
+            </h3>
+            {sectionsCollapsed.healthCrisis ? (
+              <ChevronDown className="w-4 h-4 text-slate-600" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+          {!sectionsCollapsed.healthCrisis && (
+            <div className="px-4 pb-4">
+              <div className="grid gap-2">
+                {conflictUpdates.slice(0, isExpanded ? undefined : 2).map((update, index) => (
+                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
+                    <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
+                      {update.severity.toUpperCase()}
+                    </Badge>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm text-slate-900">{update.conflict}</p>
+                      <p className="text-xs text-slate-600 mt-1">{update.update}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* Pharma Stock Highlights */}
-        <div className="space-y-3">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-slate-600" />
-            Pharmaceutical Stock Highlights
-          </h3>
-          <div className="grid gap-2">
-            {stockHighlights.slice(0, isExpanded ? undefined : 2).map((stock, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm">{stock.symbol}</span>
-                    <span className="text-xs text-slate-600">{stock.name}</span>
+        {/* Pharmaceutical Stock Highlights */}
+        <div className="border border-slate-200 rounded-lg">
+          <button
+            onClick={() => toggleSection('stockHighlights')}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          >
+            <h3 className="font-semibold flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-slate-600" />
+              Pharmaceutical Stock Highlights
+            </h3>
+            {sectionsCollapsed.stockHighlights ? (
+              <ChevronDown className="w-4 h-4 text-slate-600" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+          {!sectionsCollapsed.stockHighlights && (
+            <div className="px-4 pb-4">
+              <div className="grid gap-2">
+                {stockHighlights.slice(0, isExpanded ? undefined : 2).map((stock, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{stock.symbol}</span>
+                        <span className="text-xs text-slate-600">{stock.name}</span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1">{stock.reason}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-medium text-sm ${getChangeColor(stock.change)}`}>
+                        {stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)}
+                      </p>
+                      <p className={`text-xs ${getChangeColor(stock.changePercent)}`}>
+                        ({stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-600 mt-1">{stock.reason}</p>
-                </div>
-                <div className="text-right">
-                  <p className={`font-medium text-sm ${getChangeColor(stock.change)}`}>
-                    {stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)}
-                  </p>
-                  <p className={`text-xs ${getChangeColor(stock.changePercent)}`}>
-                    ({stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Regulatory & Policy Analysis */}
+        <div className="border border-slate-200 rounded-lg">
+          <button
+            onClick={() => toggleSection('policyAnalysis')}
+            className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          >
+            <h3 className="font-semibold flex items-center gap-2">
+              <Globe className="w-4 h-4 text-slate-600" />
+              Regulatory & Policy Analysis
+            </h3>
+            {sectionsCollapsed.policyAnalysis ? (
+              <ChevronDown className="w-4 h-4 text-slate-600" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-slate-600" />
+            )}
+          </button>
+          {!sectionsCollapsed.policyAnalysis && (
+            <div className="px-4 pb-4">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="text-purple-800 text-sm">
+                  {formatContentWithSources(displayNews.geopoliticalAnalysis)}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Collapsible Market Impact & Analysis */}
@@ -429,19 +509,6 @@ export default function PharmaIntelligenceBrief() {
                 {formatContentWithSources(displayNews.marketImpact)}
               </div>
             </div>
-
-            {/* Regulatory Analysis */}
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h4 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                Regulatory & Policy Analysis
-              </h4>
-              <div className="text-purple-800 text-sm">
-                {formatContentWithSources(displayNews.geopoliticalAnalysis)}
-              </div>
-            </div>
-
-
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
