@@ -199,11 +199,24 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
       
       if (chartPoints[clampedIndex]) {
         const price = chartPoints[clampedIndex].y;
+        const timestamp = chartPoints[clampedIndex].timestamp;
         const chartX = (clampedIndex / (chartPoints.length - 1)) * 400;
         const chartY = 120 - ((price - minPrice) / priceRange) * 120;
         
+        // Format the full date and time for the tracking block
+        const fullDate = new Date(timestamp);
+        const formattedDateTime = `${fullDate.toLocaleDateString('en-US', {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })} ${fullDate.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`;
+        
         setHoveredPrice(price);
-        setHoveredDate(timeLabels[clampedIndex] || '');
+        setHoveredDate(formattedDateTime);
         setCursorPosition({ x: chartX, y: chartY, visible: true });
       }
     }
