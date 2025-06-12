@@ -7,7 +7,7 @@ interface PerplexityResponse {
       content: string;
     };
   }>;
-  citations?: Array<{
+  citations?: Array<string | {
     url: string;
     title: string;
     snippet?: string;
@@ -92,12 +92,41 @@ class PerplexityService {
       console.log('🔍 Perplexity API Response Debug:');
       console.log('Citations received:', data.citations?.length || 0);
       if (data.citations && data.citations.length > 0) {
-        console.log('First citation:', data.citations[0]);
+        console.log('First citation object:', JSON.stringify(data.citations[0], null, 2));
+        console.log('All citations:', JSON.stringify(data.citations, null, 2));
       }
       
+      // Normalize citations to consistent format
+      const normalizedCitations: Array<{ url: string; title: string; snippet: string }> = (data.citations || []).map((citation, index) => {
+        if (typeof citation === 'string') {
+          // Extract domain for title fallback
+          try {
+            const url = new URL(citation);
+            const domain = url.hostname.replace('www.', '');
+            return {
+              url: citation,
+              title: `Source from ${domain}`,
+              snippet: ''
+            };
+          } catch {
+            return {
+              url: citation,
+              title: `Source ${index + 1}`,
+              snippet: ''
+            };
+          }
+        } else {
+          return {
+            url: citation.url,
+            title: citation.title || `Source ${index + 1}`,
+            snippet: citation.snippet || ''
+          };
+        }
+      });
+
       return {
         content: data.choices[0]?.message?.content || '',
-        citations: data.citations || []
+        citations: normalizedCitations
       };
     } catch (error) {
       console.error('Error querying Perplexity:', error);
