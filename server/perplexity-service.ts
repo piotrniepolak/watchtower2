@@ -161,22 +161,63 @@ class PerplexityService {
       const $ = cheerio.load(html);
 
       // Try multiple selectors to find the article title
-      let title = $('h1').first().text().trim() || 
-                  $('title').text().trim() || 
-                  $('meta[property="og:title"]').attr('content') || 
-                  $('meta[name="twitter:title"]').attr('content') || 
-                  $('.article-title').text().trim() ||
-                  $('.headline').text().trim();
+      let title = '';
+      
+      // BioPharma Dive specific selectors
+      if (url.includes('biopharmadive.com')) {
+        title = $('.view-article-header h1').text().trim() ||
+                $('.article-header h1').text().trim() ||
+                $('h1.article-title').text().trim() ||
+                $('h1[data-module="ArticleHeader"]').text().trim() ||
+                $('.story-header h1').text().trim();
+      }
+      
+      // STAT News specific selectors  
+      if (!title && url.includes('statnews.com')) {
+        title = $('h1.entry-title').text().trim() ||
+                $('.article-header h1').text().trim() ||
+                $('h1[class*="headline"]').text().trim() ||
+                $('.post-title h1').text().trim();
+      }
+      
+      // Generic fallback selectors
+      if (!title) {
+        title = $('h1').first().text().trim() || 
+                $('meta[property="og:title"]').attr('content') || 
+                $('meta[name="twitter:title"]').attr('content') || 
+                $('.article-title').text().trim() ||
+                $('.headline').text().trim() ||
+                $('title').text().trim();
+      }
 
       // Clean up the title
       if (title) {
+        console.log(`🔍 Raw title extracted: "${title}"`);
+        
         // Remove site name suffixes like " - STAT" or " | BioPharma Dive"
         title = title.replace(/\s*[-|]\s*(STAT|BioPharma Dive|Pharmalot).*$/i, '');
         title = title.replace(/\s+/g, ' ').trim();
         
-        if (title.length > 3) {
-          console.log(`✅ Extracted title: "${title}"`);
+        // Filter out generic/promotional titles that aren't actual article titles
+        const genericTitles = [
+          'don\'t miss tomorrow\'s biopharma industry news',
+          'subscribe to biopharmadive',
+          'breaking news',
+          'latest news',
+          'industry news',
+          'pharmaceutical news',
+          'healthcare news'
+        ];
+        
+        const isGeneric = genericTitles.some(generic => 
+          title.toLowerCase().includes(generic.toLowerCase())
+        );
+        
+        if (!isGeneric && title.length > 10) {
+          console.log(`✅ Extracted meaningful title: "${title}"`);
           return title;
+        } else {
+          console.log(`⚠️ Filtered out generic title: "${title}"`);
         }
       }
 
@@ -251,8 +292,10 @@ class PerplexityService {
             displayTitle.includes('Source from') || 
             displayTitle.toLowerCase().includes('biopharmadive.com') || 
             displayTitle.toLowerCase().includes('statnews.com') ||
+            displayTitle.toLowerCase().includes("don't miss tomorrow's biopharma industry news") ||
+            displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
             displayTitle.match(/^\d+$/) || // Just a number
-            displayTitle.length < 3) { // Too short to be meaningful
+            displayTitle.length < 10) { // Too short to be meaningful
           
           // Fetch the actual title from the web page
           const webTitle = await this.fetchArticleTitle(citation.url);
