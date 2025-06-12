@@ -171,12 +171,12 @@ export function DefenseIntelligenceBrief({ className }: DefenseIntelligenceBrief
             {Array.isArray(defenseNews.keyDevelopments) ? defenseNews.keyDevelopments.map((development, index) => (
               <li key={index} className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 flex-shrink-0" />
-                <span className="text-sm leading-relaxed">{development}</span>
+                <span className="text-sm leading-relaxed">{String(development)}</span>
               </li>
             )) : (
               <li className="flex items-start gap-3">
                 <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 flex-shrink-0" />
-                <span className="text-sm leading-relaxed">{defenseNews.keyDevelopments}</span>
+                <span className="text-sm leading-relaxed">{String(defenseNews.keyDevelopments)}</span>
               </li>
             )}
           </ul>
@@ -193,7 +193,7 @@ export function DefenseIntelligenceBrief({ className }: DefenseIntelligenceBrief
         </CardHeader>
         <CardContent>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {defenseNews.marketImpact}
+            {String(defenseNews.marketImpact)}
           </p>
         </CardContent>
       </Card>
@@ -281,7 +281,7 @@ export function DefenseIntelligenceBrief({ className }: DefenseIntelligenceBrief
         </CardHeader>
         <CardContent>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            {defenseNews.geopoliticalAnalysis}
+            {String(defenseNews.geopoliticalAnalysis)}
           </p>
         </CardContent>
       </Card>
