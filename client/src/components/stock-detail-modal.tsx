@@ -39,7 +39,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   const timeRanges = ['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'Max'];
 
   // Use authentic Yahoo Finance data or display loading state
-  const displayData = stockQuote || {
+  const displayData = stockQuote ? stockQuote : {
     open: 0,
     high: 0,
     low: 0,
@@ -48,16 +48,17 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
     week52High: 0,
     week52Low: 0,
     divYield: null,
-    eps: null
+    eps: null,
+    volume: 0
   };
 
   // Process authentic chart data for display
   const processChartData = () => {
-    if (!chartData || !chartData.data || chartData.data.length === 0) {
+    if (!chartData || typeof chartData !== 'object' || !(chartData as any).data || !Array.isArray((chartData as any).data) || (chartData as any).data.length === 0) {
       return [];
     }
     
-    return chartData.data.map((point: any, index: number) => ({
+    return (chartData as any).data.map((point: any, index: number) => ({
       x: index,
       y: point.close,
       timestamp: point.date
@@ -65,9 +66,28 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   };
 
   const processedChartData = processChartData();
-  const minPrice = processedChartData.length > 0 ? Math.min(...processedChartData.map(d => d.y)) : 0;
-  const maxPrice = processedChartData.length > 0 ? Math.max(...processedChartData.map(d => d.y)) : 0;
+  const minPrice = processedChartData.length > 0 ? Math.min(...processedChartData.map((d: any) => d.y)) : 0;
+  const maxPrice = processedChartData.length > 0 ? Math.max(...processedChartData.map((d: any) => d.y)) : 0;
   const priceRange = maxPrice - minPrice || 1;
+
+  // Helper function to format large numbers
+  const formatMarketCap = (value: number | null) => {
+    if (!value || value === 0) return '-';
+    if (value >= 1e12) return `${(value / 1e12).toFixed(2)}T`;
+    if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
+    return value.toLocaleString();
+  };
+
+  const formatPercent = (value: number | null) => {
+    if (value === null || value === undefined) return '-';
+    return `${value.toFixed(2)}%`;
+  };
+
+  const formatCurrency = (value: number | null) => {
+    if (!value) return '-';
+    return `$${value.toFixed(2)}`;
+  };
 
   const createPath = (data: Array<{x: number, y: number}>) => {
     if (data.length === 0) return '';
@@ -172,109 +192,160 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
 
           {/* Chart */}
           <div className="mb-6 p-4 bg-slate-50 rounded-lg">
-            <div className="relative">
-              <svg width="100%" height="120" viewBox="0 0 400 120" className="overflow-visible">
-                <defs>
-                  <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity="0.3" />
-                    <stop offset="100%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                
-                {/* Grid lines */}
-                {[0.25, 0.5, 0.75].map((fraction) => (
-                  <line
-                    key={fraction}
-                    x1="0"
-                    y1={120 * fraction}
-                    x2="400"
-                    y2={120 * fraction}
-                    stroke="#e2e8f0"
-                    strokeWidth="1"
-                  />
-                ))}
-                
-                {/* Area under curve */}
-                <path
-                  d={`${createPath(chartData)} L 400,120 L 0,120 Z`}
-                  fill="url(#chartGradient)"
-                />
-                
-                {/* Price line */}
-                <path
-                  d={createPath(chartData)}
-                  fill="none"
-                  stroke={isPositive ? "#10b981" : "#ef4444"}
-                  strokeWidth="2"
-                />
-              </svg>
-              
-              {/* Time labels */}
-              <div className="flex justify-between text-xs text-slate-500 mt-2">
-                <span>10:00 AM</span>
-                <span>12:00 PM</span>
-                <span>2:00 PM</span>
-                <span>4:00 PM</span>
-                <span>6:00 PM</span>
-                <span>8:00 PM</span>
+            {chartLoading ? (
+              <div className="animate-pulse">
+                <div className="h-32 bg-slate-200 rounded mb-2"></div>
+                <div className="flex justify-between">
+                  {Array(6).fill(0).map((_, i) => (
+                    <div key={i} className="h-3 bg-slate-200 rounded w-12"></div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : processedChartData.length > 0 ? (
+              <div className="relative">
+                <svg width="100%" height="120" viewBox="0 0 400 120" className="overflow-visible">
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity="0.3" />
+                      <stop offset="100%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Grid lines */}
+                  {[0.25, 0.5, 0.75].map((fraction) => (
+                    <line
+                      key={fraction}
+                      x1="0"
+                      y1={120 * fraction}
+                      x2="400"
+                      y2={120 * fraction}
+                      stroke="#e2e8f0"
+                      strokeWidth="1"
+                    />
+                  ))}
+                  
+                  {/* Area under curve */}
+                  <path
+                    d={`${createPath(processedChartData)} L 400,120 L 0,120 Z`}
+                    fill="url(#chartGradient)"
+                  />
+                  
+                  {/* Price line */}
+                  <path
+                    d={createPath(processedChartData)}
+                    fill="none"
+                    stroke={isPositive ? "#10b981" : "#ef4444"}
+                    strokeWidth="2"
+                  />
+                </svg>
+                
+                {/* Dynamic time labels based on time range */}
+                <div className="flex justify-between text-xs text-slate-500 mt-2">
+                  {timeRange === '1D' ? (
+                    <>
+                      <span>9:30 AM</span>
+                      <span>11:00 AM</span>
+                      <span>1:00 PM</span>
+                      <span>3:00 PM</span>
+                      <span>4:00 PM</span>
+                    </>
+                  ) : timeRange === '5D' ? (
+                    <>
+                      <span>Mon</span>
+                      <span>Tue</span>
+                      <span>Wed</span>
+                      <span>Thu</span>
+                      <span>Fri</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Start</span>
+                      <span>25%</span>
+                      <span>50%</span>
+                      <span>75%</span>
+                      <span>End</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-32 flex items-center justify-center text-slate-500">
+                <p>Chart data unavailable for this time range</p>
+              </div>
+            )}
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs text-slate-500 font-medium">Open</div>
-                <div className="text-sm font-semibold">{mockData.open.toFixed(2)}</div>
+          {quoteLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array(8).fill(0).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="animate-pulse">
+                    <div className="h-3 bg-slate-200 rounded w-16 mb-2"></div>
+                    <div className="h-4 bg-slate-200 rounded w-12"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Open</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.open) : '$--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">High</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.high) : '$--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Low</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.low) : '$--'}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-xs text-slate-500 font-medium">High</div>
-                <div className="text-sm font-semibold">{mockData.high.toFixed(2)}</div>
+              
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Mkt cap</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatMarketCap(stockQuote.marketCap) : '--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">P/E ratio</div>
+                  <div className="text-sm font-semibold">{stockQuote?.peRatio || '-'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Div yield</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatPercent(stockQuote.divYield) : '-'}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-xs text-slate-500 font-medium">Low</div>
-                <div className="text-sm font-semibold">{mockData.low.toFixed(2)}</div>
+              
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">52-wk high</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.week52High) : '$--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">52-wk low</div>
+                  <div className="text-sm font-semibold">{stockQuote ? formatCurrency(stockQuote.week52Low) : '$--'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Volume</div>
+                  <div className="text-sm font-semibold">{stockQuote?.volume ? formatMarketCap(stockQuote.volume) : '-'}</div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">Previous close</div>
+                  <div className="text-sm font-semibold">{formatCurrency(stock.price - stock.change)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500 font-medium">EPS</div>
+                  <div className="text-sm font-semibold">{stockQuote?.eps ? stockQuote.eps.toFixed(2) : '-'}</div>
+                </div>
               </div>
             </div>
-            
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs text-slate-500 font-medium">Mkt cap</div>
-                <div className="text-sm font-semibold">{mockData.marketCap}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500 font-medium">P/E ratio</div>
-                <div className="text-sm font-semibold">{mockData.peRatio}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500 font-medium">Div yield</div>
-                <div className="text-sm font-semibold">{mockData.divYield}</div>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs text-slate-500 font-medium">52-wk high</div>
-                <div className="text-sm font-semibold">{mockData.week52High.toFixed(2)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500 font-medium">52-wk low</div>
-                <div className="text-sm font-semibold">{mockData.week52Low.toFixed(2)}</div>
-              </div>
-              <div>
-                <div className="text-xs text-slate-500 font-medium">Qtrly Div Amt</div>
-                <div className="text-sm font-semibold">{mockData.qtrlyDivAmt}</div>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div>
-                <div className="text-xs text-slate-500 font-medium">Previous close</div>
-                <div className="text-sm font-semibold">{(stock.price - stock.change).toFixed(2)}</div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
