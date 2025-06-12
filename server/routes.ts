@@ -1793,19 +1793,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Extract relevant quoted sentence from the brief
           const quotedSentence = extractQuotedSentence(stock.symbol, stock.name);
 
-          // Generate detailed description based on market performance and sector context
+          // Company-specific descriptors based on actual business profiles
+          const getCompanyDescriptor = (symbol: string, name: string): string => {
+            const descriptors: { [key: string]: string } = {
+              'JNJ': 'Diversified healthcare conglomerate with pharmaceutical, medical device, and consumer products divisions.',
+              'PFE': 'Leading vaccine and oncology pharmaceutical company with global research and development operations.',
+              'RHHBY': 'Swiss multinational healthcare company focusing on pharmaceuticals and diagnostics.',
+              'NVS': 'Global pharmaceutical company specializing in innovative medicines, eye care, and generic drugs.',
+              'AZN': 'British-Swedish pharmaceutical company known for oncology, cardiovascular, and respiratory therapies.',
+              'MRK': 'American pharmaceutical company with leading positions in oncology, vaccines, and animal health.',
+              'ABBV': 'Biopharmaceutical company focused on immunology, oncology, and neuroscience treatments.',
+              'LLY': 'Pharmaceutical company specializing in diabetes care, oncology, and neurodegeneration therapies.',
+              'BMY': 'Biopharmaceutical company focused on oncology, immunology, and cardiovascular disease treatments.',
+              'GILD': 'Biopharmaceutical company known for antiviral drugs and treatments for HIV, hepatitis, and COVID-19.',
+              'VRTX': 'Biotechnology company developing treatments for serious diseases including cystic fibrosis and sickle cell disease.',
+              'BIIB': 'Biotechnology company focused on neurological and neurodegenerative diseases including multiple sclerosis.',
+              'REGN': 'Biotechnology company developing treatments for eye diseases, allergic conditions, and cancer.',
+              'GSK': 'British pharmaceutical company with focus on vaccines, HIV treatments, and respiratory therapies.',
+              'SNY': 'French multinational pharmaceutical company with expertise in diabetes, vaccines, and rare diseases.',
+              'BAYRY': 'German multinational pharmaceutical and life sciences company with crop science and pharmaceuticals divisions.',
+              'NUVB': 'Clinical-stage biopharmaceutical company developing treatments for cancer and other serious diseases.',
+              'RARE': 'Biopharmaceutical company focused on developing treatments for rare diseases affecting kidneys and blood.',
+              'SLDB': 'Biotechnology company developing cell and gene therapies for cancer and other serious diseases.',
+              'STOK': 'Clinical-stage biotechnology company developing treatments for neurodegenerative and psychiatric disorders.',
+              'NVAX': 'Biotechnology company focused on developing vaccines for infectious diseases including COVID-19.'
+            };
+            
+            return descriptors[symbol] || `${name} operates in the pharmaceutical and biotechnology sector.`;
+          };
+
           const generateDetailedDescription = (): string => {
-            const performanceContext = stock.changePercent > 2 ? 'strong upward momentum' :
-                                     stock.changePercent > 0 ? 'positive market sentiment' :
-                                     stock.changePercent < -2 ? 'market correction pressures' :
-                                     stock.changePercent < 0 ? 'slight market headwinds' :
-                                     'stable market positioning';
-
-            const sectorContext = stock.price > 100 ? 'large-cap pharmaceutical leader' :
-                                  stock.price > 50 ? 'mid-cap pharmaceutical company' :
-                                  'emerging pharmaceutical entity';
-
-            return `${stock.name} (${stock.symbol}) exhibits ${performanceContext} as a ${sectorContext}. The company's market dynamics reflect broader industry trends including regulatory developments, pipeline progress, and competitive positioning. "${quotedSentence}"`;
+            return getCompanyDescriptor(stock.symbol, stock.name);
           };
 
           // Handle companies without current market data (price = 0)
@@ -1826,7 +1844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             price: stock.price,
             change: stock.change,
             changePercent: stock.changePercent,
-            reason: existingHighlight?.reason || generateDetailedDescription()
+            reason: generateDetailedDescription()
           };
         }
         return null;
