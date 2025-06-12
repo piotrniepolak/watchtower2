@@ -87,6 +87,9 @@ class YahooFinanceService {
       const change = currentPrice - previousClose;
       const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0;
 
+      // Calculate market cap if shares outstanding available
+      const marketCap = meta.sharesOutstanding ? currentPrice * meta.sharesOutstanding : 0;
+
       // Extract comprehensive financial data from meta object
       const quote: StockQuote = {
         symbol,
@@ -98,21 +101,21 @@ class YahooFinanceService {
         high: meta.regularMarketDayHigh || currentPrice,
         low: meta.regularMarketDayLow || currentPrice,
         volume: meta.regularMarketVolume || 0,
-        marketCap: meta.marketCap || 0,
-        peRatio: meta.trailingPE || null,
+        marketCap: marketCap,
+        peRatio: meta.trailingPE || meta.forwardPE || null,
         week52High: meta.fiftyTwoWeekHigh || currentPrice,
         week52Low: meta.fiftyTwoWeekLow || currentPrice,
         avgVolume: meta.averageDailyVolume10Day || meta.averageDailyVolume3Month || 0,
         divYield: meta.dividendYield ? meta.dividendYield * 100 : null,
-        eps: meta.epsTrailingTwelveMonths || null,
+        eps: meta.epsTrailingTwelveMonths || meta.epsForward || null,
         // Additional financial metrics from meta data
-        bid: meta.bid || undefined,
-        ask: meta.ask || undefined,
+        bid: meta.bid || meta.regularMarketBid || undefined,
+        ask: meta.ask || meta.regularMarketAsk || undefined,
         beta: meta.beta || undefined,
         earningsDate: meta.earningsTimestamp ? new Date(meta.earningsTimestamp * 1000).toLocaleDateString() : undefined,
         exDividendDate: meta.exDividendDate ? new Date(meta.exDividendDate * 1000).toLocaleDateString() : undefined,
-        targetPrice: meta.targetMeanPrice || undefined,
-        sharesOutstanding: meta.sharesOutstanding || undefined,
+        targetPrice: meta.targetMeanPrice || meta.priceTarget || undefined,
+        sharesOutstanding: meta.sharesOutstanding || meta.impliedSharesOutstanding || undefined,
         floatShares: meta.floatShares || undefined,
         insiderPercent: meta.heldPercentInsiders ? meta.heldPercentInsiders * 100 : undefined,
         institutionPercent: meta.heldPercentInstitutions ? meta.heldPercentInstitutions * 100 : undefined
