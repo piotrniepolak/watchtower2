@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
-import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
+
 import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
 interface SectorMetrics {
@@ -905,13 +905,6 @@ export default function Home() {
           </CardContent>
           )}
         </Card>
-
-        {/* Pharmaceutical Intelligence Brief - Health Sector Only */}
-        {selectedSector === 'health' && (
-          <div className="mt-6">
-            <PharmaIntelligenceBrief />
-          </div>
-        )}
 
         {/* Community Chat Section */}
         <div className="mt-6">
