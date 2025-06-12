@@ -1777,13 +1777,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
-        // Enhanced fallback with market context
-        const marketContext = stock?.changePercent > 1 ? 'showing strong performance' :
-                             stock?.changePercent > 0 ? 'demonstrating positive momentum' :
-                             stock?.changePercent < -1 ? 'facing market pressures' :
-                             'maintaining stable positioning';
-        
-        return `${companyName} highlighted in pharmaceutical intelligence brief, ${marketContext} in current market conditions.`;
+        // Fallback message when no specific content is found
+        return `${companyName} highlighted in pharmaceutical intelligence brief.`;
       };
 
       // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
