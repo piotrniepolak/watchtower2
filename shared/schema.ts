@@ -306,6 +306,7 @@ export interface NewsConflictUpdate {
 export interface NewsStockHighlight {
   symbol: string;
   name: string;
+  price: number;
   change: number;
   changePercent: number;
   reason: string;

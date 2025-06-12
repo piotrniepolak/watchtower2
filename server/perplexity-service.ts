@@ -28,8 +28,9 @@ interface PharmaceuticalIntelligence {
   }>;
   pharmaceuticalStockHighlights: Array<{
     symbol: string;
-    company: string;
+    name: string;
     price: number;
+    change: number;
     changePercent: number;
     reason: string;
   }>;
@@ -239,7 +240,6 @@ Ensure each reference includes the source name followed by a colon and the artic
       'octapharma': 'OCTA',
       'nuvation': 'NUVB',
       'ultragenyx': 'RARE',
-      'ultragenyx': 'RARE',
       'argenx': 'ARGX',
       'incyte': 'INCY',
       'blueprint medicines': 'BPMC',
@@ -393,8 +393,9 @@ Ensure each reference includes the source name followed by a colon and the artic
         
         stockHighlights.push({
           symbol: stockData.symbol,
-          company: stockData.name,
+          name: stockData.name,
           price: stockData.price,
+          change: stockData.change,
           changePercent: stockData.changePercent,
           reason: shortAnalysis
         });
