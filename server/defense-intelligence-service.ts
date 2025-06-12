@@ -249,15 +249,10 @@ export class DefenseIntelligenceService {
     const today = new Date().toISOString().split('T')[0];
     
     if (this.lastGenerationDate === today) {
-      return await storage.getDailyNewsByDate(today, "defense") || null;
+      return await storage.getDailyNews(today) || null;
     }
 
-    const existingNews = await storage.getDailyNewsByDate(today, "defense");
-    if (existingNews) {
-      this.lastGenerationDate = today;
-      return existingNews;
-    }
-
+    // Generate new defense intelligence if none exists
     return await this.generateComprehensiveDefenseIntelligence();
   }
 }
