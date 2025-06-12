@@ -19,6 +19,16 @@ interface StockQuote {
   avgVolume: number;
   divYield: number | null;
   eps: number | null;
+  bid?: number;
+  ask?: number;
+  beta?: number;
+  earningsDate?: string;
+  exDividendDate?: string;
+  targetPrice?: number;
+  sharesOutstanding?: number;
+  floatShares?: number;
+  insiderPercent?: number;
+  institutionPercent?: number;
 }
 
 interface StockDetailModalProps {
@@ -50,7 +60,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   });
 
   // Use only authentic Yahoo Finance data - no fallback synthetic data
-  const quoteData = stockQuote as StockQuote;
+  const quoteData = stockQuote ? (stockQuote as StockQuote) : null;
 
   // Fetch authentic chart data from Yahoo Finance with fallback
   const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
@@ -446,7 +456,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
             )}
           </div>
 
-          {/* Yahoo Finance Data Section - Authentic Data Only */}
+          {/* Yahoo Finance Data Section - All data from API */}
           <div className="space-y-6">
             {quoteData ? (
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-sm">
@@ -462,11 +472,11 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Bid</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.bid ? formatCurrency(quoteData.bid) : '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Ask</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.ask ? formatCurrency(quoteData.ask) : '--'}</span>
                   </div>
                 </div>
 
@@ -502,7 +512,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Beta (5Y Monthly)</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.beta ? quoteData.beta.toFixed(2) : '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">PE Ratio (TTM)</span>
@@ -518,7 +528,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-slate-600">Earnings Date</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.earningsDate || '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Forward Dividend & Yield</span>
@@ -526,11 +536,11 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Ex-Dividend Date</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.exDividendDate || '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">1y Target Est</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.targetPrice ? formatCurrency(quoteData.targetPrice) : '--'}</span>
                   </div>
                 </div>
 
@@ -538,19 +548,19 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-slate-600">Shares Outstanding</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.sharesOutstanding ? formatMarketCap(quoteData.sharesOutstanding) : '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">Float</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.floatShares ? formatMarketCap(quoteData.floatShares) : '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">% Held by Insiders</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.insiderPercent ? formatPercent(quoteData.insiderPercent) : '--'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600">% Held by Institutions</span>
-                    <span className="font-semibold">--</span>
+                    <span className="font-semibold">{quoteData.institutionPercent ? formatPercent(quoteData.institutionPercent) : '--'}</span>
                   </div>
                 </div>
               </div>
