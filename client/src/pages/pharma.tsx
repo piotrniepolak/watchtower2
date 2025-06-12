@@ -6,9 +6,34 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Activity, Pill, DollarSign, BarChart3, Target, Award } from "lucide-react";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
+import { StockDetailModal } from "@/components/stock-detail-modal";
 
 export default function Pharma() {
   const [currentSector] = useState("health");
+  const [selectedStock, setSelectedStock] = useState<{
+    symbol: string;
+    name: string;
+    price: number;
+    change: number;
+    changePercent: number;
+  } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleStockClick = (stock: PharmStock) => {
+    setSelectedStock({
+      symbol: stock.symbol,
+      name: stock.name,
+      price: stock.price,
+      change: stock.change,
+      changePercent: stock.changePercent
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedStock(null);
+  };
 
   const { data: healthStocks = [] } = useQuery({
     queryKey: ["/api/sectors/health/stocks"],
@@ -152,7 +177,7 @@ export default function Pharma() {
             <TabsContent value="stocks">
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {typedHealthStocks.map((stock) => (
-                  <Card key={stock.symbol} className="hover:shadow-lg transition-shadow">
+                  <Card key={stock.symbol} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleStockClick(stock)}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
@@ -414,6 +439,15 @@ export default function Pharma() {
           </Tabs>
         </div>
       </main>
+
+      {/* Stock Detail Modal */}
+      {selectedStock && (
+        <StockDetailModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          stock={selectedStock}
+        />
+      )}
     </div>
   );
 }
