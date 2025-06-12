@@ -360,14 +360,11 @@ Ensure each reference includes the source name followed by a colon and the artic
         console.error(`Error generating analysis for ${symbol}:`, error);
         
         // Use stock data without Perplexity analysis if API fails
-        const changePercent = stockData.currentPrice > 0 ? 
-          ((stockData.currentPrice - stockData.previousClose) / stockData.previousClose * 100) : 0;
-          
         stockHighlights.push({
           symbol: stockData.symbol,
           company: stockData.name,
-          price: stockData.currentPrice,
-          change: changePercent,
+          price: stockData.price,
+          change: stockData.changePercent,
           analysis: `${stockData.name} shows recent market activity with current trading patterns reflecting broader pharmaceutical sector dynamics.`
         });
       }
