@@ -1704,8 +1704,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           companyName.toLowerCase().replace(/\s+&\s+/, ' and '),
         ].filter((v, i, arr) => arr.indexOf(v) === i); // Remove duplicates
 
-        // Split into sentences with better delimiters
-        const sentences = allContent.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
+        // Split into sentences with better delimiters and include context
+        const sentences = allContent.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 10);
         
         // Find sentences mentioning this company with improved matching
         const relevantSentences = sentences.filter(sentence => {
@@ -1730,7 +1730,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 lowerClause.includes(variation)
               );
               
-              if (mentionsThisCompany && clause.trim().length > 20) {
+              if (mentionsThisCompany && clause.trim().length > 15) {
                 // Count other company mentions in this clause
                 const otherCompanyCount = Object.entries(companyToSymbolMap)
                   .filter(([name, sym]) => sym !== symbol)
@@ -1741,15 +1741,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     return count;
                   }, 0);
                 
-                // Score based on specificity (prefer clauses with fewer other companies)
-                const score = clause.length - (otherCompanyCount * 50);
+                // Score based on specificity and content quality
+                const hasActionWords = /\b(announced|reported|launched|developed|approved|acquired|partnered|expanded|increased|decreased|filed|completed|initiated)\b/i.test(clause);
+                const hasFinancialInfo = /\b(revenue|profit|sales|earnings|billion|million|percent|%|\$)\b/i.test(clause);
+                const baseScore = clause.length + (hasActionWords ? 50 : 0) + (hasFinancialInfo ? 30 : 0);
+                const score = baseScore - (otherCompanyCount * 40);
                 
-                if (score > bestScore || (otherCompanyCount === 0 && !bestMatch)) {
+                if (score > bestScore || (!bestMatch && otherCompanyCount <= 1)) {
                   bestScore = score;
                   bestMatch = clause.trim();
                   
-                  // Stop if we found a clause with only our company
-                  if (otherCompanyCount === 0) break;
+                  // Stop if we found a high-quality clause with specific company content
+                  if (otherCompanyCount === 0 && (hasActionWords || hasFinancialInfo)) break;
                 }
               }
             }
@@ -1823,7 +1826,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
 
           const generateDetailedDescription = (): string => {
-            return getCompanyDescriptor(stock.symbol, stock.name);
+            const baseDescription = getCompanyDescriptor(stock.symbol, stock.name);
+            
+            // Add the quoted sentence from the brief if available
+            if (quotedSentence && quotedSentence !== `${stock.name} highlighted in pharmaceutical intelligence brief.`) {
+              return `${baseDescription} "${quotedSentence}"`;
+            }
+            
+            return baseDescription;
           };
 
           // Handle companies without current market data (price = 0)
