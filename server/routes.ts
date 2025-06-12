@@ -1546,13 +1546,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pharma News Routes
   app.get("/api/news/pharma/today", async (req, res) => {
     try {
-      // First try to generate comprehensive pharmaceutical intelligence using Perplexity AI
-      let news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      const today = new Date().toISOString().split('T')[0];
       
-      // If Perplexity AI fails, fallback to existing method
+      // First try to get existing data from database
+      let news = await storage.getDailyNews(today);
+      
+      // If no existing data, generate new comprehensive pharmaceutical intelligence
       if (!news) {
-        console.log('Perplexity AI pharmaceutical intelligence generation failed, trying fallback method...');
-        news = await pharmaNewsService.getTodaysPharmaNews();
+        console.log('No existing pharmaceutical intelligence found, generating fresh data...');
+        news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+        
+        // If Perplexity AI fails, fallback to existing method
+        if (!news) {
+          console.log('Perplexity AI pharmaceutical intelligence generation failed, trying fallback method...');
+          news = await pharmaNewsService.getTodaysPharmaNews();
+        }
       }
       
       if (!news) {
