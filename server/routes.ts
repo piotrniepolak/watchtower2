@@ -14,6 +14,7 @@ import { DatabaseStorage } from "./storage";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
+import { pharmaNewsService } from "./pharma-news-service";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
@@ -1539,6 +1540,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching today's news:", error);
       res.status(500).json({ error: "Failed to fetch today's news" });
+    }
+  });
+
+  // Pharma News Routes
+  app.get("/api/news/pharma/today", async (req, res) => {
+    try {
+      const news = await pharmaNewsService.getTodaysPharmaNews();
+      if (!news) {
+        return res.status(404).json({ error: "No pharma news available for today" });
+      }
+      res.json(news);
+    } catch (error) {
+      console.error("Error fetching today's pharma news:", error);
+      res.status(500).json({ error: "Failed to fetch today's pharma news" });
     }
   });
   

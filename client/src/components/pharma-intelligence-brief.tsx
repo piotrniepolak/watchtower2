@@ -24,7 +24,7 @@ export default function PharmaIntelligenceBrief() {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { data: news, isLoading, error } = useQuery<DailyNews>({
-    queryKey: ["/api/news/today"],
+    queryKey: ["/api/news/pharma/today"],
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 30 * 60 * 1000, // 30 minutes
   });
@@ -101,37 +101,9 @@ export default function PharmaIntelligenceBrief() {
     return "text-slate-600";
   };
 
-  // Adapt content for pharma context
-  const adaptToPharmaContext = (text: string): string => {
-    return text
-      .replace(/defense/gi, "pharmaceutical")
-      .replace(/military/gi, "healthcare")
-      .replace(/weapons/gi, "treatments")
-      .replace(/conflicts/gi, "health crises")
-      .replace(/warfare/gi, "medical innovation")
-      .replace(/security/gi, "public health")
-      .replace(/geopolitical/gi, "regulatory")
-      .replace(/terrorist/gi, "pandemic")
-      .replace(/combat/gi, "therapeutic")
-      .replace(/strategic/gi, "clinical");
-  };
-
   const conflictUpdates = news.conflictUpdates as NewsConflictUpdate[];
   const stockHighlights = news.defenseStockHighlights as NewsStockHighlight[];
   const keyDevelopments = news.keyDevelopments as string[];
-
-  // Adapt conflict updates to health crisis updates
-  const healthCrisisUpdates = conflictUpdates.map(update => ({
-    ...update,
-    conflict: adaptToPharmaContext(update.conflict),
-    update: adaptToPharmaContext(update.update)
-  }));
-
-  // Filter and adapt stock highlights for pharma stocks
-  const pharmaStockHighlights = stockHighlights.map(stock => ({
-    ...stock,
-    reason: adaptToPharmaContext(stock.reason)
-  }));
 
   return (
     <Card className="w-full">
