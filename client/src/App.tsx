@@ -69,7 +69,7 @@ function Router() {
       <Route path="/commodities" component={Commodities} />
       <Route path="/trends" component={Trends} />
       <Route path="/market-analysis" component={MarketAnalysis} />
-      <Route component={NotFound} />
+      <Route path="*" component={Home} />
     </Switch>
   );
 }
