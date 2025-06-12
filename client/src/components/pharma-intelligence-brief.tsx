@@ -21,7 +21,8 @@ import {
 import type { DailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
 // Content formatting utility
-const cleanContent = (text: string): string => {
+const cleanContent = (text: string | undefined): string => {
+  if (!text) return '';
   return text
     .replace(/\[\d+\]/g, '') // Remove bracketed numbers like [1], [2]
     .replace(/#\w+/g, '') // Remove hashtags like #FDA
@@ -31,8 +32,12 @@ const cleanContent = (text: string): string => {
 };
 
 // Add publication links
-const addPublicationLinks = (text: string): string => {
-  return `${cleanContent(text)}
+const addPublicationLinks = (text: string | undefined): string => {
+  if (!text) return 'Loading pharmaceutical intelligence...';
+  const cleaned = cleanContent(text);
+  if (!cleaned) return 'Loading pharmaceutical intelligence...';
+  
+  return `${cleaned}
 
 Sources: FDA.gov, BioPharma Dive, STAT News, Reuters Health`;
 };
@@ -287,68 +292,7 @@ export default function PharmaIntelligenceBrief() {
               <p className="text-purple-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.geopoliticalAnalysis)}</p>
             </div>
 
-            {/* Additional Key Developments */}
-            {keyDevelopments.length > 3 && (
-              <div className="space-y-2">
-                <h4 className="font-semibold text-slate-900">Additional Healthcare Developments</h4>
-                <div className="grid gap-2">
-                  {keyDevelopments.slice(3).map((development, index) => (
-                    <div key={index + 3} className="flex items-start gap-2 text-sm">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                      <p className="text-slate-700">{development}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {/* Additional Health Crisis Updates */}
-            {conflictUpdates.length > 2 && (
-              <div className="space-y-2">
-                <h4 className="font-semibold text-slate-900">Additional Health Crisis Updates</h4>
-                <div className="grid gap-2">
-                  {conflictUpdates.slice(2).map((update, index) => (
-                    <div key={index + 2} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
-                      <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
-                        {update.severity.toUpperCase()}
-                      </Badge>
-                      <div className="flex-1">
-                        <p className="font-medium text-sm text-slate-900">{update.conflict}</p>
-                        <p className="text-xs text-slate-600 mt-1">{update.update}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Additional Stock Highlights */}
-            {stockHighlights.length > 2 && (
-              <div className="space-y-2">
-                <h4 className="font-semibold text-slate-900">Additional Stock Movements</h4>
-                <div className="grid gap-2">
-                  {stockHighlights.slice(2).map((stock, index) => (
-                    <div key={index + 2} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{stock.symbol}</span>
-                          <span className="text-xs text-slate-600">{stock.name}</span>
-                        </div>
-                        <p className="text-xs text-slate-600 mt-1">{stock.reason}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-medium text-sm ${getChangeColor(stock.change)}`}>
-                          {stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)}
-                        </p>
-                        <p className={`text-xs ${getChangeColor(stock.changePercent)}`}>
-                          ({stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </CollapsibleContent>
         </Collapsible>
       </CardContent>
