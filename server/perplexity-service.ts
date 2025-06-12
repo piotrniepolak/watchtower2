@@ -175,8 +175,12 @@ class PerplexityService {
     // Remove all citation numbers [1], [2], etc. from the main content
     let processedContent = content;
     
+    console.log(`🔧 Before citation removal: ${processedContent.substring(0, 200)}...`);
+    
     // Remove all citation patterns like [1], [2], [3], including clustered ones like [1][3]
     processedContent = processedContent.replace(/\[\d+\]/g, '');
+    
+    console.log(`🔧 After citation removal: ${processedContent.substring(0, 200)}...`);
     
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
