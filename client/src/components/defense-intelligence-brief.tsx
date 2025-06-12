@@ -226,9 +226,11 @@ export function DefenseIntelligenceBrief() {
               {defenseNews?.conflictUpdates && Array.isArray(defenseNews.conflictUpdates) ? (
                 <div className="space-y-4">
                   {defenseNews.conflictUpdates.map((update: any, index: number) => {
-                    const severityColor = update.severity === 'high' ? 'border-red-500' : 
+                    const severityColor = update.severity === 'critical' ? 'border-red-600' :
+                                         update.severity === 'high' ? 'border-red-500' : 
                                          update.severity === 'medium' ? 'border-orange-500' : 'border-yellow-500';
-                    const dotColor = update.severity === 'high' ? 'bg-red-500' : 
+                    const dotColor = update.severity === 'critical' ? 'bg-red-600' :
+                                    update.severity === 'high' ? 'bg-red-500' : 
                                     update.severity === 'medium' ? 'bg-orange-500' : 'bg-yellow-500';
                     
                     return (
@@ -237,17 +239,98 @@ export function DefenseIntelligenceBrief() {
                           <div className={`w-2 h-2 ${dotColor} rounded-full mt-2 flex-shrink-0`} />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">{update.conflict || 'Conflict Update'}</h4>
-                              <Badge variant={update.severity === 'high' ? 'destructive' : 
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium text-sm">{update.conflict || update.conflictName || 'Conflict Update'}</h4>
+                                {update.region && (
+                                  <span className="text-xs text-muted-foreground px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded">
+                                    {update.region}
+                                  </span>
+                                )}
+                              </div>
+                              <Badge variant={update.severity === 'critical' ? 'destructive' :
+                                            update.severity === 'high' ? 'destructive' : 
                                             update.severity === 'medium' ? 'secondary' : 'outline'} 
                                      className="text-xs">
                                 {update.severity?.toUpperCase() || 'LOW'}
                               </Badge>
                             </div>
-                            <p className="text-sm leading-relaxed text-muted-foreground">
-                              {update.update || String(update)}
+                            
+                            <p className="text-sm leading-relaxed text-muted-foreground mb-3">
+                              {update.update || update.currentStatus || String(update)}
                             </p>
-                            <div className="flex items-center gap-2 mt-2">
+
+                            {/* Recent Developments */}
+                            {update.developments && Array.isArray(update.developments) && update.developments.length > 0 && (
+                              <div className="mb-3">
+                                <h5 className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Recent Developments:</h5>
+                                <ul className="space-y-1">
+                                  {update.developments.slice(0, 3).map((dev: string, devIndex: number) => (
+                                    <li key={devIndex} className="text-xs text-muted-foreground pl-3 relative">
+                                      <span className="absolute left-0 top-1 w-1 h-1 bg-slate-400 rounded-full"></span>
+                                      {dev}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Defense Impact */}
+                            {update.defenseImpact && (
+                              <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border-l-2 border-blue-300">
+                                <h5 className="text-xs font-medium text-blue-700 dark:text-blue-400 mb-1">Defense Impact:</h5>
+                                <p className="text-xs text-blue-600 dark:text-blue-300">{update.defenseImpact}</p>
+                              </div>
+                            )}
+
+                            {/* Market Implications */}
+                            {update.marketImplications && (
+                              <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 rounded border-l-2 border-green-300">
+                                <h5 className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Market Impact:</h5>
+                                <p className="text-xs text-green-600 dark:text-green-300">{update.marketImplications}</p>
+                              </div>
+                            )}
+
+                            {/* Source Links */}
+                            {update.sourceLinks && Array.isArray(update.sourceLinks) && update.sourceLinks.length > 0 && (
+                              <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                <h5 className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Source Articles:</h5>
+                                <div className="flex flex-wrap gap-2">
+                                  {update.sourceLinks.slice(0, 3).map((link: string, linkIndex: number) => {
+                                    try {
+                                      const url = new URL(link);
+                                      const domain = url.hostname.replace('www.', '');
+                                      return (
+                                        <a
+                                          key={linkIndex}
+                                          href={link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs text-slate-700 dark:text-slate-300 rounded transition-colors"
+                                        >
+                                          <ExternalLink className="h-3 w-3" />
+                                          {domain}
+                                        </a>
+                                      );
+                                    } catch {
+                                      return (
+                                        <a
+                                          key={linkIndex}
+                                          href={link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs text-slate-700 dark:text-slate-300 rounded transition-colors"
+                                        >
+                                          <ExternalLink className="h-3 w-3" />
+                                          Source
+                                        </a>
+                                      );
+                                    }
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2 mt-3">
                               <Clock className="h-3 w-3 text-muted-foreground" />
                               <span className="text-xs text-muted-foreground">
                                 {new Date().toLocaleTimeString()}

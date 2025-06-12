@@ -16,7 +16,7 @@ import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
 import { pharmaNewsService } from "./pharma-news-service";
 import { perplexityDefenseService } from "./perplexity-defense-service";
-import { perplexityConflictService } from "./perplexity-conflict-service";
+import { perplexityConflictService } from "./perplexity-conflict-service.js";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
