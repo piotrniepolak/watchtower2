@@ -452,8 +452,8 @@ export default function PharmaIntelligenceBrief() {
                       <p className="text-xs text-slate-600 mt-1">{stock.reason}</p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-medium text-sm ${getChangeColor(stock.change)}`}>
-                        {stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)}
+                      <p className="font-medium text-sm text-slate-900">
+                        ${stock.price?.toFixed(2) || '0.00'}
                       </p>
                       <p className={`text-xs ${getChangeColor(stock.changePercent)}`}>
                         ({stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%)

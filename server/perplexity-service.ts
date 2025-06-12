@@ -165,9 +165,9 @@ Ensure each reference includes the source name followed by a colon and the artic
     // Common pharmaceutical company patterns to match
     const pharmaPatterns = [
       // Full company names
-      /\b(Pfizer|Johnson\s*&\s*Johnson|Moderna|AstraZeneca|Novartis|Roche|Merck|Bristol\s*Myers\s*Squibb|Eli\s*Lilly|Abbott|Amgen|Gilead|Biogen|Regeneron|Vertex|AbbVie|Sanofi|GlaxoSmithKline|GSK|Bayer|Boehringer\s*Ingelheim|Takeda|Daiichi\s*Sankyo|Astellas|Eisai|Ono\s*Pharmaceutical|Chugai|Shionogi|Sumitomo\s*Dainippon|Mitsubishi\s*Tanabe|Kyowa\s*Kirin|Otsuka|Teva|Mylan|Viatris|Allergan|Celgene|Kite\s*Pharma|Juno\s*Therapeutics|CAR-T|Immunomedics|Seattle\s*Genetics|Seagen|BioNTech|CureVac|Inovio|Novavax|Valneva|Bavarian\s*Nordic|Emergent\s*BioSolutions|CSL\s*Behring|Grifols|Octapharma|Kedrion|Biotest|LFB|Plasma\s*Protein\s*Therapeutics|Association)\b/gi,
+      /\b(Pfizer|Johnson\s*&\s*Johnson|Moderna|AstraZeneca|Novartis|Roche|Merck|Bristol\s*Myers\s*Squibb|Eli\s*Lilly|Abbott|Amgen|Gilead|Biogen|Regeneron|Vertex|AbbVie|Sanofi|GlaxoSmithKline|GSK|Bayer|Boehringer\s*Ingelheim|Takeda|Daiichi\s*Sankyo|Astellas|Eisai|Ono\s*Pharmaceutical|Chugai|Shionogi|Sumitomo\s*Dainippon|Mitsubishi\s*Tanabe|Kyowa\s*Kirin|Otsuka|Teva|Mylan|Viatris|Allergan|Celgene|Kite\s*Pharma|Juno\s*Therapeutics|CAR-T|Immunomedics|Seattle\s*Genetics|Seagen|BioNTech|CureVac|Inovio|Novavax|Valneva|Bavarian\s*Nordic|Emergent\s*BioSolutions|CSL\s*Behring|Grifols|Octapharma|Kedrion|Biotest|LFB|Plasma\s*Protein\s*Therapeutics|Association|Nuvation|Ultragenyx|Argenx|Incyte|Blueprint\s*Medicines|Alnylam|Exact\s*Sciences|Illumina|10x\s*Genomics|Pacific\s*Biosciences|Twist\s*Bioscience)\b/gi,
       // Stock ticker patterns
-      /\b(PFE|JNJ|MRNA|AZN|NVS|RHHBY|MRK|BMY|LLY|ABT|AMGN|GILD|BIIB|REGN|VRTX|ABBV|SNY|GSK|BAYRY|BMRN|TAK|DSNKY|ALPMY|ESALY|SHTDY|SUMIY|MTBHY|KYKHY|OTSKY|TEVA|MYL|VTRS|AGN|CELG|KITE|JUNO|CART|IMMU|SGEN|BNTX|CVAC|INO|NVAX|VALN|BVNRY|EBS|CSL|GRFS|OCTA|KEDR|BIOTEST|LFB|PPTA)\b/g
+      /\b(PFE|JNJ|MRNA|AZN|NVS|RHHBY|MRK|BMY|LLY|ABT|AMGN|GILD|BIIB|REGN|VRTX|ABBV|SNY|GSK|BAYRY|BMRN|TAK|DSNKY|ALPMY|ESALY|SHTDY|SUMIY|MTBHY|KYKHY|OTSKY|TEVA|MYL|VTRS|AGN|CELG|KITE|JUNO|CART|IMMU|SGEN|BNTX|CVAC|INO|NVAX|VALN|BVNRY|EBS|CSL|GRFS|OCTA|KEDR|BIOTEST|LFB|PPTA|NUVB|RARE|ARGX|INCY|BPMC|ALNY|EXAS|ILMN|TXG|PACB|TWST)\b/g
     ];
 
     const mentions = new Set<string>();
@@ -236,7 +236,18 @@ Ensure each reference includes the source name followed by a colon and the artic
       'emergent biosolutions': 'EBS',
       'csl behring': 'CSL',
       'grifols': 'GRFS',
-      'octapharma': 'OCTA'
+      'octapharma': 'OCTA',
+      'nuvation': 'NUVB',
+      'ultragenyx': 'RARE',
+      'argenx': 'ARGX',
+      'incyte': 'INCY',
+      'blueprint medicines': 'BPMC',
+      'alnylam': 'ALNY',
+      'exact sciences': 'EXAS',
+      'illumina': 'ILMN',
+      '10x genomics': 'TXG',
+      'pacific biosciences': 'PACB',
+      'twist bioscience': 'TWST'
     };
 
     const normalizedMention = mention.toLowerCase().trim();
@@ -360,12 +371,24 @@ Ensure each reference includes the source name followed by a colon and the artic
           .replace(/\s+/g, ' ') // Collapse multiple spaces
           .trim();
         
-        // Create concise one-line description
+        // Create complete meaningful description
         const sentences = cleanAnalysis.split('. ');
-        const firstSentence = sentences[0];
-        const shortAnalysis = firstSentence.length > 70 
-          ? firstSentence.substring(0, 67) + '...'
-          : firstSentence;
+        let description = sentences[0];
+        
+        // Ensure we have a complete sentence
+        if (!description.endsWith('.') && sentences.length > 1) {
+          description += '.';
+        }
+        
+        // If description is too short, add the next sentence
+        if (description.length < 50 && sentences.length > 1) {
+          description += ' ' + sentences[1];
+          if (!description.endsWith('.')) {
+            description += '.';
+          }
+        }
+        
+        const shortAnalysis = description;
         
         stockHighlights.push({
           symbol: stockData.symbol,
