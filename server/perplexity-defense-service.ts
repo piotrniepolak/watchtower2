@@ -383,8 +383,8 @@ export class PerplexityDefenseService {
     
     console.log(`✅ Generated comprehensive summary: ${summary.length} characters`);
     
-    return summary.length > 500 ? summary : 
-           `Today's comprehensive defense intelligence analysis reveals sustained momentum across global defense markets driven by evolving geopolitical dynamics and technological advancement. Major defense contractors continue demonstrating robust operational performance supported by strong government contract pipelines and international partnership opportunities. The current security environment maintains elevated defense spending priorities across NATO allies and Indo-Pacific partners, creating favorable conditions for defense industry growth. Key areas of focus include next-generation weapons systems development, space-based defense capabilities, and cybersecurity infrastructure investments. Defense contractors are experiencing increased demand for hypersonic weapons technologies, autonomous systems, and advanced missile defense platforms. International cooperation agreements continue expanding, particularly in areas of technology sharing and joint procurement initiatives. The sector benefits from long-term visibility through multi-year government contracts and sustained budget allocations supporting force modernization objectives. Looking ahead, defense industry fundamentals remain strong with technological innovation cycles driving product development across traditional and emerging threat environments. Investors should monitor ongoing geopolitical developments, congressional defense appropriations, and international partnership announcements as key catalysts for sector performance and individual company growth trajectories.`;
+    // Always return the comprehensive summary - never use fallback for shorter content
+    return summary;
   }
 
   private extractKeyDevelopments(content: string): string[] {
