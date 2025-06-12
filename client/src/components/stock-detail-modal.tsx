@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react';
 import { X, TrendingUp, TrendingDown, Calendar, DollarSign, BarChart3, Star } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
-interface YahooFinanceQuote {
-  regularMarketPrice?: number;
-  regularMarketPreviousClose?: number;
-  regularMarketChange?: number;
-  regularMarketChangePercent?: number;
-  regularMarketOpen?: number;
-  regularMarketDayHigh?: number;
-  regularMarketDayLow?: number;
-  marketCap?: number;
-  fiftyTwoWeekHigh?: number;
-  fiftyTwoWeekLow?: number;
-  regularMarketVolume?: number;
-  averageVolume?: number;
-  trailingPE?: number;
+interface StockQuote {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  open: number;
+  high: number;
+  low: number;
+  volume: number;
+  marketCap: number;
+  peRatio: number | null;
+  week52High: number;
+  week52Low: number;
+  avgVolume: number;
+  divYield: number | null;
+  eps: number | null;
 }
 
 interface StockDetailModalProps {
@@ -45,7 +48,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
 
   // Fetch authentic chart data from Yahoo Finance with fallback
   const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
-    queryKey: [`/api/stocks/${stock.symbol}/chart`, timeRange],
+    queryKey: [`/api/stocks/${stock.symbol}/chart?timeRange=${timeRange}`],
     enabled: isOpen && !!stock.symbol,
     refetchInterval: timeRange === '1D' ? 60000 : 300000, // More frequent for intraday
     retry: false, // Don't retry on API failures
@@ -61,7 +64,7 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
   const showLoadingState = quoteLoading && !stockQuote;
   
   // Type cast the stockQuote data
-  const quote = stockQuote as YahooFinanceQuote | undefined;
+  const quote = stockQuote as StockQuote | undefined;
 
   // Process authentic chart data for display with time range responsiveness
   const processChartData = () => {
@@ -310,16 +313,16 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Current Price</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.regularMarketPrice || stock.price)}</div>
+                  <div className="text-sm font-semibold">{formatCurrency(quote?.price || stock.price)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Previous Close</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.regularMarketPreviousClose || (stock.price - stock.change))}</div>
+                  <div className="text-sm font-semibold">{formatCurrency((quote?.price || stock.price) - (quote?.change || stock.change))}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Daily Change</div>
                   <div className={`text-sm font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(stockQuote?.regularMarketChange || stock.change)} ({formatPercent(stockQuote?.regularMarketChangePercent || stock.changePercent)})
+                    {formatCurrency(quote?.change || stock.change)} ({formatPercent(quote?.changePercent || stock.changePercent)})
                   </div>
                 </div>
               </div>
@@ -327,45 +330,45 @@ export function StockDetailModal({ isOpen, onClose, stock }: StockDetailModalPro
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Open</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.regularMarketOpen)}</div>
+                  <div className="text-sm font-semibold">{quote?.open ? formatCurrency(quote.open) : '-'}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Day High</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.regularMarketDayHigh)}</div>
+                  <div className="text-sm font-semibold">{quote?.high ? formatCurrency(quote.high) : '-'}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Day Low</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.regularMarketDayLow)}</div>
+                  <div className="text-sm font-semibold">{quote?.low ? formatCurrency(quote.low) : '-'}</div>
                 </div>
               </div>
               
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Market Cap</div>
-                  <div className="text-sm font-semibold">{formatMarketCap(stockQuote?.marketCap)}</div>
+                  <div className="text-sm font-semibold">{quote?.marketCap ? formatMarketCap(quote.marketCap) : '-'}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">52W High</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.fiftyTwoWeekHigh)}</div>
+                  <div className="text-sm font-semibold">{quote?.week52High ? formatCurrency(quote.week52High) : '-'}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">52W Low</div>
-                  <div className="text-sm font-semibold">{formatCurrency(stockQuote?.fiftyTwoWeekLow)}</div>
+                  <div className="text-sm font-semibold">{quote?.week52Low ? formatCurrency(quote.week52Low) : '-'}</div>
                 </div>
               </div>
               
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Volume</div>
-                  <div className="text-sm font-semibold">{stockQuote?.regularMarketVolume?.toLocaleString() || '-'}</div>
+                  <div className="text-sm font-semibold">{quote?.volume?.toLocaleString() || '-'}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">Avg Volume</div>
-                  <div className="text-sm font-semibold">{stockQuote?.averageVolume?.toLocaleString() || '-'}</div>
+                  <div className="text-sm font-semibold">{quote?.avgVolume?.toLocaleString() || '-'}</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-500 font-medium">P/E Ratio</div>
-                  <div className="text-sm font-semibold">{stockQuote?.trailingPE?.toFixed(2) || '-'}</div>
+                  <div className="text-sm font-semibold">{quote?.peRatio?.toFixed(2) || '-'}</div>
                 </div>
               </div>
             </div>
