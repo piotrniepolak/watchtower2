@@ -106,16 +106,16 @@ class YahooFinanceService {
         divYield: meta.dividendYield ? meta.dividendYield * 100 : null,
         eps: meta.epsTrailingTwelveMonths || null,
         // Additional financial metrics from meta data
-        bid: meta.bid || null,
-        ask: meta.ask || null,
-        beta: meta.beta || null,
-        earningsDate: meta.earningsTimestamp ? new Date(meta.earningsTimestamp * 1000).toLocaleDateString() : null,
-        exDividendDate: meta.exDividendDate ? new Date(meta.exDividendDate * 1000).toLocaleDateString() : null,
-        targetPrice: meta.targetMeanPrice || null,
-        sharesOutstanding: meta.sharesOutstanding || null,
-        floatShares: meta.floatShares || null,
-        insiderPercent: meta.heldPercentInsiders ? meta.heldPercentInsiders * 100 : null,
-        institutionPercent: meta.heldPercentInstitutions ? meta.heldPercentInstitutions * 100 : null
+        bid: meta.bid || undefined,
+        ask: meta.ask || undefined,
+        beta: meta.beta || undefined,
+        earningsDate: meta.earningsTimestamp ? new Date(meta.earningsTimestamp * 1000).toLocaleDateString() : undefined,
+        exDividendDate: meta.exDividendDate ? new Date(meta.exDividendDate * 1000).toLocaleDateString() : undefined,
+        targetPrice: meta.targetMeanPrice || undefined,
+        sharesOutstanding: meta.sharesOutstanding || undefined,
+        floatShares: meta.floatShares || undefined,
+        insiderPercent: meta.heldPercentInsiders ? meta.heldPercentInsiders * 100 : undefined,
+        institutionPercent: meta.heldPercentInstitutions ? meta.heldPercentInstitutions * 100 : undefined
       };
 
       return quote;
