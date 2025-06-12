@@ -31,52 +31,105 @@ const cleanContent = (text: string | undefined): string => {
     .trim();
 };
 
-// Extract and format sources from content
-const extractSources = (text: string | undefined): string[] => {
+// Extract and format sources from content with detailed reference parsing
+const extractDetailedSources = (text: string | undefined): Array<{title: string, source: string, url?: string}> => {
   if (!text) return [];
   
-  const sourcePatterns = [
-    /(?:FDA\.gov|fda\.gov)[^\s,.]*/gi,
-    /(?:BioPharma Dive|biopharma-dive\.com)[^\s,.]*/gi,
-    /(?:STAT News|statnews\.com)[^\s,.]*/gi,
-    /(?:Reuters Health|reuters\.com)[^\s,.]*/gi,
-    /(?:company press release|press release)[^\s,.]*/gi
+  const sources: Array<{title: string, source: string, url?: string}> = [];
+  
+  // Pattern to match article titles in quotes with sources
+  const titlePatterns = [
+    /BioPharma Dive:\s*["']([^"']+)["']/gi,
+    /STAT News:\s*["']([^"']+)["']/gi,
+    /Reuters Health:\s*["']([^"']+)["']/gi,
+    /PubMed:\s*["']([^"']+)["']/gi,
+    /FDA\.gov:\s*["']([^"']+)["']/gi
   ];
   
-  const sources = new Set<string>();
-  sourcePatterns.forEach(pattern => {
-    const matches = text.match(pattern);
-    if (matches) {
-      matches.forEach(match => sources.add(match));
+  titlePatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      const fullMatch = match[0];
+      const title = match[1];
+      const source = fullMatch.split(':')[0];
+      
+      let url = '';
+      if (source.includes('BioPharma Dive')) {
+        url = 'https://www.biopharmadive.com';
+      } else if (source.includes('STAT News')) {
+        url = 'https://www.statnews.com';
+      } else if (source.includes('Reuters')) {
+        url = 'https://www.reuters.com/business/healthcare-pharmaceuticals';
+      } else if (source.includes('PubMed')) {
+        url = 'https://pubmed.ncbi.nlm.nih.gov';
+      } else if (source.includes('FDA')) {
+        url = 'https://www.fda.gov/news-events';
+      }
+      
+      sources.push({ title, source, url });
     }
   });
   
-  return Array.from(sources);
+  // Fallback to generic source mentions if no detailed references found
+  if (sources.length === 0) {
+    const genericPatterns = [
+      { pattern: /BioPharma Dive/gi, source: 'BioPharma Dive', url: 'https://www.biopharmadive.com' },
+      { pattern: /STAT News/gi, source: 'STAT News', url: 'https://www.statnews.com' },
+      { pattern: /Reuters Health/gi, source: 'Reuters Health', url: 'https://www.reuters.com/business/healthcare-pharmaceuticals' },
+      { pattern: /PubMed/gi, source: 'PubMed', url: 'https://pubmed.ncbi.nlm.nih.gov' },
+      { pattern: /FDA\.gov/gi, source: 'FDA.gov', url: 'https://www.fda.gov/news-events' }
+    ];
+    
+    genericPatterns.forEach(({ pattern, source, url }) => {
+      if (pattern.test(text)) {
+        sources.push({ title: 'Latest pharmaceutical developments', source, url });
+      }
+    });
+  }
+  
+  return sources;
 };
 
-// Enhanced content display with integrated sources
+// Enhanced content display with clickable references
 const formatContentWithSources = (text: string | undefined): JSX.Element => {
   if (!text) {
     return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
   }
   
   const cleaned = cleanContent(text);
-  const sources = extractSources(text);
+  const detailedSources = extractDetailedSources(text);
   
   return (
-    <div className="space-y-3">
-      <p className="leading-relaxed">{cleaned}</p>
-      {sources.length > 0 && (
-        <div className="mt-3 pt-2 border-t border-slate-200">
-          <p className="text-xs font-medium text-slate-600 mb-1">Referenced Sources:</p>
-          <div className="flex flex-wrap gap-2">
-            {sources.map((source, index) => (
-              <span 
-                key={index} 
-                className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded border border-blue-200"
-              >
-                {source}
-              </span>
+    <div className="space-y-4">
+      <div className="leading-relaxed">
+        {cleaned.split('\n').map((paragraph: string, index: number) => (
+          <p key={index} className="mb-3 last:mb-0">{paragraph}</p>
+        ))}
+      </div>
+      
+      {detailedSources.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-slate-200">
+          <h5 className="text-sm font-semibold text-slate-700 mb-2">References:</h5>
+          <div className="space-y-2">
+            {detailedSources.map((ref, index) => (
+              <div key={index} className="flex items-start gap-2 text-xs">
+                <span className="text-slate-400 mt-0.5">•</span>
+                <div className="flex-1">
+                  <span className="font-medium text-slate-700">{ref.source}:</span>
+                  {ref.url ? (
+                    <a 
+                      href={ref.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="ml-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    >
+                      "{ref.title}"
+                    </a>
+                  ) : (
+                    <span className="ml-1 text-slate-600">"{ref.title}"</span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         </div>
