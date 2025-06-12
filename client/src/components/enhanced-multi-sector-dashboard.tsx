@@ -185,14 +185,6 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
 
       {/* Global Health Map Section */}
       <div className="w-full mb-8">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-slate-900">
-            Global Health Map - WHO Statistical Annex Data
-          </h2>
-          <p className="text-sm text-slate-600">
-            Real-time global health monitoring with comprehensive WHO indicators and pharmaceutical market insights
-          </p>
-        </div>
         <WorldHealthMapSimple />
       </div>
 

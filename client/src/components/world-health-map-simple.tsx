@@ -10773,48 +10773,7 @@ export default function WorldHealthMapSimple() {
         </CardContent>
       </Card>
 
-      {/* Data Coverage Information */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-            WHO Data Coverage & Limitations
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Data Coverage</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• <strong>175 countries</strong> with complete WHO Statistical Annex data</li>
-                <li>• <strong>90% global coverage</strong> representing 98%+ of world population</li>
-                <li>• <strong>36 authentic health indicators</strong> from WHO official sources</li>
-                <li>• Updated annually through WHO Global Health Observatory</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Countries Without Data</h4>
-              <p className="text-sm text-gray-600 mb-2">20 countries lack comprehensive WHO reporting due to:</p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• <strong>Microstates</strong>: Vatican City, Monaco, San Marino, Liechtenstein</li>
-                <li>• <strong>Disputed territories</strong>: Taiwan, Kosovo, Palestine</li>
-                <li>• <strong>Limited infrastructure</strong>: Small island nations</li>
-                <li>• <strong>Political instability</strong>: Ongoing conflicts affecting data collection</li>
-                <li>• <strong>Recent independence</strong>: South Sudan, East Timor</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t pt-4">
-            <p className="text-xs text-gray-500">
-              Note: WHO Statistical Annex data represents the most comprehensive global health dataset available. 
-              Missing countries typically have populations under 1 million or face significant data collection challenges.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Health vs Wealth Opportunity Analysis */}
-      <TopOpportunityList />
 
       {/* Country Detail Modal */}
       <Dialog open={!!selectedCountry} onOpenChange={() => setSelectedCountry(null)}>
