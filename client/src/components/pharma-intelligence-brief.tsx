@@ -318,22 +318,6 @@ export default function PharmaIntelligenceBrief() {
           </div>
         </div>
 
-        {/* Key Developments */}
-        <div className="space-y-3">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Activity className="w-4 h-4 text-slate-600" />
-            Key Healthcare Developments
-          </h3>
-          <div className="grid gap-2">
-            {keyDevelopments.slice(0, isExpanded ? undefined : 3).map((development, index) => (
-              <div key={index} className="flex items-start gap-2 text-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                <p className="text-slate-700">{development}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Health Crisis Updates */}
         <div className="space-y-3">
           <h3 className="font-semibold flex items-center gap-2">
