@@ -341,7 +341,7 @@ export default function PharmaIntelligenceBrief() {
   };
 
   const conflictUpdates = (displayNews.conflictUpdates as NewsConflictUpdate[]) || [];
-  const stockHighlights = (displayNews.defenseStockHighlights as NewsStockHighlight[]) || [];
+  const stockHighlights = (displayNews.pharmaceuticalStockHighlights as NewsStockHighlight[]) || [];
   const keyDevelopments = (displayNews.keyDevelopments as string[]) || [];
 
   return (
