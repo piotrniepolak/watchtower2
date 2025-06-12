@@ -119,20 +119,48 @@ export class PerplexityDefenseService {
 
       // Generate comprehensive conflict updates with Perplexity AI
       console.log('🌍 Generating comprehensive global conflict intelligence...');
-      const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
+      let enhancedConflictUpdates: any[] = [];
       
-      // Enhance conflict updates with deep intelligence and source links
-      const enhancedConflictUpdates = conflictIntelligence.map(conflict => ({
-        conflict: conflict.conflictName,
-        region: conflict.region,
-        update: conflict.currentStatus,
-        severity: conflict.severity,
-        developments: conflict.recentDevelopments,
-        defenseImpact: conflict.defenseImpact,
-        marketImplications: conflict.marketImplications,
-        sourceLinks: conflict.sourceLinks,
-        lastUpdated: conflict.lastUpdated
-      }));
+      try {
+        const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
+        
+        if (conflictIntelligence && conflictIntelligence.length > 0) {
+          // Enhance conflict updates with deep intelligence and source links
+          enhancedConflictUpdates = conflictIntelligence.map(conflict => ({
+            conflict: conflict.conflictName,
+            conflictName: conflict.conflictName,
+            region: conflict.region,
+            update: conflict.currentStatus,
+            currentStatus: conflict.currentStatus,
+            severity: conflict.severity,
+            developments: conflict.recentDevelopments,
+            recentDevelopments: conflict.recentDevelopments,
+            defenseImpact: conflict.defenseImpact,
+            marketImplications: conflict.marketImplications,
+            sourceLinks: conflict.sourceLinks,
+            lastUpdated: conflict.lastUpdated
+          }));
+          console.log(`✅ Enhanced ${enhancedConflictUpdates.length} conflict updates with comprehensive intelligence`);
+        } else {
+          console.log('⚠️ No conflict intelligence received, using enhanced conflict extraction from brief');
+          enhancedConflictUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent).map(update => ({
+            ...update,
+            developments: [],
+            defenseImpact: "Analysis pending - monitoring for defense sector implications",
+            marketImplications: "Defense market impact under assessment",
+            sourceLinks: intelligenceBrief.citations || []
+          }));
+        }
+      } catch (error) {
+        console.error('❌ Error generating conflict intelligence, using fallback:', error);
+        enhancedConflictUpdates = this.extractConflictUpdates(intelligenceBrief.rawContent).map(update => ({
+          ...update,
+          developments: [],
+          defenseImpact: "Analysis pending - monitoring for defense sector implications",
+          marketImplications: "Defense market impact under assessment",
+          sourceLinks: intelligenceBrief.citations || []
+        }));
+      }
 
       // Create comprehensive defense intelligence object
       const defenseIntelligence: DailyNews = {
