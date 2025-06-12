@@ -204,6 +204,7 @@ Ensure each reference includes the source name followed by a colon and the artic
       'glaxosmithkline': 'GSK',
       'gsk': 'GSK',
       'bayer': 'BAYRY',
+      'roche': 'RHHBY',
       'biomarin': 'BMRN',
       'takeda': 'TAK',
       'daiichi sankyo': 'DSNKY',
@@ -240,14 +241,7 @@ Ensure each reference includes the source name followed by a colon and the artic
       return mention.toUpperCase();
     }
     
-    // Handle specific company names that need special mapping (case insensitive)
-    const upperCaseMention = mention.toUpperCase().trim();
-    if (upperCaseMention === 'ROCHE') return 'RHHBY';
-    if (upperCaseMention === 'MERCK') return 'MRK';
-    if (upperCaseMention === 'BAYER') return 'BAYRY';
-    if (normalizedMention === 'roche') return 'RHHBY';
-    if (normalizedMention === 'merck') return 'MRK';
-    if (normalizedMention === 'bayer') return 'BAYRY';
+
     
     // Look up company name
     return companyToSymbol[normalizedMention] || null;
