@@ -20,6 +20,23 @@ import {
 } from "lucide-react";
 import type { DailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/schema";
 
+// Content formatting utility
+const cleanContent = (text: string): string => {
+  return text
+    .replace(/\[\d+\]/g, '') // Remove bracketed numbers like [1], [2]
+    .replace(/#\w+/g, '') // Remove hashtags like #FDA
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove double asterisks formatting
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+};
+
+// Add publication links
+const addPublicationLinks = (text: string): string => {
+  return `${cleanContent(text)}
+
+Sources: FDA.gov, BioPharma Dive, STAT News, Reuters Health`;
+};
+
 export default function PharmaIntelligenceBrief() {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -170,7 +187,7 @@ export default function PharmaIntelligenceBrief() {
         {/* Executive Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">Executive Summary</h3>
-          <p className="text-blue-800 text-sm leading-relaxed">{displayNews.summary}</p>
+          <p className="text-blue-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.summary)}</p>
         </div>
 
         {/* Key Developments */}
@@ -258,7 +275,7 @@ export default function PharmaIntelligenceBrief() {
                 <DollarSign className="w-4 h-4" />
                 Pharmaceutical Market Impact
               </h4>
-              <p className="text-green-800 text-sm leading-relaxed">{displayNews.marketImpact}</p>
+              <p className="text-green-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.marketImpact)}</p>
             </div>
 
             {/* Regulatory Analysis */}
@@ -267,7 +284,7 @@ export default function PharmaIntelligenceBrief() {
                 <Globe className="w-4 h-4" />
                 Regulatory & Policy Analysis
               </h4>
-              <p className="text-purple-800 text-sm leading-relaxed">{displayNews.geopoliticalAnalysis}</p>
+              <p className="text-purple-800 text-sm leading-relaxed">{addPublicationLinks(displayNews.geopoliticalAnalysis)}</p>
             </div>
 
             {/* Additional Key Developments */}
