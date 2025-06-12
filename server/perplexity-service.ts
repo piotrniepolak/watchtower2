@@ -30,8 +30,8 @@ interface PharmaceuticalIntelligence {
     symbol: string;
     company: string;
     price: number;
-    change: number;
-    analysis: string;
+    changePercent: number;
+    reason: string;
   }>;
   marketImpact: string;
   geopoliticalAnalysis: string;
@@ -394,8 +394,8 @@ Ensure each reference includes the source name followed by a colon and the artic
           symbol: stockData.symbol,
           company: stockData.name,
           price: stockData.price,
-          change: stockData.changePercent,
-          analysis: shortAnalysis
+          changePercent: stockData.changePercent,
+          reason: shortAnalysis
         });
       } catch (error) {
         console.error(`Error generating analysis for ${symbol}:`, error);
@@ -408,8 +408,8 @@ Ensure each reference includes the source name followed by a colon and the artic
           symbol: stockData.symbol,
           company: stockData.name,
           price: stockData.price,
-          change: stockData.changePercent,
-          analysis: fallbackAnalysis
+          changePercent: stockData.changePercent,
+          reason: fallbackAnalysis
         });
       }
     }
