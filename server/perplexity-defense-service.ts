@@ -396,35 +396,107 @@ export class PerplexityDefenseService {
   private extractKeyDevelopments(content: string): string[] {
     const developments: string[] = [];
     
-    // Look for bullet points, numbered lists, or key developments
+    // Look for bullet points, numbered lists, or key developments with improved formatting cleanup
     const bulletRegex = /[•\-\*]\s*(.+)/g;
     const numberedRegex = /\d+\.\s*(.+)/g;
     
     let match;
     while ((match = bulletRegex.exec(content)) !== null && developments.length < 8) {
       if (match[1].trim().length > 30) {
-        developments.push(match[1].trim());
+        let cleanDevelopment = match[1].trim();
+        // Clean up malformed formatting - remove asterisks, extra colons, brackets
+        cleanDevelopment = this.cleanFormattingIssues(cleanDevelopment);
+        if (cleanDevelopment.length > 20) {
+          developments.push(cleanDevelopment);
+        }
       }
     }
     
     while ((match = numberedRegex.exec(content)) !== null && developments.length < 8) {
-      if (match[1].trim().length > 30 && !developments.includes(match[1].trim())) {
-        developments.push(match[1].trim());
+      if (match[1].trim().length > 30 && !developments.some(dev => dev.includes(match[1].trim().substring(0, 50)))) {
+        let cleanDevelopment = match[1].trim();
+        // Clean up malformed formatting
+        cleanDevelopment = this.cleanFormattingIssues(cleanDevelopment);
+        if (cleanDevelopment.length > 20) {
+          developments.push(cleanDevelopment);
+        }
       }
     }
 
-    // If no structured list found, extract key sentences
+    // If no structured list found, extract key sentences with formatting cleanup
     if (developments.length < 3) {
       const sentences = content.split(/[.!?]+/).filter(s => 
         s.trim().length > 50 && 
-        s.trim().length < 200 &&
-        (s.includes('$') || s.includes('%') || s.includes('contract') || s.includes('award'))
+        s.trim().length < 300 &&
+        (s.includes('$') || s.includes('%') || s.includes('contract') || s.includes('award') || s.includes('billion') || s.includes('million'))
       );
       
-      developments.push(...sentences.slice(0, 6).map(s => s.trim()));
+      const cleanSentences = sentences.slice(0, 6).map(s => this.cleanFormattingIssues(s.trim()));
+      developments.push(...cleanSentences.filter(s => s.length > 20));
     }
 
-    return developments.slice(0, 8);
+    // Merge related developments to avoid title/content separation
+    const mergedDevelopments = this.mergeRelatedDevelopments(developments);
+
+    return mergedDevelopments.slice(0, 8);
+  }
+
+  private cleanFormattingIssues(text: string): string {
+    // Remove problematic formatting characters and patterns
+    let cleaned = text
+      // Remove asterisk patterns like "*Title**:" or "**Title*:"
+      .replace(/\*+([^*]+)\*+:?\s*/g, '$1: ')
+      // Remove standalone asterisks and cleanup
+      .replace(/\*+/g, '')
+      // Remove extra brackets, parentheses around citations
+      .replace(/\[\d+\]/g, '') // Remove citation numbers for now, will add proper links later
+      // Remove extra colons and cleanup spacing
+      .replace(/::+/g, ':')
+      .replace(/:\s*:/g, ':')
+      // Remove dots at the start of sentences
+      .replace(/^\.\s*/, '')
+      // Clean up extra spaces
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Ensure proper sentence structure
+    if (cleaned.includes(':') && !cleaned.includes('.')) {
+      // If it's a title followed by content, ensure proper formatting
+      const parts = cleaned.split(':');
+      if (parts.length === 2 && parts[0].length < 100 && parts[1].length > 20) {
+        cleaned = `${parts[0].trim()}: ${parts[1].trim()}`;
+      }
+    }
+
+    return cleaned;
+  }
+
+  private mergeRelatedDevelopments(developments: string[]): string[] {
+    const merged: string[] = [];
+    let i = 0;
+
+    while (i < developments.length) {
+      let current = developments[i];
+      
+      // Check if current item is a title (short, ends with colon, no period)
+      if (current.length < 100 && current.includes(':') && !current.includes('.') && i + 1 < developments.length) {
+        const next = developments[i + 1];
+        
+        // Check if next item is related content (starts with "The", contains specific details)
+        if (next.length > 50 && (next.startsWith('The ') || next.includes('$') || next.includes('billion') || next.includes('million'))) {
+          // Merge title with content
+          const title = current.replace(':', '').trim();
+          merged.push(`${title}: ${next}`);
+          i += 2; // Skip the next item as it's been merged
+          continue;
+        }
+      }
+      
+      merged.push(current);
+      i++;
+    }
+
+    return merged;
   }
 
   private extractMarketImpact(content: string): string {
