@@ -13,12 +13,13 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 13, 2025 - Fixed Pharmaceutical Company Extraction and References Display
+### June 13, 2025 - Fixed Pharmaceutical Company Extraction and Automatic Stock Discovery
 **Major Fixes Completed:**
 - **Eliminated all hardcoded fallback data from pharmaceutical company extraction** ensuring only companies actually mentioned in brief content are displayed
 - **Fixed extraction of companies from reference URLs** by implementing comprehensive URL and citation filtering before content analysis
 - **Enhanced pharmaceutical company pattern matching** with 25+ comprehensive company variations and pharmaceutical context validation
 - **Implemented text-based extraction with contextual quotes** showing exactly why each company was identified in the brief
+- **Added automatic stock discovery and database integration** for pharmaceutical companies mentioned in intelligence briefs
 - **Removed duplicate extraction systems** that were causing false positives and inflated company counts
 
 **Technical Implementation:**
@@ -26,12 +27,16 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 - Added comprehensive URL filtering removing reference sections, citations, and source links before analysis
 - Enhanced pattern matching with pharmaceutical and business context validation
 - Implemented contextual quote extraction showing the specific sentence mentioning each company
+- **Built automatic stock discovery system that fetches real Yahoo Finance data for newly mentioned companies**
+- **Integrated auto-addition of pharmaceutical stocks to database with live price data**
 - Disabled all fallback data mechanisms in perplexity-service.ts and routes.ts
 - Added improved logging distinguishing between legitimate mentions and reference URL extractions
 
 **User Impact:**
 - "Pharmaceutical Stocks Mentioned in this Brief" section now shows only companies explicitly referenced in intelligence text
+- **All 12 extracted pharmaceutical companies now display real-time stock prices and changes**
 - Each company includes contextual quote explaining why it was identified
+- **Automatic discovery ensures newly mentioned companies are immediately trackable with live market data**
 - No hardcoded or fallback data ever appears in pharmaceutical brief
 - Accurate company extraction eliminating false positives from reference URLs
 - Professional intelligence brief format with proper source attribution in dedicated References sections
