@@ -256,7 +256,8 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 // Daily News Schema
 export const dailyNews = pgTable("daily_news", {
   id: serial("id").primaryKey(),
-  date: varchar("date").notNull().unique(),
+  date: varchar("date").notNull(),
+  sector: varchar("sector", { length: 50 }).notNull().default("general"),
   title: varchar("title").notNull(),
   summary: text("summary").notNull(),
   keyDevelopments: jsonb("key_developments").notNull(),
@@ -266,7 +267,9 @@ export const dailyNews = pgTable("daily_news", {
   pharmaceuticalStockHighlights: jsonb("pharmaceutical_stock_highlights"),
   geopoliticalAnalysis: text("geopolitical_analysis").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  uniqueDateSector: unique().on(table.date, table.sector),
+}));
 
 export const insertDailyNewsSchema = createInsertSchema(dailyNews, {
   keyDevelopments: z.array(z.string()),
