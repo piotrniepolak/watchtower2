@@ -30,6 +30,22 @@ import {
   Activity
 } from "lucide-react";
 
+// Clean content while removing embedded source links
+const cleanContent = (text: string | undefined): string => {
+  if (!text) return '';
+  return text
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove double asterisks formatting
+    // Remove embedded source links
+    .replace(/Sources?:\s*[^.]*?\.com[^.]*?\b/gi, '')
+    .replace(/Sources?:\s*<a[^>]*>.*?<\/a>\s*/gi, '')
+    .replace(/Sources?:\s*https?:\/\/[^\s\)]+/gi, '')
+    .replace(/Sources?:\s*[a-zA-Z0-9.-]+\.com[^\s]*/gi, '')
+    .replace(/\s*Sources?:\s*$/gi, '')
+    .replace(/\s*Source:\s*$/gi, '')
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+};
+
 export function DefenseIntelligenceBrief() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [executiveSummaryOpen, setExecutiveSummaryOpen] = useState(false);

@@ -150,21 +150,30 @@ const cleanContent = (text: string | undefined): string => {
 };
 
 // Extract and format sources from content with detailed reference parsing
-const extractDetailedSources = (text: string | undefined): Array<{title: string, source: string, url?: string}> => {
+const extractDetailedSources = (text: string | undefined): Array<{title: string, url: string, source?: string, category?: 'news' | 'government' | 'research' | 'intelligence' | 'financial'}> => {
   if (!text) return [];
   
-  const sources: Array<{title: string, source: string, url?: string}> = [];
+  const sources: Array<{title: string, url: string, source?: string, category?: 'news' | 'government' | 'research' | 'intelligence' | 'financial'}> = [];
   
   // Extract from References section first
   const referenceSources = extractReferences(text);
-  sources.push(...referenceSources);
+  referenceSources.forEach(ref => {
+    if (ref.url) {
+      sources.push({
+        title: ref.title,
+        url: ref.url,
+        source: ref.source,
+        category: 'news' as const
+      });
+    }
+  });
   
   // If no reference sources found, use generic pharmaceutical sources
   if (sources.length === 0) {
     sources.push(
-      { title: "Pharmaceutical Industry News", source: "BioPharma Dive", url: "https://www.biopharmadive.com" },
-      { title: "Healthcare Market Analysis", source: "STAT News", url: "https://www.statnews.com" },
-      { title: "Drug Development Updates", source: "Reuters Health", url: "https://www.reuters.com/business/healthcare-pharmaceuticals" }
+      { title: "Pharmaceutical Industry News", url: "https://www.biopharmadive.com", source: "BioPharma Dive", category: "news" as const },
+      { title: "Healthcare Market Analysis", url: "https://www.statnews.com", source: "STAT News", category: "news" as const },
+      { title: "Drug Development Updates", url: "https://www.reuters.com/business/healthcare-pharmaceuticals", source: "Reuters Health", category: "news" as const }
     );
   }
   
@@ -180,7 +189,7 @@ export default function PharmaIntelligenceBrief() {
   const [stockHighlightsOpen, setStockHighlightsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data: pharmaNews, isLoading, error, refetch } = useEnhancedPharmaNews();
+  const { data: pharmaNews, isLoading, error } = useEnhancedPharmaNews();
   const { data: stockPrices } = useStockPrices();
 
   const fallbackNews: DailyNews = {
@@ -199,7 +208,11 @@ export default function PharmaIntelligenceBrief() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      await refetch();
+      // Generate new pharmaceutical brief
+      const response = await fetch("/api/news/pharma/generate", { method: "POST" });
+      if (response.ok) {
+        window.location.reload();
+      }
     } catch (error) {
       console.error("Error generating pharmaceutical brief:", error);
     } finally {
@@ -343,14 +356,14 @@ export default function PharmaIntelligenceBrief() {
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
               <ul className="space-y-2">
-                {currentNews?.keyDevelopments?.map((development, index) => (
+                {Array.isArray(currentNews?.keyDevelopments) ? currentNews.keyDevelopments.map((development: any, index: number) => (
                   <li key={index} className="flex items-start gap-2 text-sm">
                     <span className="flex-shrink-0 w-2 h-2 bg-green-600 rounded-full mt-2"></span>
                     <span className="text-muted-foreground leading-relaxed">
                       {cleanContent(development)}
                     </span>
                   </li>
-                )) || [
+                )) : [
                   <li key="fallback" className="flex items-start gap-2 text-sm">
                     <span className="flex-shrink-0 w-2 h-2 bg-green-600 rounded-full mt-2"></span>
                     <span className="text-muted-foreground">No key developments available</span>
@@ -420,7 +433,7 @@ export default function PharmaIntelligenceBrief() {
         )}
 
         {/* Pharmaceutical Stock Highlights */}
-        {currentNews?.pharmaceuticalStockHighlights && currentNews.pharmaceuticalStockHighlights.length > 0 && (
+        {Array.isArray(currentNews?.pharmaceuticalStockHighlights) && currentNews.pharmaceuticalStockHighlights.length > 0 && (
           <Collapsible open={stockHighlightsOpen} onOpenChange={setStockHighlightsOpen}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
@@ -433,7 +446,7 @@ export default function PharmaIntelligenceBrief() {
             </CollapsibleTrigger>
             <CollapsibleContent className="px-4 pb-4">
               <div className="grid gap-3">
-                {currentNews.pharmaceuticalStockHighlights.map((stock, index) => (
+                {currentNews.pharmaceuticalStockHighlights.map((stock: any, index: number) => (
                   <div 
                     key={index}
                     className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
