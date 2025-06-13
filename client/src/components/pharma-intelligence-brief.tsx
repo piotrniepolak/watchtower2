@@ -494,6 +494,7 @@ export default function PharmaIntelligenceBrief() {
       {selectedStock && (
         <StockDetailModal 
           stock={selectedStock}
+          isOpen={true}
           onClose={() => setSelectedStock(null)}
         />
       )}
