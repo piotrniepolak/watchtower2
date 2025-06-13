@@ -508,18 +508,48 @@ export default function PharmaIntelligenceBrief() {
           </button>
           {!sectionsCollapsed.healthCrisis && (
             <div className="px-4 pb-4">
-              <div className="grid gap-2">
-                {conflictUpdates.map((update, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
-                    <Badge className={`text-xs ${getSeverityColor(update.severity)}`}>
-                      {update.severity.toUpperCase()}
-                    </Badge>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-slate-900">{update.conflict}</p>
-                      <p className="text-xs text-slate-600 mt-1">{update.update}</p>
-                    </div>
+              <div className="grid gap-3">
+                {/* Key Pharmaceutical Developments */}
+                {keyDevelopments.length > 0 ? (
+                  keyDevelopments.map((development, index) => {
+                    const parts = development.split('Source:');
+                    const content = parts[0].trim();
+                    const source = parts[1]?.trim();
+                    
+                    return (
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-blue-200 bg-blue-50">
+                        <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200">
+                          PHARMA
+                        </Badge>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm text-blue-900 mb-1">{content}</p>
+                          {source && (
+                            <a 
+                              href={
+                                source.includes('BioPharma Dive') ? 'https://www.biopharmadive.com' :
+                                source.includes('Reuters') ? 'https://www.reuters.com/business/healthcare-pharmaceuticals' :
+                                source.includes('STAT News') ? 'https://www.statnews.com' :
+                                source.includes('Fierce Pharma') ? 'https://www.fiercepharma.com' :
+                                source.includes('Nature') ? 'https://www.nature.com/nbt' :
+                                'https://www.biopharmadive.com'
+                              }
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              {source}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-4 text-center text-slate-500 italic">
+                    Health crisis updates will be displayed here when available
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
