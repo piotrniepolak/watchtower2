@@ -306,6 +306,7 @@ export default function PharmaIntelligenceBrief() {
   const fallbackNews: DailyNews = {
     id: 1,
     date: new Date().toISOString().split('T')[0],
+    sector: 'pharmaceutical',
     createdAt: new Date(),
     title: "Pharmaceutical Market Intelligence Brief",
     summary: "Today's pharmaceutical markets show mixed signals as investors monitor ongoing clinical trials and regulatory developments. Key healthcare stocks demonstrate resilience amid evolving treatment landscapes.",

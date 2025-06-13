@@ -310,7 +310,7 @@ export class PharmaNewsService {
         await storage.deleteDailyNews(today);
         
         // Create fresh entry with extracted pharmaceutical companies
-        const savedNews = await storage.createDailyNews(newsData);
+        const savedNews = await storage.createDailyNews(newsData, 'pharmaceutical');
         console.log("✅ Fresh pharmaceutical intelligence brief with extracted companies saved successfully");
         
         // Run daily pharmaceutical database update

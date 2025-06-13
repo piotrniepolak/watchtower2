@@ -353,7 +353,7 @@ Focus on events that would significantly impact defense markets, security analys
         geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis
       };
 
-      await storage.createDailyNews(insertData);
+      await storage.createDailyNews(insertData, 'defense');
       console.log("✅ Defense intelligence brief stored successfully");
 
       return defenseIntelligence;
@@ -494,7 +494,7 @@ Focus on events that would significantly impact defense markets, security analys
         geopoliticalAnalysis
       };
 
-      await storage.createDailyNews(insertData);
+      await storage.createDailyNews(insertData, 'defense');
       console.log("✅ Defense intelligence brief successfully stored in database");
 
       return defenseIntelligence;

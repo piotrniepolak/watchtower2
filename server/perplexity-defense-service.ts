@@ -204,7 +204,7 @@ export class PerplexityDefenseService {
         geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis
       };
 
-      await storage.createDailyNews(insertData);
+      await storage.createDailyNews(insertData, 'defense');
       console.log('✅ Defense intelligence brief generated and stored successfully');
       
       this.lastGenerationDate = defenseIntelligence.date;
