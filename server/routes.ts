@@ -1589,17 +1589,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Get pharmaceutical brief specifically (date 2025-06-14 contains pharma content)
+      // Get pharmaceutical brief specifically (ensure it contains pharmaceutical content)
       let news = await storage.getDailyNews('2025-06-14');
       
-      // If no pharmaceutical brief exists, generate one
-      if (!news) {
-        console.log('No existing pharmaceutical intelligence found, generating fresh data...');
+      // Validate that we have a pharmaceutical brief, not a defense brief
+      if (!news || news.title.includes('Defense Intelligence')) {
+        console.log('No pharmaceutical intelligence found or found defense brief instead, generating pharmaceutical data...');
         news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
         
-        // If Perplexity AI fails, fallback to existing method
+        // If Perplexity AI fails, fallback to pharmaceutical method
         if (!news) {
-          console.log('Perplexity AI pharmaceutical intelligence generation failed, trying fallback method...');
+          console.log('Perplexity AI pharmaceutical intelligence generation failed, trying pharmaceutical fallback...');
           news = await pharmaNewsService.getTodaysPharmaNews();
         }
       }
