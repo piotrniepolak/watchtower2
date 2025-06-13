@@ -13,26 +13,27 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 13, 2025 - Enhanced Pharmaceutical Company Extraction
-**Major Enhancement Completed:**
-- **Enhanced pharmaceutical company extraction logic** to comprehensively scan all sections of daily pharmaceutical intelligence brief
-- **Expanded company-to-symbol mapping** with 30+ additional pharmaceutical companies including biotechnology, life sciences, and contract research organizations
-- **Implemented comprehensive fallback logic** to identify companies mentioned in any content section through multiple detection methods
-- **Added deep content analysis** for broader pharmaceutical company detection using company name word matching
-- **Fixed variable declaration conflicts** and server compilation errors in perplexity service
-- **Verified extraction accuracy** showing 7-14 pharmaceutical companies now properly identified from brief content
+### June 13, 2025 - Fixed References Display and Sector Separation
+**Major Fixes Completed:**
+- **Fixed cross-contamination between defense and pharmaceutical intelligence briefs** through complete database architecture separation with sector-specific unique constraints
+- **Transformed references from inline URLs to clean, clickable "References" sections** matching professional intelligence brief format requirements
+- **Enhanced pharmaceutical company extraction logic** to comprehensively scan all sections of daily pharmaceutical intelligence brief with 60+ company patterns
+- **Implemented sector-specific database operations** preventing data overwriting between defense and pharmaceutical intelligence services
+- **Updated all content sections** to properly parse and display numbered reference links instead of embedded URLs
 
 **Technical Implementation:**
-- Updated `extractCompanyMentions()` function with enhanced regex patterns for 60+ pharmaceutical companies
-- Enhanced `generatePharmaceuticalStockAnalysis()` to scan executive summary, key developments, market impact, regulatory analysis, and health crisis updates
-- Added direct symbol detection and cross-reference with healthcare stocks database
-- Implemented multi-tier fallback logic ensuring companies are always identified from content
-- Added comprehensive logging for debugging and verification of extraction process
+- Added sector field to daily_news database schema with unique constraint on (date, sector)
+- Updated all storage methods and API routes to include sector parameter for data separation
+- Modified pharmaceutical intelligence brief component to parse **References:** markdown sections into clickable numbered links
+- Enhanced executive summary, key developments, and market impact sections with proper reference formatting
+- Fixed Perplexity service citation processing to generate clean markdown reference lists
+- Updated all services (defense-news-service, pharma-news-service, defense-intelligence-service) to use sector-specific operations
 
 **User Impact:**
-- "Pharmaceutical Stocks Mentioned in this Brief" section now accurately displays companies found throughout entire intelligence brief
-- Real-time stock pricing data integration for all extracted pharmaceutical companies
-- Enhanced analysis quality with broader company coverage and more accurate identification
+- Defense and pharmaceutical intelligence briefs now save to separate database records, eliminating cross-contamination
+- References appear as clean, numbered clickable links in dedicated "References" sections throughout all content areas
+- Professional intelligence brief format matching industry standards with proper source attribution
+- Enhanced pharmaceutical company extraction showing 7-14 companies properly identified from brief content
 
 ## User Preferences
 - Focus on authentic data extraction from verified sources
