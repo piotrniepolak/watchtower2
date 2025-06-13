@@ -1628,18 +1628,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📊 Found ${healthcareStocks.length} healthcare stocks in database for cross-reference`);
 
       // Find companies mentioned in the brief by checking against our database
-      const mentionedCompanies = new Set<string>();
+      const mentionedCompanySymbols = new Set<string>();
       
       // Check each healthcare stock to see if it's mentioned in the brief
       healthcareStocks.forEach(stock => {
         const stockMentioned = checkIfStockMentioned(stock, allBriefContent);
         if (stockMentioned) {
-          mentionedCompanies.add(stock.symbol);
+          mentionedCompanySymbols.add(stock.symbol);
           console.log(`📊 Found mentioned company: ${stock.name} (${stock.symbol})`);
         }
       });
 
-      console.log(`🎯 Total pharmaceutical companies mentioned in brief: ${mentionedCompanies.size}`);
+      console.log(`🎯 Total pharmaceutical companies mentioned in brief: ${mentionedCompanySymbols.size}`);
 
       // Helper function to check if a stock is mentioned in the content
       function checkIfStockMentioned(stock: any, content: string): boolean {
