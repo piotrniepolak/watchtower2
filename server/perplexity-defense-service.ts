@@ -402,13 +402,22 @@ export class PerplexityDefenseService {
     let match;
     while ((match = bulletRegex.exec(content)) !== null && developments.length < 8) {
       if (match[1].trim().length > 30) {
-        developments.push(match[1].trim());
+        // Clean the extracted text and remove trailing asterisks
+        const cleanText = match[1].trim()
+          .replace(/\*+\s*$/, '')  // Remove trailing asterisks with whitespace
+          .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
+          .trim();
+        developments.push(cleanText);
       }
     }
     
     while ((match = numberedRegex.exec(content)) !== null && developments.length < 8) {
-      if (match[1].trim().length > 30 && !developments.includes(match[1].trim())) {
-        developments.push(match[1].trim());
+      const cleanText = match[1].trim()
+        .replace(/\*+\s*$/, '')  // Remove trailing asterisks with whitespace
+        .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
+        .trim();
+      if (cleanText.length > 30 && !developments.includes(cleanText)) {
+        developments.push(cleanText);
       }
     }
 
@@ -420,7 +429,12 @@ export class PerplexityDefenseService {
         (s.includes('$') || s.includes('%') || s.includes('contract') || s.includes('award'))
       );
       
-      developments.push(...sentences.slice(0, 6).map(s => s.trim()));
+      developments.push(...sentences.slice(0, 6).map(s => 
+        s.trim()
+          .replace(/\*+\s*$/, '')  // Remove trailing asterisks with whitespace
+          .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
+          .trim()
+      ));
     }
 
     return developments.slice(0, 8);
