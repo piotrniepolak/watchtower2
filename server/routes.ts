@@ -1624,128 +1624,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ) : [])
       ].join(' ');
 
-      console.log(`🔍 Scanning ${allBriefContent.length} characters of pharmaceutical intelligence brief content for company mentions...`);
-      console.log(`📊 Found ${healthcareStocks.length} healthcare stocks in database for cross-reference`);
+      console.log(`🔍 Using improved text-based extraction to find pharmaceutical companies mentioned in brief content...`);
 
-      // Find companies mentioned in the brief by checking against our database
-      const mentionedCompanySymbols = new Set<string>();
-      
-      // Check each healthcare stock to see if it's mentioned in the brief
-      healthcareStocks.forEach(stock => {
-        const stockMentioned = checkIfStockMentioned(stock, allBriefContent);
-        if (stockMentioned) {
-          mentionedCompanySymbols.add(stock.symbol);
-          console.log(`📊 Found mentioned company: ${stock.name} (${stock.symbol})`);
-        }
-      });
 
-      console.log(`🎯 Total pharmaceutical companies mentioned in brief: ${mentionedCompanySymbols.size}`);
-
-      // Helper function to check if a stock is mentioned in the content
-      function checkIfStockMentioned(stock: any, content: string): boolean {
-        const lowerContent = content.toLowerCase();
-        
-        // Check for stock symbol (case insensitive)
-        if (lowerContent.includes(stock.symbol.toLowerCase())) {
-          return true;
-        }
-        
-        // Check for company name or common variations
-        const companyName = stock.name.toLowerCase();
-        if (lowerContent.includes(companyName)) {
-          return true;
-        }
-        
-        // Check for common company name variations
-        const nameVariations = getCompanyNameVariations(stock.symbol, stock.name);
-        return nameVariations.some(variation => 
-          lowerContent.includes(variation.toLowerCase())
-        );
-      }
-
-      // Helper function to get common name variations for pharmaceutical companies
-      function getCompanyNameVariations(symbol: string, name: string): string[] {
-        const variations = [name];
-        
-        // Add symbol-specific variations only for companies that might be mentioned differently
-        const commonVariations: { [key: string]: string[] } = {
-          'JNJ': ['johnson & johnson', 'j&j', 'johnson and johnson'],
-          'GSK': ['glaxosmithkline', 'gsk'],
-          'BMY': ['bristol myers', 'bristol-myers squibb', 'bristol myers squibb'],
-          'LLY': ['eli lilly', 'lilly'],
-          'VRTX': ['vertex', 'vertex pharmaceuticals'],
-          'RHHBY': ['roche', 'roche holding'],
-          'BAYRY': ['bayer', 'bayer ag'],
-          'RARE': ['ultragenyx'],
-          'MRNA': ['moderna'],
-          'BIIB': ['biogen'],
-          'SNY': ['sanofi'],
-          'NVO': ['novo nordisk'],
-          'NVS': ['novartis'],
-          'MRK': ['merck'],
-          'PFE': ['pfizer'],
-          'ABBV': ['abbvie'],
-          'AMGN': ['amgen'],
-          'GILD': ['gilead', 'gilead sciences'],
-          'REGN': ['regeneron'],
-          'NUVB': ['nuvation', 'nuvation bio'],
-          'SLDB': ['solid', 'solid biosciences'],
-          'STOK': ['stoke', 'stoke therapeutics'],
-          'NVAX': ['novavax']
-        };
-        
-        if (commonVariations[symbol]) {
-          variations.push(...commonVariations[symbol]);
-        }
-        
-        return variations;
-      }
 
       // Extract pharmaceutical companies actually mentioned in the brief content
       const extractMentionedCompanies = (content: string) => {
         const mentionedCompanies = [];
         
-        // Comprehensive pharmaceutical company patterns with stock symbols
+        // Remove reference URLs and citation markers to avoid false positives
+        const cleanContent = content
+          .replace(/\[References:\][\s\S]*$/i, '') // Remove entire References section
+          .replace(/https?:\/\/[^\s\)]+/g, '') // Remove URLs
+          .replace(/\[\d+\]/g, '') // Remove citation numbers like [1], [2]
+          .replace(/\(\d+\)/g, '') // Remove citation numbers like (1), (2)
+          .replace(/References?:\s*\d+\./gi, '') // Remove "References: 1."
+          .replace(/Source:\s*https?:\/\/[^\s\)]+/gi, ''); // Remove source URLs
+        
+        // Comprehensive pharmaceutical company patterns
         const pharmaCompanies = [
-          { name: 'Pfizer', symbol: 'PFE', patterns: ['pfizer', 'pfe'] },
-          { name: 'Johnson & Johnson', symbol: 'JNJ', patterns: ['johnson & johnson', 'johnson and johnson', 'j&j', 'jnj', 'janssen'] },
-          { name: 'Roche', symbol: 'RHHBY', patterns: ['roche', 'genentech', 'rhhby'] },
-          { name: 'Novartis', symbol: 'NVS', patterns: ['novartis', 'nvs'] },
-          { name: 'Merck', symbol: 'MRK', patterns: ['merck', 'mrk', 'keytruda'] },
-          { name: 'AbbVie', symbol: 'ABBV', patterns: ['abbvie', 'abbv', 'humira'] },
-          { name: 'Bristol Myers Squibb', symbol: 'BMY', patterns: ['bristol myers squibb', 'bristol-myers squibb', 'bmy', 'bristol myers'] },
-          { name: 'AstraZeneca', symbol: 'AZN', patterns: ['astrazeneca', 'azn'] },
-          { name: 'GSK', symbol: 'GSK', patterns: ['gsk', 'glaxosmithkline', 'glaxo'] },
-          { name: 'Sanofi', symbol: 'SNY', patterns: ['sanofi', 'sny'] },
-          { name: 'Gilead Sciences', symbol: 'GILD', patterns: ['gilead', 'gild'] },
-          { name: 'Amgen', symbol: 'AMGN', patterns: ['amgen', 'amgn'] },
-          { name: 'Biogen', symbol: 'BIIB', patterns: ['biogen', 'biib'] },
-          { name: 'Regeneron', symbol: 'REGN', patterns: ['regeneron', 'regn'] },
-          { name: 'Vertex Pharmaceuticals', symbol: 'VRTX', patterns: ['vertex', 'vrtx'] },
-          { name: 'Moderna', symbol: 'MRNA', patterns: ['moderna', 'mrna'] },
-          { name: 'BioNTech', symbol: 'BNTX', patterns: ['biontech', 'bntx'] },
-          { name: 'Eli Lilly', symbol: 'LLY', patterns: ['eli lilly', 'lilly', 'lly'] },
-          { name: 'Bayer', symbol: 'BAYRY', patterns: ['bayer', 'bayry'] }
+          { name: 'Pfizer', symbol: 'PFE', patterns: ['pfizer inc', 'pfizer', 'pfe'] },
+          { name: 'Johnson & Johnson', symbol: 'JNJ', patterns: ['johnson & johnson', 'johnson and johnson', 'j&j', 'jnj', 'janssen pharmaceuticals', 'janssen'] },
+          { name: 'Roche', symbol: 'RHHBY', patterns: ['roche holding ag', 'roche', 'genentech', 'f. hoffmann-la roche', 'hoffmann-la roche'] },
+          { name: 'Novartis', symbol: 'NVS', patterns: ['novartis ag', 'novartis', 'nvs'] },
+          { name: 'Merck & Co', symbol: 'MRK', patterns: ['merck & co', 'merck kgaa', 'merck', 'mrk', 'keytruda', 'merck sharp & dohme'] },
+          { name: 'AbbVie', symbol: 'ABBV', patterns: ['abbvie inc', 'abbvie', 'abbv', 'humira', 'skyrizi'] },
+          { name: 'Bristol Myers Squibb', symbol: 'BMY', patterns: ['bristol myers squibb', 'bristol-myers squibb', 'bmy', 'bristol myers', 'bms'] },
+          { name: 'AstraZeneca', symbol: 'AZN', patterns: ['astrazeneca plc', 'astrazeneca', 'azn'] },
+          { name: 'GSK', symbol: 'GSK', patterns: ['gsk plc', 'gsk', 'glaxosmithkline', 'glaxo smithkline', 'glaxo'] },
+          { name: 'Sanofi', symbol: 'SNY', patterns: ['sanofi sa', 'sanofi', 'sny', 'sanofi-aventis'] },
+          { name: 'Gilead Sciences', symbol: 'GILD', patterns: ['gilead sciences inc', 'gilead sciences', 'gilead', 'gild'] },
+          { name: 'Amgen', symbol: 'AMGN', patterns: ['amgen inc', 'amgen', 'amgn'] },
+          { name: 'Biogen', symbol: 'BIIB', patterns: ['biogen inc', 'biogen', 'biib'] },
+          { name: 'Regeneron', symbol: 'REGN', patterns: ['regeneron pharmaceuticals', 'regeneron', 'regn', 'eylea'] },
+          { name: 'Vertex Pharmaceuticals', symbol: 'VRTX', patterns: ['vertex pharmaceuticals', 'vertex', 'vrtx'] },
+          { name: 'Moderna', symbol: 'MRNA', patterns: ['moderna inc', 'moderna', 'mrna'] },
+          { name: 'BioNTech', symbol: 'BNTX', patterns: ['biontech se', 'biontech', 'bntx'] },
+          { name: 'Eli Lilly', symbol: 'LLY', patterns: ['eli lilly and company', 'eli lilly', 'lilly', 'lly'] },
+          { name: 'Bayer', symbol: 'BAYRY', patterns: ['bayer ag', 'bayer', 'bayry'] },
+          { name: 'Novo Nordisk', symbol: 'NVO', patterns: ['novo nordisk a/s', 'novo nordisk', 'novo', 'nvo', 'ozempic', 'wegovy'] },
+          { name: 'Takeda', symbol: 'TAK', patterns: ['takeda pharmaceutical', 'takeda', 'tak'] },
+          { name: 'Boehringer Ingelheim', symbol: 'BOEHRY', patterns: ['boehringer ingelheim', 'boehringer'] },
+          { name: 'Teva', symbol: 'TEVA', patterns: ['teva pharmaceutical', 'teva', 'teva pharma'] },
+          { name: 'Allergan', symbol: 'AGN', patterns: ['allergan plc', 'allergan', 'agn', 'botox'] },
+          { name: 'Celgene', symbol: 'CELG', patterns: ['celgene corporation', 'celgene', 'celg'] }
         ];
         
-        const lowerContent = content.toLowerCase();
+        const lowerContent = cleanContent.toLowerCase();
         
         for (const company of pharmaCompanies) {
           for (const pattern of company.patterns) {
-            if (lowerContent.includes(pattern.toLowerCase())) {
-              // Extract context around the mention
-              const contextStart = Math.max(0, lowerContent.indexOf(pattern.toLowerCase()) - 100);
-              const contextEnd = Math.min(content.length, lowerContent.indexOf(pattern.toLowerCase()) + pattern.length + 200);
-              const context = content.substring(contextStart, contextEnd).trim();
+            const patternIndex = lowerContent.indexOf(pattern.toLowerCase());
+            if (patternIndex !== -1) {
+              // Extract broader context around the mention
+              const contextStart = Math.max(0, patternIndex - 150);
+              const contextEnd = Math.min(cleanContent.length, patternIndex + pattern.length + 250);
+              const context = cleanContent.substring(contextStart, contextEnd).trim();
               
-              // Ensure it's a meaningful pharmaceutical context, not just a passing mention
-              const hasPharmContext = /\b(drug|therapy|treatment|fda|approved|clinical|trial|medicine|pharmaceutical|biotech|vaccine|study|patient|disease|cancer|diabetes)\b/i.test(context);
+              // Exclude if found in reference/citation context
+              const isInReference = /^(references?|sources?|citations?)[:.]|^\d+\.|^https?:\/\//i.test(context);
+              if (isInReference) continue;
               
-              if (hasPharmContext) {
+              // More comprehensive pharmaceutical context validation
+              const hasPharmContext = /\b(drug|therapy|treatment|fda|approved|clinical|trial|medicine|pharmaceutical|biotech|vaccine|study|patient|disease|cancer|diabetes|medication|compound|molecule|pipeline|acquisition|merger|collaboration|partnership|licensing|regulatory|dosing|efficacy|safety|adverse|side effect|indication|launch|commercial|revenue|sales|market|competition)\b/i.test(context);
+              
+              // Also accept if mentioned with financial/business context
+              const hasBusinessContext = /\b(revenue|sales|earnings|profit|loss|stock|share|market cap|investment|acquisition|merger|partnership|deal|contract|agreement|announced|reported|forecast|guidance|outlook)\b/i.test(context);
+              
+              if (hasPharmContext || hasBusinessContext) {
+                // Extract the most relevant sentence containing the company mention
+                const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
+                let relevantSentence = context;
+                
+                for (const sentence of sentences) {
+                  if (sentence.toLowerCase().includes(pattern.toLowerCase())) {
+                    relevantSentence = sentence.trim();
+                    break;
+                  }
+                }
+                
                 mentionedCompanies.push({
                   symbol: company.symbol,
                   name: company.name,
-                  context: context,
+                  context: relevantSentence,
                   pattern: pattern
                 });
                 break; // Only add once per company
