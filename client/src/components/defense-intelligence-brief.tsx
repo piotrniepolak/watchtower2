@@ -169,7 +169,7 @@ export function DefenseIntelligenceBrief() {
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-3">
               <div className="text-sm leading-relaxed text-muted-foreground">
-                {defenseNews?.summary?.split('Sources:')[0] || 'No summary available'}
+                {cleanContent(defenseNews?.summary) || 'No summary available'}
               </div>
               
               {/* Enhanced Source Links */}

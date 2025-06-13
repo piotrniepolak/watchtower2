@@ -140,11 +140,22 @@ export function UnifiedIntelligenceDashboard() {
   };
 
   const formatContent = (content: string) => {
-    // Clean formatting artifacts while preserving links
+    if (!content) return '';
+    
+    // Remove embedded source links and clean content
     return content
       .replace(/\*\*/g, "")
       .replace(/\*/g, "")
       .replace(/\[([^\]]+)\]/g, "$1")
+      // Remove inline source references
+      .replace(/Sources?:\s*[^.]*?\.com[^.]*?\b/gi, '')
+      .replace(/Sources?:\s*<a[^>]*>.*?<\/a>\s*/gi, '')
+      .replace(/Sources?:\s*https?:\/\/[^\s\)]+/gi, '')
+      .replace(/Sources?:\s*[a-zA-Z0-9.-]+\.com[^\s]*/gi, '')
+      // Remove trailing source indicators
+      .replace(/\s*Sources?:\s*$/gi, '')
+      .replace(/\s*Source:\s*$/gi, '')
+      // Clean up extra whitespace
       .replace(/\s+/g, " ")
       .trim();
   };
