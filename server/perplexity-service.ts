@@ -601,77 +601,8 @@ class PerplexityService {
       analysis: string;
     }> = [];
     
-    for (const symbol of uniqueSymbols) { // Show all extracted companies
-      // Find stock in database
-      const stockData = healthcareStocks.find(stock => stock.symbol === symbol) || 
-                       allStocks.find(stock => stock.symbol === symbol);
-      
-      if (!stockData) {
-        console.log(`📊 Stock ${symbol} not found in database, skipping`);
-        continue;
-      }
-
-      const prompt = `Provide one concise sentence analyzing ${symbol} stock performance focusing on recent key developments or market factors. Maximum 80 characters. No headers, formatting, or bullet points.`;
-      
-      try {
-        const result = await this.queryPerplexity(prompt);
-        
-        // Clean up analysis text and create one-line descriptions
-        const cleanAnalysis = result.content
-          .replace(/###?\s*[^:]*:?\s*/g, '') // Remove markdown headers
-          .replace(/####?\s*[^:]*:?\s*/g, '') // Remove sub-headers
-          .replace(/\*\*[^*]*\*\*/g, '') // Remove bold formatting
-          .replace(/\*[^*]*\*/g, '') // Remove italic formatting
-          .replace(/^\s*-\s*/gm, '') // Remove bullet points
-          .replace(/\n+/g, ' ') // Replace newlines with spaces
-          .replace(/\s+/g, ' ') // Collapse multiple spaces
-          .trim();
-        
-        // Create complete meaningful description
-        const sentences = cleanAnalysis.split('. ');
-        let description = sentences[0];
-        
-        // Ensure we have a complete sentence
-        if (!description.endsWith('.') && sentences.length > 1) {
-          description += '.';
-        }
-        
-        // If description is too short, add the next sentence
-        if (description.length < 50 && sentences.length > 1) {
-          description += ' ' + sentences[1];
-          if (!description.endsWith('.')) {
-            description += '.';
-          }
-        }
-        
-        const shortAnalysis = description;
-        
-        stockHighlights.push({
-          symbol: stockData.symbol,
-          company: stockData.name,
-          price: stockData.price,
-          change: stockData.change,
-          analysis: shortAnalysis
-        });
-      } catch (error) {
-        console.error(`Error generating analysis for ${symbol}:`, error);
-        
-        // Generate concise fallback analysis based on stock performance
-        const changeDirection = stockData.changePercent > 0 ? "gains" : stockData.changePercent < 0 ? "declines" : "stability";
-        const fallbackAnalysis = `${stockData.name} shows ${changeDirection} amid pharmaceutical sector trends.`;
-        
-        stockHighlights.push({
-          symbol: stockData.symbol,
-          company: stockData.name,
-          price: stockData.price,
-          change: stockData.change,
-          analysis: fallbackAnalysis
-        });
-      }
-    }
-
-    // DISABLED: Return empty array - extraction now handled in routes.ts
-    return [];
+    // All pharmaceutical stock extraction now handled in routes.ts
+    return stockHighlights;
   }
 
   async generateMarketImpactAnalysis(): Promise<string> {
