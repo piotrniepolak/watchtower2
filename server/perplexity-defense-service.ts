@@ -54,9 +54,10 @@ export class PerplexityDefenseService {
       .replace(/_([^_]+)_/g, '$1')        // Remove underline formatting
       .replace(/\|/g, '')                 // Remove table separators
       .replace(/[-]{3,}/g, '')            // Remove horizontal rules
-      // Remove embedded source links and domain references
+      // Remove embedded source links and domain references - comprehensive patterns
       .replace(/\s*Sources?:\s*[^\n]*$/gmi, '') // Remove "Sources:" lines at end of paragraphs
       .replace(/\s*Source:\s*[^\n]*$/gmi, '')   // Remove "Source:" lines at end of paragraphs
+      .replace(/\s*\.\s*bloomberg\.com\s*/gi, '.') // Remove ". bloomberg.com" patterns
       .replace(/\s*bloomberg\.com\s*/gi, ' ')   // Remove bloomberg.com references
       .replace(/\s*defensenews\.com\s*/gi, ' ') // Remove defensenews.com references
       .replace(/\s*reuters\.com\s*/gi, ' ')     // Remove reuters.com references
@@ -64,6 +65,8 @@ export class PerplexityDefenseService {
       .replace(/\s*cnbc\.com\s*/gi, ' ')        // Remove cnbc.com references
       .replace(/\s*marketwatch\.com\s*/gi, ' ') // Remove marketwatch.com references
       .replace(/\s*\b[a-zA-Z0-9.-]+\.com\b\s*/gi, ' ') // Remove any other .com domains
+      .replace(/\s*\.\s*[a-zA-Z0-9.-]+\.com\s*/gi, '.') // Remove ". domain.com" patterns
+      .replace(/trajectories\.\s*[a-zA-Z0-9.-]+\.com/gi, 'trajectories.') // Remove specific pattern from end of text
       .replace(/\s{2,}/g, ' ')            // Replace multiple spaces with single space
       .replace(/\n{3,}/g, '\n\n')         // Replace multiple newlines with double newline
       .trim();
@@ -390,15 +393,18 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
     // Extract key information using advanced parsing
     const title = this.extractTitle(content);
     
+    // Clean the raw content first to remove any embedded source links
+    const cleanedContent = this.cleanFormattingSymbols(content);
+    
     // Generate comprehensive summary without embedded source links
-    const summary = this.extractSummary(content);
+    const summary = this.extractSummary(cleanedContent);
     console.log(`📝 Generated executive summary: ${summary.length} characters`);
     
-    const keyDevelopments = this.extractKeyDevelopments(content);
-    const marketImpact = this.extractMarketImpact(content);
-    const conflictUpdates = this.extractConflictUpdates(content);
-    const defenseStockHighlights = this.extractStockHighlights(content);
-    const geopoliticalAnalysis = this.extractGeopoliticalAnalysis(content);
+    const keyDevelopments = this.extractKeyDevelopments(cleanedContent);
+    const marketImpact = this.extractMarketImpact(cleanedContent);
+    const conflictUpdates = this.extractConflictUpdates(cleanedContent);
+    const defenseStockHighlights = this.extractStockHighlights(cleanedContent);
+    const geopoliticalAnalysis = this.extractGeopoliticalAnalysis(cleanedContent);
 
     return {
       title,
@@ -503,8 +509,11 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
     
     console.log(`✅ Generated comprehensive summary: ${summary.length} characters`);
     
+    // Apply comprehensive cleaning to remove any embedded source links
+    const cleanedSummary = this.cleanFormattingSymbols(summary);
+    
     // Always return the comprehensive summary - never use fallback for shorter content
-    return summary;
+    return cleanedSummary;
   }
 
   private extractKeyDevelopments(content: string): string[] {
