@@ -616,33 +616,127 @@ export class PerplexityDefenseService {
   private async enhanceStockHighlights(stockHighlights: Array<{ symbol: string; companyName: string; analysis: string }>, defenseStocks: any[]): Promise<NewsStockHighlight[]> {
     const enhanced: NewsStockHighlight[] = [];
     
-    for (const highlight of stockHighlights) {
+    // Add comprehensive defense stocks mentioned in content
+    const comprehensiveDefenseStocks = [
+      'LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'HII', 'LDOS', 'AVAV', 'KTOS', 'PLTR', 'TDG', 'CW', 'AIR', 'TXT'
+    ];
+    
+    // Ensure we include all major defense stocks with real-time data
+    for (const symbol of comprehensiveDefenseStocks) {
       try {
-        const quote = await yahooFinanceService.getStockQuote(highlight.symbol);
-        const stockData = defenseStocks.find(s => s.symbol === highlight.symbol);
+        console.log(`🔍 Fetching comprehensive defense stock data for: ${symbol}`);
+        const quote = await yahooFinanceService.getStockQuote(symbol);
+        const stockData = defenseStocks.find(s => s.symbol === symbol);
+        const existingHighlight = stockHighlights.find(h => h.symbol === symbol);
 
-        enhanced.push({
-          symbol: highlight.symbol,
-          name: highlight.companyName || stockData?.name || highlight.symbol,
-          change: quote?.change || 0,
-          changePercent: quote?.changePercent || 0,
-          price: quote?.price || 0,
-          reason: highlight.analysis || `Defense sector performance with current market activity`
-        });
+        if (quote && quote.price && quote.price > 0) {
+          enhanced.push({
+            symbol: symbol,
+            name: stockData?.name || this.getCompanyName(symbol),
+            currentPrice: quote.price,
+            priceChange: quote.changePercent ? `${quote.changePercent > 0 ? '+' : ''}${quote.changePercent.toFixed(2)}%` : '0%',
+            change: quote.change || 0,
+            changePercent: quote.changePercent || 0,
+            volume: quote.volume || 0,
+            marketCap: quote.marketCap || 0,
+            analysis: existingHighlight?.analysis || this.generateDefenseStockAnalysis(symbol),
+            catalysts: this.generateDefenseStockCatalysts(symbol),
+            recentNews: `Defense sector performance correlated with current geopolitical developments and increased government spending`,
+            competitivePosition: this.getCompetitivePosition(symbol),
+            sector: 'Defense'
+          });
+          console.log(`✅ Enhanced defense stock data for ${symbol}: $${quote.price} (${quote.changePercent?.toFixed(2)}%)`);
+        }
       } catch (error) {
-        console.warn(`⚠️ Could not enhance stock data for ${highlight.symbol}:`, error);
-        enhanced.push({
-          symbol: highlight.symbol,
-          name: highlight.companyName || highlight.symbol,
-          change: 0,
-          changePercent: 0,
-          price: 0,
-          reason: highlight.analysis || "Analysis pending"
-        });
+        console.warn(`⚠️ Could not enhance stock data for ${symbol}:`, error);
       }
     }
     
-    return enhanced;
+    return enhanced.slice(0, 12); // Show top 12 defense stocks
+  }
+
+  private getCompanyName(symbol: string): string {
+    const companies: { [key: string]: string } = {
+      'LMT': 'Lockheed Martin Corporation',
+      'RTX': 'Raytheon Technologies Corporation',
+      'NOC': 'Northrop Grumman Corporation',
+      'GD': 'General Dynamics Corporation',
+      'BA': 'The Boeing Company',
+      'LHX': 'L3Harris Technologies Inc',
+      'HII': 'Huntington Ingalls Industries Inc',
+      'LDOS': 'Leidos Holdings Inc',
+      'AVAV': 'AeroVironment Inc',
+      'KTOS': 'Kratos Defense & Security Solutions Inc',
+      'PLTR': 'Palantir Technologies Inc',
+      'TDG': 'TransDigm Group Incorporated',
+      'CW': 'Curtiss-Wright Corporation',
+      'AIR': 'AAR Corp',
+      'TXT': 'Textron Inc'
+    };
+    return companies[symbol] || symbol;
+  }
+
+  private generateDefenseStockAnalysis(symbol: string): string {
+    const analyses: { [key: string]: string } = {
+      'LMT': 'Leading defense contractor with strong missile and space systems portfolio, benefiting from increased defense spending and international tensions.',
+      'RTX': 'Aerospace and defense conglomerate with diversified revenue streams across commercial and military markets, showing resilience in volatile markets.',
+      'NOC': 'Premier defense contractor specializing in aerospace, cyber, and mission systems with growing government contract pipeline.',
+      'GD': 'Integrated defense contractor with strong naval systems and business aviation divisions, positioned for long-term growth.',
+      'BA': 'Global aerospace leader recovering from commercial aviation challenges while maintaining strong defense segment performance.',
+      'LHX': 'Technology-focused defense contractor with strong communication systems and electronic warfare capabilities.',
+      'HII': 'Leading shipbuilding contractor with critical naval vessel programs and growing mission technologies segment.',
+      'LDOS': 'Defense technology solutions provider with focus on intelligence, surveillance, and cybersecurity services.',
+      'AVAV': 'Unmanned aircraft systems leader benefiting from increased demand for autonomous defense solutions.',
+      'KTOS': 'Defense technology innovator with focus on unmanned systems, satellite communications, and cybersecurity.',
+      'PLTR': 'Data analytics and AI platform provider with growing government and commercial client base.',
+      'TDG': 'Aerospace component manufacturer with aftermarket focus providing steady revenue streams.',
+      'CW': 'Diversified technology company serving defense, power generation, and general industrial markets.',
+      'AIR': 'Aviation services provider with strong government and commercial aftermarket business.',
+      'TXT': 'Multi-industry company with strong defense helicopter and aircraft systems portfolio.'
+    };
+    return analyses[symbol] || 'Defense sector participant with exposure to government contracts and military modernization programs.';
+  }
+
+  private generateDefenseStockCatalysts(symbol: string): string {
+    const catalysts: { [key: string]: string } = {
+      'LMT': 'HIMARS production increases, F-35 program expansion, hypersonic weapons development, and international missile defense contracts.',
+      'RTX': 'Military engine modernization programs, missile defense systems expansion, and commercial aviation recovery.',
+      'NOC': 'B-21 Raider bomber program, space systems growth, and cybersecurity contract wins.',
+      'GD': 'Columbia-class submarine program, Abrams tank modernization, and business jet market recovery.',
+      'BA': 'Commercial aviation recovery, military aircraft programs, and space exploration initiatives.',
+      'LHX': 'Electronic warfare system upgrades, tactical radio modernization, and space technology contracts.',
+      'HII': 'Virginia-class submarine construction, Ford-class carrier programs, and mission technologies expansion.',
+      'LDOS': 'Intelligence modernization contracts, cybersecurity growth, and digital transformation services.',
+      'AVAV': 'Drone warfare expansion, autonomous systems development, and international UAV sales.',
+      'KTOS': 'Hypersonic weapons programs, satellite constellation support, and directed energy systems.',
+      'PLTR': 'Government AI contracts expansion, commercial sector growth, and international market penetration.',
+      'TDG': 'Commercial aviation recovery, defense aftermarket growth, and strategic acquisitions.',
+      'CW': 'Naval propulsion programs, defense technology upgrades, and industrial automation growth.',
+      'AIR': 'Government services expansion, commercial MRO recovery, and expeditionary services growth.',
+      'TXT': 'Military helicopter upgrades, defense systems modernization, and international sales growth.'
+    };
+    return catalysts[symbol] || 'Defense modernization programs, increased military budgets, and geopolitical tension-driven demand.';
+  }
+
+  private getCompetitivePosition(symbol: string): string {
+    const positions: { [key: string]: string } = {
+      'LMT': 'Market leader in missile systems and space technology with strong government relationships.',
+      'RTX': 'Diversified platform with leading positions in aerospace engines and defense systems.',
+      'NOC': 'Specialized focus on high-tech defense solutions with competitive moats in strategic programs.',
+      'GD': 'Strong positions in naval systems and business aviation with long-term contract visibility.',
+      'BA': 'Global aerospace leader with dominant commercial aircraft market share and defense presence.',
+      'LHX': 'Technology leader in electronic warfare and communications with niche market positions.',
+      'HII': 'Monopolistic position in nuclear aircraft carrier and submarine construction.',
+      'LDOS': 'Leading position in intelligence and cybersecurity services for government clients.',
+      'AVAV': 'Market leader in small unmanned aircraft systems with first-mover advantages.',
+      'KTOS': 'Innovative technology provider with growing market share in emerging defense areas.',
+      'PLTR': 'Unique AI and data analytics platform with specialized government applications.',
+      'TDG': 'Aftermarket-focused strategy with high-margin proprietary products.',
+      'CW': 'Niche technology positions in critical defense and industrial applications.',
+      'AIR': 'Strong aftermarket services platform with government and commercial diversification.',
+      'TXT': 'Diversified industrial platform with strong positions in defense aviation systems.'
+    };
+    return positions[symbol] || 'Established defense contractor with specialized capabilities and government relationships.';
   }
 
   private async detectAndAddDefenseCompanies(content: string): Promise<void> {
@@ -657,42 +751,83 @@ export class PerplexityDefenseService {
       }
     }
 
-    // Known defense companies to check
-    const defenseCompanies = ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'HII', 'LDOS', 'AVAV', 'KTOS', 'PLTR', 'DFEN'];
+    // Comprehensive defense companies with their details
+    const defenseCompanies = [
+      { symbol: 'LMT', name: 'Lockheed Martin Corporation' },
+      { symbol: 'RTX', name: 'Raytheon Technologies Corporation' },
+      { symbol: 'NOC', name: 'Northrop Grumman Corporation' },
+      { symbol: 'GD', name: 'General Dynamics Corporation' },
+      { symbol: 'BA', name: 'The Boeing Company' },
+      { symbol: 'LHX', name: 'L3Harris Technologies Inc' },
+      { symbol: 'HII', name: 'Huntington Ingalls Industries Inc' },
+      { symbol: 'LDOS', name: 'Leidos Holdings Inc' },
+      { symbol: 'AVAV', name: 'AeroVironment Inc' },
+      { symbol: 'KTOS', name: 'Kratos Defense & Security Solutions Inc' },
+      { symbol: 'PLTR', name: 'Palantir Technologies Inc' },
+      { symbol: 'DFEN', name: 'Direxion Daily Aerospace & Defense Bull 3X Shares' },
+      { symbol: 'TDG', name: 'TransDigm Group Incorporated' },
+      { symbol: 'CW', name: 'Curtiss-Wright Corporation' },
+      { symbol: 'VRTX', name: 'Vertex Pharmaceuticals Incorporated' },
+      { symbol: 'AIR', name: 'AAR Corp' },
+      { symbol: 'TXT', name: 'Textron Inc' }
+    ];
     
-    for (const symbol of defenseCompanies) {
-      if (content.includes(symbol)) {
-        detectedSymbols.add(symbol);
+    // Check for company mentions in content
+    for (const company of defenseCompanies) {
+      if (content.toLowerCase().includes(company.name.toLowerCase()) || 
+          content.includes(company.symbol) ||
+          content.toLowerCase().includes(company.name.split(' ')[0].toLowerCase())) {
+        detectedSymbols.add(company.symbol);
       }
     }
 
-    // Add detected companies to database
+    // Add detected companies to database with real Yahoo Finance data
     for (const symbol of Array.from(detectedSymbols)) {
       try {
         const existingStocks = await storage.getStocks();
         const stockExists = existingStocks.some(s => s.symbol === symbol);
+        const companyInfo = defenseCompanies.find(c => c.symbol === symbol);
         
-        if (!stockExists && defenseCompanies.includes(symbol)) {
+        if (!stockExists && companyInfo) {
+          console.log(`🔍 Fetching real-time data for defense stock: ${symbol}`);
           const quote = await yahooFinanceService.getStockQuote(symbol);
           
-          if (quote) {
+          if (quote && quote.price && quote.price > 0) {
             const newStock: InsertStock = {
               symbol: symbol,
-              name: quote.name || symbol,
-              price: quote.price || 0,
-              change: quote.change || 0,
-              changePercent: quote.changePercent || 0,
+              name: companyInfo.name,
+              sector: 'Defense',
+              currentPrice: quote.price,
+              priceChange: quote.change || 0,
+              percentChange: quote.changePercent ? `${quote.changePercent.toFixed(2)}%` : '0%',
               volume: quote.volume || 0,
-              marketCap: quote.marketCap ? quote.marketCap.toString() : null,
-              sector: "Defense"
+              marketCap: quote.marketCap?.toString() || '0',
+              hasDefense: true,
+              hasHealthcare: false,
+              hasEnergy: false
             };
 
             await storage.createStock(newStock);
-            console.log(`✅ Added new defense stock: ${symbol}`);
+            console.log(`✅ Added defense stock with real-time data: ${symbol} at $${quote.price}`);
+          }
+        } else if (stockExists && companyInfo) {
+          // Update existing stock with fresh data
+          console.log(`🔄 Updating real-time data for existing defense stock: ${symbol}`);
+          const quote = await yahooFinanceService.getStockQuote(symbol);
+          
+          if (quote && quote.price && quote.price > 0) {
+            await storage.updateStock(symbol, {
+              currentPrice: quote.price,
+              priceChange: quote.change || 0,
+              percentChange: quote.changePercent ? `${quote.changePercent.toFixed(2)}%` : '0%',
+              volume: quote.volume || 0,
+              marketCap: quote.marketCap?.toString() || '0'
+            });
+            console.log(`✅ Updated defense stock with fresh data: ${symbol} at $${quote.price}`);
           }
         }
       } catch (error) {
-        console.warn(`⚠️ Could not add defense stock ${symbol}:`, error);
+        console.warn(`⚠️ Could not process defense stock ${symbol}:`, error);
       }
     }
   }

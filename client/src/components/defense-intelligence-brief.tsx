@@ -548,6 +548,47 @@ export function DefenseIntelligenceBrief() {
                             </div>
                           )}
 
+                          {/* Real-time Yahoo Finance Chart */}
+                          <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
+                            <h3 className="font-semibold mb-3 flex items-center gap-2">
+                              <Activity className="h-4 w-4" />
+                              Live Stock Chart
+                            </h3>
+                            <div className="relative">
+                              <iframe
+                                src={`https://finance.yahoo.com/chart/${stock.symbol || 'SPY'}`}
+                                width="100%"
+                                height="400"
+                                frameBorder="0"
+                                scrolling="no"
+                                className="rounded border"
+                                title={`${stock.symbol} Stock Chart`}
+                              />
+                              <div className="absolute bottom-2 right-2">
+                                <a
+                                  href={`https://finance.yahoo.com/quote/${stock.symbol || 'SPY'}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  View on Yahoo Finance
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Competitive Position */}
+                          {stock.competitivePosition && (
+                            <div className="bg-purple-50 dark:bg-purple-950 rounded-lg p-4">
+                              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                                <Target className="h-4 w-4" />
+                                Market Position
+                              </h3>
+                              <p className="text-sm leading-relaxed">{stock.competitivePosition}</p>
+                            </div>
+                          )}
+
                           {/* Recent News */}
                           {stock.recentNews && (
                             <div className="bg-yellow-50 dark:bg-yellow-950 rounded-lg p-4">
