@@ -986,7 +986,7 @@ export default function Home() {
               <h3 className="text-xl font-semibold text-slate-900 mb-1">Szymon Kordyl</h3>
               <p className="text-orange-600 font-medium mb-3">Co-Founder and Director of EnergyWatch</p>
               <p className="text-sm text-slate-600 leading-relaxed">
-                We're expanding our team to include energy sector expertise. Stay tuned for updates on our newest team member who will lead our energy intelligence initiatives.
+                Currently completing his BSc in Economics & Business Economics at the University of Amsterdam, Szymon pairs rigorous economic training with a lifelong fascination for geography and geopolitics. His research focuses on how spatial dynamics shape markets a perspective showcased in his recent published paper on Warsaw's emerging Central Business District. At Watchtower, he channels this evidence-based approach into EnergyWatch, transforming global geopolitical trends into clear, actionable intelligence for investors.
               </p>
             </div>
           </div>
