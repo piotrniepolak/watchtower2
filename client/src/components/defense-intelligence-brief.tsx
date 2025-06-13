@@ -170,7 +170,12 @@ export function DefenseIntelligenceBrief() {
               <div className="text-sm leading-relaxed text-muted-foreground space-y-3">
                 {(defenseNews?.summary || 'No summary available').split('\n\n').map((paragraph: string, index: number) => (
                   <p key={index} className="mb-3">
-                    {paragraph.trim()}
+                    {paragraph
+                      .replace(/###\s*\d*\.?\s*/g, '')
+                      .replace(/\*\*(.*?)\*\*/g, '$1')
+                      .replace(/\[\d+\]/g, '')
+                      .replace(/^\d+\.\s*/, '')
+                      .trim()}
                   </p>
                 ))}
               </div>
@@ -186,7 +191,14 @@ export function DefenseIntelligenceBrief() {
                     {defenseNews.keyDevelopments.map((development: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground leading-relaxed">{development}</span>
+                        <span className="text-xs text-muted-foreground leading-relaxed">
+                          {development
+                            .replace(/###\s*\d*\.?\s*/g, '')
+                            .replace(/\*\*(.*?)\*\*/g, '$1')
+                            .replace(/\[\d+\]/g, '')
+                            .replace(/^\d+\.\s*/, '')
+                            .trim()}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -290,7 +302,12 @@ export function DefenseIntelligenceBrief() {
                                   {update.developments.slice(0, 3).map((dev: string, devIndex: number) => (
                                     <li key={devIndex} className="text-xs text-muted-foreground pl-3 relative">
                                       <span className="absolute left-0 top-1 w-1 h-1 bg-slate-400 rounded-full"></span>
-                                      {dev}
+                                      {dev
+                                        .replace(/###\s*\d*\.?\s*/g, '')
+                                        .replace(/\*\*(.*?)\*\*/g, '$1')
+                                        .replace(/\[\d+\]/g, '')
+                                        .replace(/^\d+\.\s*/, '')
+                                        .trim()}
                                     </li>
                                   ))}
                                 </ul>
