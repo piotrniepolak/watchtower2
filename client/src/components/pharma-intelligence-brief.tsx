@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useEnhancedPharmaNews, useStockPrices } from "@/hooks/useStockPrices";
 import { StockDetailModal } from "./stock-detail-modal";
+import { SourceLinks, extractSourcesFromText } from "./source-links";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -458,36 +459,13 @@ export default function PharmaIntelligenceBrief() {
                         {mainContent}
                       </div>
                       
-                      {/* References Section */}
+                      {/* Streamlined Source Links */}
                       {referencesSection && (
                         <div className="border-t border-blue-300 pt-4">
-                          <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                            <ExternalLink className="w-4 h-4" />
-                            References
-                          </h4>
-                          <div className="space-y-2">
-                            {referencesSection.split('\n').filter(line => line.trim()).map((reference, index) => {
-                              // Parse markdown links: "1. [Title](URL)"
-                              const match = reference.match(/^\d+\.\s*\[([^\]]+)\]\(([^)]+)\)/);
-                              if (match) {
-                                const [, title, url] = match;
-                                return (
-                                  <div key={index} className="flex items-start gap-2">
-                                    <span className="text-blue-600 font-medium text-sm min-w-[20px]">{index + 1}.</span>
-                                    <a 
-                                      href={url} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 hover:underline text-sm transition-colors flex-1"
-                                    >
-                                      {title}
-                                    </a>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            }).filter(Boolean)}
-                          </div>
+                          <SourceLinks 
+                            sources={extractSourcesFromText(referencesSection)}
+                            title="References"
+                          />
                         </div>
                       )}
                     </>
