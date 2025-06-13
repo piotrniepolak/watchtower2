@@ -258,11 +258,11 @@ export class PerplexityDefenseService {
       "Space Defense Initiative: Pentagon continues advancing space-based defense capabilities with multi-billion dollar investments in satellite defense systems and orbital surveillance technologies."
     ];
 
-    const summary = `Today's comprehensive defense intelligence analysis reveals significant developments across multiple sectors of the global defense industry, driven by evolving geopolitical dynamics and sustained technological advancement. Key areas of current focus include defense contract awards and funding initiatives, corporate financial performance and market dynamics, geopolitical tensions and security developments, advanced defense technologies and innovation, each presenting unique opportunities and strategic implications for defense contractors, government agencies, and institutional investors. Defense industry fundamentals remain exceptionally robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements across all service branches. The sector continues benefiting from sustained innovation cycles, particularly in artificial intelligence applications, space-based defense systems, and next-generation missile defense platforms. Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological breakthrough developments. Investors should monitor ongoing geopolitical developments, Pentagon budget allocations, and major contract award announcements as primary drivers of sector performance and individual company growth trajectories. Sources: <a href="https://www.defensenews.com" target="_blank" rel="noopener">[defensenews.com]</a> <a href="https://www.bloomberg.com" target="_blank" rel="noopener">[bloomberg.com]</a>`;
+    const summary = `Today's comprehensive defense intelligence analysis reveals significant developments across multiple sectors of the global defense industry, driven by evolving geopolitical dynamics and sustained technological advancement. Key areas of current focus include defense contract awards and funding initiatives, corporate financial performance and market dynamics, geopolitical tensions and security developments, advanced defense technologies and innovation, each presenting unique opportunities and strategic implications for defense contractors, government agencies, and institutional investors. Defense industry fundamentals remain exceptionally robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements across all service branches. The sector continues benefiting from sustained innovation cycles, particularly in artificial intelligence applications, space-based defense systems, and next-generation missile defense platforms. Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological breakthrough developments. Investors should monitor ongoing geopolitical developments, Pentagon budget allocations, and major contract award announcements as primary drivers of sector performance and individual company growth trajectories.`;
 
-    const marketImpact = `Defense contractors continue to benefit from sustained government spending and geopolitical tensions driving increased procurement activities. Major defense stocks are showing resilient performance with sustained institutional investor confidence. The sector demonstrates strong fundamentals with robust order backlogs, multi-year contracts providing revenue visibility, and expanding international partnerships. Current market dynamics favor established defense primes with proven track records in complex systems integration and program management capabilities. Sources: <a href="https://www.marketwatch.com" target="_blank" rel="noopener">[marketwatch.com]</a> <a href="https://www.cnbc.com" target="_blank" rel="noopener">[cnbc.com]</a>`;
+    const marketImpact = `Defense contractors continue to benefit from sustained government spending and geopolitical tensions driving increased procurement activities. Major defense stocks are showing resilient performance with sustained institutional investor confidence. The sector demonstrates strong fundamentals with robust order backlogs, multi-year contracts providing revenue visibility, and expanding international partnerships. Current market dynamics favor established defense primes with proven track records in complex systems integration and program management capabilities.`;
 
-    const geopoliticalAnalysis = `Global defense landscape continues evolving with heightened tensions in multiple theaters driving sustained demand for advanced military capabilities. Eastern European security concerns maintain elevated defense spending across NATO member nations. Indo-Pacific region security dynamics support continued U.S. military presence and alliance partnerships. Middle East stability requirements sustain demand for sophisticated defense systems and intelligence capabilities. The convergence of traditional military requirements with emerging cyber and space-based threats creates expanding market opportunities for defense contractors specializing in multi-domain operational capabilities. Sources: <a href="https://www.reuters.com" target="_blank" rel="noopener">[reuters.com]</a> <a href="https://www.wsj.com" target="_blank" rel="noopener">[wsj.com]</a>`;
+    const geopoliticalAnalysis = `Global defense landscape continues evolving with heightened tensions in multiple theaters driving sustained demand for advanced military capabilities. Eastern European security concerns maintain elevated defense spending across NATO member nations. Indo-Pacific region security dynamics support continued U.S. military presence and alliance partnerships. Middle East stability requirements sustain demand for sophisticated defense systems and intelligence capabilities. The convergence of traditional military requirements with emerging cyber and space-based threats creates expanding market opportunities for defense contractors specializing in multi-domain operational capabilities.`;
 
     const defenseStockHighlights = defenseStocks.slice(0, 6).map(stock => ({
       symbol: stock.symbol,
@@ -594,21 +594,7 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
   }
 
   private addSourceLinks(text: string, citations: string[]): string {
-    // Add clickable source links at the end of content
-    if (citations && citations.length > 0) {
-      const sourceLinks = citations
-        .filter(citation => citation && citation.startsWith('http'))
-        .slice(0, 3) // Limit to 3 main sources
-        .map((url, index) => {
-          const domain = new URL(url).hostname.replace('www.', '');
-          return `<a href="${url}" target="_blank" rel="noopener">[${domain}]</a>`;
-        })
-        .join(' ');
-      
-      if (sourceLinks) {
-        return `${text} Sources: ${sourceLinks}`;
-      }
-    }
+    // Store citations for later use in dedicated source sections, but don't embed in text
     return text;
   }
 
@@ -686,8 +672,8 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
       marketImpact += `Current market dynamics favor established defense contractors with proven track records in complex systems integration and program management capabilities. The defense industrial base continues to demonstrate resilience amid supply chain challenges, with major contractors investing in capacity expansion and workforce development to meet growing demand. International sales remain a key growth driver, with NATO allies and Indo-Pacific partners increasing defense procurement to address evolving security challenges. Investment outlook remains positive with defense stocks supported by predictable revenue streams, technological innovation cycles, and sustained government commitment to national security priorities.`;
     }
     
-    // Remove any embedded source links
-    return marketImpact.replace(/Sources?:\s*[^\n]*$/i, '').replace(/<a[^>]*>.*?<\/a>/gi, '').trim();
+    // Remove any embedded source links and source references
+    return marketImpact.replace(/Sources?:\s*[^\n]*$/i, '').replace(/<a[^>]*>.*?<\/a>/gi, '').replace(/\[[^\]]+\]/g, '').trim();
   }
 
   private extractConflictUpdates(content: string): Array<{ region: string; description: string; severity: "high" | "medium" | "low" | "critical" }> {
@@ -802,8 +788,8 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
       geoAnalysis += `International defense cooperation continues expanding through technology sharing agreements, joint development programs, and standardized procurement initiatives. NATO interoperability requirements create opportunities for contractors offering compatible systems across alliance partners, while bilateral defense agreements facilitate technology transfer and co-production arrangements. These partnerships strengthen defense industrial base resilience while expanding market access for qualified contractors.`;
     }
     
-    // Remove any embedded source links
-    return geoAnalysis.replace(/Sources?:\s*[^\n]*$/i, '').replace(/<a[^>]*>.*?<\/a>/gi, '').trim();
+    // Remove any embedded source links and source references
+    return geoAnalysis.replace(/Sources?:\s*[^\n]*$/i, '').replace(/<a[^>]*>.*?<\/a>/gi, '').replace(/\[[^\]]+\]/g, '').trim();
   }
 
   private async enhanceStockHighlights(stockHighlights: Array<{ symbol: string; companyName: string; analysis: string }>, defenseStocks: any[]): Promise<NewsStockHighlight[]> {
