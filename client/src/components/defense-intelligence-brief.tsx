@@ -259,9 +259,28 @@ export function DefenseIntelligenceBrief() {
                               </Badge>
                             </div>
                             
-                            <p className="text-sm leading-relaxed text-muted-foreground mb-3">
-                              {update.update || update.currentStatus || String(update)}
-                            </p>
+                            <div className="text-sm leading-relaxed text-muted-foreground mb-3">
+                              {(() => {
+                                const text = update.update || update.currentStatus || String(update);
+                                // Clean up markdown artifacts and improve readability
+                                const cleanText = text
+                                  .replace(/###\s*\d+\.\s*/g, '') // Remove "### 1. " patterns
+                                  .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
+                                  .replace(/\[\d+\]/g, '') // Remove citation brackets
+                                  .replace(/^\d+\.\s*/, '') // Remove leading numbers
+                                  .replace(/\s+/g, ' ') // Normalize whitespace
+                                  .trim();
+                                
+                                // Split into sentences for better readability
+                                const sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.length > 10);
+                                
+                                return sentences.map((sentence, idx) => (
+                                  <p key={idx} className="mb-2 last:mb-0">
+                                    {sentence.trim()}
+                                  </p>
+                                ));
+                              })()}
+                            </div>
 
                             {/* Recent Developments */}
                             {update.developments && Array.isArray(update.developments) && update.developments.length > 0 && (

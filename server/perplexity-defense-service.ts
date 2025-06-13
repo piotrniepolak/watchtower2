@@ -460,31 +460,69 @@ export class PerplexityDefenseService {
       'low': ['minor', 'routine', 'stable', 'peaceful']
     };
 
+    // Enhanced extraction patterns to capture more comprehensive conflict descriptions
     for (const region of regions) {
-      const regionRegex = new RegExp(`${region}[^.]*[.]`, 'gi');
-      const matches = content.match(regionRegex);
+      // Try multiple patterns to find region mentions
+      const patterns = [
+        new RegExp(`${region}[^.]{20,200}[.]`, 'gi'), // Original pattern with minimum length
+        new RegExp(`\\b${region}\\b[^\\n]{30,300}`, 'gi'), // Region mentions with context
+        new RegExp(`(?:in|on|near|around)\\s+${region}[^.]{20,200}[.]`, 'gi'), // Contextual mentions
+      ];
       
-      if (matches && matches.length > 0) {
-        const description = matches[0].trim();
+      let bestMatch = '';
+      
+      for (const pattern of patterns) {
+        const matches = content.match(pattern);
+        if (matches && matches.length > 0) {
+          // Find the longest, most descriptive match
+          const longestMatch = matches.reduce((a, b) => a.length > b.length ? a : b, '');
+          if (longestMatch.length > bestMatch.length) {
+            bestMatch = longestMatch;
+          }
+        }
+      }
+      
+      // If no specific pattern matches, try to extract from context
+      if (!bestMatch) {
+        const contextPattern = new RegExp(`[^.]*${region}[^.]*[.]`, 'gi');
+        const contextMatches = content.match(contextPattern);
+        if (contextMatches && contextMatches.length > 0) {
+          bestMatch = contextMatches[0];
+        }
+      }
+      
+      if (bestMatch && bestMatch.length > 20) {
         let severity: "high" | "medium" | "low" | "critical" = 'medium';
         
         // Determine severity based on keywords
         for (const [level, keywords] of Object.entries(severityKeywords)) {
-          if (keywords.some(keyword => description.toLowerCase().includes(keyword))) {
+          if (keywords.some(keyword => bestMatch.toLowerCase().includes(keyword))) {
             severity = level as "high" | "medium" | "low" | "critical";
             break;
           }
         }
         
-        updates.push({
-          region,
-          description: description.substring(0, 300),
-          severity
-        });
+        // Clean up markdown formatting and numbered lists
+        let cleanDescription = bestMatch
+          .replace(/###\s*\d+\.\s*/g, '') // Remove "### 1. " patterns
+          .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
+          .replace(/^\d+\.\s*/, '') // Remove leading numbers
+          .replace(/\[\d+\]/g, '') // Remove citation brackets
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+
+        // Ensure minimum content quality
+        if (cleanDescription.length >= 30) {
+          updates.push({
+            region,
+            description: cleanDescription.substring(0, 300),
+            severity
+          });
+        }
       }
     }
     
-    return updates.slice(0, 5);
+    return updates.slice(0, 8); // Increased from 5 to 8 for more comprehensive coverage
   }
 
   private extractStockHighlights(content: string): Array<{ symbol: string; companyName: string; analysis: string; marketCap?: string; contractValue?: string }> {
