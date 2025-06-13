@@ -91,6 +91,7 @@ export class DefenseIntelligenceService {
         title: intelligenceBrief.title || "Defense Intelligence Brief - " + new Date().toLocaleDateString(),
         summary: intelligenceBrief.summary || "Comprehensive defense sector intelligence featuring current market analysis and geopolitical developments",
         date: new Date().toISOString().split('T')[0],
+        sector: 'defense',
         createdAt: new Date(),
         keyDevelopments: intelligenceBrief.keyDevelopments || [
           "Defense contractors maintaining robust operational performance amid ongoing global security challenges",
@@ -122,7 +123,7 @@ export class DefenseIntelligenceService {
         geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis
       };
 
-      await storage.createDailyNews(insertData);
+      await storage.createDailyNews(insertData, 'defense');
       console.log("✅ Defense intelligence brief stored successfully");
 
       return defenseIntelligence;
@@ -230,6 +231,7 @@ export class DefenseIntelligenceService {
       title: "Defense Intelligence Brief - " + new Date().toLocaleDateString(),
       summary: "Defense sector continues to demonstrate resilience amid evolving geopolitical challenges and sustained government investment in national security priorities.",
       date: today,
+      sector: 'defense',
       createdAt: new Date(),
       keyDevelopments: [
         "Major defense contractors report steady contract acquisition rates across multiple government agencies",

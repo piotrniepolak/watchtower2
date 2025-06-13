@@ -187,6 +187,7 @@ export class PharmaNewsService {
         summary: intelligenceBrief.summary,
         keyDevelopments: intelligenceBrief.keyDevelopments,
         marketImpact: intelligenceBrief.marketImpact,
+        sector: 'pharmaceutical',
         conflictUpdates: intelligenceBrief.conflictUpdates.map(update => ({
           conflict: update.region,
           update: update.description,
@@ -213,6 +214,7 @@ export class PharmaNewsService {
     return {
       title: "Pharmaceutical Market Intelligence Brief",
       summary: "Today's pharmaceutical markets show mixed signals as investors monitor ongoing clinical trials and regulatory developments. Key healthcare stocks demonstrate resilience amid evolving treatment landscapes.",
+      sector: 'pharmaceutical',
       keyDevelopments: [
         "FDA continues review of multiple drug applications with decisions expected this quarter",
         "Pharmaceutical companies report strong R&D pipeline progress in oncology and rare diseases",
