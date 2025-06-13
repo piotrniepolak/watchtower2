@@ -670,7 +670,8 @@ class PerplexityService {
       }
     }
 
-    return stockHighlights;
+    // DISABLED: Return empty array - extraction now handled in routes.ts
+    return [];
   }
 
   async generateMarketImpactAnalysis(): Promise<string> {
