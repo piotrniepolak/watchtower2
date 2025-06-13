@@ -1739,19 +1739,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const extractedCompanies = extractMentionedCompanies(allContent);
       
-      // Create stock highlights only for actually mentioned companies
-      const pharmaceuticalStockHighlights = extractedCompanies.map((company: any) => {
-        const stock = healthcareStocks.find((s: any) => s.symbol === company.symbol);
+      // Auto-discover and add missing pharmaceutical stocks to database
+      const pharmaceuticalStockHighlights = [];
+      for (const company of extractedCompanies) {
+        let stock = healthcareStocks.find((s: any) => s.symbol === company.symbol);
         
-        return {
+        // If stock not in database, fetch from Yahoo Finance and add it
+        if (!stock) {
+          console.log(`🔍 Discovering new pharmaceutical stock: ${company.symbol} (${company.name})`);
+          try {
+            // Fetch real stock data from Yahoo Finance
+            const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${company.symbol}`);
+            const data = await response.json();
+            
+            if (data.chart && data.chart.result && data.chart.result[0]) {
+              const result = data.chart.result[0];
+              const quote = result.meta;
+              
+              const newStock = {
+                symbol: company.symbol,
+                name: company.name,
+                sector: 'Healthcare',
+                price: quote.regularMarketPrice || 0,
+                change: (quote.regularMarketPrice - quote.previousClose) || 0,
+                changePercent: ((quote.regularMarketPrice - quote.previousClose) / quote.previousClose * 100) || 0,
+                volume: quote.regularMarketVolume || 0,
+                marketCap: null,
+                lastUpdated: new Date()
+              };
+              
+              // Add to database
+              await storage.createStock(newStock);
+              console.log(`✅ Added ${company.symbol} to pharmaceutical stocks database with real price data`);
+              
+              stock = newStock;
+              healthcareStocks.push(newStock); // Update local cache
+            }
+          } catch (error) {
+            console.error(`❌ Failed to fetch stock data for ${company.symbol}:`, error);
+            // Create minimal entry without price data
+            const placeholderStock = {
+              symbol: company.symbol,
+              name: company.name,
+              sector: 'Healthcare',
+              price: 0,
+              change: 0,
+              changePercent: 0,
+              volume: 0,
+              marketCap: null,
+              lastUpdated: new Date()
+            };
+            await storage.createStock(placeholderStock);
+            stock = placeholderStock;
+          }
+        }
+        
+        pharmaceuticalStockHighlights.push({
           symbol: company.symbol,
           name: company.name,
           price: stock?.price || 0,
           change: stock?.change || 0,
           changePercent: stock?.changePercent || 0,
           reason: `Mentioned in brief: "${company.context.substring(0, 150)}..."`
-        };
-      });
+        });
+      }
 
       // Replace with only mentioned companies (no fallback data)
       news.pharmaceuticalStockHighlights = pharmaceuticalStockHighlights;
