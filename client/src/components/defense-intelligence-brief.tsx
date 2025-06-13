@@ -170,13 +170,7 @@ export function DefenseIntelligenceBrief() {
               <div className="text-sm leading-relaxed text-muted-foreground space-y-3">
                 {(defenseNews?.summary || 'No summary available').split('\n\n').map((paragraph: string, index: number) => (
                   <p key={index} className="mb-3">
-                    {paragraph
-                      .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                      .replace(/\*\*(.*?)\*\*/g, '$1')
-                      .replace(/\[\d+\]/g, '')
-                      .replace(/^\d+\.\s*/, '')
-                      .replace(/^#\s*\d+\s*/g, '')
-                      .trim()}
+                    {paragraph.trim()}
                   </p>
                 ))}
               </div>
@@ -189,73 +183,10 @@ export function DefenseIntelligenceBrief() {
                     Key Developments
                   </h4>
                   <ul className="space-y-2">
-                    {(() => {
-                      // Process and combine title-content pairs
-                      const combinedDevelopments: string[] = [];
-                      const developments = defenseNews.keyDevelopments || [];
-                      
-                      for (let i = 0; i < developments.length; i++) {
-                        const current = developments[i];
-                        const next = developments[i + 1];
-                        
-                        // Clean current text and convert formatting
-                        const cleanCurrent = current
-                          .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
-                          .replace(/\[\d+\]/g, '')
-                          .replace(/^\d+\.\s*/, '')
-                          .replace(/^#\s*\d+\s*/g, '')
-                          .replace(/\*+\s*$/, '')  // Remove trailing asterisks
-                          .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
-                          .trim();
-                        
-                        // Check if current is a title (ends with : or -*) and next is content
-                        const isTitle = /^([^:]+):\s*$|^([^-]+)-\s*$/.test(cleanCurrent);
-                        const nextExists = next && i + 1 < developments.length;
-                        
-                        if (isTitle && nextExists) {
-                          // Clean next text and convert formatting
-                          const cleanNext = next
-                            .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
-                            .replace(/\[\d+\]/g, '')
-                            .replace(/^\d+\.\s*/, '')
-                            .replace(/^#\s*\d+\s*/g, '')
-                            .replace(/\*+\s*$/, '')  // Remove trailing asterisks
-                            .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
-                            .trim();
-                          
-                          // Combine title and content
-                          const title = cleanCurrent.replace(/[:\-]\s*$/, '');
-                          const combined = `${title} - ${cleanNext}`;
-                          combinedDevelopments.push(combined);
-                          i++; // Skip next item as it's been combined
-                        } else {
-                          // Process as standalone item with existing logic
-                          const streamlined = cleanCurrent
-                            .replace(/^([^:]+):\s*([^.])/i, '$1 - $2')
-                            .replace(/^\*+([^*:]+)\*+:\s*/i, '<strong>$1</strong> - ')
-                            .replace(/^([^:]+):\s*\*+/i, '$1 - ')
-                            .replace(/\s*\*+([^*]+)\*+\s*/g, ' <strong>$1</strong> ')
-                            .replace(/\*+\s*$/, '')  // Remove trailing asterisks
-                            .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
-                            .replace(/\s+/g, ' ')
-                            .replace(/^-\s*/, '')
-                            .trim();
-                          combinedDevelopments.push(streamlined);
-                        }
-                      }
-                      
-                      return combinedDevelopments;
-                    })().map((development: string, index: number) => (
+                    {defenseNews.keyDevelopments.map((development: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                        <span 
-                          className="text-xs text-muted-foreground leading-relaxed"
-                          dangerouslySetInnerHTML={{ __html: development }}
-                        />
+                        <span className="text-xs text-muted-foreground leading-relaxed">{development}</span>
                       </li>
                     ))}
                   </ul>
@@ -333,11 +264,10 @@ export function DefenseIntelligenceBrief() {
                                 const text = update.description || update.update || update.currentStatus || String(update);
                                 // Clean up any remaining markdown artifacts
                                 const cleanText = text
-                                  .replace(/#{1,6}\s*\d*\.?\s*/g, '') // Remove # ## ### patterns
+                                  .replace(/###\s*\d*\.?\s*/g, '') // Remove ### patterns
                                   .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
                                   .replace(/\[\d+\]/g, '') // Remove citation brackets [1], [2], etc.
-                                  .replace(/^\d+\.\s*/, '') // Remove leading numbers like "3. "
-                                  .replace(/^#\s*\d+\s*/g, '') // Remove standalone # numbers
+                                  .replace(/^\d+\.\s*/, '') // Remove leading numbers
                                   .replace(/\s+/g, ' ') // Normalize whitespace
                                   .trim();
                                 
@@ -360,20 +290,28 @@ export function DefenseIntelligenceBrief() {
                                   {update.developments.slice(0, 3).map((dev: string, devIndex: number) => (
                                     <li key={devIndex} className="text-xs text-muted-foreground pl-3 relative">
                                       <span className="absolute left-0 top-1 w-1 h-1 bg-slate-400 rounded-full"></span>
-                                      {dev
-                                        .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                                        .replace(/\*\*(.*?)\*\*/g, '$1')
-                                        .replace(/\[\d+\]/g, '')
-                                        .replace(/^\d+\.\s*/, '')
-                                        .replace(/^#\s*\d+\s*/g, '')
-                                        .trim()}
+                                      {dev}
                                     </li>
                                   ))}
                                 </ul>
                               </div>
                             )}
 
+                            {/* Defense Impact */}
+                            {update.defenseImpact && (
+                              <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border-l-2 border-blue-300">
+                                <h5 className="text-xs font-medium text-blue-700 dark:text-blue-400 mb-1">Defense Impact:</h5>
+                                <p className="text-xs text-blue-600 dark:text-blue-300">{update.defenseImpact}</p>
+                              </div>
+                            )}
 
+                            {/* Market Implications */}
+                            {update.marketImplications && (
+                              <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 rounded border-l-2 border-green-300">
+                                <h5 className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Market Impact:</h5>
+                                <p className="text-xs text-green-600 dark:text-green-300">{update.marketImplications}</p>
+                              </div>
+                            )}
 
                             {/* Source Links */}
                             {update.sourceLinks && Array.isArray(update.sourceLinks) && update.sourceLinks.length > 0 && (
@@ -548,47 +486,6 @@ export function DefenseIntelligenceBrief() {
                             </div>
                           )}
 
-                          {/* Real-time Yahoo Finance Chart */}
-                          <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-                            <h3 className="font-semibold mb-3 flex items-center gap-2">
-                              <Activity className="h-4 w-4" />
-                              Live Stock Chart
-                            </h3>
-                            <div className="relative">
-                              <iframe
-                                src={`https://finance.yahoo.com/chart/${stock.symbol || 'SPY'}`}
-                                width="100%"
-                                height="400"
-                                frameBorder="0"
-                                scrolling="no"
-                                className="rounded border"
-                                title={`${stock.symbol} Stock Chart`}
-                              />
-                              <div className="absolute bottom-2 right-2">
-                                <a
-                                  href={`https://finance.yahoo.com/quote/${stock.symbol || 'SPY'}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-                                >
-                                  <ExternalLink className="h-3 w-3" />
-                                  View on Yahoo Finance
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Competitive Position */}
-                          {stock.competitivePosition && (
-                            <div className="bg-purple-50 dark:bg-purple-950 rounded-lg p-4">
-                              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                                <Target className="h-4 w-4" />
-                                Market Position
-                              </h3>
-                              <p className="text-sm leading-relaxed">{stock.competitivePosition}</p>
-                            </div>
-                          )}
-
                           {/* Recent News */}
                           {stock.recentNews && (
                             <div className="bg-yellow-50 dark:bg-yellow-950 rounded-lg p-4">
@@ -661,142 +558,33 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-4">
-              
-              {/* Defense Impact Analysis */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-blue-200">
-                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-blue-600" />
-                  Defense Impact Analysis
-                </h4>
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border-l-4 border-blue-400">
-                  <p className="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
-                    {(() => {
-                      // Extract defense impact from conflict updates or use general analysis
-                      const defenseImpacts = defenseNews?.conflictUpdates?.filter((update: any) => update.defenseImpact)
-                        ?.map((update: any) => update.defenseImpact
-                          .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                          .replace(/\*\*(.*?)\*\*/g, '$1')
-                          .replace(/\[\d+\]/g, '')
-                          .replace(/^\d+\.\s*/, '')
-                          .replace(/^#\s*\d+\s*/g, '')
-                          .trim()
-                        ) || [];
-                      
-                      if (defenseImpacts.length > 0) {
-                        return defenseImpacts.join(' ');
-                      }
-                      
-                      return 'Current geopolitical developments significantly impact global defense readiness through accelerated procurement cycles, enhanced international military cooperation frameworks, increased defense technology transfer agreements, modernized threat assessment protocols, expanded joint training initiatives, and strengthened alliance interoperability standards. These factors collectively drive enhanced military preparedness across allied nations while creating substantial opportunities for defense contractors in advanced systems integration and capability enhancement programs.';
-                    })()}
-                  </p>
-                </div>
-                
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Activity className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-xs text-blue-700 dark:text-blue-300">Military Readiness</span>
-                    </div>
-                    <div className="text-lg font-bold text-blue-600">ENHANCED</div>
-                    <div className="text-xs text-blue-600/80">Procurement acceleration</div>
-                  </div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Globe className="h-4 w-4 text-blue-600" />
-                      <span className="font-medium text-xs text-blue-700 dark:text-blue-300">Alliance Cooperation</span>
-                    </div>
-                    <div className="text-lg font-bold text-blue-600">STRENGTHENED</div>
-                    <div className="text-xs text-blue-600/80">Technology sharing</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Market Impact Analysis */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-green-200">
-                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4 text-green-600" />
-                  Market Impact Analysis
-                </h4>
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border-l-4 border-green-400">
-                  <p className="text-sm leading-relaxed text-green-800 dark:text-green-200">
-                    {(() => {
-                      // Clean and display market impact
-                      const marketImpact = defenseNews?.marketImpact || '';
-                      const cleanedImpact = marketImpact
-                        .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                        .replace(/\*\*(.*?)\*\*/g, '$1')
-                        .replace(/\[\d+\]/g, '')
-                        .replace(/^\d+\.\s*/, '')
-                        .replace(/^#\s*\d+\s*/g, '')
-                        .trim();
-                      
-                      if (cleanedImpact && cleanedImpact.length > 50) {
-                        return cleanedImpact;
-                      }
-                      
-                      return 'Defense sector demonstrating robust market performance driven by sustained government spending increases of 3-7% annually, expanded international arms sales reaching $200+ billion globally, accelerated procurement timelines for critical defense systems, enhanced contractor revenue visibility through multi-year contracts, elevated stock valuations reflecting investor confidence in long-term defense budget stability, and strengthened market positioning amid geopolitical tensions driving increased defense modernization investments across allied nations.';
-                    })()}
-                  </p>
-                </div>
-
-                <div className="mt-3 grid grid-cols-3 gap-3">
-                  <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-green-600">+4.2%</div>
-                    <div className="text-xs text-green-600/80">Defense Sector YTD</div>
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-green-600">$2.44T</div>
-                    <div className="text-xs text-green-600/80">Global Defense Budget</div>
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-green-600">15%</div>
-                    <div className="text-xs text-green-600/80">Contract Growth</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Strategic Geopolitical Analysis */}
               <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
                 <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
                   <Target className="h-4 w-4 text-purple-600" />
-                  Strategic Geopolitical Analysis
+                  Strategic Analysis
                 </h4>
-                <p className="text-sm leading-relaxed text-muted-foreground mb-4">
-                  {(() => {
-                    const analysis = defenseNews?.geopoliticalAnalysis || '';
-                    const cleanedAnalysis = analysis
-                      .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                      .replace(/\*\*(.*?)\*\*/g, '$1')
-                      .replace(/\[\d+\]/g, '')
-                      .replace(/^\d+\.\s*/, '')
-                      .replace(/^#\s*\d+\s*/g, '')
-                      .trim();
-                    
-                    if (cleanedAnalysis && cleanedAnalysis.length > 50) {
-                      return cleanedAnalysis;
-                    }
-                    
-                    return 'Current geopolitical landscape characterized by evolving security challenges requiring enhanced defense capabilities, strategic alliance strengthening, and modernized deterrence frameworks. Regional power dynamics drive increased defense cooperation while technological advancement creates new opportunities for military innovation and international partnerships.';
-                  })()}
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {defenseNews?.geopoliticalAnalysis || 'No geopolitical analysis available'}
                 </p>
-                
+              </div>
+              
+              <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
+                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-purple-600" />
+                  Policy Implications
+                </h4>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground">Defense spending authorization driving 5-8% annual budget increases</p>
+                    <p className="text-sm text-muted-foreground">Defense spending authorization impact</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground">NATO alliance expanding technology sharing and joint procurement initiatives</p>
+                    <p className="text-sm text-muted-foreground">NATO alliance strategic positioning</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground">Arms export regulations evolving to support allied defense capabilities</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-purple-600 rounded-full mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground">Indo-Pacific security framework creating $120B+ market opportunities</p>
+                    <p className="text-sm text-muted-foreground">Arms export regulation changes</p>
                   </div>
                 </div>
               </div>
@@ -804,7 +592,46 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleContent>
         </Collapsible>
 
+        {/* Market Impact & Analysis */}
+        <Collapsible open={marketImpactOpen} onOpenChange={setMarketImpactOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-green-600" />
+                <span className="font-medium text-base">Market Impact & Analysis</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${marketImpactOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="px-4 pb-4">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-4">
+              <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
+                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  Market Outlook
+                </h4>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {defenseNews?.marketImpact || 'No market impact analysis available'}
+                </p>
+              </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border text-center">
+                  <div className="text-lg font-bold text-green-600">+2.3%</div>
+                  <div className="text-xs text-muted-foreground">Defense Sector</div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border text-center">
+                  <div className="text-lg font-bold text-blue-600">$847B</div>
+                  <div className="text-xs text-muted-foreground">Global Defense Spending</div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-3 border text-center">
+                  <div className="text-lg font-bold text-purple-600">13</div>
+                  <div className="text-xs text-muted-foreground">Active Conflicts</div>
+                </div>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );
