@@ -663,7 +663,7 @@ export function DefenseIntelligenceBrief() {
                     <div className="text-xs text-green-600/80">Defense Sector YTD</div>
                   </div>
                   <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-3 text-center">
-                    <div className="text-lg font-bold text-green-600">$847B</div>
+                    <div className="text-lg font-bold text-green-600">$2.44T</div>
                     <div className="text-xs text-green-600/80">Global Defense Budget</div>
                   </div>
                   <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-3 text-center">
