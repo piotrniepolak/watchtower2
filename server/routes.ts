@@ -1629,76 +1629,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .replace(/References?:\s*\d+\./gi, '') // Remove "References: 1."
           .replace(/Source:\s*https?:\/\/[^\s\)]+/gi, ''); // Remove source URLs
         
-        // Comprehensive pharmaceutical company patterns
-        const pharmaCompanies = [
-          { name: 'Pfizer', symbol: 'PFE', patterns: ['pfizer inc', 'pfizer', 'pfe'] },
-          { name: 'Johnson & Johnson', symbol: 'JNJ', patterns: ['johnson & johnson', 'johnson and johnson', 'j&j', 'jnj', 'janssen pharmaceuticals', 'janssen'] },
-          { name: 'Roche', symbol: 'RHHBY', patterns: ['roche holding ag', 'roche', 'genentech', 'f. hoffmann-la roche', 'hoffmann-la roche'] },
-          { name: 'Novartis', symbol: 'NVS', patterns: ['novartis ag', 'novartis', 'nvs'] },
-          { name: 'Merck & Co', symbol: 'MRK', patterns: ['merck & co', 'merck kgaa', 'merck', 'mrk', 'keytruda', 'merck sharp & dohme'] },
-          { name: 'AbbVie', symbol: 'ABBV', patterns: ['abbvie inc', 'abbvie', 'abbv', 'humira', 'skyrizi'] },
-          { name: 'Bristol Myers Squibb', symbol: 'BMY', patterns: ['bristol myers squibb', 'bristol-myers squibb', 'bmy', 'bristol myers', 'bms'] },
-          { name: 'AstraZeneca', symbol: 'AZN', patterns: ['astrazeneca plc', 'astrazeneca', 'azn'] },
-          { name: 'GSK', symbol: 'GSK', patterns: ['gsk plc', 'gsk', 'glaxosmithkline', 'glaxo smithkline', 'glaxo'] },
-          { name: 'Sanofi', symbol: 'SNY', patterns: ['sanofi sa', 'sanofi', 'sny', 'sanofi-aventis'] },
-          { name: 'Gilead Sciences', symbol: 'GILD', patterns: ['gilead sciences inc', 'gilead sciences', 'gilead', 'gild'] },
-          { name: 'Amgen', symbol: 'AMGN', patterns: ['amgen inc', 'amgen', 'amgn'] },
-          { name: 'Biogen', symbol: 'BIIB', patterns: ['biogen inc', 'biogen', 'biib'] },
-          { name: 'Regeneron', symbol: 'REGN', patterns: ['regeneron pharmaceuticals', 'regeneron', 'regn', 'eylea'] },
-          { name: 'Vertex Pharmaceuticals', symbol: 'VRTX', patterns: ['vertex pharmaceuticals', 'vertex', 'vrtx'] },
-          { name: 'Moderna', symbol: 'MRNA', patterns: ['moderna inc', 'moderna', 'mrna'] },
-          { name: 'BioNTech', symbol: 'BNTX', patterns: ['biontech se', 'biontech', 'bntx'] },
-          { name: 'Eli Lilly', symbol: 'LLY', patterns: ['eli lilly and company', 'eli lilly', 'lilly', 'lly'] },
-          { name: 'Bayer', symbol: 'BAYRY', patterns: ['bayer ag', 'bayer', 'bayry'] },
-          { name: 'Novo Nordisk', symbol: 'NVO', patterns: ['novo nordisk a/s', 'novo nordisk', 'novo', 'nvo', 'ozempic', 'wegovy'] },
-          { name: 'Takeda', symbol: 'TAK', patterns: ['takeda pharmaceutical', 'takeda', 'tak'] },
-          { name: 'Boehringer Ingelheim', symbol: 'BOEHRY', patterns: ['boehringer ingelheim', 'boehringer'] },
-          { name: 'Teva', symbol: 'TEVA', patterns: ['teva pharmaceutical', 'teva', 'teva pharma'] },
-          { name: 'Allergan', symbol: 'AGN', patterns: ['allergan plc', 'allergan', 'agn', 'botox'] },
-          { name: 'Celgene', symbol: 'CELG', patterns: ['celgene corporation', 'celgene', 'celg'] }
+        console.log(`🔍 Scanning ${cleanContent.length} characters of pharmaceutical brief content for company mentions...`);
+        
+        // Dynamic extraction: Look for any pharmaceutical company patterns in the actual content
+        const companyPatterns = [
+          // Exact company names from our database
+          { name: 'Pfizer', symbol: 'PFE', patterns: ['pfizer inc', 'pfizer'] },
+          { name: 'Johnson & Johnson', symbol: 'JNJ', patterns: ['johnson & johnson', 'johnson and johnson', 'j&j', 'janssen'] },
+          { name: 'Roche', symbol: 'RHHBY', patterns: ['roche', 'genentech', 'hoffmann-la roche'] },
+          { name: 'Novartis', symbol: 'NVS', patterns: ['novartis'] },
+          { name: 'Merck & Co', symbol: 'MRK', patterns: ['merck & co', 'merck', 'keytruda'] },
+          { name: 'AbbVie', symbol: 'ABBV', patterns: ['abbvie', 'humira'] },
+          { name: 'Bristol Myers Squibb', symbol: 'BMY', patterns: ['bristol myers squibb', 'bristol-myers squibb', 'bristol myers'] },
+          { name: 'AstraZeneca', symbol: 'AZN', patterns: ['astrazeneca'] },
+          { name: 'GSK', symbol: 'GSK', patterns: ['gsk', 'glaxosmithkline'] },
+          { name: 'Sanofi', symbol: 'SNY', patterns: ['sanofi'] },
+          { name: 'Gilead Sciences', symbol: 'GILD', patterns: ['gilead sciences', 'gilead'] },
+          { name: 'Amgen', symbol: 'AMGN', patterns: ['amgen'] },
+          { name: 'Biogen', symbol: 'BIIB', patterns: ['biogen'] },
+          { name: 'Regeneron', symbol: 'REGN', patterns: ['regeneron pharmaceuticals', 'regeneron'] },
+          { name: 'Vertex Pharmaceuticals', symbol: 'VRTX', patterns: ['vertex pharmaceuticals', 'vertex'] },
+          { name: 'Moderna', symbol: 'MRNA', patterns: ['moderna'] },
+          { name: 'BioNTech', symbol: 'BNTX', patterns: ['biontech'] },
+          { name: 'Eli Lilly', symbol: 'LLY', patterns: ['eli lilly', 'lilly'] },
+          { name: 'Bayer', symbol: 'BAYRY', patterns: ['bayer healthcare pharmaceuticals', 'bayer'] },
+          { name: 'Novo Nordisk', symbol: 'NVO', patterns: ['novo nordisk', 'novo'] },
+          { name: 'Nuvation Bio', symbol: 'NUVB', patterns: ['nuvation bio inc', 'nuvation bio', 'nuvation'] },
+          { name: 'Sarepta Therapeutics', symbol: 'SRPT', patterns: ['sarepta therapeutics', 'sarepta'] }
         ];
         
         const lowerContent = cleanContent.toLowerCase();
         
-        for (const company of pharmaCompanies) {
+        // Also scan for any company patterns actually present in content
+        const additionalCompanyMentions = [];
+        
+        // Look for pharmaceutical company patterns in format "CompanyName Inc.", "CompanyName Pharmaceuticals", etc.
+        const companyNameRegex = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(Inc\.?|Corporation|Corp\.?|Pharmaceuticals?|Pharma|AG|SE|plc|Ltd\.?|Limited|Therapeutics|Sciences?|Healthcare|Biotech|Bio)\b/g;
+        let match;
+        while ((match = companyNameRegex.exec(cleanContent)) !== null) {
+          const fullCompanyName = match[0];
+          const baseCompanyName = match[1];
+          
+          // Skip if already in our patterns list
+          const alreadyIncluded = companyPatterns.some(cp => 
+            cp.patterns.some(p => p.toLowerCase().includes(baseCompanyName.toLowerCase()))
+          );
+          
+          if (!alreadyIncluded) {
+            additionalCompanyMentions.push({
+              name: fullCompanyName,
+              pattern: fullCompanyName.toLowerCase(),
+              context: match[0]
+            });
+          }
+        }
+        
+        console.log(`📋 Found ${additionalCompanyMentions.length} additional company mentions in content`);
+        
+        // Process known company patterns
+        for (const company of companyPatterns) {
           for (const pattern of company.patterns) {
             const patternIndex = lowerContent.indexOf(pattern.toLowerCase());
             if (patternIndex !== -1) {
-              // Extract broader context around the mention
-              const contextStart = Math.max(0, patternIndex - 150);
-              const contextEnd = Math.min(cleanContent.length, patternIndex + pattern.length + 250);
+              // Extract context around the mention
+              const contextStart = Math.max(0, patternIndex - 100);
+              const contextEnd = Math.min(cleanContent.length, patternIndex + pattern.length + 200);
               const context = cleanContent.substring(contextStart, contextEnd).trim();
               
               // Exclude if found in reference/citation context
               const isInReference = /^(references?|sources?|citations?)[:.]|^\d+\.|^https?:\/\//i.test(context);
-              if (isInReference) continue;
-              
-              // More comprehensive pharmaceutical context validation
-              const hasPharmContext = /\b(drug|therapy|treatment|fda|approved|clinical|trial|medicine|pharmaceutical|biotech|vaccine|study|patient|disease|cancer|diabetes|medication|compound|molecule|pipeline|acquisition|merger|collaboration|partnership|licensing|regulatory|dosing|efficacy|safety|adverse|side effect|indication|launch|commercial|revenue|sales|market|competition)\b/i.test(context);
-              
-              // Also accept if mentioned with financial/business context
-              const hasBusinessContext = /\b(revenue|sales|earnings|profit|loss|stock|share|market cap|investment|acquisition|merger|partnership|deal|contract|agreement|announced|reported|forecast|guidance|outlook)\b/i.test(context);
-              
-              if (hasPharmContext || hasBusinessContext) {
-                // Extract the most relevant sentence containing the company mention
-                const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
-                let relevantSentence = context;
-                
-                for (const sentence of sentences) {
-                  if (sentence.toLowerCase().includes(pattern.toLowerCase())) {
-                    relevantSentence = sentence.trim();
-                    break;
-                  }
-                }
-                
-                mentionedCompanies.push({
-                  symbol: company.symbol,
-                  name: company.name,
-                  context: relevantSentence,
-                  pattern: pattern
-                });
-                break; // Only add once per company
+              if (isInReference) {
+                console.log(`❌ Excluded ${company.name} (found in reference section)`);
+                continue;
               }
+              
+              // Extract the most relevant sentence containing the company mention
+              const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
+              let relevantSentence = context;
+              
+              for (const sentence of sentences) {
+                if (sentence.toLowerCase().includes(pattern.toLowerCase())) {
+                  relevantSentence = sentence.trim();
+                  break;
+                }
+              }
+              
+              console.log(`✅ Found ${company.name} mentioned in brief content`);
+              mentionedCompanies.push({
+                symbol: company.symbol,
+                name: company.name,
+                context: relevantSentence,
+                pattern: pattern
+              });
+              break; // Only add once per company
             }
           }
         }
@@ -1717,8 +1740,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const extractedCompanies = extractMentionedCompanies(allContent);
       
       // Create stock highlights only for actually mentioned companies
-      const pharmaceuticalStockHighlights = extractedCompanies.map(company => {
-        const stock = healthcareStocks.find(s => s.symbol === company.symbol);
+      const pharmaceuticalStockHighlights = extractedCompanies.map((company: any) => {
+        const stock = healthcareStocks.find((s: any) => s.symbol === company.symbol);
         
         return {
           symbol: company.symbol,

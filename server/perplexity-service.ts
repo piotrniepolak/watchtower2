@@ -589,67 +589,10 @@ class PerplexityService {
     change: number;
     analysis: string;
   }>> {
-    // Combine ALL content from every section of the brief for comprehensive extraction
-    const allContent = [
-      executiveSummary,
-      ...keyDevelopments,
-      ...healthCrisisUpdates.map(update => `${update.region} ${update.description} ${update.healthImpact}`),
-      marketImpact,
-      regulatoryAnalysis
-    ].join(' ');
-
-    console.log(`🔍 Scanning ${allContent.length} characters of pharmaceutical intelligence brief content for company mentions...`);
-
-    // Extract company mentions from all sections using enhanced patterns
-    const companyMentions = this.extractCompanyMentions(allContent);
+    // DISABLED: Old pharmaceutical extraction logic replaced by improved text-based extraction in routes.ts
+    console.log('ℹ️ Pharmaceutical stock analysis disabled in perplexity service - using improved extraction in routes.ts');
     
-    // Get all pharmaceutical stocks from database to cross-reference
-    const allStocks = await storage.getStocks();
-    const healthcareStocks = allStocks.filter(stock => stock.sector === 'Healthcare');
-    
-    console.log(`📊 Found ${healthcareStocks.length} healthcare stocks in database for cross-reference`);
-
-    // Map mentions to stock symbols
-    const stockSymbols = companyMentions
-      .map(mention => this.getStockSymbolFromMention(mention))
-      .filter((symbol): symbol is string => symbol !== null);
-
-    // Clean content to remove reference URLs and citations before checking mentions
-    const cleanContent = allContent
-      .replace(/\[References:\][\s\S]*$/i, '') // Remove entire References section
-      .replace(/https?:\/\/[^\s\)]+/g, '') // Remove URLs
-      .replace(/\[\d+\]/g, '') // Remove citation numbers like [1], [2]
-      .replace(/\(\d+\)/g, '') // Remove citation numbers like (1), (2)
-      .replace(/References?:\s*\d+\./gi, ''); // Remove "References: 1."
-
-    // Only check for direct symbol mentions in cleaned content (no reference URLs)
-    const directSymbolMentions = healthcareStocks
-      .filter(stock => {
-        const symbolPattern = new RegExp(`\\b${stock.symbol}\\b`, 'gi');
-        return symbolPattern.test(cleanContent);
-      })
-      .map(stock => stock.symbol);
-
-    // Combine both methods of detection
-    const allDetectedSymbols = [...stockSymbols, ...directSymbolMentions];
-    const uniqueSymbols = Array.from(new Set(allDetectedSymbols));
-
-    console.log(`🔍 Extracted ${companyMentions.length} pharmaceutical company mentions from cleaned content`);
-    console.log(`📈 Found ${directSymbolMentions.length} direct stock symbol mentions in content (excluding references)`);
-    console.log(`🎯 Total unique pharmaceutical stocks identified: ${uniqueSymbols.join(', ')}`);
-    
-    // Enhanced debug logging for company mapping
-    companyMentions.forEach(mention => {
-      const symbol = this.getStockSymbolFromMention(mention);
-      console.log(`📊 Company "${mention}" -> Symbol: ${symbol || 'NOT FOUND'}`);
-    });
-
-    // No fallback data - only use companies actually mentioned in content
-    if (uniqueSymbols.length === 0) {
-      console.log('ℹ️ No pharmaceutical companies mentioned in this brief content');
-    }
-
-    // Generate analysis for each mentioned company
+    // Return empty array - extraction now handled in routes.ts
     const stockHighlights: Array<{
       symbol: string;
       company: string;
