@@ -434,7 +434,7 @@ export default function PharmaIntelligenceBrief() {
                 <div className="text-blue-800 text-sm leading-relaxed">
                   {formatContentWithSources(
                     displayNews.summary,
-                    displayNews.references?.summary,
+                    (displayNews as any).references?.summary,
                     "Executive Summary"
                   )}
                 </div>
@@ -595,7 +595,11 @@ export default function PharmaIntelligenceBrief() {
             <div className="px-4 pb-4">
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <div className="text-purple-800 text-sm">
-                  {formatContentWithSources(displayNews.geopoliticalAnalysis)}
+                  {formatContentWithSources(
+                    displayNews.geopoliticalAnalysis,
+                    (displayNews as any).references?.geopoliticalAnalysis,
+                    "Regulatory & Policy Analysis"
+                  )}
                 </div>
               </div>
             </div>
@@ -625,30 +629,13 @@ export default function PharmaIntelligenceBrief() {
                   <DollarSign className="w-4 h-4" />
                   Pharmaceutical Market Impact
                 </h4>
-                {(() => {
-                  const marketContent = displayNews.marketImpact || "Market impact analysis will be displayed here once available.";
-                  const parts = marketContent.split('**References:**');
-                  const mainContent = parts[0].replace(/Sources:.*$/, '').trim();
-                  const referencesSection = parts[1];
-                  
-                  return (
-                    <>
-                      <div className="text-green-800 text-sm leading-relaxed mb-4">
-                        {mainContent}
-                      </div>
-                      
-                      {/* Streamlined Source Links */}
-                      {referencesSection && (
-                        <div className="border-t border-green-300 pt-4">
-                          <SourceLinks 
-                            sources={extractSourcesFromText(referencesSection)}
-                            title="References"
-                          />
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                <div className="text-green-800 text-sm leading-relaxed">
+                  {formatContentWithSources(
+                    displayNews.marketImpact,
+                    (displayNews as any).references?.marketImpact,
+                    "Market Impact"
+                  )}
+                </div>
               </div>
             </div>
           )}
