@@ -202,13 +202,19 @@ export function DefenseIntelligenceBrief() {
                               .replace(/^#\s*\d+\s*/g, '')
                               .trim();
                             
-                            // Remove title separators like "Title:" or "*Title*:" and merge with content
+                            // Remove title separators and merge content into flowing text
                             const streamlined = cleanText
-                              .replace(/^\*+([^*]+)\*+:\s*/i, '$1: ')
-                              .replace(/^([^:]+):\s*\*+/, '$1: ')
-                              .replace(/^([^:]+):\s*([A-Z])/i, '$1 - $2')
+                              // Handle "Title:" followed by content on same line or next bullet
+                              .replace(/^([^:]+):\s*$/i, '$1 - ')
+                              // Handle "Title: Content" format
+                              .replace(/^([^:]+):\s*([^.])/i, '$1 - $2')
+                              // Remove asterisk formatting around titles
+                              .replace(/^\*+([^*:]+)\*+:\s*/i, '$1 - ')
+                              .replace(/^([^:]+):\s*\*+/i, '$1 - ')
+                              // Clean up any remaining formatting
                               .replace(/\s*\*+([^*]+)\*+\s*/g, ' $1 ')
                               .replace(/\s+/g, ' ')
+                              .replace(/^-\s*/, '')
                               .trim();
                             
                             return streamlined;
