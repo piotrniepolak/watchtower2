@@ -1701,25 +1701,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return variations;
       }
 
-      // Create pharmaceutical stock highlights ONLY for companies mentioned in the brief
-      const pharmaceuticalStockHighlights = Array.from(mentionedCompanies).map(symbol => {
-        const stock = healthcareStocks.find(s => s.symbol === symbol);
+      // Extract pharmaceutical companies actually mentioned in the brief content
+      const extractMentionedCompanies = (content: string) => {
+        const mentionedCompanies = [];
         
-        if (stock) {
-          return {
-            symbol: stock.symbol,
-            name: stock.name,
-            price: stock.price || 0,
-            change: stock.change || 0,
-            changePercent: stock.changePercent || 0,
-            reason: `Mentioned in today's pharmaceutical intelligence brief`
-          };
+        // Comprehensive pharmaceutical company patterns with stock symbols
+        const pharmaCompanies = [
+          { name: 'Pfizer', symbol: 'PFE', patterns: ['pfizer', 'pfe'] },
+          { name: 'Johnson & Johnson', symbol: 'JNJ', patterns: ['johnson & johnson', 'johnson and johnson', 'j&j', 'jnj', 'janssen'] },
+          { name: 'Roche', symbol: 'RHHBY', patterns: ['roche', 'genentech', 'rhhby'] },
+          { name: 'Novartis', symbol: 'NVS', patterns: ['novartis', 'nvs'] },
+          { name: 'Merck', symbol: 'MRK', patterns: ['merck', 'mrk', 'keytruda'] },
+          { name: 'AbbVie', symbol: 'ABBV', patterns: ['abbvie', 'abbv', 'humira'] },
+          { name: 'Bristol Myers Squibb', symbol: 'BMY', patterns: ['bristol myers squibb', 'bristol-myers squibb', 'bmy', 'bristol myers'] },
+          { name: 'AstraZeneca', symbol: 'AZN', patterns: ['astrazeneca', 'azn'] },
+          { name: 'GSK', symbol: 'GSK', patterns: ['gsk', 'glaxosmithkline', 'glaxo'] },
+          { name: 'Sanofi', symbol: 'SNY', patterns: ['sanofi', 'sny'] },
+          { name: 'Gilead Sciences', symbol: 'GILD', patterns: ['gilead', 'gild'] },
+          { name: 'Amgen', symbol: 'AMGN', patterns: ['amgen', 'amgn'] },
+          { name: 'Biogen', symbol: 'BIIB', patterns: ['biogen', 'biib'] },
+          { name: 'Regeneron', symbol: 'REGN', patterns: ['regeneron', 'regn'] },
+          { name: 'Vertex Pharmaceuticals', symbol: 'VRTX', patterns: ['vertex', 'vrtx'] },
+          { name: 'Moderna', symbol: 'MRNA', patterns: ['moderna', 'mrna'] },
+          { name: 'BioNTech', symbol: 'BNTX', patterns: ['biontech', 'bntx'] },
+          { name: 'Eli Lilly', symbol: 'LLY', patterns: ['eli lilly', 'lilly', 'lly'] },
+          { name: 'Bayer', symbol: 'BAYRY', patterns: ['bayer', 'bayry'] }
+        ];
+        
+        const lowerContent = content.toLowerCase();
+        
+        for (const company of pharmaCompanies) {
+          for (const pattern of company.patterns) {
+            if (lowerContent.includes(pattern.toLowerCase())) {
+              // Extract context around the mention
+              const contextStart = Math.max(0, lowerContent.indexOf(pattern.toLowerCase()) - 100);
+              const contextEnd = Math.min(content.length, lowerContent.indexOf(pattern.toLowerCase()) + pattern.length + 200);
+              const context = content.substring(contextStart, contextEnd).trim();
+              
+              // Ensure it's a meaningful pharmaceutical context, not just a passing mention
+              const hasPharmContext = /\b(drug|therapy|treatment|fda|approved|clinical|trial|medicine|pharmaceutical|biotech|vaccine|study|patient|disease|cancer|diabetes)\b/i.test(context);
+              
+              if (hasPharmContext) {
+                mentionedCompanies.push({
+                  symbol: company.symbol,
+                  name: company.name,
+                  context: context,
+                  pattern: pattern
+                });
+                break; // Only add once per company
+              }
+            }
+          }
         }
         
-        return null;
-      }).filter(Boolean);
+        return mentionedCompanies;
+      };
 
-      // Replace the news pharmaceuticalStockHighlights with only mentioned companies
+      // Extract companies from all content sections
+      const allContent = [
+        news.summary || '',
+        Array.isArray(news.keyDevelopments) ? news.keyDevelopments.join(' ') : '',
+        news.marketImpact || '',
+        news.geopoliticalAnalysis || ''
+      ].join(' ');
+
+      const extractedCompanies = extractMentionedCompanies(allContent);
+      
+      // Create stock highlights only for actually mentioned companies
+      const pharmaceuticalStockHighlights = extractedCompanies.map(company => {
+        const stock = healthcareStocks.find(s => s.symbol === company.symbol);
+        
+        return {
+          symbol: company.symbol,
+          name: company.name,
+          price: stock?.price || 0,
+          change: stock?.change || 0,
+          changePercent: stock?.changePercent || 0,
+          reason: `Mentioned in brief: "${company.context.substring(0, 150)}..."`
+        };
+      });
+
+      // Replace with only mentioned companies (no fallback data)
       news.pharmaceuticalStockHighlights = pharmaceuticalStockHighlights;
 
       res.json(news);
@@ -1729,183 +1791,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate new pharmaceutical intelligence brief
-  app.post("/api/news/pharma/generate", async (req, res) => {
+  // Defense News Routes  
+  app.get("/api/news/defense/today", async (req, res) => {
     try {
-      console.log('🔬 Manual pharmaceutical intelligence brief generation requested...');
-      
-      // Delete existing entry for today first
       const today = new Date().toISOString().split('T')[0];
-      await storage.deleteDailyNews(today);
-      
-      // Generate fresh pharmaceutical intelligence using Perplexity AI
-      const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      let news = await storage.getDailyNews(today, 'defense');
       
       if (!news) {
-        console.log('Perplexity AI generation failed, trying fallback method...');
-        const fallbackNews = await pharmaNewsService.getTodaysPharmaNews();
-        if (!fallbackNews) {
-          return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
-        }
-        return res.json(fallbackNews);
-      }
-      
-      console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');
-      res.json(news);
-    } catch (error) {
-      console.error("Error generating pharmaceutical intelligence brief:", error);
-      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
-    }
-  });
-              .split(/[.!?]+/)
-              .map(s => s.trim())
-              .filter(s => s.length > 30); // Only meaningful sentences
-
-            // Find the best sentence mentioning this company
-            for (const sentence of sentences) {
-              const lowerSentence = sentence.toLowerCase();
-              
-              // Check if sentence contains any variation of the company name
-              for (const identifier of companyIdentifiers) {
-                if (identifier && lowerSentence.includes(identifier.toLowerCase())) {
-                  // More flexible criteria for meaningful content
-                  if (sentence.length > 40 && 
-                      !lowerSentence.includes('executive summary') &&
-                      !lowerSentence.includes('references') &&
-                      !lowerSentence.includes('### ') &&
-                      // Look for meaningful pharmaceutical content or company actions
-                      (lowerSentence.includes('fda') || lowerSentence.includes('approved') || 
-                       lowerSentence.includes('announced') || lowerSentence.includes('acquired') ||
-                       lowerSentence.includes('cleared') || lowerSentence.includes('agreed') ||
-                       lowerSentence.includes('secured') || lowerSentence.includes('raised') ||
-                       lowerSentence.includes('drug') || lowerSentence.includes('therapy') ||
-                       lowerSentence.includes('treatment') || lowerSentence.includes('cancer') ||
-                       lowerSentence.includes('million') || lowerSentence.includes('billion') ||
-                       lowerSentence.includes('compete') || lowerSentence.includes('market') ||
-                       lowerSentence.includes('price') || lowerSentence.includes('shot') ||
-                       lowerSentence.includes('investment') || lowerSentence.includes('agreement'))) {
-                    
-                    // Extract only the portion directly relevant to this specific company
-                    let relevantPortion = sentence.trim();
-                    
-                    // Find the position of the company mention
-                    const companyMentionIndex = lowerSentence.indexOf(identifier.toLowerCase());
-                    
-                    if (companyMentionIndex !== -1) {
-                      // Try multiple extraction strategies to get company-specific content
-                      
-                      // Strategy 1: Extract clause containing the company name
-                      const clauses = sentence.split(/[,;]/);
-                      for (const clause of clauses) {
-                        const lowerClause = clause.toLowerCase();
-                        if (lowerClause.includes(identifier.toLowerCase())) {
-                          // Check if this clause is specifically about this company (not mentioning other companies)
-                          const otherCompanies = ['bristol myers', 'roche', 'sanofi', 'gsk', 'biogen', 'johnson', 'vertex', 'bayer', 'eli lilly'];
-                          const mentionsOtherCompanies = otherCompanies.some(other => 
-                            other !== identifier.toLowerCase() && lowerClause.includes(other)
-                          );
-                          
-                          if (!mentionsOtherCompanies && clause.trim().length > 25) {
-                            relevantPortion = clause.trim();
-                            break;
-                          }
-                        }
-                      }
-                      
-                      // Strategy 2: If no good clause found, extract substring around company mention
-                      if (relevantPortion === sentence.trim()) {
-                        const startPos = Math.max(0, companyMentionIndex - 50);
-                        const endPos = Math.min(sentence.length, companyMentionIndex + identifier.length + 100);
-                        const substring = sentence.substring(startPos, endPos).trim();
-                        
-                        // Find sentence boundaries within the substring
-                        const sentenceStart = substring.search(/[.!?]\s+/);
-                        const actualStart = sentenceStart !== -1 ? sentenceStart + 2 : 0;
-                        
-                        const extractedText = substring.substring(actualStart);
-                        if (extractedText.length > 25) {
-                          relevantPortion = extractedText;
-                        }
-                      }
-                    }
-                    
-                    // Clean and format the relevant portion
-                    relevantPortion = relevantPortion.replace(/^[,;\s]+/, ''); // Remove leading punctuation
-                    if (!relevantPortion.match(/[.!?]$/)) {
-                      relevantPortion += '.';
-                    }
-                    
-                    return relevantPortion;
-                  }
-                }
-              }
-            }
-
-            return '';
-          };
-
-          const generateDetailedDescription = (): string => {
-            const baseDescription = getCompanyDescriptor(stock.symbol, stock.name);
-            
-            // Extract actual quote from the brief
-            const briefQuote = extractCompanyQuote(stock.symbol, stock.name);
-            
-            if (briefQuote && briefQuote.length > 30) {
-              return `${baseDescription} Intelligence Brief: "${briefQuote}"`;
-            }
-            
-            return baseDescription;
-          };
-
-          // Handle companies without current market data (price = 0)
-          if (stock.price === 0) {
-            return {
-              symbol: stock.symbol,
-              name: stock.name,
-              price: 0,
-              change: 0,
-              changePercent: 0,
-              reason: `${stock.name} represents a private or unlisted pharmaceutical entity highlighted in current intelligence analysis.`
-            };
-          }
-
-          return {
-            symbol: stock.symbol,
-            name: stock.name,
-            price: stock.price,
-            change: stock.change,
-            changePercent: stock.changePercent,
-            reason: generateDetailedDescription()
-          };
-        }
-        return null;
-      }).filter(Boolean);
-
-      // Only use comprehensive stock highlights if database highlights are empty or missing
-      if (!news.pharmaceuticalStockHighlights || 
-          !Array.isArray(news.pharmaceuticalStockHighlights) || 
-          news.pharmaceuticalStockHighlights.length === 0) {
-        news.pharmaceuticalStockHighlights = comprehensiveStockHighlights;
-      } else {
-        // Enhance existing database highlights with current stock prices
-        news.pharmaceuticalStockHighlights = news.pharmaceuticalStockHighlights.map((highlight: any) => {
-          const stock = healthcareStocks.find(s => s.symbol === highlight.symbol);
-          if (stock && stock.price > 0) {
-            return {
-              ...highlight,
-              price: stock.price,
-              change: stock.change,
-              changePercent: stock.changePercent
-            };
-          }
-          return highlight;
-        });
+        return res.status(404).json({ error: "No defense news available for today" });
       }
 
       res.json(news);
     } catch (error) {
-      console.error("Error fetching today's pharma news:", error);
-      res.status(500).json({ error: "Failed to fetch today's pharma news" });
+      console.error("Error fetching today's defense news:", error);
+      res.status(500).json({ error: "Failed to fetch today's defense news" });
     }
   });
 
