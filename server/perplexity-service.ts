@@ -304,80 +304,15 @@ class PerplexityService {
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();
 
-    // Add clean reference list below the content
-    if (validCitations.length > 0) {
-      processedContent += '\n\n**References:**\n\n';
-      
-      // Use for loop to enable async/await for web scraping
-      for (let index = 0; index < validCitations.length; index++) {
-        const citation = validCitations[index];
-        let displayTitle = citation.title;
-        
-        // If title is generic, contains source domain, or is just a number, fetch from web
-        if (!displayTitle || 
-            displayTitle.includes('Source from') || 
-            displayTitle.toLowerCase().includes('biopharmadive.com') || 
-            displayTitle.toLowerCase().includes('statnews.com') ||
-            displayTitle.toLowerCase().includes("don't miss tomorrow's biopharma industry news") ||
-            displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
-            displayTitle.match(/^\d+$/) || // Just a number
-            displayTitle.length < 10) { // Too short to be meaningful
-          
-          // Fetch the actual title from the web page
-          const webTitle = await this.fetchArticleTitle(citation.url);
-          
-          if (webTitle) {
-            displayTitle = webTitle;
-          } else {
-            // Fallback to URL parsing if web scraping fails
-            const urlParts = citation.url.split('/');
-            let articleSlug = '';
-            
-            if (citation.url.includes('biopharmadive.com/news/')) {
-              const newsIndex = urlParts.findIndex(part => part === 'news');
-              if (newsIndex !== -1 && urlParts[newsIndex + 1]) {
-                articleSlug = urlParts[newsIndex + 1];
-              }
-            } else if (citation.url.includes('statnews.com/')) {
-              const lastPart = urlParts[urlParts.length - 1];
-              const secondLastPart = urlParts[urlParts.length - 2];
-              
-              if (lastPart && !lastPart.match(/^\d{4}$/) && lastPart.length > 3) {
-                articleSlug = lastPart;
-              } else if (secondLastPart && secondLastPart.length > 3) {
-                articleSlug = secondLastPart;
-              }
-            } else {
-              for (let i = urlParts.length - 1; i >= 0; i--) {
-                const part = urlParts[i];
-                if (part && part.length > 3 && !part.match(/^\d+$/) && part !== 'news' && part !== 'articles') {
-                  articleSlug = part;
-                  break;
-                }
-              }
-            }
-            
-            if (articleSlug && articleSlug !== '') {
-              displayTitle = articleSlug
-                .replace(/-/g, ' ')
-                .replace(/\b\w/g, l => l.toUpperCase())
-                .replace(/\b(And|Of|The|In|On|At|To|For|With|By)\b/g, word => word.toLowerCase())
-                .replace(/\b(A|An)\b/g, word => word.toLowerCase())
-                .trim();
-            } else {
-              const domain = new URL(citation.url).hostname.replace('www.', '');
-              displayTitle = `Article from ${domain}`;
-            }
-          }
-        }
-        
-        processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
-      }
-      
-      console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
-    }
-
-    return processedContent;
+    // Remove any remaining "Sources:" text at the end
+    processedContent = processedContent.replace(/\s*Sources?:\s*[^\n]*$/gmi, '');
+    processedContent = processedContent.replace(/\s*Source:\s*[^\n]*$/gmi, '');
+    
+    // Clean up trailing whitespace and periods
+    processedContent = processedContent.trim();
+    
+    // Return clean content without any reference formatting
+    return { content: processedContent, citations: validCitations };
   }
 
   async generateExecutiveSummary(): Promise<string> {
