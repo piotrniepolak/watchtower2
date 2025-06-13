@@ -1,10 +1,36 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { SourceLinks, generateSectorSources } from "./source-links";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, Pill, Zap, TrendingUp, TrendingDown, ExternalLink, RefreshCw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  Shield, 
+  Pill,
+  Zap,
+  TrendingUp, 
+  AlertTriangle, 
+  Clock, 
+  Target,
+  RefreshCw,
+  ChevronDown,
+  FileText,
+  Globe,
+  BarChart3,
+  Users,
+  Building2,
+  DollarSign,
+  ExternalLink,
+  Award,
+  Activity
+} from "lucide-react";
 
 interface UnifiedBriefData {
   id: number;
@@ -70,7 +96,7 @@ const sectorConfig = {
 
 export function UnifiedIntelligenceDashboard() {
   const [selectedSector, setSelectedSector] = useState<keyof typeof sectorConfig>("defense");
-  
+
   const config = sectorConfig[selectedSector];
   const IconComponent = config.icon;
 
@@ -89,7 +115,7 @@ export function UnifiedIntelligenceDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       });
-      
+
       if (response.ok) {
         refetch();
       }
@@ -130,7 +156,7 @@ export function UnifiedIntelligenceDashboard() {
                 <CardDescription>Comprehensive analysis across defense, pharmaceutical, and energy sectors</CardDescription>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <Select value={selectedSector} onValueChange={(value: keyof typeof sectorConfig) => setSelectedSector(value)}>
                 <SelectTrigger className="w-48">
@@ -162,7 +188,7 @@ export function UnifiedIntelligenceDashboard() {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Button onClick={handleGenerate} size="sm" variant="outline">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Generate Fresh Brief
@@ -296,6 +322,15 @@ export function UnifiedIntelligenceDashboard() {
           </CardContent>
         </Card>
       )}
-    </div>
+
+        {/* Comprehensive Source Links for Selected Sector */}
+        <div className="mt-6">
+          <SourceLinks 
+            sources={generateSectorSources(selectedSector)}
+            title={`${config.name} Sources & References`}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

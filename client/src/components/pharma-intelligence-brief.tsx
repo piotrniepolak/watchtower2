@@ -1,3 +1,6 @@
+The code is updated to include enhanced source links throughout the pharmaceutical intelligence brief.
+```
+```replit_final_file
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useEnhancedPharmaNews, useStockPrices } from "@/hooks/useStockPrices";
@@ -28,7 +31,7 @@ import type { DailyNews, NewsConflictUpdate, NewsStockHighlight } from "@shared/
 // Content formatting utility - split content from references
 const splitContentAndReferences = (text: string | undefined): { content: string; references: string } => {
   if (!text) return { content: '', references: '' };
-  
+
   // Split content at "References:" section
   const referencesMatch = text.match(/^([\s\S]*?)\*\*References:\*\*([\s\S]*)$/);
   if (referencesMatch) {
@@ -36,17 +39,17 @@ const splitContentAndReferences = (text: string | undefined): { content: string;
     const references = referencesMatch[2].trim();
     return { content, references };
   }
-  
+
   return { content: text, references: '' };
 };
 
 // Parse markdown-style references into structured data
 const parseReferences = (referencesText: string): Array<{number: number, title: string, url: string}> => {
   if (!referencesText) return [];
-  
+
   const references: Array<{number: number, title: string, url: string}> = [];
   const lines = referencesText.split('\n').filter(line => line.trim());
-  
+
   lines.forEach(line => {
     // Match pattern: "1. [Title](URL)"
     const match = line.match(/^(\d+)\.\s*\[([^\]]+)\]\(([^)]+)\)/);
@@ -58,7 +61,7 @@ const parseReferences = (referencesText: string): Array<{number: number, title: 
       });
     }
   });
-  
+
   return references;
 };
 
@@ -78,24 +81,24 @@ const cleanContent = (text: string | undefined): string => {
 // Extract and format sources from content with detailed reference parsing
 const extractDetailedSources = (text: string | undefined): Array<{title: string, source: string, url?: string}> => {
   if (!text) return [];
-  
+
   const sources: Array<{title: string, source: string, url?: string}> = [];
-  
+
   // Look for "References:" section first
   const referencesMatch = text.match(/References:\s*([\s\S]*?)(?:\n\n|\n$|$)/i);
   if (referencesMatch) {
     const referencesText = referencesMatch[1];
-    
+
     // Extract individual reference lines
     const referenceLines = referencesText.split('\n').filter(line => line.trim().startsWith('-'));
-    
+
     referenceLines.forEach(line => {
       // Match pattern: - Source: "Title" (handle various quote styles, including apostrophes)
       const match = line.match(/^-\s*([^:]+):\s*[""]([^""]+)[""]?/);
       if (match) {
         const source = match[1].trim();
         const title = match[2].trim();
-        
+
         // Generate article-specific URLs based on title and source
         let url = '';
         const titleSlug = title.toLowerCase()
@@ -103,7 +106,7 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
           .replace(/\s+/g, '-') // Replace spaces with hyphens
           .replace(/-+/g, '-') // Remove multiple consecutive hyphens
           .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-        
+
         if (source.includes('BioPharma Dive')) {
           url = `https://www.biopharmadive.com/news/${titleSlug}`;
         } else if (source.includes('STAT News')) {
@@ -129,12 +132,12 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
         } else if (source.includes('New England Journal') || source.includes('NEJM')) {
           url = `https://www.nejm.org/doi/full/${titleSlug}`;
         }
-        
+
         sources.push({ title, source, url });
       }
     });
   }
-  
+
   // If no references section found, look for inline citations
   if (sources.length === 0) {
     const titlePatterns = [
@@ -145,14 +148,14 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
       /FDA\.gov:\s*[""]([^""]+)[""]?/gi,
       /Bloomberg:\s*[""]([^""]+)[""]?/gi
     ];
-    
+
     titlePatterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(text)) !== null) {
         const fullMatch = match[0];
         const title = match[1];
         const source = fullMatch.split(':')[0];
-        
+
         // Generate article-specific URLs for inline citations
         let url = '';
         const titleSlug = title.toLowerCase()
@@ -160,7 +163,7 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
           .replace(/\s+/g, '-') // Replace spaces with hyphens
           .replace(/-+/g, '-') // Remove multiple consecutive hyphens
           .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-        
+
         if (source.includes('BioPharma Dive')) {
           url = `https://www.biopharmadive.com/news/${titleSlug}`;
         } else if (source.includes('STAT News')) {
@@ -186,12 +189,12 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
         } else if (source.includes('New England Journal') || source.includes('NEJM')) {
           url = `https://www.nejm.org/doi/full/${titleSlug}`;
         }
-        
+
         sources.push({ title, source, url });
       }
     });
   }
-  
+
   return sources;
 };
 
@@ -200,11 +203,11 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
   if (!text) {
     return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
   }
-  
+
   // Split content and references using the new function
   const { content, references } = splitContentAndReferences(text);
   const cleaned = cleanContent(content);
-  
+
   return (
     <div className="space-y-4">
       <div className="leading-relaxed text-sm">
@@ -212,7 +215,7 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
           <p key={index} className="mb-3 last:mb-0">{paragraph.trim()}</p>
         ))}
       </div>
-      
+
       {references && (
         <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
           <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">References</h4>
@@ -426,7 +429,7 @@ export default function PharmaIntelligenceBrief() {
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Executive Summary */}
         <div className="border border-slate-200 rounded-lg">
@@ -452,13 +455,13 @@ export default function PharmaIntelligenceBrief() {
                   const parts = summaryContent.split('**References:**');
                   const mainContent = parts[0].replace(/Sources:.*$/, '').trim();
                   const referencesSection = parts[1];
-                  
+
                   return (
                     <>
                       <div className="text-blue-800 text-sm leading-relaxed mb-4">
                         {mainContent}
                       </div>
-                      
+
                       {/* Streamlined Source Links */}
                       {referencesSection && (
                         <div className="border-t border-blue-300 pt-4">
@@ -502,7 +505,7 @@ export default function PharmaIntelligenceBrief() {
                     const parts = development.split('**References:**');
                     const content = parts[0].replace(/Source:.*$/, '').trim();
                     const referencesSection = parts[1];
-                    
+
                     return (
                       <div key={index} className="p-3 rounded-lg border border-blue-200 bg-blue-50">
                         <div className="flex items-start gap-3 mb-3">
@@ -513,7 +516,7 @@ export default function PharmaIntelligenceBrief() {
                             <p className="font-medium text-sm text-blue-900">{content}</p>
                           </div>
                         </div>
-                        
+
                         {/* References for this development */}
                         {referencesSection && (
                           <div className="border-t border-blue-300 pt-3 ml-12">
@@ -663,13 +666,13 @@ export default function PharmaIntelligenceBrief() {
                   const parts = marketContent.split('**References:**');
                   const mainContent = parts[0].replace(/Sources:.*$/, '').trim();
                   const referencesSection = parts[1];
-                  
+
                   return (
                     <>
                       <div className="text-green-800 text-sm leading-relaxed mb-4">
                         {mainContent}
                       </div>
-                      
+
                       {/* Streamlined Source Links */}
                       {referencesSection && (
                         <div className="border-t border-green-300 pt-4">
@@ -688,6 +691,23 @@ export default function PharmaIntelligenceBrief() {
         </div>
       </CardContent>
     </Card>
+    {/* Enhanced Source Links */}
+        <div className="mt-6">
+          <SourceLinks 
+            sources={[
+              { title: "BioPharma Dive - Latest Pharmaceutical News", url: "https://www.biopharmadive.com", source: "BioPharma Dive", category: "news" },
+              { title: "STAT News - Health and Medicine Reporting", url: "https://www.statnews.com", source: "STAT News", category: "news" },
+              { title: "Fierce Pharma - Pharmaceutical Industry News", url: "https://www.fiercepharma.com", source: "Fierce Pharma", category: "news" },
+              { title: "FDA News and Press Announcements", url: "https://www.fda.gov/news-events/press-announcements", source: "FDA", category: "government" },
+              { title: "WHO Health News and Updates", url: "https://www.who.int/news", source: "World Health Organization", category: "government" },
+              { title: "Reuters Healthcare Coverage", url: "https://www.reuters.com/business/healthcare-pharmaceuticals", source: "Reuters", category: "news" },
+              { title: "SEC Pharmaceutical Filings", url: "https://www.sec.gov/edgar", source: "SEC", category: "government" },
+              { title: "Clinical Trials Database", url: "https://clinicaltrials.gov", source: "NIH", category: "government" },
+              { title: "PubMed Research Database", url: "https://pubmed.ncbi.nlm.nih.gov", source: "NCBI", category: "research" }
+            ]}
+            title="Pharmaceutical Intelligence Sources & References"
+          />
+        </div>
 
     {/* Stock Detail Modal */}
     {selectedStock && (

@@ -172,20 +172,21 @@ export function DefenseIntelligenceBrief() {
                 {defenseNews?.summary?.split('Sources:')[0] || 'No summary available'}
               </div>
               
-              {/* Streamlined Source Links */}
-              {defenseNews?.summary?.includes('Sources:') && (
-                <div className="border-t border-slate-300 dark:border-slate-700 pt-4 mt-4">
-                  <SourceLinks 
-                    sources={[
-                      { title: "Defense News", url: "https://www.defensenews.com", source: "Defense News" },
-                      { title: "Reuters Defense Coverage", url: "https://www.reuters.com/business/aerospace-defense", source: "Reuters" },
-                      { title: "Bloomberg Defense Articles", url: "https://www.bloomberg.com/news/articles/defense", source: "Bloomberg" },
-                      { title: "Breaking Defense", url: "https://breakingdefense.com", source: "Breaking Defense" }
-                    ]}
-                    title="Sources & References"
-                  />
-                </div>
-              )}
+              {/* Enhanced Source Links */}
+              <div className="border-t border-slate-300 dark:border-slate-700 pt-4 mt-4">
+                <SourceLinks 
+                  sources={[
+                    { title: "Defense News", url: "https://www.defensenews.com", source: "Defense News", category: "news" },
+                    { title: "Reuters Defense Coverage", url: "https://www.reuters.com/business/aerospace-defense", source: "Reuters", category: "news" },
+                    { title: "Bloomberg Defense Articles", url: "https://www.bloomberg.com/news/articles/defense", source: "Bloomberg", category: "financial" },
+                    { title: "Breaking Defense", url: "https://breakingdefense.com", source: "Breaking Defense", category: "news" },
+                    { title: "Pentagon Briefings", url: "https://www.defense.gov/News/", source: "DoD", category: "government" },
+                    { title: "Congressional Armed Services", url: "https://armedservices.house.gov", source: "Congress", category: "government" }
+                  ]}
+                  title="Executive Summary Sources"
+                  compact={true}
+                />
+              </div>
               
               {/* Key Developments */}
               {defenseNews?.keyDevelopments && Array.isArray(defenseNews.keyDevelopments) && (
@@ -653,18 +654,20 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Centralized Source Links */}
+        {/* Enhanced Source Links */}
         <div className="mt-6">
           <SourceLinks 
             sources={[
-              { title: "Defense News - Latest Defense Industry Coverage", url: "https://www.defensenews.com", source: "Defense News" },
-              { title: "Reuters Defense & Aerospace Coverage", url: "https://www.reuters.com/business/aerospace-defense", source: "Reuters" },
-              { title: "Bloomberg Defense Industry Articles", url: "https://www.bloomberg.com/news/articles/defense", source: "Bloomberg" },
-              { title: "Breaking Defense - Defense Technology News", url: "https://breakingdefense.com", source: "Breaking Defense" },
-              { title: "Pentagon Press Releases", url: "https://www.defense.gov/News/Releases/", source: "U.S. Department of Defense" },
-              { title: "NATO News and Updates", url: "https://www.nato.int/cps/en/natohq/news.htm", source: "NATO" }
+              { title: "Defense News - Latest Defense Industry Coverage", url: "https://www.defensenews.com", source: "Defense News", category: "news" },
+              { title: "Reuters Defense & Aerospace Coverage", url: "https://www.reuters.com/business/aerospace-defense", source: "Reuters", category: "news" },
+              { title: "Bloomberg Defense Industry Articles", url: "https://www.bloomberg.com/news/articles/defense", source: "Bloomberg", category: "financial" },
+              { title: "Breaking Defense - Defense Technology News", url: "https://breakingdefense.com", source: "Breaking Defense", category: "news" },
+              { title: "Pentagon Press Releases", url: "https://www.defense.gov/News/Releases/", source: "U.S. Department of Defense", category: "government" },
+              { title: "NATO News and Updates", url: "https://www.nato.int/cps/en/natohq/news.htm", source: "NATO", category: "government" },
+              { title: "Congressional Defense Authorization", url: "https://www.congress.gov/search?q=defense+authorization", source: "U.S. Congress", category: "government" },
+              { title: "Defense Acquisition University", url: "https://www.dau.edu", source: "DAU", category: "government" }
             ]}
-            title="Intelligence Sources & References"
+            title="Defense Intelligence Sources & References"
           />
         </div>
       </CardContent>
