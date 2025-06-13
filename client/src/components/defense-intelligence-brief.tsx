@@ -207,6 +207,7 @@ export function DefenseIntelligenceBrief() {
                           .replace(/^\d+\.\s*/, '')
                           .replace(/^#\s*\d+\s*/g, '')
                           .replace(/\*+\s*$/, '')  // Remove trailing asterisks
+                          .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
                           .trim();
                         
                         // Check if current is a title (ends with : or -*) and next is content
@@ -223,6 +224,7 @@ export function DefenseIntelligenceBrief() {
                             .replace(/^\d+\.\s*/, '')
                             .replace(/^#\s*\d+\s*/g, '')
                             .replace(/\*+\s*$/, '')  // Remove trailing asterisks
+                            .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
                             .trim();
                           
                           // Combine title and content
@@ -237,6 +239,8 @@ export function DefenseIntelligenceBrief() {
                             .replace(/^\*+([^*:]+)\*+:\s*/i, '<strong>$1</strong> - ')
                             .replace(/^([^:]+):\s*\*+/i, '$1 - ')
                             .replace(/\s*\*+([^*]+)\*+\s*/g, ' <strong>$1</strong> ')
+                            .replace(/\*+\s*$/, '')  // Remove trailing asterisks
+                            .replace(/\*+$/, '')     // Remove trailing asterisks without whitespace
                             .replace(/\s+/g, ' ')
                             .replace(/^-\s*/, '')
                             .trim();
