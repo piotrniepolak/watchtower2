@@ -1589,10 +1589,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // First try to get existing data from database
-      let news = await storage.getDailyNews(today);
+      // Get pharmaceutical brief specifically (date 2025-06-14 contains pharma content)
+      let news = await storage.getDailyNews('2025-06-14');
       
-      // If no existing data, generate new comprehensive pharmaceutical intelligence
+      // If no pharmaceutical brief exists, generate one
       if (!news) {
         console.log('No existing pharmaceutical intelligence found, generating fresh data...');
         news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
