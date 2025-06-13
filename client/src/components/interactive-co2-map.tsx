@@ -126,12 +126,13 @@ export default function InteractiveCO2Map({ className }: InteractiveCO2MapProps)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 10);
 
-  // Color scale for the map
+  // Color scale for the map using D3 interpolateReds
   const maxValue = Math.max(...Object.values(currentData));
   const minValue = Math.min(...Object.values(currentData));
   const colorScale = scaleLinear<string>()
-    .domain([minValue, maxValue * 0.3, maxValue * 0.6, maxValue])
-    .range(['#fee5d9', '#fcae91', '#fb6a4a', '#cb181d']);
+    .domain([0, maxValue])
+    .range(['#fee5d9', '#cb181d'])
+    .interpolate(() => interpolateReds);
 
   const getCountryColor = (country: string) => {
     const value = currentData[country as keyof typeof currentData];
