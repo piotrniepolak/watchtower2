@@ -988,6 +988,23 @@ export default function Home() {
               <p className="text-sm text-slate-600 leading-relaxed">
                 Currently completing his BSc in Economics & Business Economics at the University of Amsterdam, Szymon pairs rigorous economic training with a lifelong fascination for geography and geopolitics. His research focuses on how spatial dynamics shape markets a perspective showcased in his recent published paper on Warsaw's emerging Central Business District. At Watchtower, he channels this evidence-based approach into EnergyWatch, transforming global geopolitical trends into clear, actionable intelligence for investors.
               </p>
+              <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <h4 className="text-sm font-semibold text-orange-800 mb-2">EnergyWatch Climate Dashboard Goals</h4>
+                <div className="space-y-3 text-xs text-slate-700">
+                  <div>
+                    <span className="font-medium">1. Interactive CO₂ Emissions Map:</span> World map with toggle between total and per-capita emissions, highlighting top 10 emitters with hover tooltips. Built with Leaflet.js and d3-scale-chromatic using OWID-GHG-Emissions.csv data.
+                  </div>
+                  <div>
+                    <span className="font-medium">2. Sectoral Emissions Breakdown:</span> Stacked bar/sunburst charts splitting global emissions into Energy, Transport, Industry, Agriculture, LULUCF sectors. Country-specific dropdown with D3.js/Plotly.js using owid-sectoral-GHG.csv.
+                  </div>
+                  <div>
+                    <span className="font-medium">3. 20-Year Trendlines & Projections:</span> Line charts showing 2000-2020 actual emissions plus 2021-2050 SSP scenario projections (SSP2-4.5, SSP1-2.6, SSP5-8.5). Chart.js v4 with IPCC AR6 SSP_GHG_Emissions.csv data.
+                  </div>
+                  <div className="text-xs text-orange-600 font-medium">
+                    Tech Stack: React components (WorldMap.jsx, SectorChart.jsx, Trendline.jsx), useData() hook for caching, responsive 2-column grid below 768px
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
