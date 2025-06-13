@@ -305,6 +305,82 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <EnhancedChartsSection sector={currentSector} />
       </div>
 
+      {/* Climate Dashboard Features Section */}
+      <div className="w-full mb-8">
+        <div className="p-6 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-orange-800">EnergyWatch Climate Dashboard Development</h2>
+            <p className="text-sm text-orange-700">Extending climate-dashboard web app with three data-visualization features</p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-orange-800">
+                  <Globe className="h-5 w-5" />
+                  <span>Interactive CO₂ Emissions Map</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p><span className="font-medium">Features:</span> Toggle between total and per-capita emissions</p>
+                <p><span className="font-medium">Highlights:</span> Top 10 emitters (USA, China, India, EU-27, Russia, Japan)</p>
+                <p><span className="font-medium">Tech:</span> Leaflet.js/Mapbox GL JS with GeoJSON world layer</p>
+                <p><span className="font-medium">Data:</span> OWID-GHG-Emissions.csv from Our World in Data</p>
+                <Badge variant="outline" className="text-orange-700 border-orange-300">WorldMap.jsx</Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-orange-800">
+                  <BarChart3 className="h-5 w-5" />
+                  <span>Sectoral Emissions Breakdown</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p><span className="font-medium">Chart Types:</span> Stacked bar or sunburst chart</p>
+                <p><span className="font-medium">Sectors:</span> Energy, Transport, Industry, Agriculture, LULUCF, Other</p>
+                <p><span className="font-medium">Tech:</span> D3.js v7 or Plotly.js</p>
+                <p><span className="font-medium">Data:</span> owid-sectoral-GHG.csv</p>
+                <Badge variant="outline" className="text-orange-700 border-orange-300">SectorChart.jsx</Badge>
+              </CardContent>
+            </Card>
+
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-orange-800">
+                  <TrendingUp className="h-5 w-5" />
+                  <span>20-Year Trendlines & Projections</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <p><span className="font-medium">Timeline:</span> 2000-2020 actual + 2021-2050 projections</p>
+                <p><span className="font-medium">Scenarios:</span> SSP2-4.5, SSP1-2.6, SSP5-8.5 paths</p>
+                <p><span className="font-medium">Tech:</span> Chart.js v4 with annotation plugin</p>
+                <p><span className="font-medium">Data:</span> IPCC AR6 SSP_GHG_Emissions.csv</p>
+                <Badge variant="outline" className="text-orange-700 border-orange-300">Trendline.jsx</Badge>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-6 p-4 bg-white rounded border border-orange-200">
+            <h3 className="font-semibold text-orange-800 mb-3">Technical Implementation Notes</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+              <div>
+                <p><span className="font-medium">Architecture:</span> Modular React components per visualization</p>
+                <p><span className="font-medium">Data Management:</span> useData() hook for centralized caching</p>
+                <p><span className="font-medium">Population Helper:</span> Convert absolute MtCO₂e to per-capita using OWID data</p>
+              </div>
+              <div>
+                <p><span className="font-medium">Responsive:</span> 2-column grid below 768px breakpoint</p>
+                <p><span className="font-medium">Dependencies:</span> Only npm packages available on Replit</p>
+                <p><span className="font-medium">Deliverables:</span> Updated package.json, App.jsx, components, README</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Energy-specific content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
