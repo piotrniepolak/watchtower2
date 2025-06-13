@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEnhancedPharmaNews, useStockPrices } from "@/hooks/useStockPrices";
 import { StockDetailModal } from "./stock-detail-modal";
 import { SourceLinks, extractSourcesFromText } from "./source-links";
+import { IntelligenceSourceLinks } from "./intelligence-source-links";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -195,15 +196,13 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
   return sources;
 };
 
-// Enhanced content display with table-based references
-const formatContentWithSources = (text: string | undefined): JSX.Element => {
+// Enhanced content display with dedicated reference sections
+const formatContentWithSources = (text: string | undefined, sectionReferences?: Array<{ url: string; title: string; }>, sectionTitle?: string): JSX.Element => {
   if (!text) {
     return <p className="text-slate-500 italic">Loading pharmaceutical intelligence...</p>;
   }
   
-  // Split content and references using the new function
-  const { content, references } = splitContentAndReferences(text);
-  const cleaned = cleanContent(content);
+  const cleaned = cleanContent(text);
   
   return (
     <div className="space-y-4">
@@ -213,27 +212,12 @@ const formatContentWithSources = (text: string | undefined): JSX.Element => {
         ))}
       </div>
       
-      {references && (
-        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
-          <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">References</h4>
-          <div className="space-y-2">
-            {parseReferences(references).map((ref) => (
-              <div key={ref.number} className="flex items-start gap-2 text-sm">
-                <span className="text-slate-500 dark:text-slate-400 font-medium min-w-[20px]">
-                  {ref.number}.
-                </span>
-                <a 
-                  href={ref.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors flex-1"
-                >
-                  {ref.title}
-                </a>
-              </div>
-            ))}
-          </div>
-        </div>
+      {sectionReferences && sectionReferences.length > 0 && sectionTitle && (
+        <IntelligenceSourceLinks 
+          sources={sectionReferences} 
+          sectionTitle={sectionTitle}
+          maxDisplay={3}
+        />
       )}
     </div>
   );
@@ -447,30 +431,13 @@ export default function PharmaIntelligenceBrief() {
           {!sectionsCollapsed.executiveSummary && (
             <div className="px-4 pb-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                {(() => {
-                  const summaryContent = displayNews.summary || "Executive summary will be displayed here once available.";
-                  const parts = summaryContent.split('**References:**');
-                  const mainContent = parts[0].replace(/Sources:.*$/, '').trim();
-                  const referencesSection = parts[1];
-                  
-                  return (
-                    <>
-                      <div className="text-blue-800 text-sm leading-relaxed mb-4">
-                        {mainContent}
-                      </div>
-                      
-                      {/* Streamlined Source Links */}
-                      {referencesSection && (
-                        <div className="border-t border-blue-300 pt-4">
-                          <SourceLinks 
-                            sources={extractSourcesFromText(referencesSection)}
-                            title="References"
-                          />
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                <div className="text-blue-800 text-sm leading-relaxed">
+                  {formatContentWithSources(
+                    displayNews.summary,
+                    displayNews.references?.summary,
+                    "Executive Summary"
+                  )}
+                </div>
               </div>
             </div>
           )}

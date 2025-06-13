@@ -673,6 +673,9 @@ class PerplexityService {
         regulatoryAnalysis
       );
 
+      // Collect all citations from the various sections
+      const allCitations: Array<{ url: string; title: string; }> = [];
+      
       console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
 
       return {
@@ -686,11 +689,11 @@ class PerplexityService {
         geopoliticalAnalysis: regulatoryAnalysis,
         createdAt: new Date().toISOString(),
         references: {
-          summary: citations?.slice(0, 3).map(c => ({ url: c.url, title: c.title })) || [],
-          keyDevelopments: citations?.slice(3, 6).map(c => ({ url: c.url, title: c.title })) || [],
-          conflictUpdates: citations?.slice(6, 9).map(c => ({ url: c.url, title: c.title })) || [],
-          marketImpact: citations?.slice(9, 12).map(c => ({ url: c.url, title: c.title })) || [],
-          geopoliticalAnalysis: citations?.slice(12, 15).map(c => ({ url: c.url, title: c.title })) || []
+          summary: allCitations.slice(0, 3),
+          keyDevelopments: allCitations.slice(3, 6),
+          conflictUpdates: allCitations.slice(6, 9),
+          marketImpact: allCitations.slice(9, 12),
+          geopoliticalAnalysis: allCitations.slice(12, 15)
         }
       };
     } catch (error) {
