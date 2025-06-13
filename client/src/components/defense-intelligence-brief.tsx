@@ -206,6 +206,7 @@ export function DefenseIntelligenceBrief() {
                           .replace(/\[\d+\]/g, '')
                           .replace(/^\d+\.\s*/, '')
                           .replace(/^#\s*\d+\s*/g, '')
+                          .replace(/\*+\s*$/, '')  // Remove trailing asterisks
                           .trim();
                         
                         // Check if current is a title (ends with : or -*) and next is content
@@ -221,6 +222,7 @@ export function DefenseIntelligenceBrief() {
                             .replace(/\[\d+\]/g, '')
                             .replace(/^\d+\.\s*/, '')
                             .replace(/^#\s*\d+\s*/g, '')
+                            .replace(/\*+\s*$/, '')  // Remove trailing asterisks
                             .trim();
                           
                           // Combine title and content
