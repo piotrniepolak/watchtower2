@@ -193,13 +193,26 @@ export function DefenseIntelligenceBrief() {
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-xs text-muted-foreground leading-relaxed">
-                          {development
-                            .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                            .replace(/\*\*(.*?)\*\*/g, '$1')
-                            .replace(/\[\d+\]/g, '')
-                            .replace(/^\d+\.\s*/, '')
-                            .replace(/^#\s*\d+\s*/g, '')
-                            .trim()}
+                          {(() => {
+                            const cleanText = development
+                              .replace(/#{1,6}\s*\d*\.?\s*/g, '')
+                              .replace(/\*\*(.*?)\*\*/g, '$1')
+                              .replace(/\[\d+\]/g, '')
+                              .replace(/^\d+\.\s*/, '')
+                              .replace(/^#\s*\d+\s*/g, '')
+                              .trim();
+                            
+                            // Remove title separators like "Title:" or "*Title*:" and merge with content
+                            const streamlined = cleanText
+                              .replace(/^\*+([^*]+)\*+:\s*/i, '$1: ')
+                              .replace(/^([^:]+):\s*\*+/, '$1: ')
+                              .replace(/^([^:]+):\s*([A-Z])/i, '$1 - $2')
+                              .replace(/\s*\*+([^*]+)\*+\s*/g, ' $1 ')
+                              .replace(/\s+/g, ' ')
+                              .trim();
+                            
+                            return streamlined;
+                          })()}
                         </span>
                       </li>
                     ))}
