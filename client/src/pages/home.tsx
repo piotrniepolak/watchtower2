@@ -984,7 +984,7 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-xl font-semibold text-slate-900 mb-1">Szymon Kordyl</h3>
-              <p className="text-orange-600 font-medium mb-3">Director of EnergyWatch</p>
+              <p className="text-orange-600 font-medium mb-3">Co-Founder and Director of EnergyWatch</p>
               <p className="text-sm text-slate-600 leading-relaxed">
                 We're expanding our team to include energy sector expertise. Stay tuned for updates on our newest team member who will lead our energy intelligence initiatives.
               </p>
