@@ -261,20 +261,20 @@ export function DefenseIntelligenceBrief() {
                             
                             <div className="text-sm leading-relaxed text-muted-foreground mb-3">
                               {(() => {
-                                const text = update.update || update.currentStatus || String(update);
-                                // Clean up markdown artifacts and improve readability
+                                const text = update.description || update.update || update.currentStatus || String(update);
+                                // Clean up any remaining markdown artifacts
                                 const cleanText = text
-                                  .replace(/###\s*\d+\.\s*/g, '') // Remove "### 1. " patterns
+                                  .replace(/###\s*\d*\.?\s*/g, '') // Remove ### patterns
                                   .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
-                                  .replace(/\[\d+\]/g, '') // Remove citation brackets
+                                  .replace(/\[\d+\]/g, '') // Remove citation brackets [1], [2], etc.
                                   .replace(/^\d+\.\s*/, '') // Remove leading numbers
                                   .replace(/\s+/g, ' ') // Normalize whitespace
                                   .trim();
                                 
                                 // Split into sentences for better readability
-                                const sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.length > 10);
+                                const sentences = cleanText.split(/(?<=[.!?])\s+/).filter((s: string) => s.length > 10);
                                 
-                                return sentences.map((sentence, idx) => (
+                                return sentences.map((sentence: string, idx: number) => (
                                   <p key={idx} className="mb-2 last:mb-0">
                                     {sentence.trim()}
                                   </p>
