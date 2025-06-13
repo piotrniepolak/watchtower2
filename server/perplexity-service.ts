@@ -229,6 +229,22 @@ class PerplexityService {
     }
   }
 
+  private cleanFormattingSymbols(content: string): string {
+    return content
+      // Remove markdown formatting symbols
+      .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold markdown
+      .replace(/\*([^*]+)\*/g, '$1')      // Remove italic markdown
+      .replace(/#{1,6}\s*/g, '')          // Remove hashtag headers
+      .replace(/`([^`]+)`/g, '$1')        // Remove code formatting
+      .replace(/~~([^~]+)~~/g, '$1')      // Remove strikethrough
+      .replace(/_([^_]+)_/g, '$1')        // Remove underline formatting
+      .replace(/\|/g, '')                 // Remove table separators
+      .replace(/[-]{3,}/g, '')            // Remove horizontal rules
+      .replace(/\s{2,}/g, ' ')            // Replace multiple spaces with single space
+      .replace(/\n{3,}/g, '\n\n')         // Replace multiple newlines with double newline
+      .trim();
+  }
+
   private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<string> {
     console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
     console.log(`🔗 Citations received in processContentWithLinks:`, JSON.stringify(citations, null, 2));
@@ -273,7 +289,10 @@ class PerplexityService {
     // Remove all citation patterns like [1], [2], [3], including clustered ones like [1][3]
     processedContent = processedContent.replace(/\[\d+\]/g, '');
     
-    console.log(`🔧 After citation removal: ${processedContent.substring(0, 200)}...`);
+    // Apply formatting cleanup to remove markdown symbols and clean text
+    processedContent = this.cleanFormattingSymbols(processedContent);
+    
+    console.log(`🔧 After citation removal and formatting cleanup: ${processedContent.substring(0, 200)}...`);
     
     // Clean up any extra spaces left by removed citations
     processedContent = processedContent.replace(/\s+/g, ' ').trim();

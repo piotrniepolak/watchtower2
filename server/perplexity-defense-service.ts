@@ -43,6 +43,22 @@ export class PerplexityDefenseService {
     this.initializeDailyScheduler();
   }
 
+  private cleanFormattingSymbols(content: string): string {
+    return content
+      // Remove markdown formatting symbols
+      .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold markdown
+      .replace(/\*([^*]+)\*/g, '$1')      // Remove italic markdown
+      .replace(/#{1,6}\s*/g, '')          // Remove hashtag headers
+      .replace(/`([^`]+)`/g, '$1')        // Remove code formatting
+      .replace(/~~([^~]+)~~/g, '$1')      // Remove strikethrough
+      .replace(/_([^_]+)_/g, '$1')        // Remove underline formatting
+      .replace(/\|/g, '')                 // Remove table separators
+      .replace(/[-]{3,}/g, '')            // Remove horizontal rules
+      .replace(/\s{2,}/g, ' ')            // Replace multiple spaces with single space
+      .replace(/\n{3,}/g, '\n\n')         // Replace multiple newlines with double newline
+      .trim();
+  }
+
   private initializeDailyScheduler(): void {
     const scheduleNext = () => {
       if (this.scheduledGeneration) {
@@ -531,7 +547,7 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
 
   private cleanFormattingIssues(text: string): string {
     // Comprehensive text cleaning to remove all formatting artifacts
-    let cleaned = text
+    let cleaned = this.cleanFormattingSymbols(text)
       // Remove all types of brackets and their contents
       .replace(/\[[^\]]*\]/g, '')
       .replace(/\([^)]*\)/g, '')
@@ -737,7 +753,8 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
     for (const paragraph of paragraphs) {
       for (const keyword of geoKeywords) {
         if (paragraph.toLowerCase().includes(keyword)) {
-          return paragraph.trim().substring(0, 500) + '...';
+          const cleanAnalysis = this.cleanFormattingSymbols(paragraph.trim());
+          return cleanAnalysis.substring(0, 500) + '...';
         }
       }
     }
