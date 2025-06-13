@@ -167,9 +167,41 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-3">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {defenseNews?.summary || 'No summary available'}
-              </p>
+              <div className="text-sm leading-relaxed text-muted-foreground">
+                {defenseNews?.summary?.split('Sources:')[0] || 'No summary available'}
+              </div>
+              
+              {/* Clickable Sources Section */}
+              {defenseNews?.summary?.includes('Sources:') && (
+                <div className="border-t border-slate-300 dark:border-slate-700 pt-4 mt-4">
+                  <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    Sources & References
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    <a href="https://www.defensenews.com" target="_blank" rel="noopener noreferrer" 
+                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                      <ExternalLink className="w-3 h-3" />
+                      Defense News
+                    </a>
+                    <a href="https://www.reuters.com/business/aerospace-defense" target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                      <ExternalLink className="w-3 h-3" />
+                      Reuters Defense
+                    </a>
+                    <a href="https://www.bloomberg.com/news/articles/defense" target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                      <ExternalLink className="w-3 h-3" />
+                      Bloomberg Defense
+                    </a>
+                    <a href="https://breakingdefense.com" target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                      <ExternalLink className="w-3 h-3" />
+                      Breaking Defense
+                    </a>
+                  </div>
+                </div>
+              )}
               
               {/* Key Developments */}
               {defenseNews?.keyDevelopments && Array.isArray(defenseNews.keyDevelopments) && (
@@ -178,13 +210,40 @@ export function DefenseIntelligenceBrief() {
                     <Target className="h-4 w-4 text-blue-600" />
                     Key Developments
                   </h4>
-                  <ul className="space-y-2">
-                    {defenseNews.keyDevelopments.map((development: string, index: number) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground leading-relaxed">{development}</span>
-                      </li>
-                    ))}
+                  <ul className="space-y-3">
+                    {defenseNews.keyDevelopments.map((development: string, index: number) => {
+                      const parts = development.split('Source:');
+                      const content = parts[0].trim();
+                      const source = parts[1]?.trim();
+                      
+                      return (
+                        <li key={index} className="flex items-start gap-2">
+                          <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
+                          <div className="flex-1">
+                            <span className="text-xs text-muted-foreground leading-relaxed block mb-1">
+                              {content}
+                            </span>
+                            {source && (
+                              <a 
+                                href={
+                                  source.includes('Defense News') ? 'https://www.defensenews.com' :
+                                  source.includes('Reuters') ? 'https://www.reuters.com/business/aerospace-defense' :
+                                  source.includes('Bloomberg') ? 'https://www.bloomberg.com/news/articles/defense' :
+                                  source.includes('Breaking Defense') ? 'https://breakingdefense.com' :
+                                  'https://www.defensenews.com'
+                                }
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                {source}
+                              </a>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

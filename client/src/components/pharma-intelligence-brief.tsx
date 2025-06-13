@@ -445,9 +445,46 @@ export default function PharmaIntelligenceBrief() {
           {!sectionsCollapsed.executiveSummary && (
             <div className="px-4 pb-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="text-blue-800 text-sm">
-                  {formatContentWithSources(displayNews.summary)}
+                <div className="text-blue-800 text-sm leading-relaxed mb-4">
+                  {displayNews.summary?.split('Sources:')[0] || "Executive summary will be displayed here once available."}
                 </div>
+                
+                {/* Clickable Sources Section */}
+                {displayNews.summary?.includes('Sources:') && (
+                  <div className="border-t border-blue-300 pt-4">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      Sources & References
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      <a href="https://www.reuters.com/business/healthcare-pharmaceuticals" target="_blank" rel="noopener noreferrer" 
+                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                        <ExternalLink className="w-3 h-3" />
+                        Reuters Healthcare
+                      </a>
+                      <a href="https://www.biopharmadive.com" target="_blank" rel="noopener noreferrer"
+                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                        <ExternalLink className="w-3 h-3" />
+                        BioPharma Dive
+                      </a>
+                      <a href="https://www.fiercepharma.com" target="_blank" rel="noopener noreferrer"
+                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                        <ExternalLink className="w-3 h-3" />
+                        Fierce Pharma
+                      </a>
+                      <a href="https://www.statnews.com" target="_blank" rel="noopener noreferrer"
+                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                        <ExternalLink className="w-3 h-3" />
+                        STAT News
+                      </a>
+                      <a href="https://www.nature.com/nbt" target="_blank" rel="noopener noreferrer"
+                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
+                        <ExternalLink className="w-3 h-3" />
+                        Nature Biotechnology
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -587,8 +624,8 @@ export default function PharmaIntelligenceBrief() {
                   <DollarSign className="w-4 h-4" />
                   Pharmaceutical Market Impact
                 </h4>
-                <div className="text-green-800 text-sm">
-                  {formatContentWithSources(displayNews.marketImpact)}
+                <div className="text-green-800 text-sm leading-relaxed">
+                  {displayNews.marketImpact?.split('Sources:')[0] || "Market impact analysis will be displayed here once available."}
                 </div>
               </div>
             </div>
