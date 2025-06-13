@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { SourceLinks, generateSectorSources } from "./source-links";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -11,11 +11,19 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Shield, 
   Pill,
   Zap,
-  TrendingUp, 
+  TrendingUp,
+  TrendingDown, 
   AlertTriangle, 
   Clock, 
   Target,
@@ -310,27 +318,34 @@ export function UnifiedIntelligenceDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Comprehensive Source Links for Selected Sector */}
+          <div className="mt-6">
+            <SourceLinks 
+              sources={generateSectorSources(selectedSector)}
+              title={`${config.name} Sources & References`}
+            />
+          </div>
         </div>
       ) : (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-500 mb-4">No intelligence brief available for {config.name.toLowerCase()}</p>
-            <Button onClick={handleGenerate} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Generate Brief
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-500 mb-4">No intelligence brief available for {config.name.toLowerCase()}</p>
+              <Button onClick={handleGenerate} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Generate Brief
+              </Button>
+            </CardContent>
+          </Card>
 
-        {/* Comprehensive Source Links for Selected Sector */}
-        <div className="mt-6">
+          {/* Source Links for No Data State */}
           <SourceLinks 
             sources={generateSectorSources(selectedSector)}
             title={`${config.name} Sources & References`}
           />
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }
