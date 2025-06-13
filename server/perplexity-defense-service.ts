@@ -380,15 +380,15 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
     // Extract key information using advanced parsing
     const title = this.extractTitle(content);
     
-    // Generate comprehensive summary with source links
-    const summary = this.addSourceLinks(this.extractSummary(content), citations);
+    // Generate comprehensive summary without embedded source links
+    const summary = this.extractSummary(content);
     console.log(`📝 Generated executive summary: ${summary.length} characters`);
     
     const keyDevelopments = this.extractKeyDevelopments(content);
-    const marketImpact = this.addSourceLinks(this.extractMarketImpact(content), citations);
+    const marketImpact = this.extractMarketImpact(content);
     const conflictUpdates = this.extractConflictUpdates(content);
     const defenseStockHighlights = this.extractStockHighlights(content);
-    const geopoliticalAnalysis = this.addSourceLinks(this.extractGeopoliticalAnalysis(content), citations);
+    const geopoliticalAnalysis = this.extractGeopoliticalAnalysis(content);
 
     return {
       title,
