@@ -759,7 +759,13 @@ export class PerplexityDefenseService {
            sentenceLower.includes('weapons') || sentenceLower.includes('contractor')) &&
           (sentenceLower.includes('impact') || sentenceLower.includes('effect') || 
            sentenceLower.includes('influence') || sentenceLower.includes('opportunity'))) {
-        return sentence.trim();
+        // Clean markdown artifacts from extracted content
+        return sentence
+          .replace(/###\s*\d*\.?\s*/g, '')
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\[\d+\]/g, '')
+          .replace(/^\d+\.\s*/, '')
+          .trim();
       }
     }
     
@@ -776,7 +782,13 @@ export class PerplexityDefenseService {
            sentenceLower.includes('investor') || sentenceLower.includes('financial')) &&
           (sentenceLower.includes('impact') || sentenceLower.includes('effect') || 
            sentenceLower.includes('opportunity') || sentenceLower.includes('growth'))) {
-        return sentence.trim();
+        // Clean markdown artifacts from extracted content
+        return sentence
+          .replace(/###\s*\d*\.?\s*/g, '')
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\[\d+\]/g, '')
+          .replace(/^\d+\.\s*/, '')
+          .trim();
       }
     }
     
