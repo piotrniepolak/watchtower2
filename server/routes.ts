@@ -1608,55 +1608,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No pharma news available for today" });
       }
 
-      // Extract ALL pharmaceutical companies mentioned throughout the entire brief content
+      // Extract ONLY companies actually mentioned in the intelligence brief content
       const allStocks = await storage.getStocks();
       const healthcareStocks = allStocks.filter(stock => stock.sector === 'Healthcare');
       
-      // Create a comprehensive mapping of pharmaceutical companies mentioned in the brief
-      const companyToSymbolMap: Record<string, string> = {
-        'nuvation bio': 'NUVB',
-        'nuvation': 'NUVB',
-        'bayer': 'BAYRY',
-        'bayer healthcare': 'BAYRY',
-        'biogen': 'BIIB',
-        'eli lilly': 'LLY',
-        'lilly': 'LLY',
-        'gsk': 'GSK',
-        'glaxosmithkline': 'GSK',
-        'johnson & johnson': 'JNJ',
-        'j&j': 'JNJ',
-        'roche': 'RHHBY',
-        'sanofi': 'SNY',
-        'ultragenyx': 'RARE',
-        'vertex': 'VRTX',
-        'vertex pharmaceuticals': 'VRTX',
-        'pfizer': 'PFE',
-        'merck': 'MRK',
-        'abbvie': 'ABBV',
-        'novartis': 'NVS',
-        'novo nordisk': 'NVO',
-        'astrazeneca': 'AZN',
-        'bristol myers': 'BMY',
-        'bristol-myers squibb': 'BMY',
-        'amgen': 'AMGN',
-        'gilead': 'GILD',
-        'moderna': 'MRNA',
-        'regeneron': 'REGN',
-        'novavax': 'NVAX',
-        'solid': 'SLDB',
-        'solid biosciences': 'SLDB',
-        'stoke': 'STOK',
-        'stoke therapeutics': 'STOK',
-        'biontech': 'BNTX',
-        'curevac': 'CVAC',
-        'catalent': 'CTLT',
-        'iqvia': 'IQV',
-        'syneos': 'SYNH',
-        'thermo fisher': 'TMO',
-        'danaher': 'DHR',
-        'illumina': 'ILMN'
-      };
-
       // Extract all text content from the entire brief
       const allBriefContent = [
         news.title || '',
@@ -1667,205 +1622,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(Array.isArray(news.conflictUpdates) ? news.conflictUpdates.map((update: any) => 
           `${update.conflict} ${update.update}`
         ) : [])
-      ].join(' ').toLowerCase();
+      ].join(' ');
 
-      // Find all pharmaceutical companies mentioned in the brief content
-      const mentionedSymbols = new Set<string>();
+      console.log(`🔍 Scanning ${allBriefContent.length} characters of pharmaceutical intelligence brief content for company mentions...`);
+      console.log(`📊 Found ${healthcareStocks.length} healthcare stocks in database for cross-reference`);
+
+      // Find companies mentioned in the brief by checking against our database
+      const mentionedCompanies = new Set<string>();
       
-      // Check for company name mentions and add to database if needed
-      for (const [companyName, symbol] of Object.entries(companyToSymbolMap)) {
-        if (allBriefContent.includes(companyName)) {
-          mentionedSymbols.add(symbol);
-          
-          // Immediately check if this company exists in database
-          const existingStock = healthcareStocks.find(s => s.symbol === symbol);
-          if (!existingStock) {
-            // Company name mapping for database entries
-            const companyNames: { [key: string]: string } = {
-              'BNTX': 'BioNTech SE',
-              'CVAC': 'CureVac N.V.',
-              'CTLT': 'Catalent Inc.',
-              'IQV': 'IQVIA Holdings Inc.',
-              'SYNH': 'Syneos Health Inc.',
-              'TMO': 'Thermo Fisher Scientific Inc.',
-              'DHR': 'Danaher Corporation',
-              'ILMN': 'Illumina Inc.'
-            };
-            
-            const properCompanyName = companyNames[symbol] || 
-              companyName.split(' ').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1)
-              ).join(' ');
-            
-            // Add the new pharmaceutical company to database immediately
-            try {
-              await storage.createStock({
-                symbol,
-                name: properCompanyName,
-                sector: 'Healthcare',
-                price: 0,
-                change: 0,
-                changePercent: 0,
-                volume: 0
-              });
-              
-              console.log(`✅ Auto-added pharmaceutical company: ${symbol} - ${properCompanyName}`);
-              
-              // Add to healthcare stocks array for immediate use
-              healthcareStocks.push({
-                id: Date.now(),
-                symbol,
-                name: properCompanyName,
-                lastUpdated: new Date(),
-                sector: 'Healthcare',
-                price: 0,
-                change: 0,
-                changePercent: 0,
-                volume: 0,
-                marketCap: null
-              });
-              
-            } catch (error) {
-              console.log(`⚠️ Could not auto-add ${symbol} to database:`, error);
-            }
-          }
-        }
-      }
-
-      // Check for direct stock symbol mentions
+      // Check each healthcare stock to see if it's mentioned in the brief
       healthcareStocks.forEach(stock => {
-        if (allBriefContent.includes(stock.symbol.toLowerCase()) || 
-            allBriefContent.includes(stock.name.toLowerCase())) {
-          mentionedSymbols.add(stock.symbol);
+        const stockMentioned = checkIfStockMentioned(stock, allBriefContent);
+        if (stockMentioned) {
+          mentionedCompanies.add(stock.symbol);
+          console.log(`📊 Found mentioned company: ${stock.name} (${stock.symbol})`);
         }
       });
 
-      console.log(`🔍 Extracted ${mentionedSymbols.size} pharmaceutical companies from brief content: ${Array.from(mentionedSymbols).join(', ')}`);
+      console.log(`🎯 Total pharmaceutical companies mentioned in brief: ${mentionedCompanies.size}`);
 
-      // Refresh healthcare stocks list after any auto-additions
-      const allStocksRefreshed = await storage.getStocks();
-      const refreshedHealthcareStocks = allStocksRefreshed.filter(stock => stock.sector === 'Healthcare');
+      // Helper function to check if a stock is mentioned in the content
+      function checkIfStockMentioned(stock: any, content: string): boolean {
+        const lowerContent = content.toLowerCase();
+        
+        // Check for stock symbol (case insensitive)
+        if (lowerContent.includes(stock.symbol.toLowerCase())) {
+          return true;
+        }
+        
+        // Check for company name or common variations
+        const companyName = stock.name.toLowerCase();
+        if (lowerContent.includes(companyName)) {
+          return true;
+        }
+        
+        // Check for common company name variations
+        const nameVariations = getCompanyNameVariations(stock.symbol, stock.name);
+        return nameVariations.some(variation => 
+          lowerContent.includes(variation.toLowerCase())
+        );
+      }
 
-      // Generate comprehensive pharmaceutical stock highlights for mentioned companies
+      // Helper function to get common name variations for pharmaceutical companies
+      function getCompanyNameVariations(symbol: string, name: string): string[] {
+        const variations = [name];
+        
+        // Add symbol-specific variations only for companies that might be mentioned differently
+        const commonVariations: { [key: string]: string[] } = {
+          'JNJ': ['johnson & johnson', 'j&j', 'johnson and johnson'],
+          'GSK': ['glaxosmithkline', 'gsk'],
+          'BMY': ['bristol myers', 'bristol-myers squibb', 'bristol myers squibb'],
+          'LLY': ['eli lilly', 'lilly'],
+          'VRTX': ['vertex', 'vertex pharmaceuticals'],
+          'RHHBY': ['roche', 'roche holding'],
+          'BAYRY': ['bayer', 'bayer ag'],
+          'RARE': ['ultragenyx'],
+          'MRNA': ['moderna'],
+          'BIIB': ['biogen'],
+          'SNY': ['sanofi'],
+          'NVO': ['novo nordisk'],
+          'NVS': ['novartis'],
+          'MRK': ['merck'],
+          'PFE': ['pfizer'],
+          'ABBV': ['abbvie'],
+          'AMGN': ['amgen'],
+          'GILD': ['gilead', 'gilead sciences'],
+          'REGN': ['regeneron'],
+          'NUVB': ['nuvation', 'nuvation bio'],
+          'SLDB': ['solid', 'solid biosciences'],
+          'STOK': ['stoke', 'stoke therapeutics'],
+          'NVAX': ['novavax']
+        };
+        
+        if (commonVariations[symbol]) {
+          variations.push(...commonVariations[symbol]);
+        }
+        
+        return variations;
+      }
 
-      // Create comprehensive pharmaceutical stock highlights for ALL mentioned companies
-      const comprehensiveStockHighlights = Array.from(mentionedSymbols).map(symbol => {
+      // Create pharmaceutical stock highlights ONLY for companies mentioned in the brief
+      const pharmaceuticalStockHighlights = Array.from(mentionedCompanies).map(symbol => {
         const stock = healthcareStocks.find(s => s.symbol === symbol);
         
-        // Handle companies not in the main database
-        if (!stock) {
-          console.log(`📊 Stock ${symbol} not found in database, adding as mentioned company`);
-          
-          // Get company name from reverse mapping
-          const companyName = Object.keys(companyToSymbolMap).find(key => 
-            companyToSymbolMap[key] === symbol
-          );
-          
-          // Company descriptors for non-tracked companies
-          const nonTrackedDescriptors: { [key: string]: string } = {
-            'BNTX': 'German biotechnology company focused on immunotherapies for cancer and infectious diseases, including COVID-19 vaccines.',
-            'CVAC': 'German biopharmaceutical company developing mRNA-based vaccines and therapies for infectious diseases and cancer.',
-            'CTLT': 'Contract development and manufacturing organization providing services to pharmaceutical and biotechnology companies.',
-            'IQV': 'Contract research organization providing clinical trial services and healthcare data analytics.',
-            'SYNH': 'Contract research organization offering clinical development and commercialization services.',
-            'TMO': 'Life sciences company providing analytical instruments, equipment, reagents, and consumables.',
-            'DHR': 'Global science and technology company serving the diagnostics, life sciences, and environmental markets.',
-            'ILMN': 'Biotechnology company developing sequencing and microarray technologies for genetic analysis.'
-          };
-          
+        if (stock) {
           return {
-            symbol,
-            name: companyName ? companyName.split(' ').map(word => 
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ') : `${symbol} Pharmaceuticals`,
-            price: 0,
-            change: 0,
-            changePercent: 0,
-            reason: nonTrackedDescriptors[symbol] || `${symbol} represents a pharmaceutical entity highlighted in current intelligence analysis.`
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price || 0,
+            change: stock.change || 0,
+            changePercent: stock.changePercent || 0,
+            reason: `Mentioned in today's pharmaceutical intelligence brief`
           };
         }
         
-        if (stock) {
-          // Check if there's existing analysis from the original highlights
-          const existingHighlight = Array.isArray(news.pharmaceuticalStockHighlights) 
-            ? news.pharmaceuticalStockHighlights.find((h: any) => h.symbol === symbol)
-            : null;
+        return null;
+      }).filter(Boolean);
 
-          // Note: Company is mentioned in pharmaceutical intelligence brief
+      // Replace the news pharmaceuticalStockHighlights with only mentioned companies
+      news.pharmaceuticalStockHighlights = pharmaceuticalStockHighlights;
 
-          // Company-specific descriptors based on actual business profiles
-          const getCompanyDescriptor = (symbol: string, name: string): string => {
-            const descriptors: { [key: string]: string } = {
-              'JNJ': 'Diversified healthcare conglomerate with pharmaceutical, medical device, and consumer products divisions.',
-              'PFE': 'Leading vaccine and oncology pharmaceutical company with global research and development operations.',
-              'RHHBY': 'Swiss multinational healthcare company focusing on pharmaceuticals and diagnostics.',
-              'NVS': 'Global pharmaceutical company specializing in innovative medicines, eye care, and generic drugs.',
-              'AZN': 'British-Swedish pharmaceutical company known for oncology, cardiovascular, and respiratory therapies.',
-              'MRK': 'American pharmaceutical company with leading positions in oncology, vaccines, and animal health.',
-              'ABBV': 'Biopharmaceutical company focused on immunology, oncology, and neuroscience treatments.',
-              'LLY': 'Pharmaceutical company specializing in diabetes care, oncology, and neurodegeneration therapies.',
-              'BMY': 'Biopharmaceutical company focused on oncology, immunology, and cardiovascular disease treatments.',
-              'GILD': 'Biopharmaceutical company known for antiviral drugs and treatments for HIV, hepatitis, and COVID-19.',
-              'VRTX': 'Biotechnology company developing treatments for serious diseases including cystic fibrosis and sickle cell disease.',
-              'BIIB': 'Biotechnology company focused on neurological and neurodegenerative diseases including multiple sclerosis.',
-              'REGN': 'Biotechnology company developing treatments for eye diseases, allergic conditions, and cancer.',
-              'GSK': 'British pharmaceutical company with focus on vaccines, HIV treatments, and respiratory therapies.',
-              'SNY': 'French multinational pharmaceutical company with expertise in diabetes, vaccines, and rare diseases.',
-              'BAYRY': 'German multinational pharmaceutical and life sciences company with crop science and pharmaceuticals divisions.',
-              'NUVB': 'Clinical-stage biopharmaceutical company developing treatments for cancer and other serious diseases.',
-              'RARE': 'Biopharmaceutical company focused on developing treatments for rare diseases affecting kidneys and blood.',
-              'SLDB': 'Biotechnology company developing cell and gene therapies for cancer and other serious diseases.',
-              'STOK': 'Clinical-stage biotechnology company developing treatments for neurodegenerative and psychiatric disorders.',
-              'NVAX': 'Biotechnology company focused on developing vaccines for infectious diseases including COVID-19.'
-            };
-            
-            return descriptors[symbol] || `${name} operates in the pharmaceutical and biotechnology sector.`;
-          };
+      res.json(news);
+    } catch (error) {
+      console.error("Error fetching today's pharma news:", error);
+      res.status(500).json({ error: "Failed to fetch today's pharma news" });
+    }
+  });
 
-          const extractCompanyQuote = (symbol: string, companyName: string): string => {
-            // Get all content from the daily pharmaceutical brief
-            const briefContent = [
-              news.summary || '',
-              ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
-              news.marketImpact || '',
-              news.geopoliticalAnalysis || ''
-            ].join(' ');
-
-            // Enhanced company name variations for matching
-            const companyIdentifiers = [
-              symbol,
-              companyName,
-              // Add specific company name variations that appear in briefs
-              symbol === 'NUVB' ? 'nuvation' : '',
-              symbol === 'BAYRY' ? 'bayer' : '',
-              symbol === 'BMY' ? 'bristol myers' : '',
-              symbol === 'RHHBY' ? 'roche' : '',
-              symbol === 'SNY' ? 'sanofi' : '',
-              symbol === 'GSK' ? 'gsk' : '',
-              symbol === 'BIIB' ? 'biogen' : '',
-              symbol === 'LLY' ? 'eli lilly' : '',
-              symbol === 'JNJ' ? 'johnson' : '',
-              symbol === 'VRTX' ? 'vertex' : '',
-              symbol === 'RARE' ? 'ultragenyx' : '',
-              symbol === 'SLDB' ? 'solid' : '',
-              symbol === 'STOK' ? 'stoke' : '',
-              // Add common variations from company-to-symbol mapping
-              ...Object.entries(companyToSymbolMap)
-                .filter(([name, sym]) => sym === symbol)
-                .map(([name]) => name)
-            ].filter(id => id && id.length > 0);
-
-            // Clean the content and split into sentences
-            const cleanContent = briefContent
-              .replace(/\*\*/g, '') // Remove markdown bold
-              .replace(/###?\s*/g, '') // Remove headers
-              .replace(/\[(\d+)\]/g, '') // Remove citation numbers
-              .replace(/^\s*[-*]\s*/gm, '') // Remove bullet points
-              .replace(/"/g, '') // Remove quotes that might break JSON
-              .replace(/\n/g, ' '); // Replace newlines with spaces
-
-            // Split into sentences using multiple delimiters
-            const sentences = cleanContent
+  // Generate new pharmaceutical intelligence brief
+  app.post("/api/news/pharma/generate", async (req, res) => {
+    try {
+      console.log('🔬 Manual pharmaceutical intelligence brief generation requested...');
+      
+      // Delete existing entry for today first
+      const today = new Date().toISOString().split('T')[0];
+      await storage.deleteDailyNews(today);
+      
+      // Generate fresh pharmaceutical intelligence using Perplexity AI
+      const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      
+      if (!news) {
+        console.log('Perplexity AI generation failed, trying fallback method...');
+        const fallbackNews = await pharmaNewsService.getTodaysPharmaNews();
+        if (!fallbackNews) {
+          return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
+        }
+        return res.json(fallbackNews);
+      }
+      
+      console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');
+      res.json(news);
+    } catch (error) {
+      console.error("Error generating pharmaceutical intelligence brief:", error);
+      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
+    }
+  });
               .split(/[.!?]+/)
               .map(s => s.trim())
               .filter(s => s.length > 30); // Only meaningful sentences
