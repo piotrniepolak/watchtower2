@@ -13,28 +13,6 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 13, 2025 - Moved Global Intelligence Center to Top and Implemented Dedicated Reference Sections
-**Major User Experience Enhancement:**
-- **Moved Global Intelligence Center to the top of the homepage** for prominent positioning and immediate access to AI-powered predictive analysis
-- **Implemented dedicated reference sections for each intelligence brief part** replacing inline "Sources:" text with clean, separate clickable reference sections
-- **Created IntelligenceSourceLinks component** providing section-specific source references with professional styling
-- **Enhanced backend to provide separate source references** for each section (summary, key developments, conflict updates, market impact, geopolitical analysis)
-- **Updated pharmaceutical intelligence brief** to use dedicated reference sections with clickable buttons instead of embedded text links
-
-**Technical Implementation:**
-- Restructured homepage layout placing Global Intelligence Center at top after hero section but before global stats
-- Built IntelligenceSourceLinks component with favicon integration and section-specific reference handling
-- Updated perplexity-service.ts to provide structured references object for each intelligence brief section
-- Modified pharmaceutical intelligence brief component to use formatContentWithSources function with dedicated reference sections
-- Implemented clean content display without inline source text, followed by professional clickable reference buttons
-
-**User Impact:**
-- Global Intelligence Center immediately visible at top of homepage for quick access to AI analysis
-- Each intelligence brief section has its own dedicated reference section with clickable source buttons
-- Clean content presentation without embedded "Sources:" text disrupting readability
-- Professional source attribution with visual indicators and easy external link access
-- Consistent reference format across all intelligence brief sections
-
 ### June 13, 2025 - Implemented Streamlined Clickable Source Links
 **Major User Experience Enhancement:**
 - **Created dedicated SourceLinks component** replacing embedded text links with professional clickable buttons
