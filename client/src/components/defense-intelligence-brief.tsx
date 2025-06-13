@@ -198,10 +198,11 @@ export function DefenseIntelligenceBrief() {
                         const current = developments[i];
                         const next = developments[i + 1];
                         
-                        // Clean current text
+                        // Clean current text and convert formatting
                         const cleanCurrent = current
                           .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                          .replace(/\*\*(.*?)\*\*/g, '$1')
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
                           .replace(/\[\d+\]/g, '')
                           .replace(/^\d+\.\s*/, '')
                           .replace(/^#\s*\d+\s*/g, '')
@@ -212,10 +213,11 @@ export function DefenseIntelligenceBrief() {
                         const nextExists = next && i + 1 < developments.length;
                         
                         if (isTitle && nextExists) {
-                          // Clean next text
+                          // Clean next text and convert formatting
                           const cleanNext = next
                             .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                            .replace(/\*\*(.*?)\*\*/g, '$1')
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
                             .replace(/\[\d+\]/g, '')
                             .replace(/^\d+\.\s*/, '')
                             .replace(/^#\s*\d+\s*/g, '')
@@ -230,9 +232,9 @@ export function DefenseIntelligenceBrief() {
                           // Process as standalone item with existing logic
                           const streamlined = cleanCurrent
                             .replace(/^([^:]+):\s*([^.])/i, '$1 - $2')
-                            .replace(/^\*+([^*:]+)\*+:\s*/i, '$1 - ')
+                            .replace(/^\*+([^*:]+)\*+:\s*/i, '<strong>$1</strong> - ')
                             .replace(/^([^:]+):\s*\*+/i, '$1 - ')
-                            .replace(/\s*\*+([^*]+)\*+\s*/g, ' $1 ')
+                            .replace(/\s*\*+([^*]+)\*+\s*/g, ' <strong>$1</strong> ')
                             .replace(/\s+/g, ' ')
                             .replace(/^-\s*/, '')
                             .trim();
@@ -244,9 +246,10 @@ export function DefenseIntelligenceBrief() {
                     })().map((development: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground leading-relaxed">
-                          {development}
-                        </span>
+                        <span 
+                          className="text-xs text-muted-foreground leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: development }}
+                        />
                       </li>
                     ))}
                   </ul>
