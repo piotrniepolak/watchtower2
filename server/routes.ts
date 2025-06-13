@@ -1590,7 +1590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const today = new Date().toISOString().split('T')[0];
       
       // Get pharmaceutical brief specifically by sector
-      let news = await storage.getDailyNews('2025-06-14', 'pharmaceutical');
+      let news = await storage.getDailyNews(today, 'pharmaceutical');
       
       // If no pharmaceutical brief exists, generate new one
       if (!news) {
