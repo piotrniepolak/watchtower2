@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
+import { SourceLinks, extractSourcesFromText } from "./source-links";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -171,35 +172,18 @@ export function DefenseIntelligenceBrief() {
                 {defenseNews?.summary?.split('Sources:')[0] || 'No summary available'}
               </div>
               
-              {/* Clickable Sources Section */}
+              {/* Streamlined Source Links */}
               {defenseNews?.summary?.includes('Sources:') && (
                 <div className="border-t border-slate-300 dark:border-slate-700 pt-4 mt-4">
-                  <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />
-                    Sources & References
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    <a href="https://www.defensenews.com" target="_blank" rel="noopener noreferrer" 
-                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                      <ExternalLink className="w-3 h-3" />
-                      Defense News
-                    </a>
-                    <a href="https://www.reuters.com/business/aerospace-defense" target="_blank" rel="noopener noreferrer"
-                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                      <ExternalLink className="w-3 h-3" />
-                      Reuters Defense
-                    </a>
-                    <a href="https://www.bloomberg.com/news/articles/defense" target="_blank" rel="noopener noreferrer"
-                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                      <ExternalLink className="w-3 h-3" />
-                      Bloomberg Defense
-                    </a>
-                    <a href="https://breakingdefense.com" target="_blank" rel="noopener noreferrer"
-                       className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                      <ExternalLink className="w-3 h-3" />
-                      Breaking Defense
-                    </a>
-                  </div>
+                  <SourceLinks 
+                    sources={[
+                      { title: "Defense News", url: "https://www.defensenews.com", source: "Defense News" },
+                      { title: "Reuters Defense Coverage", url: "https://www.reuters.com/business/aerospace-defense", source: "Reuters" },
+                      { title: "Bloomberg Defense Articles", url: "https://www.bloomberg.com/news/articles/defense", source: "Bloomberg" },
+                      { title: "Breaking Defense", url: "https://breakingdefense.com", source: "Breaking Defense" }
+                    ]}
+                    title="Sources & References"
+                  />
                 </div>
               )}
               
@@ -668,6 +652,21 @@ export function DefenseIntelligenceBrief() {
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Centralized Source Links */}
+        <div className="mt-6">
+          <SourceLinks 
+            sources={[
+              { title: "Defense News - Latest Defense Industry Coverage", url: "https://www.defensenews.com", source: "Defense News" },
+              { title: "Reuters Defense & Aerospace Coverage", url: "https://www.reuters.com/business/aerospace-defense", source: "Reuters" },
+              { title: "Bloomberg Defense Industry Articles", url: "https://www.bloomberg.com/news/articles/defense", source: "Bloomberg" },
+              { title: "Breaking Defense - Defense Technology News", url: "https://breakingdefense.com", source: "Breaking Defense" },
+              { title: "Pentagon Press Releases", url: "https://www.defense.gov/News/Releases/", source: "U.S. Department of Defense" },
+              { title: "NATO News and Updates", url: "https://www.nato.int/cps/en/natohq/news.htm", source: "NATO" }
+            ]}
+            title="Intelligence Sources & References"
+          />
+        </div>
       </CardContent>
     </Card>
   );

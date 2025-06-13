@@ -13,6 +13,29 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
+### June 13, 2025 - Implemented Streamlined Clickable Source Links
+**Major User Experience Enhancement:**
+- **Created dedicated SourceLinks component** replacing embedded text links with professional clickable buttons
+- **Added favicon support and domain extraction** for visual source identification 
+- **Integrated streamlined source links across all intelligence briefs** (pharmaceutical, defense, energy)
+- **Implemented centralized source sections** providing clean access to all references
+- **Enhanced source link styling** with hover effects and external link indicators
+- **Added comprehensive source extraction utility** supporting multiple text formats (markdown, references, inline citations)
+
+**Technical Implementation:**
+- Built reusable SourceLinks component with favicon integration and domain parsing
+- Added extractSourcesFromText utility supporting markdown links, reference sections, and direct URLs
+- Replaced all inline source links in pharmaceutical and defense intelligence briefs
+- Implemented consistent source link styling across all components
+- Added centralized source sections at bottom of each intelligence brief
+
+**User Impact:**
+- Clean, professional clickable source buttons instead of embedded text links
+- Visual source identification with favicons and clean domain names
+- Consistent source link experience across all intelligence sections
+- Easy access to all references in dedicated sections
+- Professional appearance matching enterprise intelligence platforms
+
 ### June 13, 2025 - Fixed Pharmaceutical Company Extraction and Automatic Stock Discovery
 **Major Fixes Completed:**
 - **Eliminated all hardcoded fallback data from pharmaceutical company extraction** ensuring only companies actually mentioned in brief content are displayed
