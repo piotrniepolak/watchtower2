@@ -446,46 +446,53 @@ export default function PharmaIntelligenceBrief() {
           {!sectionsCollapsed.executiveSummary && (
             <div className="px-4 pb-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="text-blue-800 text-sm leading-relaxed mb-4">
-                  {displayNews.summary?.split('Sources:')[0] || "Executive summary will be displayed here once available."}
-                </div>
-                
-                {/* Clickable Sources Section */}
-                {displayNews.summary?.includes('Sources:') && (
-                  <div className="border-t border-blue-300 pt-4">
-                    <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4" />
-                      Sources & References
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      <a href="https://www.reuters.com/business/healthcare-pharmaceuticals" target="_blank" rel="noopener noreferrer" 
-                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                        <ExternalLink className="w-3 h-3" />
-                        Reuters Healthcare
-                      </a>
-                      <a href="https://www.biopharmadive.com" target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                        <ExternalLink className="w-3 h-3" />
-                        BioPharma Dive
-                      </a>
-                      <a href="https://www.fiercepharma.com" target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                        <ExternalLink className="w-3 h-3" />
-                        Fierce Pharma
-                      </a>
-                      <a href="https://www.statnews.com" target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                        <ExternalLink className="w-3 h-3" />
-                        STAT News
-                      </a>
-                      <a href="https://www.nature.com/nbt" target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-xs font-medium">
-                        <ExternalLink className="w-3 h-3" />
-                        Nature Biotechnology
-                      </a>
-                    </div>
-                  </div>
-                )}
+                {(() => {
+                  const summaryContent = displayNews.summary || "Executive summary will be displayed here once available.";
+                  const parts = summaryContent.split('**References:**');
+                  const mainContent = parts[0].replace(/Sources:.*$/, '').trim();
+                  const referencesSection = parts[1];
+                  
+                  return (
+                    <>
+                      <div className="text-blue-800 text-sm leading-relaxed mb-4">
+                        {mainContent}
+                      </div>
+                      
+                      {/* References Section */}
+                      {referencesSection && (
+                        <div className="border-t border-blue-300 pt-4">
+                          <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                            <ExternalLink className="w-4 h-4" />
+                            References
+                          </h4>
+                          <div className="space-y-2">
+                            {referencesSection.split('\n').filter(line => line.trim()).map((reference, index) => {
+                              // Parse markdown links: "1. [Title](URL)"
+                              const match = reference.match(/^\d+\.\s*\[([^\]]+)\]\(([^)]+)\)/);
+                              if (match) {
+                                const [, title, url] = match;
+                                return (
+                                  <div key={index} className="flex items-start gap-2">
+                                    <span className="text-blue-600 font-medium text-sm min-w-[20px]">{index + 1}.</span>
+                                    <a 
+                                      href={url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 hover:underline text-sm transition-colors flex-1"
+                                    >
+                                      {title}
+                                    </a>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }).filter(Boolean)}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -513,36 +520,54 @@ export default function PharmaIntelligenceBrief() {
                 {/* Key Pharmaceutical Developments */}
                 {keyDevelopments.length > 0 ? (
                   keyDevelopments.map((development, index) => {
-                    const parts = development.split('Source:');
-                    const content = parts[0].trim();
-                    const source = parts[1]?.trim();
+                    // Handle both old "Source:" format and new markdown format with references
+                    const parts = development.split('**References:**');
+                    const content = parts[0].replace(/Source:.*$/, '').trim();
+                    const referencesSection = parts[1];
                     
                     return (
-                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg border border-blue-200 bg-blue-50">
-                        <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200">
-                          PHARMA
-                        </Badge>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm text-blue-900 mb-1">{content}</p>
-                          {source && (
-                            <a 
-                              href={
-                                source.includes('BioPharma Dive') ? 'https://www.biopharmadive.com' :
-                                source.includes('Reuters') ? 'https://www.reuters.com/business/healthcare-pharmaceuticals' :
-                                source.includes('STAT News') ? 'https://www.statnews.com' :
-                                source.includes('Fierce Pharma') ? 'https://www.fiercepharma.com' :
-                                source.includes('Nature') ? 'https://www.nature.com/nbt' :
-                                'https://www.biopharmadive.com'
-                              }
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                            >
-                              <ExternalLink className="w-3 h-3" />
-                              {source}
-                            </a>
-                          )}
+                      <div key={index} className="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                        <div className="flex items-start gap-3 mb-3">
+                          <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200">
+                            PHARMA
+                          </Badge>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm text-blue-900">{content}</p>
+                          </div>
                         </div>
+                        
+                        {/* References for this development */}
+                        {referencesSection && (
+                          <div className="border-t border-blue-300 pt-3 ml-12">
+                            <h5 className="text-xs font-semibold text-blue-700 mb-2 flex items-center gap-1">
+                              <ExternalLink className="w-3 h-3" />
+                              Sources
+                            </h5>
+                            <div className="space-y-1">
+                              {referencesSection.split('\n').filter(line => line.trim()).map((reference, refIndex) => {
+                                // Parse markdown links: "1. [Title](URL)"
+                                const match = reference.match(/^\d+\.\s*\[([^\]]+)\]\(([^)]+)\)/);
+                                if (match) {
+                                  const [, title, url] = match;
+                                  return (
+                                    <div key={refIndex} className="flex items-start gap-2">
+                                      <span className="text-blue-600 font-medium text-xs min-w-[15px]">{refIndex + 1}.</span>
+                                      <a 
+                                        href={url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline text-xs transition-colors flex-1"
+                                      >
+                                        {title}
+                                      </a>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }).filter(Boolean)}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -655,9 +680,53 @@ export default function PharmaIntelligenceBrief() {
                   <DollarSign className="w-4 h-4" />
                   Pharmaceutical Market Impact
                 </h4>
-                <div className="text-green-800 text-sm leading-relaxed">
-                  {displayNews.marketImpact?.split('Sources:')[0] || "Market impact analysis will be displayed here once available."}
-                </div>
+                {(() => {
+                  const marketContent = displayNews.marketImpact || "Market impact analysis will be displayed here once available.";
+                  const parts = marketContent.split('**References:**');
+                  const mainContent = parts[0].replace(/Sources:.*$/, '').trim();
+                  const referencesSection = parts[1];
+                  
+                  return (
+                    <>
+                      <div className="text-green-800 text-sm leading-relaxed mb-4">
+                        {mainContent}
+                      </div>
+                      
+                      {/* References Section */}
+                      {referencesSection && (
+                        <div className="border-t border-green-300 pt-4">
+                          <h5 className="text-sm font-semibold text-green-800 mb-3 flex items-center gap-2">
+                            <ExternalLink className="w-4 h-4" />
+                            References
+                          </h5>
+                          <div className="space-y-2">
+                            {referencesSection.split('\n').filter(line => line.trim()).map((reference, index) => {
+                              // Parse markdown links: "1. [Title](URL)"
+                              const match = reference.match(/^\d+\.\s*\[([^\]]+)\]\(([^)]+)\)/);
+                              if (match) {
+                                const [, title, url] = match;
+                                return (
+                                  <div key={index} className="flex items-start gap-2">
+                                    <span className="text-green-600 font-medium text-sm min-w-[20px]">{index + 1}.</span>
+                                    <a 
+                                      href={url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-green-600 hover:text-green-800 hover:underline text-sm transition-colors flex-1"
+                                    >
+                                      {title}
+                                    </a>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }).filter(Boolean)}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           )}
