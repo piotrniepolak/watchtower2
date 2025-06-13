@@ -1608,22 +1608,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No pharma news available for today" });
       }
 
-      // Extract ONLY companies actually mentioned in the intelligence brief content
+      // Get healthcare stocks for price data lookup only
       const allStocks = await storage.getStocks();
       const healthcareStocks = allStocks.filter(stock => stock.sector === 'Healthcare');
       
-      // Extract all text content from the entire brief
-      const allBriefContent = [
-        news.title || '',
-        news.summary || '',
-        ...(Array.isArray(news.keyDevelopments) ? news.keyDevelopments : []),
-        news.marketImpact || '',
-        news.geopoliticalAnalysis || '',
-        ...(Array.isArray(news.conflictUpdates) ? news.conflictUpdates.map((update: any) => 
-          `${update.conflict} ${update.update}`
-        ) : [])
-      ].join(' ');
-
       console.log(`🔍 Using improved text-based extraction to find pharmaceutical companies mentioned in brief content...`);
 
 

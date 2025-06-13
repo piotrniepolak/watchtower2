@@ -614,11 +614,19 @@ class PerplexityService {
       .map(mention => this.getStockSymbolFromMention(mention))
       .filter((symbol): symbol is string => symbol !== null);
 
-    // Also check if any healthcare stock symbols appear directly in the content
+    // Clean content to remove reference URLs and citations before checking mentions
+    const cleanContent = allContent
+      .replace(/\[References:\][\s\S]*$/i, '') // Remove entire References section
+      .replace(/https?:\/\/[^\s\)]+/g, '') // Remove URLs
+      .replace(/\[\d+\]/g, '') // Remove citation numbers like [1], [2]
+      .replace(/\(\d+\)/g, '') // Remove citation numbers like (1), (2)
+      .replace(/References?:\s*\d+\./gi, ''); // Remove "References: 1."
+
+    // Only check for direct symbol mentions in cleaned content (no reference URLs)
     const directSymbolMentions = healthcareStocks
       .filter(stock => {
         const symbolPattern = new RegExp(`\\b${stock.symbol}\\b`, 'gi');
-        return symbolPattern.test(allContent);
+        return symbolPattern.test(cleanContent);
       })
       .map(stock => stock.symbol);
 
@@ -626,8 +634,8 @@ class PerplexityService {
     const allDetectedSymbols = [...stockSymbols, ...directSymbolMentions];
     const uniqueSymbols = Array.from(new Set(allDetectedSymbols));
 
-    console.log(`🔍 Extracted ${companyMentions.length} pharmaceutical company mentions: ${companyMentions.join(', ')}`);
-    console.log(`📈 Found ${directSymbolMentions.length} direct stock symbol mentions: ${directSymbolMentions.join(', ')}`);
+    console.log(`🔍 Extracted ${companyMentions.length} pharmaceutical company mentions from cleaned content`);
+    console.log(`📈 Found ${directSymbolMentions.length} direct stock symbol mentions in content (excluding references)`);
     console.log(`🎯 Total unique pharmaceutical stocks identified: ${uniqueSymbols.join(', ')}`);
     
     // Enhanced debug logging for company mapping
@@ -636,37 +644,9 @@ class PerplexityService {
       console.log(`📊 Company "${mention}" -> Symbol: ${symbol || 'NOT FOUND'}`);
     });
 
-    // If still no companies found, actively search content for pharmaceutical terms
+    // No fallback data - only use companies actually mentioned in content
     if (uniqueSymbols.length === 0) {
-      console.log('⚠️ No pharmaceutical companies detected in initial scan, performing deep content analysis...');
-      
-      // Look for any healthcare stocks mentioned in a broader context
-      const broadSearchSymbols = healthcareStocks
-        .filter(stock => {
-          const companyNameWords = stock.name.toLowerCase().split(/\s+/);
-          return companyNameWords.some(word => 
-            word.length > 3 && allContent.toLowerCase().includes(word)
-          );
-        })
-        .map(stock => stock.symbol)
-        .slice(0, 5); // Limit to 5 companies to avoid overwhelming the brief
-
-      if (broadSearchSymbols.length > 0) {
-        console.log(`🔎 Deep analysis found ${broadSearchSymbols.length} additional companies: ${broadSearchSymbols.join(', ')}`);
-        uniqueSymbols.push(...broadSearchSymbols);
-      }
-    }
-
-    // Final fallback with actual database companies if still empty
-    if (uniqueSymbols.length === 0) {
-      console.log('⚠️ No pharmaceutical companies found after comprehensive search, selecting active healthcare stocks');
-      const fallbackSymbols = healthcareStocks
-        .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent)) // Sort by most active
-        .slice(0, 4)
-        .map(stock => stock.symbol);
-      
-      uniqueSymbols.push(...fallbackSymbols);
-      console.log(`📋 Using ${fallbackSymbols.length} active healthcare stocks: ${fallbackSymbols.join(', ')}`);
+      console.log('ℹ️ No pharmaceutical companies mentioned in this brief content');
     }
 
     // Generate analysis for each mentioned company

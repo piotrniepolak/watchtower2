@@ -13,27 +13,28 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 13, 2025 - Fixed References Display and Sector Separation
+### June 13, 2025 - Fixed Pharmaceutical Company Extraction and References Display
 **Major Fixes Completed:**
-- **Fixed cross-contamination between defense and pharmaceutical intelligence briefs** through complete database architecture separation with sector-specific unique constraints
-- **Transformed references from inline URLs to clean, clickable "References" sections** matching professional intelligence brief format requirements
-- **Enhanced pharmaceutical company extraction logic** to comprehensively scan all sections of daily pharmaceutical intelligence brief with 60+ company patterns
-- **Implemented sector-specific database operations** preventing data overwriting between defense and pharmaceutical intelligence services
-- **Updated all content sections** to properly parse and display numbered reference links instead of embedded URLs
+- **Eliminated all hardcoded fallback data from pharmaceutical company extraction** ensuring only companies actually mentioned in brief content are displayed
+- **Fixed extraction of companies from reference URLs** by implementing comprehensive URL and citation filtering before content analysis
+- **Enhanced pharmaceutical company pattern matching** with 25+ comprehensive company variations and pharmaceutical context validation
+- **Implemented text-based extraction with contextual quotes** showing exactly why each company was identified in the brief
+- **Removed duplicate extraction systems** that were causing false positives and inflated company counts
 
 **Technical Implementation:**
-- Added sector field to daily_news database schema with unique constraint on (date, sector)
-- Updated all storage methods and API routes to include sector parameter for data separation
-- Modified pharmaceutical intelligence brief component to parse **References:** markdown sections into clickable numbered links
-- Enhanced executive summary, key developments, and market impact sections with proper reference formatting
-- Fixed Perplexity service citation processing to generate clean markdown reference lists
-- Updated all services (defense-news-service, pharma-news-service, defense-intelligence-service) to use sector-specific operations
+- Completely rebuilt pharmaceutical extraction logic to scan actual brief content instead of database cross-referencing
+- Added comprehensive URL filtering removing reference sections, citations, and source links before analysis
+- Enhanced pattern matching with pharmaceutical and business context validation
+- Implemented contextual quote extraction showing the specific sentence mentioning each company
+- Disabled all fallback data mechanisms in perplexity-service.ts and routes.ts
+- Added improved logging distinguishing between legitimate mentions and reference URL extractions
 
 **User Impact:**
-- Defense and pharmaceutical intelligence briefs now save to separate database records, eliminating cross-contamination
-- References appear as clean, numbered clickable links in dedicated "References" sections throughout all content areas
-- Professional intelligence brief format matching industry standards with proper source attribution
-- Enhanced pharmaceutical company extraction showing 7-14 companies properly identified from brief content
+- "Pharmaceutical Stocks Mentioned in this Brief" section now shows only companies explicitly referenced in intelligence text
+- Each company includes contextual quote explaining why it was identified
+- No hardcoded or fallback data ever appears in pharmaceutical brief
+- Accurate company extraction eliminating false positives from reference URLs
+- Professional intelligence brief format with proper source attribution in dedicated References sections
 
 ## User Preferences
 - Focus on authentic data extraction from verified sources
