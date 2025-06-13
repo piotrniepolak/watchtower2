@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
+import { UnifiedIntelligenceDashboard } from "@/components/unified-intelligence-dashboard";
 
 import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
@@ -905,6 +906,11 @@ export default function Home() {
           </CardContent>
           )}
         </Card>
+
+        {/* Unified Intelligence Dashboard */}
+        <div className="mt-8">
+          <UnifiedIntelligenceDashboard />
+        </div>
 
         {/* Community Chat Section */}
         <div className="mt-6">
