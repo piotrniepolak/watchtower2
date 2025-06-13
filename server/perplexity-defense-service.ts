@@ -213,7 +213,7 @@ export class PerplexityDefenseService {
     } catch (error) {
       console.error('❌ Error generating defense intelligence:', error);
       
-      // Generate a clean fallback brief with formatting fixes
+      // Generate a clean fallback brief with comprehensive formatting fixes
       const fallbackBrief = await this.generateCleanFallbackBrief();
       
       this.lastGenerationDate = fallbackBrief.date;
@@ -530,24 +530,44 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
   }
 
   private cleanFormattingIssues(text: string): string {
-    // Remove problematic formatting characters and patterns
+    // Comprehensive text cleaning to remove all formatting artifacts
     let cleaned = text
-      // Remove asterisk patterns like "*Title**:" or "**Title*:"
+      // Remove all types of brackets and their contents
+      .replace(/\[[^\]]*\]/g, '')
+      .replace(/\([^)]*\)/g, '')
+      .replace(/\{[^}]*\}/g, '')
+      // Remove asterisk patterns and standalone asterisks
       .replace(/\*+([^*]+)\*+:?\s*/g, '$1: ')
-      // Remove standalone asterisks and cleanup
       .replace(/\*+/g, '')
-      // Clean up extra colons and cleanup spacing
+      // Remove bullet points and list markers
+      .replace(/^[\s]*[•\-\*\+]\s*/gm, '')
+      .replace(/^\s*\d+\.\s*/gm, '')
+      // Clean up extra colons and double colons
       .replace(/::+/g, ':')
       .replace(/:\s*:/g, ':')
       // Remove dots at the start of sentences
-      .replace(/^\.\s*/, '')
-      // Clean up extra spaces
-      .replace(/\s+/g, ' ')
+      .replace(/^\.\s*/gm, '')
+      // Remove citation markers and reference numbers
+      .replace(/\[\d+\]/g, '')
+      .replace(/\(\d+\)/g, '')
+      // Remove markdown formatting
+      .replace(/#{1,6}\s*/g, '')
+      .replace(/`{1,3}(.*?)`{1,3}/g, '$1')
+      .replace(/_{1,2}(.*?)_{1,2}/g, '$1')
+      // Remove special characters and symbols
+      .replace(/•/g, '')
+      .replace(/§/g, '')
+      .replace(/†/g, '')
+      .replace(/‡/g, '')
+      .replace(/\.\.\./g, '.')
+      .replace(/--/g, '-')
+      // Clean up whitespace
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
 
     // Ensure proper sentence structure
     if (cleaned.includes(':') && !cleaned.includes('.')) {
-      // If it's a title followed by content, ensure proper formatting
       const parts = cleaned.split(':');
       if (parts.length === 2 && parts[0].length < 100 && parts[1].length > 20) {
         cleaned = `${parts[0].trim()}: ${parts[1].trim()}`;
