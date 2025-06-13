@@ -15,8 +15,7 @@ import DailyNews from "@/components/daily-news";
 import ConflictTimeline from "@/components/conflict-timeline";
 import MultiSectorNavigation from "@/components/multi-sector-navigation";
 import WorldHealthMapSimple from "@/components/world-health-map-simple";
-import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
-import { DefenseIntelligenceBrief } from "@/components/defense-intelligence-brief";
+
 import TopOpportunityList from "@/components/top-opportunity-list";
 import InteractiveCO2Map from "@/components/interactive-co2-map";
 import CO2TrendlineProjections from "@/components/co2-trendline-projections";
@@ -102,18 +101,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <ActiveConflictsList />
       </div>
 
-      {/* Defense Intelligence Brief Section */}
-      <div className="w-full mb-8">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            Defense Intelligence Brief
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Comprehensive analysis of global defense developments and market impact
-          </p>
-        </div>
-        <DefenseIntelligenceBrief />
-      </div>
+
 
       {/* Additional Analysis Grid */}
       <div className="grid grid-cols-1 gap-6">
@@ -190,10 +178,7 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <EnhancedChartsSection sector={currentSector} />
       </div>
 
-      {/* Pharma Intelligence Brief Section */}
-      <div className="w-full mb-8">
-        <PharmaIntelligenceBrief />
-      </div>
+
 
       {/* Global Health Map Section */}
       <div className="w-full mb-8">
