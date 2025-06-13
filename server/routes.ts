@@ -1587,25 +1587,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pharma News Routes
   app.get("/api/news/pharma/today", async (req, res) => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      // Always generate fresh pharmaceutical intelligence using Perplexity AI
+      console.log('🔬 Generating fresh pharmaceutical intelligence brief...');
+      let news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
       
-      // First try to get existing data from database
-      let news = await storage.getDailyNews(today);
-      
-      // If no existing data, generate new comprehensive pharmaceutical intelligence
+      // If Perplexity AI fails, fallback to existing method
       if (!news) {
-        console.log('No existing pharmaceutical intelligence found, generating fresh data...');
-        news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
-        
-        // If Perplexity AI fails, fallback to existing method
-        if (!news) {
-          console.log('Perplexity AI pharmaceutical intelligence generation failed, trying fallback method...');
-          news = await pharmaNewsService.getTodaysPharmaNews();
-        }
+        console.log('⚠️ Perplexity AI pharmaceutical intelligence generation failed, trying fallback method...');
+        news = await pharmaNewsService.getTodaysPharmaNews();
       }
       
       if (!news) {
-        return res.status(404).json({ error: "No pharma news available for today" });
+        return res.status(404).json({ error: "No pharmaceutical intelligence available" });
       }
 
       // Extract ALL pharmaceutical companies mentioned throughout the entire brief content

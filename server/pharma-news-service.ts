@@ -263,14 +263,12 @@ export class PharmaNewsService {
     try {
       this.isGenerating = true;
       console.log("🔬 Generating pharmaceutical intelligence brief using Perplexity AI...");
-      console.log("🔍 About to call Perplexity service...");
 
-      // Force real Perplexity API call
+      // Generate comprehensive pharmaceutical intelligence using Perplexity AI
       const intelligenceBrief = await perplexityService.generateComprehensiveIntelligenceBrief();
-      console.log("🔍 Perplexity service returned:", !!intelligenceBrief);
       
       if (!intelligenceBrief) {
-        throw new Error("Perplexity service failed to generate intelligence brief");
+        throw new Error("Perplexity service failed to generate pharmaceutical intelligence brief");
       }
 
       const newsData: InsertDailyNews = {
@@ -283,38 +281,27 @@ export class PharmaNewsService {
           update: update.description,
           severity: update.severity as "medium" | "high" | "low" | "critical"
         })),
-        defenseStockHighlights: intelligenceBrief.defenseStockHighlights.map(stock => ({
-          symbol: stock.symbol,
-          name: stock.company,
-          change: stock.change,
-          changePercent: stock.change,
-          reason: stock.analysis
-        })),
+        defenseStockHighlights: [], // Minimal defense stocks for pharma brief
         pharmaceuticalStockHighlights: intelligenceBrief.pharmaceuticalStockHighlights?.map(stock => ({
           symbol: stock.symbol,
           name: stock.company,
           change: stock.change,
           changePercent: stock.change,
           reason: stock.analysis
-        })),
+        })) || [],
         marketImpact: intelligenceBrief.marketImpact,
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
       };
 
-      // Delete existing entry for today and create fresh one with extracted companies
+      // Delete existing entry for today and create fresh one
       try {
-        console.log("🔄 Deleting existing entry and creating fresh pharmaceutical intelligence brief");
         const today = new Date().toISOString().split('T')[0];
-        
-        // First delete any existing entry for today
         await storage.deleteDailyNews(today);
-        
-        // Create fresh entry with extracted pharmaceutical companies
         const savedNews = await storage.createDailyNews(newsData);
-        console.log("✅ Fresh pharmaceutical intelligence brief with extracted companies saved successfully");
+        console.log("✅ Fresh pharmaceutical intelligence brief saved successfully");
         
-        // Run daily pharmaceutical database update
-        await dailyPharmaUpdateService.scheduleDailyUpdate(savedNews);
+        // Extract and add pharmaceutical companies to database
+        await this.extractAndAddPharmaceuticalCompanies(intelligenceBrief.summary, intelligenceBrief.keyDevelopments, intelligenceBrief.marketImpact);
         
         return savedNews;
       } catch (dbError: any) {
@@ -327,6 +314,82 @@ export class PharmaNewsService {
     } finally {
       this.isGenerating = false;
     }
+  }
+
+  private async extractAndAddPharmaceuticalCompanies(summary: string, keyDevelopments: string[], marketImpact: string): Promise<void> {
+    const allContent = [summary, ...keyDevelopments, marketImpact].join(' ');
+    
+    // Define pharmaceutical company mappings
+    const pharmaCompanies = [
+      { names: ['pfizer', 'pfe'], symbol: 'PFE', fullName: 'Pfizer Inc.' },
+      { names: ['johnson & johnson', 'j&j', 'jnj'], symbol: 'JNJ', fullName: 'Johnson & Johnson' },
+      { names: ['moderna', 'mrna'], symbol: 'MRNA', fullName: 'Moderna Inc.' },
+      { names: ['astrazeneca', 'azn'], symbol: 'AZN', fullName: 'AstraZeneca PLC' },
+      { names: ['novartis', 'nvs'], symbol: 'NVS', fullName: 'Novartis AG' },
+      { names: ['roche', 'rhhby'], symbol: 'RHHBY', fullName: 'Roche Holding AG' },
+      { names: ['merck', 'mrk'], symbol: 'MRK', fullName: 'Merck & Co Inc' },
+      { names: ['bayer', 'bayry'], symbol: 'BAYRY', fullName: 'Bayer AG' },
+      { names: ['bristol myers squibb', 'bristol-myers squibb', 'bmy'], symbol: 'BMY', fullName: 'Bristol-Myers Squibb Company' },
+      { names: ['eli lilly', 'lilly', 'lly'], symbol: 'LLY', fullName: 'Eli Lilly and Company' },
+      { names: ['abbott', 'abt'], symbol: 'ABT', fullName: 'Abbott Laboratories' },
+      { names: ['amgen', 'amgn'], symbol: 'AMGN', fullName: 'Amgen Inc.' },
+      { names: ['gilead', 'gild'], symbol: 'GILD', fullName: 'Gilead Sciences Inc' },
+      { names: ['biogen', 'biib'], symbol: 'BIIB', fullName: 'Biogen Inc.' },
+      { names: ['regeneron', 'regn'], symbol: 'REGN', fullName: 'Regeneron Pharmaceuticals Inc' },
+      { names: ['vertex', 'vrtx'], symbol: 'VRTX', fullName: 'Vertex Pharmaceuticals Incorporated' },
+      { names: ['abbvie', 'abbv'], symbol: 'ABBV', fullName: 'AbbVie Inc.' },
+      { names: ['sanofi', 'sny'], symbol: 'SNY', fullName: 'Sanofi' },
+      { names: ['glaxosmithkline', 'gsk'], symbol: 'GSK', fullName: 'GSK plc' },
+      { names: ['biontech', 'bntx'], symbol: 'BNTX', fullName: 'BioNTech SE' },
+      { names: ['curevac', 'cvac'], symbol: 'CVAC', fullName: 'CureVac N.V.' },
+      { names: ['novavax', 'nvax'], symbol: 'NVAX', fullName: 'Novavax Inc.' },
+      { names: ['ultragenyx', 'rare'], symbol: 'RARE', fullName: 'Ultragenyx Pharmaceutical Inc.' },
+      { names: ['solid biosciences', 'sldb'], symbol: 'SLDB', fullName: 'Solid Biosciences Inc.' },
+      { names: ['stoke therapeutics', 'stok'], symbol: 'STOK', fullName: 'Stoke Therapeutics Inc.' },
+      { names: ['nuvation bio', 'nuvb'], symbol: 'NUVB', fullName: 'Nuvation Bio Inc.' },
+      { names: ['novo nordisk', 'nvo'], symbol: 'NVO', fullName: 'Novo Nordisk A/S' }
+    ];
+
+    const existingStocks = await storage.getStocks();
+    const detectedCompanies: string[] = [];
+
+    for (const company of pharmaCompanies) {
+      const ismentioned = company.names.some(name => 
+        allContent.toLowerCase().includes(name.toLowerCase())
+      );
+
+      if (ismentioned) {
+        detectedCompanies.push(company.symbol);
+        
+        // Check if stock already exists
+        const stockExists = existingStocks.some(s => s.symbol === company.symbol);
+        
+        if (!stockExists) {
+          try {
+            const newStock = {
+              symbol: company.symbol,
+              name: company.fullName,
+              sector: 'Healthcare' as const,
+              price: 0,
+              change: 0,
+              changePercent: '0%',
+              volume: 0,
+              marketCap: '0',
+              hasDefense: false,
+              hasHealthcare: true,
+              hasEnergy: false
+            };
+
+            await storage.createStock(newStock);
+            console.log(`✅ Added pharmaceutical company: ${company.symbol}`);
+          } catch (error) {
+            console.warn(`⚠️ Could not add pharmaceutical company ${company.symbol}:`, error);
+          }
+        }
+      }
+    }
+
+    console.log(`🔍 Detected ${detectedCompanies.length} pharmaceutical companies: ${detectedCompanies.join(', ')}`);
   }
 
   async getTodaysPharmaNews(): Promise<DailyNews | null> {
