@@ -440,12 +440,12 @@ class PerplexityService {
   }
 
   private extractCompanyMentions(content: string): string[] {
-    // Common pharmaceutical company patterns to match
+    // Enhanced pharmaceutical company patterns to match - more comprehensive list
     const pharmaPatterns = [
-      // Full company names
-      /\b(Pfizer|Johnson\s*&\s*Johnson|Moderna|AstraZeneca|Novartis|Roche|Merck|Bristol\s*Myers\s*Squibb|Eli\s*Lilly|Abbott|Amgen|Gilead|Biogen|Regeneron|Vertex|AbbVie|Sanofi|GlaxoSmithKline|GSK|Bayer|Boehringer\s*Ingelheim|Takeda|Daiichi\s*Sankyo|Astellas|Eisai|Ono\s*Pharmaceutical|Chugai|Shionogi|Sumitomo\s*Dainippon|Mitsubishi\s*Tanabe|Kyowa\s*Kirin|Otsuka|Teva|Mylan|Viatris|Allergan|Celgene|Kite\s*Pharma|Juno\s*Therapeutics|CAR-T|Immunomedics|Seattle\s*Genetics|Seagen|BioNTech|CureVac|Inovio|Novavax|Valneva|Bavarian\s*Nordic|Emergent\s*BioSolutions|CSL\s*Behring|Grifols|Octapharma|Kedrion|Biotest|LFB|Plasma\s*Protein\s*Therapeutics|Association|Nuvation|Ultragenyx|Argenx|Incyte|Blueprint\s*Medicines|Alnylam|Exact\s*Sciences|Illumina|10x\s*Genomics|Pacific\s*Biosciences|Twist\s*Bioscience)\b/gi,
-      // Stock ticker patterns
-      /\b(PFE|JNJ|MRNA|AZN|NVS|RHHBY|MRK|BMY|LLY|ABT|AMGN|GILD|BIIB|REGN|VRTX|ABBV|SNY|GSK|BAYRY|BMRN|TAK|DSNKY|ALPMY|ESALY|SHTDY|SUMIY|MTBHY|KYKHY|OTSKY|TEVA|MYL|VTRS|AGN|CELG|KITE|JUNO|CART|IMMU|SGEN|BNTX|CVAC|INO|NVAX|VALN|BVNRY|EBS|CSL|GRFS|OCTA|KEDR|BIOTEST|LFB|PPTA|NUVB|RARE|ARGX|INCY|BPMC|ALNY|EXAS|ILMN|TXG|PACB|TWST)\b/g
+      // Full company names - comprehensive list
+      /\b(Pfizer|Johnson\s*&\s*Johnson|J&J|Moderna|AstraZeneca|Novartis|Roche|Merck|Bristol\s*Myers\s*Squibb|Bristol\s*Myers|Eli\s*Lilly|Lilly|Abbott|Amgen|Gilead|Biogen|Regeneron|Vertex|AbbVie|Sanofi|GlaxoSmithKline|GSK|Bayer|Boehringer\s*Ingelheim|Takeda|Daiichi\s*Sankyo|Astellas|Eisai|Ono\s*Pharmaceutical|Chugai|Shionogi|Sumitomo\s*Dainippon|Mitsubishi\s*Tanabe|Kyowa\s*Kirin|Otsuka|Teva|Mylan|Viatris|Allergan|Celgene|Kite\s*Pharma|Juno\s*Therapeutics|CAR-T|Immunomedics|Seattle\s*Genetics|Seagen|BioNTech|CureVac|Inovio|Novavax|Valneva|Bavarian\s*Nordic|Emergent\s*BioSolutions|CSL\s*Behring|Grifols|Octapharma|Kedrion|Biotest|LFB|Plasma\s*Protein\s*Therapeutics|Association|Nuvation|Ultragenyx|Argenx|Incyte|Blueprint\s*Medicines|Alnylam|Exact\s*Sciences|Illumina|10x\s*Genomics|Pacific\s*Biosciences|Twist\s*Bioscience|Solid\s*Biosciences|Stoke\s*Therapeutics|Catalent|IQVIA|Syneos|Thermo\s*Fisher|Charles\s*River|Laboratory\s*Corporation|LabCorp|Quest\s*Diagnostics|Danaher|Agilent|Waters|PerkinElmer|Mettler\s*Toledo|Sartorius|Lonza|WuXi\s*AppTec|Pharmaceutical\s*Research|Associates|ICON|Parexel|PPD|Covance|Quintiles)\b/gi,
+      // Stock ticker patterns - comprehensive list
+      /\b(PFE|JNJ|MRNA|AZN|NVS|RHHBY|MRK|BMY|LLY|ABT|AMGN|GILD|BIIB|REGN|VRTX|ABBV|SNY|GSK|BAYRY|BMRN|TAK|DSNKY|ALPMY|ESALY|SHTDY|SUMIY|MTBHY|KYKHY|OTSKY|TEVA|MYL|VTRS|AGN|CELG|KITE|JUNO|CART|IMMU|SGEN|BNTX|CVAC|INO|NVAX|VALN|BVNRY|EBS|CSL|GRFS|OCTA|KEDR|BIOTEST|LFB|PPTA|NUVB|RARE|ARGX|INCY|BPMC|ALNY|EXAS|ILMN|TXG|PACB|TWST|SLDB|STOK|CTLT|IQV|SYNH|TMO|CRL|LH|DGX|DHR|A|WAT|PKI|MTD|SARKY|LONZ|WXI|PRA|ICLR|PRXL|PPD|CVN|Q)\b/g
     ];
 
     const mentions = new Set<string>();
@@ -525,7 +525,42 @@ class PerplexityService {
       'illumina': 'ILMN',
       '10x genomics': 'TXG',
       'pacific biosciences': 'PACB',
-      'twist bioscience': 'TWST'
+      'twist bioscience': 'TWST',
+      'solid biosciences': 'SLDB',
+      'solid': 'SLDB',
+      'stoke therapeutics': 'STOK',
+      'stoke': 'STOK',
+      'catalent': 'CTLT',
+      'iqvia': 'IQV',
+      'syneos': 'SYNH',
+      'syneos health': 'SYNH',
+      'thermo fisher': 'TMO',
+      'thermo fisher scientific': 'TMO',
+      'charles river': 'CRL',
+      'charles river laboratories': 'CRL',
+      'laboratory corporation': 'LH',
+      'labcorp': 'LH',
+      'quest diagnostics': 'DGX',
+      'danaher': 'DHR',
+      'agilent': 'A',
+      'agilent technologies': 'A',
+      'waters': 'WAT',
+      'waters corporation': 'WAT',
+      'perkinelmer': 'PKI',
+      'mettler toledo': 'MTD',
+      'sartorius': 'SARKY',
+      'lonza': 'LONZ',
+      'lonza group': 'LONZ',
+      'wuxi apptec': 'WXI',
+      'pharmaceutical research': 'PRA',
+      'pra health sciences': 'PRA',
+      'icon': 'ICLR',
+      'icon plc': 'ICLR',
+      'parexel': 'PRXL',
+      'ppd': 'PPD',
+      'covance': 'CVN',
+      'quintiles': 'Q',
+      'nuvation bio': 'NUVB'
     };
 
     const normalizedMention = mention.toLowerCase().trim();
@@ -554,7 +589,7 @@ class PerplexityService {
     change: number;
     analysis: string;
   }>> {
-    // Combine all content from other sections
+    // Combine ALL content from every section of the brief for comprehensive extraction
     const allContent = [
       executiveSummary,
       ...keyDevelopments,
@@ -563,53 +598,75 @@ class PerplexityService {
       regulatoryAnalysis
     ].join(' ');
 
-    // Extract company mentions from all sections
+    console.log(`🔍 Scanning ${allContent.length} characters of pharmaceutical intelligence brief content for company mentions...`);
+
+    // Extract company mentions from all sections using enhanced patterns
     const companyMentions = this.extractCompanyMentions(allContent);
+    
+    // Get all pharmaceutical stocks from database to cross-reference
+    const allStocks = await storage.getStocks();
+    const healthcareStocks = allStocks.filter(stock => stock.sector === 'Healthcare');
+    
+    console.log(`📊 Found ${healthcareStocks.length} healthcare stocks in database for cross-reference`);
+
+    // Map mentions to stock symbols
     const stockSymbols = companyMentions
       .map(mention => this.getStockSymbolFromMention(mention))
       .filter((symbol): symbol is string => symbol !== null);
 
-    // Remove duplicates
-    const uniqueSymbols = Array.from(new Set(stockSymbols));
+    // Also check if any healthcare stock symbols appear directly in the content
+    const directSymbolMentions = healthcareStocks
+      .filter(stock => {
+        const symbolPattern = new RegExp(`\\b${stock.symbol}\\b`, 'gi');
+        return symbolPattern.test(allContent);
+      })
+      .map(stock => stock.symbol);
 
-    console.log(`🔍 Extracted ${companyMentions.length} pharmaceutical companies from brief content: ${companyMentions.join(', ')}`);
+    // Combine both methods of detection
+    const allDetectedSymbols = [...stockSymbols, ...directSymbolMentions];
+    const uniqueSymbols = Array.from(new Set(allDetectedSymbols));
+
+    console.log(`🔍 Extracted ${companyMentions.length} pharmaceutical company mentions: ${companyMentions.join(', ')}`);
+    console.log(`📈 Found ${directSymbolMentions.length} direct stock symbol mentions: ${directSymbolMentions.join(', ')}`);
+    console.log(`🎯 Total unique pharmaceutical stocks identified: ${uniqueSymbols.join(', ')}`);
     
-    // Debug logging for company mapping
+    // Enhanced debug logging for company mapping
     companyMentions.forEach(mention => {
       const symbol = this.getStockSymbolFromMention(mention);
       console.log(`📊 Company "${mention}" -> Symbol: ${symbol || 'NOT FOUND'}`);
-      // Additional debug for problematic mappings
-      if (mention.toLowerCase() === 'roche' || mention.toLowerCase() === 'bayer') {
-        console.log(`🐛 Debug mapping for "${mention}": normalized="${mention.toLowerCase()}", symbol="${symbol}"`);
-      }
     });
 
+    // If still no companies found, actively search content for pharmaceutical terms
     if (uniqueSymbols.length === 0) {
-      console.log('⚠️ No pharmaceutical companies found in content, using default set');
-      // Fallback to common pharmaceutical stocks if no mentions found
-      return [
-        {
-          symbol: "PFE",
-          company: "Pfizer Inc.",
-          price: 24.48,
-          change: 0.74,
-          analysis: "Strong pipeline momentum with multiple Phase 3 trials ongoing, particularly in oncology and rare diseases"
-        },
-        {
-          symbol: "JNJ",
-          company: "Johnson & Johnson",
-          price: 155.26,
-          change: -0.76,
-          analysis: "Diversified healthcare portfolio showing resilience amid ongoing pharmaceutical innovation investments"
-        },
-        {
-          symbol: "MRNA",
-          company: "Moderna Inc.",
-          price: 27.75,
-          change: 0.25,
-          analysis: "mRNA platform expansion beyond COVID-19 into cancer vaccines and other therapeutic areas"
-        }
-      ];
+      console.log('⚠️ No pharmaceutical companies detected in initial scan, performing deep content analysis...');
+      
+      // Look for any healthcare stocks mentioned in a broader context
+      const broadSearchSymbols = healthcareStocks
+        .filter(stock => {
+          const companyNameWords = stock.name.toLowerCase().split(/\s+/);
+          return companyNameWords.some(word => 
+            word.length > 3 && allContent.toLowerCase().includes(word)
+          );
+        })
+        .map(stock => stock.symbol)
+        .slice(0, 5); // Limit to 5 companies to avoid overwhelming the brief
+
+      if (broadSearchSymbols.length > 0) {
+        console.log(`🔎 Deep analysis found ${broadSearchSymbols.length} additional companies: ${broadSearchSymbols.join(', ')}`);
+        uniqueSymbols.push(...broadSearchSymbols);
+      }
+    }
+
+    // Final fallback with actual database companies if still empty
+    if (uniqueSymbols.length === 0) {
+      console.log('⚠️ No pharmaceutical companies found after comprehensive search, selecting active healthcare stocks');
+      const fallbackSymbols = healthcareStocks
+        .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent)) // Sort by most active
+        .slice(0, 4)
+        .map(stock => stock.symbol);
+      
+      uniqueSymbols.push(...fallbackSymbols);
+      console.log(`📋 Using ${fallbackSymbols.length} active healthcare stocks: ${fallbackSymbols.join(', ')}`);
     }
 
     // Generate analysis for each mentioned company
@@ -620,13 +677,11 @@ class PerplexityService {
       change: number;
       analysis: string;
     }> = [];
-
-    // Get all stocks from database to match pharmaceutical companies
-    const allStocks = await storage.getStocks();
     
     for (const symbol of uniqueSymbols) { // Show all extracted companies
       // Find stock in database
-      const stockData = allStocks.find(stock => stock.symbol === symbol);
+      const stockData = healthcareStocks.find(stock => stock.symbol === symbol) || 
+                       allStocks.find(stock => stock.symbol === symbol);
       
       if (!stockData) {
         console.log(`📊 Stock ${symbol} not found in database, skipping`);
