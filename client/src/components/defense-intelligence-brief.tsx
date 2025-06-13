@@ -171,10 +171,11 @@ export function DefenseIntelligenceBrief() {
                 {(defenseNews?.summary || 'No summary available').split('\n\n').map((paragraph: string, index: number) => (
                   <p key={index} className="mb-3">
                     {paragraph
-                      .replace(/###\s*\d*\.?\s*/g, '')
+                      .replace(/#{1,6}\s*\d*\.?\s*/g, '')
                       .replace(/\*\*(.*?)\*\*/g, '$1')
                       .replace(/\[\d+\]/g, '')
                       .replace(/^\d+\.\s*/, '')
+                      .replace(/^#\s*\d+\s*/g, '')
                       .trim()}
                   </p>
                 ))}
@@ -193,10 +194,11 @@ export function DefenseIntelligenceBrief() {
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-xs text-muted-foreground leading-relaxed">
                           {development
-                            .replace(/###\s*\d*\.?\s*/g, '')
+                            .replace(/#{1,6}\s*\d*\.?\s*/g, '')
                             .replace(/\*\*(.*?)\*\*/g, '$1')
                             .replace(/\[\d+\]/g, '')
                             .replace(/^\d+\.\s*/, '')
+                            .replace(/^#\s*\d+\s*/g, '')
                             .trim()}
                         </span>
                       </li>
@@ -276,10 +278,11 @@ export function DefenseIntelligenceBrief() {
                                 const text = update.description || update.update || update.currentStatus || String(update);
                                 // Clean up any remaining markdown artifacts
                                 const cleanText = text
-                                  .replace(/###\s*\d*\.?\s*/g, '') // Remove ### patterns
+                                  .replace(/#{1,6}\s*\d*\.?\s*/g, '') // Remove # ## ### patterns
                                   .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
                                   .replace(/\[\d+\]/g, '') // Remove citation brackets [1], [2], etc.
-                                  .replace(/^\d+\.\s*/, '') // Remove leading numbers
+                                  .replace(/^\d+\.\s*/, '') // Remove leading numbers like "3. "
+                                  .replace(/^#\s*\d+\s*/g, '') // Remove standalone # numbers
                                   .replace(/\s+/g, ' ') // Normalize whitespace
                                   .trim();
                                 
@@ -303,10 +306,11 @@ export function DefenseIntelligenceBrief() {
                                     <li key={devIndex} className="text-xs text-muted-foreground pl-3 relative">
                                       <span className="absolute left-0 top-1 w-1 h-1 bg-slate-400 rounded-full"></span>
                                       {dev
-                                        .replace(/###\s*\d*\.?\s*/g, '')
+                                        .replace(/#{1,6}\s*\d*\.?\s*/g, '')
                                         .replace(/\*\*(.*?)\*\*/g, '$1')
                                         .replace(/\[\d+\]/g, '')
                                         .replace(/^\d+\.\s*/, '')
+                                        .replace(/^#\s*\d+\s*/g, '')
                                         .trim()}
                                     </li>
                                   ))}
@@ -320,10 +324,11 @@ export function DefenseIntelligenceBrief() {
                                 <h5 className="text-xs font-medium text-blue-700 dark:text-blue-400 mb-1">Defense Impact:</h5>
                                 <p className="text-xs text-blue-600 dark:text-blue-300">
                                   {update.defenseImpact
-                                    .replace(/###\s*\d*\.?\s*/g, '')
+                                    .replace(/#{1,6}\s*\d*\.?\s*/g, '')
                                     .replace(/\*\*(.*?)\*\*/g, '$1')
                                     .replace(/\[\d+\]/g, '')
                                     .replace(/^\d+\.\s*/, '')
+                                    .replace(/^#\s*\d+\s*/g, '')
                                     .trim()}
                                 </p>
                               </div>
@@ -335,10 +340,11 @@ export function DefenseIntelligenceBrief() {
                                 <h5 className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Market Impact:</h5>
                                 <p className="text-xs text-green-600 dark:text-green-300">
                                   {update.marketImplications
-                                    .replace(/###\s*\d*\.?\s*/g, '')
+                                    .replace(/#{1,6}\s*\d*\.?\s*/g, '')
                                     .replace(/\*\*(.*?)\*\*/g, '$1')
                                     .replace(/\[\d+\]/g, '')
                                     .replace(/^\d+\.\s*/, '')
+                                    .replace(/^#\s*\d+\s*/g, '')
                                     .trim()}
                                 </p>
                               </div>
