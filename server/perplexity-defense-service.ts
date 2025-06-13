@@ -54,6 +54,16 @@ export class PerplexityDefenseService {
       .replace(/_([^_]+)_/g, '$1')        // Remove underline formatting
       .replace(/\|/g, '')                 // Remove table separators
       .replace(/[-]{3,}/g, '')            // Remove horizontal rules
+      // Remove embedded source links and domain references
+      .replace(/\s*Sources?:\s*[^\n]*$/gmi, '') // Remove "Sources:" lines at end of paragraphs
+      .replace(/\s*Source:\s*[^\n]*$/gmi, '')   // Remove "Source:" lines at end of paragraphs
+      .replace(/\s*bloomberg\.com\s*/gi, ' ')   // Remove bloomberg.com references
+      .replace(/\s*defensenews\.com\s*/gi, ' ') // Remove defensenews.com references
+      .replace(/\s*reuters\.com\s*/gi, ' ')     // Remove reuters.com references
+      .replace(/\s*wsj\.com\s*/gi, ' ')         // Remove wsj.com references
+      .replace(/\s*cnbc\.com\s*/gi, ' ')        // Remove cnbc.com references
+      .replace(/\s*marketwatch\.com\s*/gi, ' ') // Remove marketwatch.com references
+      .replace(/\s*\b[a-zA-Z0-9.-]+\.com\b\s*/gi, ' ') // Remove any other .com domains
       .replace(/\s{2,}/g, ' ')            // Replace multiple spaces with single space
       .replace(/\n{3,}/g, '\n\n')         // Replace multiple newlines with double newline
       .trim();
