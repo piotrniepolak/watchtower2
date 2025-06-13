@@ -19,6 +19,7 @@ import PharmaIntelligenceBrief from "@/components/pharma-intelligence-brief";
 import { DefenseIntelligenceBrief } from "@/components/defense-intelligence-brief";
 import TopOpportunityList from "@/components/top-opportunity-list";
 import InteractiveCO2Map from "@/components/interactive-co2-map";
+import CO2TrendlineProjections from "@/components/co2-trendline-projections";
 
 interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
@@ -309,6 +310,11 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
       {/* Interactive CO₂ Emissions Map */}
       <div className="w-full mb-8">
         <InteractiveCO2Map />
+      </div>
+
+      {/* CO₂ Trendlines & IPCC Projections */}
+      <div className="w-full mb-8">
+        <CO2TrendlineProjections />
       </div>
 
       {/* Energy-specific content */}
