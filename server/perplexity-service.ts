@@ -42,6 +42,13 @@ interface PharmaceuticalIntelligence {
   marketImpact: string;
   geopoliticalAnalysis: string;
   createdAt: string;
+  references: {
+    summary: Array<{ url: string; title: string; }>;
+    keyDevelopments: Array<{ url: string; title: string; }>;
+    conflictUpdates: Array<{ url: string; title: string; }>;
+    marketImpact: Array<{ url: string; title: string; }>;
+    geopoliticalAnalysis: Array<{ url: string; title: string; }>;
+  };
 }
 
 class PerplexityService {
@@ -677,7 +684,14 @@ class PerplexityService {
         pharmaceuticalStockHighlights: stockAnalysis,
         marketImpact,
         geopoliticalAnalysis: regulatoryAnalysis,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        references: {
+          summary: citations?.slice(0, 3).map(c => ({ url: c.url, title: c.title })) || [],
+          keyDevelopments: citations?.slice(3, 6).map(c => ({ url: c.url, title: c.title })) || [],
+          conflictUpdates: citations?.slice(6, 9).map(c => ({ url: c.url, title: c.title })) || [],
+          marketImpact: citations?.slice(9, 12).map(c => ({ url: c.url, title: c.title })) || [],
+          geopoliticalAnalysis: citations?.slice(12, 15).map(c => ({ url: c.url, title: c.title })) || []
+        }
       };
     } catch (error) {
       console.error('❌ Error generating pharmaceutical intelligence:', error);

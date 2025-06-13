@@ -265,6 +265,430 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Global Intelligence Center - Moved to Top */}
+        <Card className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-lg">
+                  <Brain className="h-6 w-6" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-slate-900">Global Intelligence Center</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    AI-powered predictive analysis across multiple sectors
+                  </CardDescription>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAIAnalysisExpanded(!isAIAnalysisExpanded)}
+                className="p-2"
+              >
+                {isAIAnalysisExpanded ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </Button>
+              {isAIAnalysisExpanded && (
+                <>
+                  <span className="text-sm font-medium text-slate-700">Sector:</span>
+                  <Select value={selectedSector} onValueChange={(value) => {
+                    console.log(`Frontend: Switching to sector: ${value}`);
+                    
+                    // Clear all existing cache for AI analysis
+                    queryClient.removeQueries({ queryKey: ["/api/analysis/predictions"] });
+                    queryClient.removeQueries({ queryKey: ["/api/analysis/market"] });
+                    
+                    setSelectedSector(value);
+                  }}>
+                <SelectTrigger className="w-48">
+                  <SelectValue>
+                    <div className="flex items-center space-x-2">
+                      {selectedSector === 'defense' && <Shield className="w-4 h-4" />}
+                      {selectedSector === 'health' && <Pill className="w-4 h-4" />}
+                      {selectedSector === 'energy' && <Zap className="w-4 h-4" />}
+                      <span>
+                        {selectedSector === 'defense' && 'ConflictWatch'}
+                        {selectedSector === 'health' && 'PharmaWatch'}
+                        {selectedSector === 'energy' && 'EnergyWatch'}
+                      </span>
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="defense">
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4" />
+                      <span>ConflictWatch</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="health">
+                    <div className="flex items-center space-x-2">
+                      <Pill className="w-4 h-4" />
+                      <span>PharmaWatch</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="energy">
+                    <div className="flex items-center space-x-2">
+                      <Zap className="w-4 h-4" />
+                      <span>EnergyWatch</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+                </>
+              )}
+            </div>
+          </CardHeader>
+          {isAIAnalysisExpanded && (
+            <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Market Analysis */}
+              <Card className="bg-white/70 backdrop-blur">
+                <CardHeader>
+                  <div className="flex items-center">
+                    <TrendingUp className="h-5 w-5 text-green-600 mr-2" />
+                    <CardTitle className="text-lg">Market Analysis</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="overview" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsTrigger value="overview">Overview</TabsTrigger>
+                      <TabsTrigger value="storylines">Storylines</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="overview" className="h-[320px] overflow-y-auto space-y-4">
+                      {marketAnalysis ? (
+                        <div className="space-y-3">
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <Activity className="h-3 w-3 mr-1" />
+                              Overall Sentiment: 
+                              <span className={`ml-1 px-2 py-1 rounded text-xs font-medium ${
+                                marketAnalysis.overallSentiment === 'bullish' ? 'bg-green-100 text-green-800' :
+                                marketAnalysis.overallSentiment === 'bearish' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {marketAnalysis.overallSentiment?.toUpperCase()}
+                              </span>
+                            </h5>
+                            <p className="text-xs text-slate-600">{marketAnalysis.sectorOutlook}</p>
+                          </div>
+
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Key Drivers
+                            </h5>
+                            <ul className="space-y-1">
+                              {marketAnalysis.keyDrivers?.slice(0, 3).map((driver: string, i: number) => (
+                                <li key={i} className="text-xs text-slate-600 flex items-center">
+                                  <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mr-2"></div>
+                                  {driver}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Risk Assessment
+                            </h5>
+                            <p className="text-xs text-slate-600">{marketAnalysis.riskAssessment}</p>
+                          </div>
+
+                          <div className="border rounded-lg p-3">
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                              <DollarSign className="h-3 w-3 mr-1" />
+                              Investment Implications
+                            </h5>
+                            <ul className="space-y-1">
+                              {marketAnalysis.investmentImplications?.slice(0, 3).map((implication: string, i: number) => (
+                                <li key={i} className="text-xs text-slate-600 flex items-center">
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
+                                  {implication}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <BarChart3 className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No market analysis available</p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="storylines" className="h-[320px] overflow-y-auto space-y-4">
+                      {/* Universal Dropdown Selection for All Sectors */}
+                      <div className="mb-4 p-3 bg-gradient-to-r from-slate-50 to-blue-50 rounded-lg border border-slate-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            {selectedSector === 'defense' && <Shield className="h-4 w-4 text-blue-600 mr-2" />}
+                            {selectedSector === 'health' && <Pill className="h-4 w-4 text-green-600 mr-2" />}
+                            {selectedSector === 'energy' && <Zap className="h-4 w-4 text-orange-600 mr-2" />}
+                            <span className="text-sm font-medium text-slate-800">
+                              {selectedSector === 'defense' && 'Select Conflict for Analysis'}
+                              {selectedSector === 'health' && 'Select Health Focus Area'}
+                              {selectedSector === 'energy' && 'Select Energy Focus Area'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {selectedSector === 'defense' && conflicts && conflicts.length > 0 && (
+                          <Select 
+                            value={selectedConflictId?.toString() || conflicts.filter((c: any) => c.status === 'Active')[0]?.id.toString()} 
+                            onValueChange={(value) => {
+                              const newId = parseInt(value);
+                              setSelectedConflictId(newId);
+                              // Clear storylines cache when conflict changes
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Shield className="w-4 h-4" />
+                                  <span>
+                                    {conflicts.find((c: any) => c.id === selectedConflictId)?.name || "Select Conflict"}
+                                  </span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {conflicts.filter((c: any) => c.status === 'Active').map((conflict: any) => (
+                                <SelectItem key={conflict.id} value={conflict.id.toString()}>
+                                  <div className="flex items-center space-x-2">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    <span>{conflict.name}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        
+                        {selectedSector === 'health' && (
+                          <Select 
+                            value={selectedConflictId?.toString() || "global"} 
+                            onValueChange={(value) => {
+                              const newId = value === "global" ? null : parseInt(value);
+                              setSelectedConflictId(newId);
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Pill className="w-4 h-4" />
+                                  <span>Global Health Trends</span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>Global Health Trends</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        
+                        {selectedSector === 'energy' && (
+                          <Select 
+                            value={selectedConflictId?.toString() || "global"} 
+                            onValueChange={(value) => {
+                              const newId = value === "global" ? null : parseInt(value);
+                              setSelectedConflictId(newId);
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Zap className="w-4 h-4" />
+                                  <span>Global Energy Markets</span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>Global Energy Markets</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+
+                      {storylines && storylines.length > 0 ? (
+                        storylines.map((storyline: ConflictStoryline, index: number) => (
+                          <div key={index} className="border rounded-lg p-3 bg-white/50">
+                            <h4 className="font-medium text-slate-900 mb-2 text-sm">Current Situation</h4>
+                            <p className="text-xs text-slate-600 mb-3">{storyline.currentSituation}</p>
+
+                            {storyline.possibleOutcomes && storyline.possibleOutcomes.length > 0 && (
+                              <div className="mb-3">
+                                <h5 className="font-medium text-slate-900 mb-2 text-sm flex items-center">
+                                  <Target className="h-3 w-3 mr-1" />
+                                  Possible Outcomes
+                                </h5>
+                                <div className="space-y-2">
+                                  {storyline.possibleOutcomes.slice(0, 2).map((outcome, i) => (
+                                    <div key={i} className="bg-slate-50 rounded p-2">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-medium text-slate-800">{outcome.scenario}</span>
+                                        <span className="text-xs text-slate-500">{outcome.probability}%</span>
+                                      </div>
+                                      <p className="text-xs text-slate-600">{outcome.description}</p>
+                                      <div className="mt-1">
+                                        <span className="text-xs text-slate-500">Timeline: {outcome.timeline}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {storyline.expertInsights && (
+                              <div className="mt-3 p-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded border">
+                                <h5 className="font-medium text-slate-900 mb-1 text-sm flex items-center">
+                                  <Brain className="h-3 w-3 mr-1" />
+                                  Expert Insights
+                                </h5>
+                                <p className="text-xs text-slate-700">{storyline.expertInsights}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
+                          {selectedSector === 'defense' && (
+                            <p className="text-xs text-slate-400 mt-1">Try selecting a specific conflict above</p>
+                          )}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* Predictive Analysis */}
+              <Card className="bg-white/70 backdrop-blur">
+                <CardHeader>
+                  <div className="flex items-center">
+                    <Brain className="h-5 w-5 text-purple-600 mr-2" />
+                    <CardTitle className="text-lg">AI Predictions</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[400px] overflow-y-auto space-y-3">
+                    {predictions && predictions.length > 0 ? (
+                      predictions.map((prediction: ConflictPrediction, index: number) => (
+                        <div key={index} className="border rounded-lg p-3 bg-white/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-slate-900 text-sm">{prediction.conflictName}</h4>
+                            <div className="flex items-center space-x-2">
+                              <Badge 
+                                variant={prediction.scenario === 'escalation' ? 'destructive' : 
+                                       prediction.scenario === 'de-escalation' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {prediction.scenario}
+                              </Badge>
+                              <span className="text-xs font-medium text-slate-600">{prediction.probability}%</span>
+                            </div>
+                          </div>
+                          
+                          <p className="text-xs text-slate-600 mb-2">{prediction.narrative}</p>
+                          
+                          <div className="text-xs text-slate-500 mb-2">
+                            <span className="font-medium">Timeline:</span> {prediction.timeframe}
+                          </div>
+                          
+                          {prediction.keyFactors && prediction.keyFactors.length > 0 && (
+                            <div className="mb-2">
+                              <span className="text-xs font-medium text-slate-700">Key Factors:</span>
+                              <ul className="mt-1 space-y-1">
+                                {prediction.keyFactors.slice(0, 2).map((factor, i) => (
+                                  <li key={i} className="text-xs text-slate-600 flex items-center">
+                                    <div className="w-1 h-1 bg-slate-400 rounded-full mr-2"></div>
+                                    {factor}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {prediction.defenseStockImpact && (
+                            <div className="mt-2 p-2 bg-slate-50 rounded">
+                              <span className="text-xs font-medium text-slate-700">Market Impact:</span>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <Badge 
+                                  variant={prediction.defenseStockImpact.direction === 'positive' ? 'default' : 
+                                         prediction.defenseStockImpact.direction === 'negative' ? 'destructive' : 'secondary'}
+                                  className="text-xs"
+                                >
+                                  {prediction.defenseStockImpact.direction}
+                                </Badge>
+                                <span className="text-xs text-slate-600">{prediction.defenseStockImpact.magnitude} magnitude</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Brain className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                        <p className="text-sm text-slate-500">No predictions available</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Insights Bar */}
+            {marketAnalysis && (
+              <div className="mt-6 p-4 bg-white/70 backdrop-blur rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-slate-900">Risk Level</div>
+                      <div className="text-xs text-slate-600">{marketAnalysis.riskAssessment?.split(' ').slice(0, 2).join(' ')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-slate-900">Horizon</div>
+                      <div className="text-xs text-slate-600">{marketAnalysis.timeHorizon}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-slate-900">Implications</div>
+                      <div className="text-xs text-slate-600">{marketAnalysis.investmentImplications?.length || 0} factors</div>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" disabled className="opacity-50">
+                    <Brain className="h-4 w-4 mr-2" />
+                    AI Analysis Active
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+          )}
+        </Card>
+
         {/* Global Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           {globalStats.map((stat, index) => {
