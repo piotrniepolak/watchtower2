@@ -318,37 +318,7 @@ export function DefenseIntelligenceBrief() {
                               </div>
                             )}
 
-                            {/* Defense Impact */}
-                            {update.defenseImpact && (
-                              <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border-l-2 border-blue-300">
-                                <h5 className="text-xs font-medium text-blue-700 dark:text-blue-400 mb-1">Defense Impact:</h5>
-                                <p className="text-xs text-blue-600 dark:text-blue-300">
-                                  {update.defenseImpact
-                                    .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                                    .replace(/\*\*(.*?)\*\*/g, '$1')
-                                    .replace(/\[\d+\]/g, '')
-                                    .replace(/^\d+\.\s*/, '')
-                                    .replace(/^#\s*\d+\s*/g, '')
-                                    .trim()}
-                                </p>
-                              </div>
-                            )}
 
-                            {/* Market Implications */}
-                            {update.marketImplications && (
-                              <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 rounded border-l-2 border-green-300">
-                                <h5 className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Market Impact:</h5>
-                                <p className="text-xs text-green-600 dark:text-green-300">
-                                  {update.marketImplications
-                                    .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                                    .replace(/\*\*(.*?)\*\*/g, '$1')
-                                    .replace(/\[\d+\]/g, '')
-                                    .replace(/^\d+\.\s*/, '')
-                                    .replace(/^#\s*\d+\s*/g, '')
-                                    .trim()}
-                                </p>
-                              </div>
-                            )}
 
                             {/* Source Links */}
                             {update.sourceLinks && Array.isArray(update.sourceLinks) && update.sourceLinks.length > 0 && (
