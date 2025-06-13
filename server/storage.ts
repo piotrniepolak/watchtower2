@@ -56,8 +56,8 @@ export interface IStorage {
   getUserQuizResponse(userId: string, quizId: number): Promise<UserQuizResponse | undefined>;
   
   // Daily News
-  getDailyNews(date: string): Promise<DailyNews | undefined>;
-  createDailyNews(news: InsertDailyNews): Promise<DailyNews>;
+  getDailyNews(date: string, sector?: string): Promise<DailyNews | undefined>;
+  createDailyNews(news: InsertDailyNews, sector: string): Promise<DailyNews>;
   deleteDailyNews(date: string): Promise<void>;
   
   // Quiz Leaderboard
@@ -277,13 +277,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Daily News
-  async getDailyNews(date: string): Promise<DailyNews | undefined> {
-    const [news] = await db.select().from(dailyNews).where(eq(dailyNews.date, date));
-    return news || undefined;
+  async getDailyNews(date: string, sector?: string): Promise<DailyNews | undefined> {
+    if (sector) {
+      const [news] = await db.select().from(dailyNews).where(
+        and(eq(dailyNews.date, date), eq(dailyNews.sector, sector))
+      );
+      return news || undefined;
+    } else {
+      const [news] = await db.select().from(dailyNews).where(eq(dailyNews.date, date));
+      return news || undefined;
+    }
   }
 
-  async createDailyNews(insertNews: InsertDailyNews): Promise<DailyNews> {
-    const [news] = await db.insert(dailyNews).values(insertNews).returning();
+  async createDailyNews(insertNews: InsertDailyNews, sector: string): Promise<DailyNews> {
+    const newsWithSector = { ...insertNews, sector };
+    const [news] = await db.insert(dailyNews).values(newsWithSector).returning();
     return news;
   }
 

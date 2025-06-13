@@ -1589,12 +1589,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Get pharmaceutical brief specifically (ensure it contains pharmaceutical content)
-      let news = await storage.getDailyNews('2025-06-14');
+      // Get pharmaceutical brief specifically by sector
+      let news = await storage.getDailyNews('2025-06-14', 'pharmaceutical');
       
-      // Validate that we have a pharmaceutical brief, not a defense brief
-      if (!news || news.title.includes('Defense Intelligence')) {
-        console.log('No pharmaceutical intelligence found or found defense brief instead, generating pharmaceutical data...');
+      // If no pharmaceutical brief exists, generate new one
+      if (!news) {
+        console.log('No pharmaceutical intelligence found, generating pharmaceutical data...');
         news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
         
         // If Perplexity AI fails, fallback to pharmaceutical method
@@ -2112,8 +2112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // First try to get existing data from database
-      let news = await storage.getDailyNews(today);
+      // Get defense brief specifically by sector
+      let news = await storage.getDailyNews(today, 'defense');
       
       // If no existing data, generate new comprehensive defense intelligence
       if (!news) {
