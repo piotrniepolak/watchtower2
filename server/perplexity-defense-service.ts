@@ -492,7 +492,7 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
     while ((match = bulletRegex.exec(content)) !== null && developments.length < 8) {
       if (match[1].trim().length > 30) {
         let cleanDevelopment = match[1].trim();
-        // Clean up malformed formatting - remove asterisks, extra colons, brackets
+        // Apply comprehensive formatting cleanup
         cleanDevelopment = this.cleanFormattingIssues(cleanDevelopment);
         if (cleanDevelopment.length > 20) {
           developments.push(cleanDevelopment);
