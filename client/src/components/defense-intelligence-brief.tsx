@@ -167,13 +167,9 @@ export function DefenseIntelligenceBrief() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-3">
-              <div className="text-sm leading-relaxed text-muted-foreground space-y-3">
-                {(defenseNews?.summary || 'No summary available').split('\n\n').map((paragraph: string, index: number) => (
-                  <p key={index} className="mb-3">
-                    {paragraph.trim()}
-                  </p>
-                ))}
-              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {defenseNews?.summary || 'No summary available'}
+              </p>
               
               {/* Key Developments */}
               {defenseNews?.keyDevelopments && Array.isArray(defenseNews.keyDevelopments) && (
@@ -259,28 +255,9 @@ export function DefenseIntelligenceBrief() {
                               </Badge>
                             </div>
                             
-                            <div className="text-sm leading-relaxed text-muted-foreground mb-3">
-                              {(() => {
-                                const text = update.description || update.update || update.currentStatus || String(update);
-                                // Clean up any remaining markdown artifacts
-                                const cleanText = text
-                                  .replace(/###\s*\d*\.?\s*/g, '') // Remove ### patterns
-                                  .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
-                                  .replace(/\[\d+\]/g, '') // Remove citation brackets [1], [2], etc.
-                                  .replace(/^\d+\.\s*/, '') // Remove leading numbers
-                                  .replace(/\s+/g, ' ') // Normalize whitespace
-                                  .trim();
-                                
-                                // Split into sentences for better readability
-                                const sentences = cleanText.split(/(?<=[.!?])\s+/).filter((s: string) => s.length > 10);
-                                
-                                return sentences.map((sentence: string, idx: number) => (
-                                  <p key={idx} className="mb-2 last:mb-0">
-                                    {sentence.trim()}
-                                  </p>
-                                ));
-                              })()}
-                            </div>
+                            <p className="text-sm leading-relaxed text-muted-foreground mb-3">
+                              {update.update || update.currentStatus || String(update)}
+                            </p>
 
                             {/* Recent Developments */}
                             {update.developments && Array.isArray(update.developments) && update.developments.length > 0 && (

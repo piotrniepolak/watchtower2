@@ -310,15 +310,15 @@ export class PerplexityDefenseService {
   }
 
   private extractSummary(content: string): string {
-    console.log('🔍 Generating well-formatted defense intelligence summary...');
+    console.log('🔍 Generating comprehensive executive summary from Perplexity content...');
     
-    // Clean and parse the content for better formatting
+    // Generate a comprehensive executive summary from the content
     const paragraphs = content.split('\n').filter(p => p.trim().length > 50);
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 30);
     
     let summary = '';
     
-    // Extract key themes from actual Perplexity content
+    // Extract key themes and developments from actual content
     const keyThemes = [];
     const contentLower = content.toLowerCase();
     
@@ -338,30 +338,33 @@ export class PerplexityDefenseService {
       keyThemes.push('military procurement and strategic initiatives');
     }
     
-    // Create well-structured, readable summary
-    summary += `Today's defense intelligence analysis reveals significant developments across the global defense industry, driven by evolving geopolitical dynamics and technological advancement.\n\n`;
+    // Build comprehensive summary with real content integration
+    summary += `Today's comprehensive defense intelligence analysis reveals significant developments across multiple sectors of the global defense industry, driven by evolving geopolitical dynamics and sustained technological advancement. `;
     
     if (keyThemes.length > 0) {
-      summary += `Key focus areas include ${keyThemes.join(', ')}, each presenting strategic implications for defense contractors and institutional investors.\n\n`;
+      summary += `Key areas of current focus include ${keyThemes.join(', ')}, each presenting unique opportunities and strategic implications for defense contractors, government agencies, and institutional investors. `;
     }
     
-    // Extract specific financial and company information
+    // Extract and incorporate specific details from Perplexity content
+    const specificDevelopments = [];
+    
+    // Look for specific dollar amounts, company mentions, and developments
     const dollarMatches = content.match(/\$[\d,]+\.?\d*\s*(million|billion|M|B)/gi) || [];
     const companyMatches = content.match(/(Lockheed Martin|Boeing|Raytheon|Northrop Grumman|General Dynamics|L3Harris|LMT|BA|RTX|NOC|GD|LHX)/gi) || [];
     
     if (dollarMatches.length > 0) {
-      summary += `Notable financial developments include contract awards valued at ${dollarMatches.slice(0, 2).join(' and ')}, demonstrating continued government investment in defense capabilities.\n\n`;
+      summary += `Notable financial developments include significant contract awards valued at ${dollarMatches.slice(0, 2).join(' and ')}, demonstrating continued government investment in defense capabilities. `;
     }
     
     if (companyMatches.length > 0) {
-      const uniqueCompanies = Array.from(new Set(companyMatches.slice(0, 3)));
-      summary += `Major defense contractors including ${uniqueCompanies.join(', ')} are central to current market developments and strategic initiatives.\n\n`;
+      const uniqueCompanies = [...new Set(companyMatches.slice(0, 3))];
+      summary += `Major defense contractors including ${uniqueCompanies.join(', ')} are central to current market developments and strategic initiatives. `;
     }
     
-    // Add market context with proper formatting
-    summary += `The current security environment drives elevated defense spending across NATO allies and Indo-Pacific partners, creating sustained demand for traditional platforms while accelerating investment in next-generation capabilities.\n\n`;
+    // Add market context and analysis
+    summary += `The current security environment continues to drive elevated defense spending priorities across NATO allies and Indo-Pacific partners, creating sustained demand for traditional platforms while accelerating investment in next-generation capabilities including hypersonic weapons, autonomous systems, space-based defense technologies, and cybersecurity infrastructure. `;
     
-    // Incorporate specific content insights with clean formatting
+    // Incorporate specific content insights with proper context
     const relevantParagraphs = paragraphs.filter(p => 
       p.toLowerCase().includes('million') || 
       p.toLowerCase().includes('contract') || 
@@ -372,28 +375,26 @@ export class PerplexityDefenseService {
     
     for (const paragraph of relevantParagraphs) {
       if (paragraph.length > 100) {
-        const cleanParagraph = paragraph.replace(/^\W+/, '').replace(/\[\d+\]/g, '').replace(/\*\*/g, '').trim();
+        const cleanParagraph = paragraph.replace(/^\W+/, '').replace(/\[\d+\]/g, '').trim();
         if (cleanParagraph.length > 80 && !summary.includes(cleanParagraph.substring(0, 50))) {
-          summary += `${cleanParagraph.substring(0, 200)}.\n\n`;
+          summary += `Recent developments include ${cleanParagraph.substring(0, 250)}. `;
         }
       }
     }
     
-    // Add forward-looking analysis with clean structure
-    summary += `Defense industry fundamentals remain robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements. The sector benefits from sustained innovation in artificial intelligence, space-based defense systems, and next-generation missile defense platforms.\n\n`;
+    // Add strategic and forward-looking analysis
+    summary += `Defense industry fundamentals remain exceptionally robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements across all service branches. The sector continues benefiting from sustained innovation cycles, particularly in artificial intelligence applications, space-based defense systems, and next-generation missile defense platforms. `;
     
-    summary += `Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological developments. Monitor geopolitical developments, Pentagon budget allocations, and major contract announcements as primary performance drivers.`;
+    summary += `Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological breakthrough developments. Investors should monitor ongoing geopolitical developments, Pentagon budget allocations, and major contract award announcements as primary drivers of sector performance and individual company growth trajectories.`;
     
-    console.log(`✅ Generated well-formatted summary: ${summary.length} characters`);
+    console.log(`✅ Generated comprehensive summary: ${summary.length} characters`);
     
-    return summary.trim();
+    // Always return the comprehensive summary - never use fallback for shorter content
+    return summary;
   }
 
   private extractKeyDevelopments(content: string): string[] {
     const developments: string[] = [];
-    
-    // Clean the content for better parsing
-    const cleanContent = content.replace(/\*\*/g, '').replace(/\[\d+\]/g, '');
     
     // Look for bullet points, numbered lists, or key developments
     const bulletRegex = /[•\-\*]\s*(.+)/g;
@@ -460,69 +461,31 @@ export class PerplexityDefenseService {
       'low': ['minor', 'routine', 'stable', 'peaceful']
     };
 
-    // Enhanced extraction patterns to capture more comprehensive conflict descriptions
     for (const region of regions) {
-      // Try multiple patterns to find region mentions
-      const patterns = [
-        new RegExp(`${region}[^.]{20,200}[.]`, 'gi'), // Original pattern with minimum length
-        new RegExp(`\\b${region}\\b[^\\n]{30,300}`, 'gi'), // Region mentions with context
-        new RegExp(`(?:in|on|near|around)\\s+${region}[^.]{20,200}[.]`, 'gi'), // Contextual mentions
-      ];
+      const regionRegex = new RegExp(`${region}[^.]*[.]`, 'gi');
+      const matches = content.match(regionRegex);
       
-      let bestMatch = '';
-      
-      for (const pattern of patterns) {
-        const matches = content.match(pattern);
-        if (matches && matches.length > 0) {
-          // Find the longest, most descriptive match
-          const longestMatch = matches.reduce((a, b) => a.length > b.length ? a : b, '');
-          if (longestMatch.length > bestMatch.length) {
-            bestMatch = longestMatch;
-          }
-        }
-      }
-      
-      // If no specific pattern matches, try to extract from context
-      if (!bestMatch) {
-        const contextPattern = new RegExp(`[^.]*${region}[^.]*[.]`, 'gi');
-        const contextMatches = content.match(contextPattern);
-        if (contextMatches && contextMatches.length > 0) {
-          bestMatch = contextMatches[0];
-        }
-      }
-      
-      if (bestMatch && bestMatch.length > 20) {
+      if (matches && matches.length > 0) {
+        const description = matches[0].trim();
         let severity: "high" | "medium" | "low" | "critical" = 'medium';
         
         // Determine severity based on keywords
         for (const [level, keywords] of Object.entries(severityKeywords)) {
-          if (keywords.some(keyword => bestMatch.toLowerCase().includes(keyword))) {
+          if (keywords.some(keyword => description.toLowerCase().includes(keyword))) {
             severity = level as "high" | "medium" | "low" | "critical";
             break;
           }
         }
         
-        // Clean up markdown formatting and numbered lists
-        let cleanDescription = bestMatch
-          .replace(/###\s*\d+\.\s*/g, '') // Remove "### 1. " patterns
-          .replace(/\*\*(.*?)\*\*/g, '$1') // Remove ** bold markers
-          .replace(/^\d+\.\s*/, '') // Remove leading numbers
-          .replace(/\[\d+\]/g, '') // Remove citation brackets
-          .replace(/\s+/g, ' ') // Normalize whitespace
-          .trim();
-
-        // Ensure minimum content quality
-        if (cleanDescription.length >= 30) {
-          updates.push({
-            region,
-            description: cleanDescription.substring(0, 300),
-            severity
-          });
-        }
+        updates.push({
+          region,
+          description: description.substring(0, 300),
+          severity
+        });
       }
     }
     
-    return updates.slice(0, 8); // Increased from 5 to 8 for more comprehensive coverage
+    return updates.slice(0, 5);
   }
 
   private extractStockHighlights(content: string): Array<{ symbol: string; companyName: string; analysis: string; marketCap?: string; contractValue?: string }> {
