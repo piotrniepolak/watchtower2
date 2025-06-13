@@ -372,7 +372,7 @@ export class PharmaNewsService {
               sector: 'Healthcare' as const,
               price: 0,
               change: 0,
-              changePercent: '0%',
+              changePercent: 0,
               volume: 0,
               marketCap: '0',
               hasDefense: false,
