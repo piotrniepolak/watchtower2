@@ -189,36 +189,63 @@ export function DefenseIntelligenceBrief() {
                     Key Developments
                   </h4>
                   <ul className="space-y-2">
-                    {defenseNews.keyDevelopments.map((development: string, index: number) => (
+                    {(() => {
+                      // Process and combine title-content pairs
+                      const combinedDevelopments: string[] = [];
+                      const developments = defenseNews.keyDevelopments || [];
+                      
+                      for (let i = 0; i < developments.length; i++) {
+                        const current = developments[i];
+                        const next = developments[i + 1];
+                        
+                        // Clean current text
+                        const cleanCurrent = current
+                          .replace(/#{1,6}\s*\d*\.?\s*/g, '')
+                          .replace(/\*\*(.*?)\*\*/g, '$1')
+                          .replace(/\[\d+\]/g, '')
+                          .replace(/^\d+\.\s*/, '')
+                          .replace(/^#\s*\d+\s*/g, '')
+                          .trim();
+                        
+                        // Check if current is a title (ends with : or -*) and next is content
+                        const isTitle = /^([^:]+):\s*$|^([^-]+)-\s*$/.test(cleanCurrent);
+                        const nextExists = next && i + 1 < developments.length;
+                        
+                        if (isTitle && nextExists) {
+                          // Clean next text
+                          const cleanNext = next
+                            .replace(/#{1,6}\s*\d*\.?\s*/g, '')
+                            .replace(/\*\*(.*?)\*\*/g, '$1')
+                            .replace(/\[\d+\]/g, '')
+                            .replace(/^\d+\.\s*/, '')
+                            .replace(/^#\s*\d+\s*/g, '')
+                            .trim();
+                          
+                          // Combine title and content
+                          const title = cleanCurrent.replace(/[:\-]\s*$/, '');
+                          const combined = `${title} - ${cleanNext}`;
+                          combinedDevelopments.push(combined);
+                          i++; // Skip next item as it's been combined
+                        } else {
+                          // Process as standalone item with existing logic
+                          const streamlined = cleanCurrent
+                            .replace(/^([^:]+):\s*([^.])/i, '$1 - $2')
+                            .replace(/^\*+([^*:]+)\*+:\s*/i, '$1 - ')
+                            .replace(/^([^:]+):\s*\*+/i, '$1 - ')
+                            .replace(/\s*\*+([^*]+)\*+\s*/g, ' $1 ')
+                            .replace(/\s+/g, ' ')
+                            .replace(/^-\s*/, '')
+                            .trim();
+                          combinedDevelopments.push(streamlined);
+                        }
+                      }
+                      
+                      return combinedDevelopments;
+                    })().map((development: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
                         <span className="text-xs text-muted-foreground leading-relaxed">
-                          {(() => {
-                            const cleanText = development
-                              .replace(/#{1,6}\s*\d*\.?\s*/g, '')
-                              .replace(/\*\*(.*?)\*\*/g, '$1')
-                              .replace(/\[\d+\]/g, '')
-                              .replace(/^\d+\.\s*/, '')
-                              .replace(/^#\s*\d+\s*/g, '')
-                              .trim();
-                            
-                            // Remove title separators and merge content into flowing text
-                            const streamlined = cleanText
-                              // Handle "Title:" followed by content on same line or next bullet
-                              .replace(/^([^:]+):\s*$/i, '$1 - ')
-                              // Handle "Title: Content" format
-                              .replace(/^([^:]+):\s*([^.])/i, '$1 - $2')
-                              // Remove asterisk formatting around titles
-                              .replace(/^\*+([^*:]+)\*+:\s*/i, '$1 - ')
-                              .replace(/^([^:]+):\s*\*+/i, '$1 - ')
-                              // Clean up any remaining formatting
-                              .replace(/\s*\*+([^*]+)\*+\s*/g, ' $1 ')
-                              .replace(/\s+/g, ' ')
-                              .replace(/^-\s*/, '')
-                              .trim();
-                            
-                            return streamlined;
-                          })()}
+                          {development}
                         </span>
                       </li>
                     ))}
