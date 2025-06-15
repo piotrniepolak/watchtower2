@@ -161,20 +161,13 @@ export class PharmaNewsService {
       } as DailyNews;
     } catch (error) {
       console.error("Error generating pharma news:", error);
-      return this.getFallbackPharmaNews();
+      return null; // No fallback - only authentic data allowed
     } finally {
       this.isGenerating = false;
     }
   }
 
-  private getFallbackPharmaNews(): DailyNews {
-    return {
-      id: Math.floor(Math.random() * 1000000),
-      date: new Date().toISOString().split('T')[0],
-      createdAt: new Date(),
-      ...this.getFallbackPharmaContent()
-    } as DailyNews;
-  }
+  // Removed hardcoded fallback system - only authentic Perplexity data allowed
 
   private async generatePharmaNewsContent(stocks: any[], currentEvents: string): Promise<Omit<DailyNews, 'id' | 'date' | 'createdAt'>> {
     try {
@@ -207,56 +200,11 @@ export class PharmaNewsService {
 
     } catch (error) {
       console.error("Error generating pharma news content:", error);
-      return this.getFallbackPharmaContent();
+      throw error; // No fallback - only authentic data allowed
     }
   }
 
-  private getFallbackPharmaContent(): Omit<DailyNews, 'id' | 'date' | 'createdAt'> {
-    return {
-      title: "Pharmaceutical Market Intelligence Brief",
-      summary: "Today's pharmaceutical markets show mixed signals as investors monitor ongoing clinical trials and regulatory developments. Key healthcare stocks demonstrate resilience amid evolving treatment landscapes.",
-      sector: 'pharmaceutical',
-      keyDevelopments: [
-        "FDA continues review of multiple drug applications with decisions expected this quarter",
-        "Pharmaceutical companies report strong R&D pipeline progress in oncology and rare diseases",
-        "Global health organizations coordinate response to emerging infectious disease threats",
-        "Healthcare technology integration accelerates across major hospital systems",
-        "Regulatory frameworks evolve to accommodate breakthrough therapy designations"
-      ],
-      marketImpact: "Healthcare markets remain fundamentally strong with sustained investment in biotechnology innovation. Regulatory clarity continues to drive investor confidence in pharmaceutical sectors, while emerging therapeutic areas present significant growth opportunities.",
-      conflictUpdates: [
-        {
-          conflict: "COVID-19 Variant Monitoring",
-          update: "Health authorities maintain surveillance protocols for emerging variants with updated vaccination strategies.",
-          severity: "medium"
-        },
-        {
-          conflict: "Antimicrobial Resistance Crisis",
-          update: "WHO reports continued challenges with drug-resistant infections requiring novel therapeutic approaches.",
-          severity: "high"
-        }
-      ],
-      defenseStockHighlights: [],
-      pharmaceuticalStockHighlights: [
-        {
-          symbol: "PFE",
-          name: "Pfizer Inc",
-          change: 1.2,
-          changePercent: 0.8,
-          reason: "Strong performance in oncology portfolio with positive clinical trial data"
-        },
-        {
-          symbol: "JNJ",
-          name: "Johnson & Johnson",
-          change: 0.9,
-          changePercent: 0.6,
-          reason: "Solid pharmaceutical division results offset by consumer health segment concerns"
-        }
-      ],
-      geopoliticalAnalysis: "Global healthcare policies continue evolving with emphasis on pandemic preparedness and equitable access to essential medicines. Regulatory harmonization efforts between major markets facilitate faster drug development timelines while maintaining safety standards.",
-      sourcesSection: null
-    };
-  }
+  // Removed hardcoded fallback content - only authentic Perplexity data allowed
 
   async generatePerplexityIntelligenceBrief(): Promise<DailyNews | null> {
     if (this.isGenerating) {
