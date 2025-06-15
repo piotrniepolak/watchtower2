@@ -156,26 +156,59 @@ const extractDetailedSources = (text: string | undefined): Array<{title: string,
   
   const sources: Array<{title: string, url: string, source?: string, category?: 'news' | 'government' | 'research' | 'intelligence' | 'financial'}> = [];
   
-  // Extract from References section first
-  const referenceSources = extractReferences(text);
-  referenceSources.forEach(ref => {
-    if (ref.url) {
-      sources.push({
-        title: ref.title,
-        url: ref.url,
-        source: ref.source,
-        category: 'news' as const
-      });
-    }
-  });
+  // Extract markdown-formatted links [title](url)
+  const markdownLinks = text.match(/\[([^\]]+)\]\(([^)]+)\)/g);
   
-  // If no reference sources found, use generic pharmaceutical sources
-  if (sources.length === 0) {
-    sources.push(
-      { title: "Pharmaceutical Industry News", url: "https://www.biopharmadive.com", source: "BioPharma Dive", category: "news" as const },
-      { title: "Healthcare Market Analysis", url: "https://www.statnews.com", source: "STAT News", category: "news" as const },
-      { title: "Drug Development Updates", url: "https://www.reuters.com/business/healthcare-pharmaceuticals", source: "Reuters Health", category: "news" as const }
-    );
+  if (markdownLinks) {
+    markdownLinks.forEach(link => {
+      const match = link.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      if (match) {
+        const title = match[1];
+        const url = match[2];
+        
+        // Determine category based on URL domain
+        let category: 'news' | 'government' | 'research' | 'intelligence' | 'financial' = 'news';
+        let source = '';
+        
+        if (url.includes('fda.gov')) {
+          category = 'government';
+          source = 'FDA';
+        } else if (url.includes('who.int')) {
+          category = 'government';
+          source = 'WHO';
+        } else if (url.includes('statnews.com')) {
+          category = 'news';
+          source = 'STAT News';
+        } else if (url.includes('biopharmadive.com')) {
+          category = 'news';
+          source = 'BioPharma Dive';
+        } else if (url.includes('reuters.com')) {
+          category = 'news';
+          source = 'Reuters';
+        } else if (url.includes('bloomberg.com')) {
+          category = 'financial';
+          source = 'Bloomberg';
+        } else if (url.includes('pubmed.ncbi.nlm.nih.gov')) {
+          category = 'research';
+          source = 'PubMed';
+        } else {
+          // Extract domain name as source
+          try {
+            const domain = new URL(url).hostname.replace('www.', '');
+            source = domain.charAt(0).toUpperCase() + domain.slice(1);
+          } catch {
+            source = 'External Source';
+          }
+        }
+        
+        sources.push({
+          title,
+          url,
+          source,
+          category
+        });
+      }
+    });
   }
   
   return sources;
