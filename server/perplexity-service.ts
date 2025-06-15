@@ -72,14 +72,17 @@ class PerplexityService {
               content: 'You are a pharmaceutical industry analyst providing factual, current information about the pharmaceutical sector, healthcare developments, and market trends. Focus on recent, verifiable information.'
             },
             {
-              role: 'user',
-              content: prompt
+              role: 'user', 
+              content: `TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. ${prompt} 
+
+CRITICAL REQUIREMENT: Focus EXCLUSIVELY on pharmaceutical events from the past 24-48 hours (${new Date(Date.now() - 48*60*60*1000).toLocaleDateString()} to ${new Date().toLocaleDateString()}). Include exact dates for all events. Reject information older than 48 hours.`
             }
           ],
           max_tokens: 1000,
           temperature: 0.2,
           top_p: 0.9,
           return_citations: true,
+          search_recency_filter: "day",
           search_domain_filter: ["pubmed.ncbi.nlm.nih.gov", "fda.gov", "who.int", "reuters.com", "bloomberg.com", "biopharmadive.com", "statnews.com"]
         }),
       });
