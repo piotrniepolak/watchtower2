@@ -217,7 +217,7 @@ export class PerplexityDefenseService {
     try {
       // Delete any existing entry for today to ensure fresh data
       const today = new Date().toISOString().split('T')[0];
-      await storage.deleteDailyNews(today, 'defense');
+      await storage.deleteDailyNews(today);
 
       // Fetch comprehensive defense industry research with real-time data
       const researchData = await this.fetchComprehensiveDefenseResearch();
@@ -294,6 +294,7 @@ export class PerplexityDefenseService {
         title: intelligenceBrief.title,
         summary: intelligenceBrief.summary,
         date: today,
+        sector: 'defense',
         createdAt: new Date(),
         keyDevelopments: intelligenceBrief.keyDevelopments,
         marketImpact: intelligenceBrief.marketImpact,
@@ -301,7 +302,7 @@ export class PerplexityDefenseService {
         defenseStockHighlights: enhancedStockHighlights,
         pharmaceuticalStockHighlights: [],
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-        sources: intelligenceBrief.sources
+        sourcesSection: this.formatSourcesSection(intelligenceBrief.sources)
       };
 
       // Store in database
@@ -315,7 +316,7 @@ export class PerplexityDefenseService {
         defenseStockHighlights: Array.isArray(defenseIntelligence.defenseStockHighlights) ? defenseIntelligence.defenseStockHighlights : [],
         pharmaceuticalStockHighlights: [],
         geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis,
-        sources: defenseIntelligence.sources || []
+        sourcesSection: defenseIntelligence.sourcesSection
       };
 
       await storage.createDailyNews(insertData, 'defense');
@@ -752,6 +753,20 @@ Provide specific recent events from the past 24-48 hours with exact details: com
 
     console.log(`✅ Extracted geopolitical analysis: ${geoAnalysis.length} characters`);
     return this.cleanFormattingSymbols(geoAnalysis);
+  }
+
+  private formatSourcesSection(sources: Array<{ title: string; url: string; domain: string; category: string }>): string {
+    if (!sources || sources.length === 0) {
+      return '';
+    }
+
+    let sourcesMarkdown = '\n## Intelligence Sources & References\n\n';
+    
+    sources.forEach((source, index) => {
+      sourcesMarkdown += `${index + 1}. [${source.title}](${source.url})\n`;
+    });
+
+    return sourcesMarkdown;
   }
 
   private async enhanceStockHighlights(stockHighlights: Array<{ symbol: string; companyName: string; analysis: string }>, defenseStocks: any[]): Promise<NewsStockHighlight[]> {
