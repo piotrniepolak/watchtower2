@@ -323,6 +323,7 @@ class PerplexityService {
               displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
               displayTitle.match(/^\d+$/) || // Just a number
               displayTitle.length < 10) { // Too short to be meaningful
+            
             const urlParts = citation.url.split('/');
             let articleSlug = '';
             
@@ -664,7 +665,7 @@ class PerplexityService {
   // Store all citations collected during brief generation
   private allBriefCitations: Array<{ url: string; title: string; snippet?: string }> = [];
 
-  private createConsolidatedSourcesSection(): string {
+  private async createConsolidatedSourcesSection(): Promise<string> {
     if (this.allBriefCitations.length === 0) {
       return '';
     }
@@ -677,9 +678,69 @@ class PerplexityService {
     console.log(`📚 Creating consolidated sources section with ${uniqueCitations.length} unique citations`);
 
     let sourcesSection = '\n\n**Intelligence Sources & References:**\n\n';
-    uniqueCitations.forEach((citation, index) => {
-      sourcesSection += `${index + 1}. [${citation.title}](${citation.url})\n`;
-    });
+    
+    // Use for loop to enable async/await for title fetching
+    for (let index = 0; index < uniqueCitations.length; index++) {
+      const citation = uniqueCitations[index];
+      let displayTitle = citation.title;
+      
+      // Always try to fetch the actual title from the web page first
+      const webTitle = await this.fetchArticleTitle(citation.url);
+      
+      if (webTitle && webTitle.length > 10 && !webTitle.includes('Source from')) {
+        displayTitle = webTitle;
+      } else if (!displayTitle || 
+          displayTitle.includes('Source from') || 
+          displayTitle.toLowerCase().includes('biopharmadive.com') || 
+          displayTitle.toLowerCase().includes('statnews.com') ||
+          displayTitle.toLowerCase().includes("don't miss tomorrow's biopharma industry news") ||
+          displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
+          displayTitle.match(/^\d+$/) || 
+          displayTitle.length < 10) {
+        
+        // Fallback to URL parsing if web scraping fails or title is generic
+        const urlParts = citation.url.split('/');
+        let articleSlug = '';
+        
+        if (citation.url.includes('biopharmadive.com/news/')) {
+          const newsIndex = urlParts.findIndex(part => part === 'news');
+          if (newsIndex !== -1 && urlParts[newsIndex + 1]) {
+            articleSlug = urlParts[newsIndex + 1];
+          }
+        } else if (citation.url.includes('statnews.com/')) {
+          const lastPart = urlParts[urlParts.length - 1];
+          const secondLastPart = urlParts[urlParts.length - 2];
+          
+          if (lastPart && !lastPart.match(/^\d{4}$/) && lastPart.length > 3) {
+            articleSlug = lastPart;
+          } else if (secondLastPart && secondLastPart.length > 3) {
+            articleSlug = secondLastPart;
+          }
+        } else {
+          for (let i = urlParts.length - 1; i >= 0; i--) {
+            const part = urlParts[i];
+            if (part && part.length > 3 && !part.match(/^\d+$/) && part !== 'news' && part !== 'articles') {
+              articleSlug = part;
+              break;
+            }
+          }
+        }
+        
+        if (articleSlug && articleSlug !== '') {
+          displayTitle = articleSlug
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase())
+            .replace(/\b(And|Of|The|In|On|At|To|For|With|By)\b/g, word => word.toLowerCase())
+            .replace(/\b(A|An)\b/g, word => word.toLowerCase())
+            .trim();
+        } else {
+          const domain = new URL(citation.url).hostname.replace('www.', '');
+          displayTitle = `Article from ${domain}`;
+        }
+      }
+      
+      sourcesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
+    }
 
     return sourcesSection;
   }
@@ -889,7 +950,7 @@ class PerplexityService {
       );
 
       // Create consolidated sources section with all actual citations
-      const sourcesSection = this.createConsolidatedSourcesSection();
+      const sourcesSection = await this.createConsolidatedSourcesSection();
 
       console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
       console.log(`📚 Collected ${this.allBriefCitations.length} total citations for sources section`);
