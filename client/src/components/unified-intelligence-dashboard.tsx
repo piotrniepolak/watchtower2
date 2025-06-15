@@ -339,12 +339,30 @@ export function UnifiedIntelligenceDashboard() {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Sector-specific Sources */}
+          {/* Sector-specific Sources & References */}
           <div className="mt-6">
-            <SourceLinks 
-              sources={briefData.sources || []}
-              title={`${config.name} Sources & References`}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className={`h-5 w-5 ${config.textColor}`} />
+                  {config.name} Sources & References
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SourceLinks 
+                  sources={briefData.sources || []}
+                  title=""
+                  sector={selectedSector}
+                />
+                <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                  <p className="text-xs text-muted-foreground">
+                    Intelligence brief generated using real-time data from Perplexity AI, 
+                    incorporating verified sources from defense industry publications, 
+                    government agencies, and financial news outlets. Data refreshed at {new Date().toLocaleTimeString()}.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       ) : (

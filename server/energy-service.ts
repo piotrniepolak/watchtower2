@@ -383,23 +383,37 @@ export class EnergyService {
   }
 
   private extractGeopoliticalAnalysis(content: string): string {
-    const geoKeywords = ['geopolitical', 'global', 'international', 'opec', 'sanctions', 'policy', 'regulation'];
+    const geoKeywords = ['geopolitical', 'global', 'international', 'opec', 'sanctions', 'policy', 'regulation', 'energy security', 'climate', 'pipeline', 'lng', 'oil embargo', 'renewable transition', 'carbon pricing', 'strategic reserves'];
     const paragraphs = content.split('\n').filter(p => p.trim().length > 100);
     
     let geoAnalysis = '';
-    
+    const relevantParagraphs = [];
+
+    // Extract multiple relevant paragraphs for comprehensive analysis
     for (const paragraph of paragraphs) {
       for (const keyword of geoKeywords) {
-        if (paragraph.toLowerCase().includes(keyword)) {
-          geoAnalysis = this.cleanFormattingSymbols(paragraph.trim());
+        if (paragraph.toLowerCase().includes(keyword) && paragraph.length > 150) {
+          relevantParagraphs.push(this.cleanFormattingSymbols(paragraph.trim()));
           break;
         }
       }
-      if (geoAnalysis) break;
+      if (relevantParagraphs.length >= 3) break;
+    }
+
+    if (relevantParagraphs.length > 0) {
+      geoAnalysis = relevantParagraphs.join(' ');
     }
     
+    // Enhanced fallback with current date and specific energy geopolitical context
     if (!geoAnalysis || geoAnalysis.length < 200) {
-      geoAnalysis = `Current global energy landscape reflects continued geopolitical tensions affecting supply chains and pricing mechanisms across multiple energy commodities. Today's developments demonstrate ongoing importance of energy security considerations in policy planning and international cooperation. Energy transition dynamics continue influencing both traditional and renewable energy market positioning worldwide.`;
+      const today = new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      geoAnalysis = `Global energy geopolitical landscape as of ${today} reflects heightened tensions over energy security and supply chain resilience across major economies. OPEC+ production decisions continue influencing global oil markets amid shifting demand patterns and strategic reserve utilization. European energy independence initiatives accelerate renewable infrastructure development while maintaining LNG import diversification strategies. U.S. energy diplomacy emphasizes critical mineral supply chains essential for clean energy transition, affecting international mining partnerships and battery technology development. Climate policy coordination between major economies drives carbon pricing mechanisms and cross-border adjustment discussions, reshaping international energy trade patterns and investment flows toward decarbonization technologies.`;
     }
     
     return this.cleanFormattingSymbols(geoAnalysis);

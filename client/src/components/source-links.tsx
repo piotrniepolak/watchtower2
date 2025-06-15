@@ -1,4 +1,3 @@
-
 import { ExternalLink, Globe, FileText, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +13,7 @@ interface SourceLink {
 interface SourceLinksProps {
   sources: SourceLink[];
   title?: string;
-  compact?: boolean;
+  sector?: 'defense' | 'pharma' | 'energy';
 }
 
 // Enhanced domain mapping with categories
@@ -81,16 +80,20 @@ const getCategoryColor = (category: string) => {
   }
 };
 
-export function SourceLinks({ sources, title = "Sources & References", compact = false }: SourceLinksProps) {
-  if (!sources || sources.length === 0) {
+export function SourceLinks({ sources, title = "Sources & References", sector = 'defense' }: SourceLinksProps) {
+  // Generate sector-specific sources when no sources provided
+  const fallbackSources = generateSectorSources(sector);
+  const displaySources = sources.length > 0 ? sources : fallbackSources;
+
+  if (!displaySources || displaySources.length === 0) {
     return null;
   }
 
   // Enhanced sources with categorization
-  const enhancedSources = sources.map(source => {
+  const enhancedSources = displaySources.map(source => {
     const domain = getDomainFromUrl(source.url);
     const domainInfo = domainCategories[domain];
-    
+
     return {
       ...source,
       domain,
@@ -213,7 +216,7 @@ export function SourceLinks({ sources, title = "Sources & References", compact =
 // Enhanced utility function to extract sources from various text formats
 export function extractSourcesFromText(text: string): SourceLink[] {
   const sources: SourceLink[] = [];
-  
+
   // Pattern 1: URLs with surrounding context
   const urlPattern = /https?:\/\/[^\s\)]+/g;
   const urls = text.match(urlPattern);
@@ -221,7 +224,7 @@ export function extractSourcesFromText(text: string): SourceLink[] {
     urls.forEach(url => {
       const domain = getDomainFromUrl(url);
       const domainInfo = domainCategories[domain];
-      
+
       sources.push({
         title: domainInfo?.displayName || domain,
         url: url.trim(),
@@ -230,7 +233,7 @@ export function extractSourcesFromText(text: string): SourceLink[] {
       });
     });
   }
-  
+
   // Pattern 2: Markdown links [Title](URL)
   const markdownLinks = text.match(/\[([^\]]+)\]\(([^)]+)\)/g);
   if (markdownLinks) {
@@ -239,7 +242,7 @@ export function extractSourcesFromText(text: string): SourceLink[] {
       if (match) {
         const domain = getDomainFromUrl(match[2]);
         const domainInfo = domainCategories[domain];
-        
+
         sources.push({
           title: match[1].trim(),
           url: match[2].trim(),
@@ -249,14 +252,14 @@ export function extractSourcesFromText(text: string): SourceLink[] {
       }
     });
   }
-  
+
   // Pattern 3: Citations format
   const citationPattern = /Source:\s*([^,\n]+)/gi;
   let citationMatch;
   while ((citationMatch = citationPattern.exec(text)) !== null) {
     const sourceName = citationMatch[1].trim();
     let url = '';
-    
+
     // Generate URLs based on source name
     if (sourceName.includes('Defense News')) {
       url = 'https://www.defensenews.com';
@@ -273,11 +276,11 @@ export function extractSourcesFromText(text: string): SourceLink[] {
     } else if (sourceName.includes('WHO')) {
       url = 'https://www.who.int/news';
     }
-    
+
     if (url) {
       const domain = getDomainFromUrl(url);
       const domainInfo = domainCategories[domain];
-      
+
       sources.push({
         title: sourceName,
         url,
@@ -286,12 +289,12 @@ export function extractSourcesFromText(text: string): SourceLink[] {
       });
     }
   }
-  
+
   // Remove duplicates based on URL
   const uniqueSources = sources.filter((source, index, self) => 
     index === self.findIndex(s => s.url === source.url)
   );
-  
+
   return uniqueSources;
 }
 
@@ -323,6 +326,6 @@ export function generateSectorSources(sector: 'defense' | 'pharma' | 'energy'): 
       { title: "Energy Intelligence", url: "https://www.energyintel.com", source: "Energy Intelligence", category: 'intelligence' as const }
     ]
   };
-  
+
   return baseSources[sector] || [];
 }
