@@ -1686,7 +1686,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           geopoliticalAnalysis = section.replace(/geopolitical analysis:?/i, '').trim();
         }
       }
-    }
 
       // If parsing failed, use fallback structure
       if (!summary) {
@@ -1762,7 +1761,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: stock.name,
             change: stock.change,
             changePercent: stock.changePercent,
-            reason: `Highlighted for significant market movement in energy sector`
+            reason: "Highlighted for significant market movement in energy sector"
           });
         }
       }
@@ -1804,7 +1803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating energy intelligence:", error);
       return null;
     }
-  }
+  };
 
   // Energy News Routes
   app.get("/api/news/energy/today", async (req, res) => {
