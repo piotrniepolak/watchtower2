@@ -201,7 +201,8 @@ export class PharmaNewsService {
           changePercent: stock.change,
           reason: stock.analysis
         })) || [],
-        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
+        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
+        sourcesSection: intelligenceBrief.sourcesSection
       };
 
     } catch (error) {
