@@ -13,30 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 15, 2025 - Cleaned Intelligence Brief Content Structure
-**Enhanced Content Organization:**
-- **Removed duplicate "References:" sections from Market Impact, Geopolitical Analysis, and summary content** ensuring clean, professional presentation
-- **Enhanced defense intelligence content cleaning** with comprehensive reference removal from extracted market impact and geopolitical analysis
-- **Enhanced pharmaceutical intelligence content cleaning** removing embedded references from market impact analysis and regulatory analysis sections
-- **Enhanced pharmaceutical executive summary cleaning** removing duplicate reference sections while preserving content quality
-- **Preserved dedicated Intelligence Sources & References section** maintaining professional clickable source links with favicons
-- **Improved content formatting consistency** across all intelligence brief sections
+### June 15, 2025 - Implemented Authentic Article Citation System for Pharmaceutical Intelligence
+**Major Intelligence Sources Enhancement:**
+- **Implemented comprehensive citation collection system** that gathers actual URLs from all Perplexity API responses across pharmaceutical brief sections
+- **Created consolidated Intelligence Sources & References section** with authentic article links from STAT News, BioPharma Dive, FDA, and WHO
+- **Added real article title fetching** to display meaningful source names instead of generic domains
+- **Successfully generated pharmaceutical brief with 21 actual article sources** including "Trump administration demands pharma companies begin drug price negotiations" and FDA regulatory updates
+- **Removed all duplicate "References:" sections from Market Impact, Geopolitical Analysis, and summary content** ensuring clean, professional presentation
+- **Enhanced content cleaning functions** to strip embedded reference content while preserving dedicated sources section
 
 **Technical Implementation:**
-- Updated cleanFormattingSymbols function in perplexity-defense-service.ts with comprehensive reference removal patterns
-- Enhanced extractMarketImpact and extractGeopoliticalAnalysis functions to remove embedded references
-- Updated generateMarketImpactAnalysis and generateRegulatoryAnalysis in perplexity-service.ts 
-- Enhanced generateExecutiveSummary function to remove duplicate reference sections
-- Implemented consistent reference cleaning across all intelligence generation services
-- Maintained dedicated source section functionality with proper source link preservation
+- Built citation collection system in perplexity-service.ts that tracks citations across all brief generation methods
+- Implemented generateExecutiveSummaryWithCitations, generateKeyDevelopmentsWithCitations, generateMarketImpactAnalysisWithCitations, and generateRegulatoryAnalysisWithCitations functions
+- Added createConsolidatedSourcesSection method that removes duplicate URLs and creates professional source links
+- Enhanced processContentWithLinks to fetch actual article titles from source URLs
+- Updated pharmaceutical intelligence generation to append consolidated sources section to summary
+- Maintained existing SourceLinks component functionality with authentic URLs instead of search fallbacks
 
 **User Impact:**
-- Clean Market Impact sections without embedded reference text
-- Professional Geopolitical Analysis content without duplicate citations  
-- Streamlined summary sections focused on core intelligence content
-- Dedicated Intelligence Sources & References section provides comprehensive source access
-- Consistent content structure across defense, pharmaceutical, and energy intelligence briefs
-- Professional presentation matching enterprise intelligence platform standards
+- Intelligence Sources & References section now contains actual articles from which brief information was retrieved
+- Professional clickable source buttons link directly to STAT News, BioPharma Dive, FDA, and WHO articles used in analysis
+- Clean Market Impact and Geopolitical Analysis sections without embedded reference text
+- Authentic pharmaceutical intelligence sourcing eliminates generic domain fallbacks
+- Enhanced credibility with verifiable source attribution for all intelligence claims
+- Professional presentation matching enterprise intelligence platform standards with real article sources
 
 ### June 13, 2025 - Implemented Streamlined Clickable Source Links
 **Major User Experience Enhancement:**
