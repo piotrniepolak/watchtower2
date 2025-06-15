@@ -784,7 +784,7 @@ class PerplexityService {
       index === self.findIndex(c => c.url === citation.url)
     );
 
-    // Apply comprehensive filtering to ensure only specific articles appear
+    // Apply targeted filtering to ensure only specific articles appear
     const authenticCitations = uniqueCitations.filter((citation, index) => {
       // Check for valid URL structure
       const isValidUrl = citation.url && 
@@ -794,22 +794,20 @@ class PerplexityService {
                         !citation.url.includes('undefined') &&
                         !citation.url.includes('null');
       
-      // Filter out generic URLs that redirect to homepages
-      const isGenericUrl = citation.url.endsWith('/news') ||
-                          citation.url.endsWith('/news/') ||
-                          citation.url === 'https://www.biopharmadive.com/news/' ||
-                          citation.url.match(/\/news\/?$/) ||
-                          citation.url.match(/\/(index|home|main)(\.(html|php|asp))?$/i) ||
-                          citation.url.split('/').length <= 4; // Too generic (domain + single path)
+      // Filter out only specific problematic generic URLs
+      const isGenericUrl = citation.url === 'https://www.biopharmadive.com/news/' ||
+                          citation.url === 'https://www.statnews.com/' ||
+                          citation.url === 'https://www.fda.gov/' ||
+                          citation.url === 'https://www.reuters.com/' ||
+                          citation.url.match(/^https:\/\/[^\/]+\/?$/); // Homepage only
       
-      // Filter out malformed titles
+      // Filter out only clearly malformed titles
       const hasGenericTitle = citation.title && (
-                             citation.title.toLowerCase().includes('www.') ||
-                             citation.title.toLowerCase().startsWith('http') ||
+                             citation.title.toLowerCase().includes('www.biopharmadive.com') ||
                              citation.title.toLowerCase() === citation.url.toLowerCase() ||
                              citation.title.toLowerCase().includes('source from') ||
                              citation.title.match(/^source \d+$/i) ||
-                             citation.title.length < 15); // Increased minimum length for more specificity
+                             citation.title.length < 5); // Very short minimum for broader inclusion
       
       if (!isValidUrl || isGenericUrl || hasGenericTitle) {
         console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);
