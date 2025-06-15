@@ -56,6 +56,43 @@ class PerplexityService {
     }
   }
 
+  private containsOldContent(content: string): boolean {
+    // Check for years 2024 and earlier
+    const oldYearPattern = /\b(202[0-4]|201\d|200\d|19\d\d)\b/g;
+    const oldYearMatches = content.match(oldYearPattern);
+    
+    if (oldYearMatches) {
+      console.log(`🚫 Found old year references: ${oldYearMatches.join(', ')}`);
+      return true;
+    }
+    
+    // Check for specific old date patterns
+    const oldDatePattern = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(202[0-4]|201\d|200\d)\b/gi;
+    const oldDateMatches = content.match(oldDatePattern);
+    
+    if (oldDateMatches) {
+      console.log(`🚫 Found old date references: ${oldDateMatches.join(', ')}`);
+      return true;
+    }
+    
+    // Check for phrases indicating old events
+    const oldPhrases = [
+      'in 2024', 'in 2023', 'in 2022', 'in 2021', 'in 2020',
+      'last year', 'two years ago', 'three years ago',
+      'during the pandemic', 'covid-19 vaccine',
+      'since 2020', 'since 2021', 'since 2022', 'since 2023'
+    ];
+    
+    for (const phrase of oldPhrases) {
+      if (content.toLowerCase().includes(phrase)) {
+        console.log(`🚫 Found old content phrase: "${phrase}"`);
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   private async queryPerplexity(prompt: string): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     try {
       const response = await fetch(this.baseUrl, {
@@ -73,9 +110,13 @@ class PerplexityService {
             },
             {
               role: 'user', 
-              content: `TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. ${prompt} 
+              content: `URGENT: TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (${new Date().toISOString().split('T')[0]}). ${prompt}
 
-CRITICAL REQUIREMENT: Focus EXCLUSIVELY on pharmaceutical events from the past 24-48 hours (${new Date(Date.now() - 48*60*60*1000).toLocaleDateString()} to ${new Date().toLocaleDateString()}). Include exact dates for all events. Reject information older than 48 hours.`
+MANDATORY REQUIREMENTS:
+- REJECT ALL content from 2024, 2023, 2022, 2021, 2020 or earlier
+- ONLY include events with today's date (${new Date().toLocaleDateString()}) or yesterday's date (${new Date(Date.now() - 24*60*60*1000).toLocaleDateString()})
+- Include EXACT timestamps and publication dates for every event mentioned
+- If no significant pharmaceutical events occurred in the last 24 hours, state "No major pharmaceutical developments in the last 24 hours" rather than using old content`
             }
           ],
           max_tokens: 1000,
@@ -126,8 +167,19 @@ CRITICAL REQUIREMENT: Focus EXCLUSIVELY on pharmaceutical events from the past 2
 
       console.log(`✅ Normalized ${normalizedCitations.length} citations:`, normalizedCitations.map(c => c.url));
 
+      const content = data.choices[0]?.message?.content || '';
+      
+      // Validate content for recency - reject if it contains old years
+      if (this.containsOldContent(content)) {
+        console.log(`❌ Rejecting pharmaceutical content containing outdated information`);
+        return {
+          content: `No major pharmaceutical developments in the last 24 hours. Current monitoring continues for ongoing regulatory activities and clinical trial updates.`,
+          citations: []
+        };
+      }
+
       return {
-        content: data.choices[0]?.message?.content || '',
+        content,
         citations: normalizedCitations
       };
     } catch (error) {

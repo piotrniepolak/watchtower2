@@ -49,6 +49,43 @@ export class PerplexityDefenseService {
     this.initializeDailyScheduler();
   }
 
+  private containsOldContent(content: string): boolean {
+    // Check for years 2024 and earlier
+    const oldYearPattern = /\b(202[0-4]|201\d|200\d|19\d\d)\b/g;
+    const oldYearMatches = content.match(oldYearPattern);
+    
+    if (oldYearMatches) {
+      console.log(`🚫 Found old year references: ${oldYearMatches.join(', ')}`);
+      return true;
+    }
+    
+    // Check for specific old date patterns like "May 2024", "March 2023", etc.
+    const oldDatePattern = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(202[0-4]|201\d|200\d)\b/gi;
+    const oldDateMatches = content.match(oldDatePattern);
+    
+    if (oldDateMatches) {
+      console.log(`🚫 Found old date references: ${oldDateMatches.join(', ')}`);
+      return true;
+    }
+    
+    // Check for phrases indicating old events
+    const oldPhrases = [
+      'in 2024', 'in 2023', 'in 2022', 'in 2021', 'in 2020',
+      'last year', 'two years ago', 'three years ago',
+      'during the pandemic', 'covid-19 vaccine',
+      'since 2020', 'since 2021', 'since 2022', 'since 2023'
+    ];
+    
+    for (const phrase of oldPhrases) {
+      if (content.toLowerCase().includes(phrase)) {
+        console.log(`🚫 Found old content phrase: "${phrase}"`);
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   private cleanFormattingSymbols(content: string): string {
     return content
       .replace(/\*\*([^*]+)\*\*/g, '$1')
@@ -352,9 +389,13 @@ export class PerplexityDefenseService {
             },
             {
               role: 'user',
-              content: `TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Generate a comprehensive defense industry intelligence briefing focusing EXCLUSIVELY on events from the past 24-48 hours. DO NOT include any events older than 48 hours.
+              content: `URGENT: TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (${new Date().toISOString().split('T')[0]}). I need ONLY breaking news and events from the LAST 24 HOURS (since ${new Date(Date.now() - 24*60*60*1000).toISOString().split('T')[0]}). 
 
-**CRITICAL REQUIREMENT: ONLY EVENTS FROM THE LAST 48 HOURS (${new Date(Date.now() - 48*60*60*1000).toLocaleDateString()} to ${new Date().toLocaleDateString()})**
+MANDATORY REQUIREMENTS:
+- REJECT ALL content from 2024, 2023, 2022, 2021, 2020 or earlier
+- ONLY include events with today's date (${new Date().toLocaleDateString()}) or yesterday's date (${new Date(Date.now() - 24*60*60*1000).toLocaleDateString()})
+- Include EXACT timestamps and publication dates for every event mentioned
+- If no significant events occurred in the last 24 hours, state "No major defense developments in the last 24 hours" rather than using old content
 
 **TODAY'S GEOPOLITICAL DEVELOPMENTS:**
 - Defense developments that occurred TODAY or YESTERDAY only
@@ -397,6 +438,15 @@ MANDATORY: Include exact dates for ALL events mentioned. Reject any information 
 
       console.log(`📄 Received ${content.length} characters of real-time defense research with ${citations.length} citations`);
       console.log(`🔗 Citations received:`, citations);
+
+      // Validate content for recency - reject if it contains old years
+      if (this.containsOldContent(content)) {
+        console.log(`❌ Rejecting content containing outdated information`);
+        return {
+          content: `No major defense developments in the last 24 hours. Current monitoring continues for ongoing geopolitical situations and defense contractor activities.`,
+          citations: []
+        };
+      }
 
       if (content.length < 200) {
         throw new Error('Insufficient content from Perplexity AI');
