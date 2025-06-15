@@ -825,13 +825,18 @@ class PerplexityService {
                           citation.url === 'https://www.reuters.com/' ||
                           citation.url.match(/^https:\/\/[^\/]+\/?$/); // Homepage only
       
-      // Filter out only clearly malformed titles
+      // Filter out only clearly malformed titles - but preserve authentic URLs with generic titles
       const hasGenericTitle = citation.title && (
                              citation.title.toLowerCase().includes('www.biopharmadive.com') ||
                              citation.title.toLowerCase() === citation.url.toLowerCase() ||
-                             citation.title.toLowerCase().includes('source from') ||
                              citation.title.match(/^source \d+$/i) ||
-                             citation.title.length < 5); // Very short minimum for broader inclusion
+                             citation.title.length < 5) &&
+                             // Don't filter out authentic article URLs even if they have generic titles
+                             !citation.url.includes('/news-events/press-announcements/') &&
+                             !citation.url.includes('/pharmalot/') &&
+                             !citation.url.includes('/drugs/') &&
+                             !citation.url.includes('/news/') &&
+                             !citation.url.includes('/inspections-compliance/');
       
       if (!isValidUrl || isGenericUrl || hasGenericTitle) {
         console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);

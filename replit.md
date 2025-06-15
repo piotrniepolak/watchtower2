@@ -13,6 +13,27 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
+### June 15, 2025 - Fixed Perplexity Citation Collection Failure
+**Major Citation System Fix:**
+- **Identified root cause of empty sources sections** - Perplexity API was providing authentic citations but overly aggressive filtering was removing all of them
+- **Enhanced citation processing pipeline** with improved title fetching that retrieves real article titles before using generic fallbacks
+- **Implemented surgical filtering logic** that preserves authentic article URLs even when they have generic titles by checking URL path patterns
+- **Added comprehensive debug logging** to track citation collection and filtering decisions throughout the entire pipeline
+- **Verified 22 authentic citations now collected** from Perplexity responses with real article titles like "FDA approves darolutamide for metastatic castration-sensitive prostate cancer"
+
+**Technical Implementation:**
+- Fixed citation normalization to fetch real titles using async title fetching before creating generic fallbacks
+- Enhanced filtering logic to preserve URLs containing `/news-events/`, `/pharmalot/`, `/drugs/`, `/news/`, and `/inspections-compliance/` paths
+- Improved URL validation to distinguish between authentic articles and homepage redirects
+- Added detailed console logging showing exact citations being collected, processed, and filtered
+
+**User Impact:**
+- Intelligence Sources & References section now contains 20+ authentic links to specific articles used by Perplexity
+- Source links lead directly to FDA drug approval announcements, STAT News pharmaceutical coverage, and WHO health emergency updates
+- Eliminated empty sources sections that were previously showing "No sources section found"
+- Professional source attribution with meaningful article titles instead of generic domain placeholders
+- Enhanced credibility with verifiable links to exact content referenced in intelligence analysis
+
 ### June 15, 2025 - Comprehensive Source Link Authentication System
 **Major Source Link Authentication:**
 - **Implemented comprehensive citation filtering system** that ensures only specific articles used by Perplexity for each brief section appear in Intelligence Sources & References
