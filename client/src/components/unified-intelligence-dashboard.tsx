@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SourceLinks } from "./source-links";
+import { DefenseIntelligenceBrief } from "./defense-intelligence-brief";
 import { 
   Shield, 
   Pill, 
@@ -198,7 +199,9 @@ export function UnifiedIntelligenceDashboard() {
         </CardContent>
       </Card>
 
-      {briefData ? (
+      {selectedSector === "defense" ? (
+        <DefenseIntelligenceBrief />
+      ) : briefData ? (
         <div className="space-y-4">
           {/* Executive Summary */}
           <Collapsible open={summaryOpen} onOpenChange={setSummaryOpen}>
