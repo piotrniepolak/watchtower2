@@ -92,9 +92,18 @@ class PerplexityService {
       
       // Debug logging for citations
       console.log('🔍 Perplexity API Response Debug:');
+      console.log('Full response structure:', JSON.stringify(data, null, 2));
       console.log('Citations received:', data.citations?.length || 0);
       if (data.citations && data.citations.length > 0) {
         console.log('First citation:', data.citations[0]);
+        console.log('All citations:', data.citations);
+      } else {
+        console.log('❌ NO CITATIONS IN RESPONSE - checking response structure');
+        console.log('Response keys:', Object.keys(data));
+        console.log('Choices array:', data.choices?.length || 0);
+        if (data.choices?.[0]) {
+          console.log('Message keys:', Object.keys(data.choices[0].message || {}));
+        }
       }
       
       // Normalize citations to consistent format
