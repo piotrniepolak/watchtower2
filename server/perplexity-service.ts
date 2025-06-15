@@ -41,6 +41,7 @@ interface PharmaceuticalIntelligence {
   }>;
   marketImpact: string;
   geopoliticalAnalysis: string;
+  sourcesSection?: string;
   createdAt: string;
 }
 
@@ -955,6 +956,12 @@ class PerplexityService {
       console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
       console.log(`📚 Collected ${this.allBriefCitations.length} total citations for sources section`);
 
+      // Clean the geopolitical analysis to remove any embedded sources sections
+      let cleanGeopoliticalAnalysis = regulatoryResult.content;
+      if (cleanGeopoliticalAnalysis.includes('**Intelligence Sources & References:**')) {
+        cleanGeopoliticalAnalysis = cleanGeopoliticalAnalysis.split('**Intelligence Sources & References:**')[0].trim();
+      }
+
       return {
         title: `Pharmaceutical Intelligence Brief - ${new Date().toLocaleDateString()}`,
         summary: summaryResult.content,
@@ -963,7 +970,8 @@ class PerplexityService {
         defenseStockHighlights: [],
         pharmaceuticalStockHighlights: stockAnalysis,
         marketImpact: marketImpactResult.content,
-        geopoliticalAnalysis: regulatoryResult.content + sourcesSection,
+        geopoliticalAnalysis: cleanGeopoliticalAnalysis,
+        sourcesSection: sourcesSection,
         createdAt: new Date().toISOString()
       };
     } catch (error) {

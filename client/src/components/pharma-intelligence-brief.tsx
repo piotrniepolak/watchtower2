@@ -38,6 +38,7 @@ interface DailyNews {
   keyDevelopments: string[];
   marketImpact: string;
   geopoliticalAnalysis?: string;
+  sourcesSection?: string;
   pharmaceuticalStockHighlights?: PharmaCompany[];
 }
 
@@ -187,6 +188,7 @@ export default function PharmaIntelligenceBrief() {
   const [marketImpactOpen, setMarketImpactOpen] = useState(false);
   const [geopoliticalOpen, setGeopoliticalOpen] = useState(false);
   const [stockHighlightsOpen, setStockHighlightsOpen] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: pharmaNews, isLoading, error } = useEnhancedPharmaNews();
@@ -415,17 +417,9 @@ export default function PharmaIntelligenceBrief() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="px-4 pb-4">
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 space-y-3">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
                 <div className="text-sm leading-relaxed text-muted-foreground">
                   {cleanContent(currentNews.geopoliticalAnalysis)}
-                </div>
-                
-                {/* Enhanced Source Links */}
-                <div className="border-t border-slate-300 dark:border-slate-700 pt-4 mt-4">
-                  <SourceLinks 
-                    sources={extractDetailedSources(currentNews.geopoliticalAnalysis)}
-                    title="Geopolitical Analysis Sources"
-                  />
                 </div>
               </div>
             </CollapsibleContent>
@@ -484,6 +478,31 @@ export default function PharmaIntelligenceBrief() {
                     )}
                   </div>
                 ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* Intelligence Sources & References */}
+        {currentNews?.sourcesSection && (
+          <Collapsible open={sourcesOpen} onOpenChange={setSourcesOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+                <div className="flex items-center gap-3">
+                  <Globe className="h-5 w-5 text-green-600" />
+                  <span className="font-medium text-base">Intelligence Sources & References</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${sourcesOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
+                <div className="text-sm leading-relaxed text-muted-foreground">
+                  <SourceLinks 
+                    sources={extractDetailedSources(currentNews.sourcesSection)}
+                    title=""
+                  />
+                </div>
               </div>
             </CollapsibleContent>
           </Collapsible>

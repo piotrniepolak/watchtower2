@@ -266,6 +266,7 @@ export const dailyNews = pgTable("daily_news", {
   defenseStockHighlights: jsonb("defense_stock_highlights").notNull(),
   pharmaceuticalStockHighlights: jsonb("pharmaceutical_stock_highlights"),
   geopoliticalAnalysis: text("geopolitical_analysis").notNull(),
+  sourcesSection: text("sources_section"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
   uniqueDateSector: unique().on(table.date, table.sector),
