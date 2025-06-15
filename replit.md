@@ -13,14 +13,14 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 15, 2025 - Fixed Source Links to Point to Specific Articles Used by Perplexity
+### June 15, 2025 - Comprehensive Source Link Authentication System
 **Major Source Link Authentication:**
-- **Fixed source links redirecting to homepages instead of specific articles** by preserving original Perplexity citation URLs
-- **Implemented authentic article URL preservation** that keeps the exact URLs from which Perplexity generated intelligence content
-- **Generated fresh pharmaceutical brief with 22 specific article links** including "Trump administration demands pharma companies begin drug price negotiations" and "FDA approves taletrectinib for ROS1-positive non-small cell lung cancer"
-- **Eliminated generic news section redirects** by only replacing truly broken URLs while preserving specific article paths
-- **Maintained clean Market Impact and Geopolitical Analysis sections** without embedded reference content
-- **Enhanced source link reliability** ensuring all URLs point to the actual articles referenced in intelligence analysis
+- **Implemented comprehensive citation filtering system** that ensures only specific articles used by Perplexity for each brief section appear in Intelligence Sources & References
+- **Enhanced URL validation with strict generic detection** filtering out homepage redirects, /news/ endpoints, and malformed titles
+- **Added citation reset mechanism** that clears accumulated citations between brief generations to prevent cross-contamination
+- **Increased minimum title length to 15 characters** ensuring only meaningful article titles are included
+- **Eliminated all generic fallback URLs** including "Source from domain.com" and numbered source references
+- **Maintained visual formatting** with clickable source links while ensuring each link points to the exact article Perplexity referenced
 
 **Technical Implementation:**
 - Modified createConsolidatedSourcesSection in perplexity-service.ts to preserve original specific article URLs from Perplexity citations

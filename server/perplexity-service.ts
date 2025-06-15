@@ -364,13 +364,16 @@ class PerplexityService {
                           citation.url.endsWith('/news/') ||
                           citation.url === 'https://www.biopharmadive.com/news/' ||
                           citation.url.match(/\/news\/?$/) ||
+                          citation.url.match(/\/(index|home|main)(\.(html|php|asp))?$/i) ||
                           citation.url.split('/').length <= 4; // Too generic (domain + single path)
       
       // Filter out malformed titles
       const hasGenericTitle = citation.title.toLowerCase().includes('www.') ||
                              citation.title.toLowerCase().startsWith('http') ||
                              citation.title.toLowerCase() === citation.url.toLowerCase() ||
-                             citation.title.length < 10;
+                             citation.title.toLowerCase().includes('source from') ||
+                             citation.title.match(/^source \d+$/i) ||
+                             citation.title.length < 15; // Increased minimum length for more specificity
       
       if (!isValidUrl || isGenericUrl || hasGenericTitle) {
         console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);
@@ -889,7 +892,7 @@ class PerplexityService {
     console.log(`🎯 Executive Summary - Citations received: ${result.citations.length}`);
     
     // Collect citations for consolidated sources
-    this.allBriefCitations.push(...result.citations);
+    this.currentBriefCitations.push(...result.citations);
     
     const processed = await this.processContentWithLinks(result.content, result.citations);
     
@@ -925,7 +928,7 @@ class PerplexityService {
     console.log(`🎯 Key Developments - Citations received: ${result.citations.length}`);
     
     // Collect citations for consolidated sources
-    this.allBriefCitations.push(...result.citations);
+    this.currentBriefCitations.push(...result.citations);
     
     const processed = await this.processContentWithLinks(result.content, result.citations);
     
@@ -961,7 +964,7 @@ class PerplexityService {
     console.log(`🎯 Health Crisis Updates - Citations received: ${result.citations.length}`);
     
     // Collect citations for consolidated sources
-    this.allBriefCitations.push(...result.citations);
+    this.currentBriefCitations.push(...result.citations);
     
     const processed = await this.processContentWithLinks(result.content, result.citations);
     
@@ -997,7 +1000,7 @@ class PerplexityService {
     console.log(`🎯 Market Impact Analysis - Citations received: ${result.citations.length}`);
     
     // Collect citations for consolidated sources
-    this.allBriefCitations.push(...result.citations);
+    this.currentBriefCitations.push(...result.citations);
     
     const processed = await this.processContentWithLinks(result.content, result.citations);
     
@@ -1033,7 +1036,7 @@ class PerplexityService {
     console.log(`🎯 Regulatory Analysis - Citations received: ${result.citations.length}`);
     
     // Collect citations for consolidated sources
-    this.allBriefCitations.push(...result.citations);
+    this.currentBriefCitations.push(...result.citations);
     
     const processed = await this.processContentWithLinks(result.content, result.citations);
     
@@ -1053,7 +1056,7 @@ class PerplexityService {
       console.log('🔬 Generating comprehensive pharmaceutical intelligence using Perplexity AI...');
       
       // Reset citations collection for new brief
-      this.allBriefCitations = [];
+      this.currentBriefCitations = [];
       
       // Generate content sections and collect citations
       const [
@@ -1083,7 +1086,7 @@ class PerplexityService {
       const sourcesSection = await this.createConsolidatedSourcesSection();
 
       console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
-      console.log(`📚 Collected ${this.allBriefCitations.length} total citations for sources section`);
+      console.log(`📚 Collected ${this.currentBriefCitations.length} total citations for sources section`);
 
       // Clean the geopolitical analysis to remove any embedded sources sections
       let cleanGeopoliticalAnalysis = regulatoryResult.content;
