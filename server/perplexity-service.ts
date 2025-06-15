@@ -75,12 +75,11 @@ class PerplexityService {
       return true;
     }
     
-    // Check for phrases indicating old events
+    // Check for phrases indicating old events but be more selective
     const oldPhrases = [
       'in 2024', 'in 2023', 'in 2022', 'in 2021', 'in 2020',
-      'last year', 'two years ago', 'three years ago',
-      'during the pandemic', 'covid-19 vaccine',
-      'since 2020', 'since 2021', 'since 2022', 'since 2023'
+      'two years ago', 'three years ago',
+      'covid-19 vaccine updates from may'
     ];
     
     for (const phrase of oldPhrases) {

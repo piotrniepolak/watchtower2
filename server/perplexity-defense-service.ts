@@ -50,17 +50,21 @@ export class PerplexityDefenseService {
   }
 
   private containsOldContent(content: string): boolean {
-    // Check for years 2024 and earlier
+    // Allow current year references (2025) but reject older years
     const oldYearPattern = /\b(202[0-4]|201\d|200\d|19\d\d)\b/g;
-    const oldYearMatches = content.match(oldYearPattern);
+    const yearMatches = content.match(oldYearPattern);
     
-    if (oldYearMatches) {
-      console.log(`🚫 Found old year references: ${oldYearMatches.join(', ')}`);
-      return true;
+    if (yearMatches) {
+      // Filter out 2025 references (current year) - only flag truly old years
+      const oldYears = yearMatches.filter(year => parseInt(year) < 2025);
+      if (oldYears.length > 0) {
+        console.log(`🚫 Found old year references: ${oldYears.join(', ')}`);
+        return true;
+      }
     }
     
-    // Check for specific old date patterns like "May 2024", "March 2023", etc.
-    const oldDatePattern = /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(202[0-4]|201\d|200\d)\b/gi;
+    // Check for specific old date patterns but allow June 2025
+    const oldDatePattern = /\b(January|February|March|April|May|July|August|September|October|November|December)\s+(202[0-4]|201\d|200\d)\b/gi;
     const oldDateMatches = content.match(oldDatePattern);
     
     if (oldDateMatches) {
@@ -68,12 +72,11 @@ export class PerplexityDefenseService {
       return true;
     }
     
-    // Check for phrases indicating old events
+    // Check for phrases indicating old events but be more selective
     const oldPhrases = [
       'in 2024', 'in 2023', 'in 2022', 'in 2021', 'in 2020',
-      'last year', 'two years ago', 'three years ago',
-      'during the pandemic', 'covid-19 vaccine',
-      'since 2020', 'since 2021', 'since 2022', 'since 2023'
+      'two years ago', 'three years ago',
+      'covid-19 vaccine updates from may'
     ];
     
     for (const phrase of oldPhrases) {
