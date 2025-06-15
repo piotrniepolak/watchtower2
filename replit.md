@@ -13,6 +13,31 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
+### June 15, 2025 - Cleaned Intelligence Brief Content Structure
+**Enhanced Content Organization:**
+- **Removed duplicate "References:" sections from Market Impact, Geopolitical Analysis, and summary content** ensuring clean, professional presentation
+- **Enhanced defense intelligence content cleaning** with comprehensive reference removal from extracted market impact and geopolitical analysis
+- **Enhanced pharmaceutical intelligence content cleaning** removing embedded references from market impact analysis and regulatory analysis sections
+- **Enhanced pharmaceutical executive summary cleaning** removing duplicate reference sections while preserving content quality
+- **Preserved dedicated Intelligence Sources & References section** maintaining professional clickable source links with favicons
+- **Improved content formatting consistency** across all intelligence brief sections
+
+**Technical Implementation:**
+- Updated cleanFormattingSymbols function in perplexity-defense-service.ts with comprehensive reference removal patterns
+- Enhanced extractMarketImpact and extractGeopoliticalAnalysis functions to remove embedded references
+- Updated generateMarketImpactAnalysis and generateRegulatoryAnalysis in perplexity-service.ts 
+- Enhanced generateExecutiveSummary function to remove duplicate reference sections
+- Implemented consistent reference cleaning across all intelligence generation services
+- Maintained dedicated source section functionality with proper source link preservation
+
+**User Impact:**
+- Clean Market Impact sections without embedded reference text
+- Professional Geopolitical Analysis content without duplicate citations  
+- Streamlined summary sections focused on core intelligence content
+- Dedicated Intelligence Sources & References section provides comprehensive source access
+- Consistent content structure across defense, pharmaceutical, and energy intelligence briefs
+- Professional presentation matching enterprise intelligence platform standards
+
 ### June 13, 2025 - Implemented Streamlined Clickable Source Links
 **Major User Experience Enhancement:**
 - **Created dedicated SourceLinks component** replacing embedded text links with professional clickable buttons

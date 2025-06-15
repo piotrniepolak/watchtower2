@@ -55,6 +55,9 @@ export class PerplexityDefenseService {
       .replace(/\|/g, '')                 // Remove table separators
       .replace(/[-]{3,}/g, '')            // Remove horizontal rules
       // Remove embedded source links and domain references - comprehensive patterns
+      .replace(/\s*References?:\s*[\s\S]*$/gmi, '') // Remove "References:" sections and everything after
+      .replace(/\s*Sources?:\s*[\s\S]*$/gmi, '') // Remove "Sources:" sections and everything after
+      .replace(/\s*References?:\s*[^\n]*$/gmi, '') // Remove "References:" lines at end of paragraphs
       .replace(/\s*Sources?:\s*[^\n]*$/gmi, '') // Remove "Sources:" lines at end of paragraphs
       .replace(/\s*Source:\s*[^\n]*$/gmi, '')   // Remove "Source:" lines at end of paragraphs
       .replace(/\s*\.\s*bloomberg\.com\s*/gi, '.') // Remove ". bloomberg.com" patterns
@@ -691,8 +694,15 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
       marketImpact += `Current market dynamics favor established defense contractors with proven track records in complex systems integration and program management capabilities. The defense industrial base continues to demonstrate resilience amid supply chain challenges, with major contractors investing in capacity expansion and workforce development to meet growing demand. International sales remain a key growth driver, with NATO allies and Indo-Pacific partners increasing defense procurement to address evolving security challenges. Investment outlook remains positive with defense stocks supported by predictable revenue streams, technological innovation cycles, and sustained government commitment to national security priorities.`;
     }
     
-    // Remove any embedded source links and source references
-    return marketImpact.replace(/Sources?:\s*[^\n]*$/i, '').replace(/<a[^>]*>.*?<\/a>/gi, '').replace(/\[[^\]]+\]/g, '').trim();
+    // Remove any embedded source links and source references including full "References:" sections
+    return marketImpact
+      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
+      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
+      .replace(/<a[^>]*>.*?<\/a>/gi, '') // Remove HTML links
+      .replace(/\[[^\]]+\]/g, '') // Remove citation brackets
+      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
+      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
+      .trim();
   }
 
   private extractConflictUpdates(content: string): Array<{ region: string; description: string; severity: "high" | "medium" | "low" | "critical" }> {
@@ -807,8 +817,15 @@ Market Analysis: Defense contractors continue to benefit from sustained governme
       geoAnalysis += `International defense cooperation continues expanding through technology sharing agreements, joint development programs, and standardized procurement initiatives. NATO interoperability requirements create opportunities for contractors offering compatible systems across alliance partners, while bilateral defense agreements facilitate technology transfer and co-production arrangements. These partnerships strengthen defense industrial base resilience while expanding market access for qualified contractors.`;
     }
     
-    // Remove any embedded source links and source references
-    return geoAnalysis.replace(/Sources?:\s*[^\n]*$/i, '').replace(/<a[^>]*>.*?<\/a>/gi, '').replace(/\[[^\]]+\]/g, '').trim();
+    // Remove any embedded source links and source references including full "References:" sections
+    return geoAnalysis
+      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
+      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
+      .replace(/<a[^>]*>.*?<\/a>/gi, '') // Remove HTML links
+      .replace(/\[[^\]]+\]/g, '') // Remove citation brackets
+      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
+      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
+      .trim();
   }
 
   private async enhanceStockHighlights(stockHighlights: Array<{ symbol: string; companyName: string; analysis: string }>, defenseStocks: any[]): Promise<NewsStockHighlight[]> {

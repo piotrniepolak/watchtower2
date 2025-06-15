@@ -390,7 +390,14 @@ class PerplexityService {
     }
     const processed = await this.processContentWithLinks(result.content, result.citations);
     console.log(`🎯 Executive Summary - Processed length: ${processed.length}, Has references: ${processed.includes('**References:**')}`);
-    return processed;
+    
+    // Remove "References:" sections from Executive Summary content while preserving dedicated sources section
+    return processed
+      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
+      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
+      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
+      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
+      .trim();
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
@@ -628,14 +635,30 @@ class PerplexityService {
     const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Provide substantial detail about market drivers and financial implications.`;
     
     const result = await this.queryPerplexity(prompt);
-    return await this.processContentWithLinks(result.content, result.citations);
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Remove "References:" sections from Market Impact content while preserving dedicated sources section
+    return processed
+      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
+      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
+      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
+      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
+      .trim();
   }
 
   async generateRegulatoryAnalysis(): Promise<string> {
     const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.`;
     
     const result = await this.queryPerplexity(prompt);
-    return await this.processContentWithLinks(result.content, result.citations);
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Remove "References:" sections from Geopolitical Analysis content while preserving dedicated sources section
+    return processed
+      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
+      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
+      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
+      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
+      .trim();
   }
 
   async generateComprehensiveIntelligenceBrief(): Promise<PharmaceuticalIntelligence> {
