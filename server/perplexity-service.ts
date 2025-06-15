@@ -306,23 +306,23 @@ class PerplexityService {
         const citation = validCitations[index];
         let displayTitle = citation.title;
         
-        // If title is generic, contains source domain, or is just a number, fetch from web
-        if (!displayTitle || 
-            displayTitle.includes('Source from') || 
-            displayTitle.toLowerCase().includes('biopharmadive.com') || 
-            displayTitle.toLowerCase().includes('statnews.com') ||
-            displayTitle.toLowerCase().includes("don't miss tomorrow's biopharma industry news") ||
-            displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
-            displayTitle.match(/^\d+$/) || // Just a number
-            displayTitle.length < 10) { // Too short to be meaningful
-          
-          // Fetch the actual title from the web page
-          const webTitle = await this.fetchArticleTitle(citation.url);
-          
-          if (webTitle) {
-            displayTitle = webTitle;
-          } else {
-            // Fallback to URL parsing if web scraping fails
+        // Always try to fetch the actual title from the web page first
+        const webTitle = await this.fetchArticleTitle(citation.url);
+        
+        if (webTitle && webTitle.length > 10 && !webTitle.includes('Source from')) {
+          console.log(`🔍 Raw title extracted: "${webTitle}"`);
+          displayTitle = webTitle;
+          console.log(`✅ Extracted meaningful title: "${displayTitle}"`);
+        } else {
+          // Fallback to URL parsing if web scraping fails or if title is generic
+          if (!displayTitle || 
+              displayTitle.includes('Source from') || 
+              displayTitle.toLowerCase().includes('biopharmadive.com') || 
+              displayTitle.toLowerCase().includes('statnews.com') ||
+              displayTitle.toLowerCase().includes("don't miss tomorrow's biopharma industry news") ||
+              displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
+              displayTitle.match(/^\d+$/) || // Just a number
+              displayTitle.length < 10) { // Too short to be meaningful
             const urlParts = citation.url.split('/');
             let articleSlug = '';
             
@@ -896,13 +896,13 @@ class PerplexityService {
 
       return {
         title: `Pharmaceutical Intelligence Brief - ${new Date().toLocaleDateString()}`,
-        summary: summaryResult.content + sourcesSection,
+        summary: summaryResult.content,
         keyDevelopments: keyDevelopmentsResult.content,
         conflictUpdates: healthCrisisResult.content,
         defenseStockHighlights: [],
         pharmaceuticalStockHighlights: stockAnalysis,
         marketImpact: marketImpactResult.content,
-        geopoliticalAnalysis: regulatoryResult.content,
+        geopoliticalAnalysis: regulatoryResult.content + sourcesSection,
         createdAt: new Date().toISOString()
       };
     } catch (error) {
