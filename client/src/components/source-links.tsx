@@ -14,6 +14,7 @@ interface SourceLinksProps {
   sources: SourceLink[];
   title?: string;
   sector?: 'defense' | 'pharma' | 'energy';
+  compact?: boolean;
 }
 
 // Enhanced domain mapping with categories
@@ -80,7 +81,7 @@ const getCategoryColor = (category: string) => {
   }
 };
 
-export function SourceLinks({ sources, title = "Sources & References", sector = 'defense' }: SourceLinksProps) {
+export function SourceLinks({ sources, title = "Sources & References", sector = 'defense', compact = false }: SourceLinksProps) {
   // Generate sector-specific sources when no sources provided
   const fallbackSources = generateSectorSources(sector);
   const displaySources = sources.length > 0 ? sources : fallbackSources;
