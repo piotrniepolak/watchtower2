@@ -160,6 +160,10 @@ ARTICLE 2:
 CRITICAL: If no articles found from specified sources on these dates, state "NO ARTICLES FOUND" - do not generate any content.`;
 
     try {
+      console.log(`🔧 Making Perplexity API request for ${sector} sector...`);
+      console.log(`🔧 API Key present: ${!!this.perplexityApiKey}`);
+      console.log(`🔧 API Key length: ${this.perplexityApiKey?.length || 0}`);
+      
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {
@@ -176,15 +180,23 @@ CRITICAL: If no articles found from specified sources on these dates, state "NO 
         })
       });
 
+      console.log(`🔧 Perplexity API response status: ${response.status}`);
+      
       if (!response.ok) {
-        throw new Error(`Perplexity API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ Perplexity API error response:`, errorText);
+        throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
       const content = data.choices[0]?.message?.content || '';
       
-      if (content.includes('NO ARTICLES FOUND')) {
+      console.log(`🔍 Perplexity API Response Length: ${content.length} characters`);
+      console.log(`🔍 Full API response content:`, content);
+      
+      if (content.includes('NO ARTICLES FOUND') || content.includes('no articles found') || content.length < 100) {
         console.log(`❌ STEP 2 FAILED: No articles found for ${sector}`);
+        console.log(`❌ Response content was:`, content);
         return [];
       }
 
