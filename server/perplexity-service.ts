@@ -784,13 +784,54 @@ class PerplexityService {
       index === self.findIndex(c => c.url === citation.url)
     );
 
-    console.log(`📚 Creating consolidated sources section with ${uniqueCitations.length} unique citations`);
+    // Apply comprehensive filtering to ensure only specific articles appear
+    const authenticCitations = uniqueCitations.filter((citation, index) => {
+      // Check for valid URL structure
+      const isValidUrl = citation.url && 
+                        typeof citation.url === 'string' && 
+                        citation.url.startsWith('http') && 
+                        citation.url.length > 10 &&
+                        !citation.url.includes('undefined') &&
+                        !citation.url.includes('null');
+      
+      // Filter out generic URLs that redirect to homepages
+      const isGenericUrl = citation.url.endsWith('/news') ||
+                          citation.url.endsWith('/news/') ||
+                          citation.url === 'https://www.biopharmadive.com/news/' ||
+                          citation.url.match(/\/news\/?$/) ||
+                          citation.url.match(/\/(index|home|main)(\.(html|php|asp))?$/i) ||
+                          citation.url.split('/').length <= 4; // Too generic (domain + single path)
+      
+      // Filter out malformed titles
+      const hasGenericTitle = citation.title && (
+                             citation.title.toLowerCase().includes('www.') ||
+                             citation.title.toLowerCase().startsWith('http') ||
+                             citation.title.toLowerCase() === citation.url.toLowerCase() ||
+                             citation.title.toLowerCase().includes('source from') ||
+                             citation.title.match(/^source \d+$/i) ||
+                             citation.title.length < 15); // Increased minimum length for more specificity
+      
+      if (!isValidUrl || isGenericUrl || hasGenericTitle) {
+        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);
+        return false;
+      } else {
+        console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
+        return true;
+      }
+    });
+
+    console.log(`📚 Creating consolidated sources section with ${authenticCitations.length} authentic citations (filtered from ${uniqueCitations.length} total)`);
+
+    if (authenticCitations.length === 0) {
+      console.log('❌ No authentic citations remaining after filtering');
+      return '';
+    }
 
     let sourcesSection = '\n\n**Intelligence Sources & References:**\n\n';
     
     // Use for loop to enable async/await for title fetching
-    for (let index = 0; index < uniqueCitations.length; index++) {
-      const citation = uniqueCitations[index];
+    for (let index = 0; index < authenticCitations.length; index++) {
+      const citation = authenticCitations[index];
       let displayTitle = citation.title;
       
       // Always try to fetch the actual title from the web page first
@@ -848,31 +889,9 @@ class PerplexityService {
         }
       }
       
-      // Keep the original specific article URL from Perplexity citations
-      let reliableUrl = citation.url;
-      
-      // Only replace if URL is clearly generic or broken
-      if (citation.url === 'https://www.fda.gov' || 
-          citation.url === 'https://www.biopharmadive.com' || 
-          citation.url === 'https://www.statnews.com' ||
-          citation.url === 'https://www.reuters.com' ||
-          citation.url === 'https://www.bloomberg.com') {
-        // For truly generic URLs, provide more specific landing pages
-        if (citation.url.includes('fda.gov')) {
-          reliableUrl = 'https://www.fda.gov/news-events/press-announcements';
-        } else if (citation.url.includes('biopharmadive.com')) {
-          reliableUrl = 'https://www.biopharmadive.com/news/';
-        } else if (citation.url.includes('statnews.com')) {
-          reliableUrl = 'https://www.statnews.com/latest/';
-        } else if (citation.url.includes('reuters.com')) {
-          reliableUrl = 'https://www.reuters.com/business/healthcare-pharmaceuticals/';
-        } else if (citation.url.includes('bloomberg.com')) {
-          reliableUrl = 'https://www.bloomberg.com/healthcare';
-        }
-      }
-      // For all other URLs (specific articles), keep the original URL intact
-      
-      sourcesSection += `${index + 1}. [${displayTitle}](${reliableUrl})\n`;
+      // Always preserve the original authentic article URL from Perplexity citations
+      // Since we've already filtered out generic URLs above, all remaining URLs are specific articles
+      sourcesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
     }
 
     return sourcesSection;
