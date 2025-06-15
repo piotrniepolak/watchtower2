@@ -42,39 +42,42 @@ interface DailyNews {
   pharmaceuticalStockHighlights?: PharmaCompany[];
 }
 
-// Extract references from content with enhanced parsing
-const extractReferences = (text: string | undefined): Array<{title: string, source: string, url?: string}> => {
-  if (!text) return [];
+// Extract references from sources section with markdown link parsing
+const extractReferences = (sourcesSection: string | undefined): Array<{title: string, source: string, url?: string}> => {
+  if (!sourcesSection) return [];
   
   const references: Array<{title: string, source: string, url?: string}> = [];
   
-  // Look for References section
-  const referencesMatch = text.match(/References?:\s*([\s\S]*?)(?:\n\n|\n$|$)/i);
-  if (referencesMatch) {
-    const referencesSection = referencesMatch[1];
-    
-    // Parse numbered references like "1. Title - Source"
-    const numberedRefs = referencesSection.match(/\d+\.\s*([^-\n]+)\s*-\s*([^-\n]+)/g);
-    numberedRefs?.forEach(ref => {
-      const match = ref.match(/\d+\.\s*([^-\n]+)\s*-\s*([^-\n]+)/);
+  // Parse markdown links: [Title](URL)
+  const markdownLinks = sourcesSection.match(/\d+\.\s*\[([^\]]+)\]\(([^)]+)\)/g);
+  if (markdownLinks) {
+    markdownLinks.forEach(link => {
+      const match = link.match(/\d+\.\s*\[([^\]]+)\]\(([^)]+)\)/);
       if (match) {
         const title = match[1].trim();
-        const source = match[2].trim();
+        const url = match[2].trim();
         
-        // Generate URLs based on source
-        let url = '';
-        if (source.toLowerCase().includes('biopharmadive') || source.toLowerCase().includes('biopharma dive')) {
-          url = `https://www.biopharmadive.com/search/?q=${encodeURIComponent(title)}`;
-        } else if (source.toLowerCase().includes('stat') || source.toLowerCase().includes('statnews')) {
-          url = `https://www.statnews.com/search/?q=${encodeURIComponent(title)}`;
-        } else if (source.toLowerCase().includes('reuters')) {
-          url = `https://www.reuters.com/search/news?blob=${encodeURIComponent(title)}`;
-        } else if (source.toLowerCase().includes('pubmed')) {
-          url = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(title)}`;
-        } else if (source.toLowerCase().includes('fda')) {
-          url = `https://www.fda.gov/search/?s=${encodeURIComponent(title)}`;
-        } else if (source.toLowerCase().includes('bloomberg')) {
-          url = `https://www.bloomberg.com/search?query=${encodeURIComponent(title)}`;
+        // Extract source from URL domain
+        let source = '';
+        try {
+          const domain = new URL(url).hostname.replace('www.', '');
+          if (domain.includes('fda.gov')) {
+            source = 'FDA';
+          } else if (domain.includes('statnews.com')) {
+            source = 'STAT News';
+          } else if (domain.includes('biopharmadive.com')) {
+            source = 'BioPharma Dive';
+          } else if (domain.includes('reuters.com')) {
+            source = 'Reuters';
+          } else if (domain.includes('who.int')) {
+            source = 'WHO';
+          } else if (domain.includes('bloomberg.com')) {
+            source = 'Bloomberg';
+          } else {
+            source = domain;
+          }
+        } catch {
+          source = 'External Source';
         }
         
         references.push({ title, source, url });
@@ -532,7 +535,12 @@ export default function PharmaIntelligenceBrief() {
               <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
                 <div className="text-sm leading-relaxed text-muted-foreground">
                   <SourceLinks 
-                    sources={extractDetailedSources(currentNews.sourcesSection)}
+                    sources={extractReferences(currentNews.sourcesSection).map(ref => ({
+                      title: ref.title,
+                      url: ref.url || '',
+                      source: ref.source,
+                      category: 'news' as const
+                    }))}
                     title=""
                   />
                 </div>
