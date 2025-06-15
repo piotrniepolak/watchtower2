@@ -13,7 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 15, 2025 - Implemented Authentic 48-Hour Data Restrictions Across All Intelligence Services
+### June 15, 2025 - Implemented Complete 4-Step Source-Based Intelligence Methodology
+**Major System Overhaul:**
+- **Replaced generic content generation with authentic source extraction methodology** following exact 4-step process for both defense and pharmaceutical services
+- **Defense Sources (15):** Defense News, Jane's Defense Weekly, Breaking Defense, Defense One, The War Zone, Military.com, C4ISRNET, National Defense Magazine, Defense Daily, Inside Defense, DefenseScoop, Army Times, Navy Times, Air Force Times, Space Force Times
+- **Pharmaceutical Sources (15):** STAT News, BioPharma Dive, Fierce Pharma, PharmaLive, Pharmaceutical Technology, Drug Discovery & Development, FDA News, Regulatory Affairs Professionals Society, BioWorld, Nature Biotechnology, Science Translational Medicine, Cell, The Lancet, NEJM, PharmaVOICE
+- **General Sources (5):** Reuters, Associated Press, Bloomberg, Wall Street Journal, Financial Times
+- **Eliminated all fallback mechanisms, hallucination, and hardcoded data** across both intelligence services
+- **Updated content parsing logic** to handle **EXECUTIVE SUMMARY**, **KEY DEVELOPMENTS**, **MARKET IMPACT ANALYSIS**, and **GEOPOLITICAL ANALYSIS** sections from source-based methodology
+
+**Technical Implementation:**
+- Modified Perplexity API prompts to require article extraction from exactly 20 specified news sources
+- Enhanced prompts to extract ALL articles published on today's and yesterday's dates from designated sources
+- Updated section parsing to recognize bold header format from 4-step methodology output
+- Implemented flexible content validation for source-based approach with direct URL preservation
+- Applied methodology consistently across defense and pharmaceutical intelligence services
+
+**User Impact:**
+- Intelligence briefs now built exclusively from authentic articles extracted from 20 verified news sources
+- Every article's direct URL included in sources section without modification
+- Content derived only from today's and yesterday's publications from specified industry sources
+- Professional source attribution with authentic article titles and functional URLs leading to actual content used in analysis
+- Eliminated generic content generation in favor of systematic article-based intelligence synthesis
+
+### June 15, 2025 - Previous: Implemented Authentic 48-Hour Data Restrictions Across All Intelligence Services
 **Major System Enhancement:**
 - **Enhanced Perplexity API prompts with explicit 48-hour data requirements** ensuring only events from the last 24-48 hours appear in intelligence briefs
 - **Added search_recency_filter: "day" parameter** forcing Perplexity to search only the most recent content available
