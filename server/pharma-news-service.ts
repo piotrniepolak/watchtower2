@@ -253,7 +253,8 @@ export class PharmaNewsService {
           reason: "Solid pharmaceutical division results offset by consumer health segment concerns"
         }
       ],
-      geopoliticalAnalysis: "Global healthcare policies continue evolving with emphasis on pandemic preparedness and equitable access to essential medicines. Regulatory harmonization efforts between major markets facilitate faster drug development timelines while maintaining safety standards."
+      geopoliticalAnalysis: "Global healthcare policies continue evolving with emphasis on pandemic preparedness and equitable access to essential medicines. Regulatory harmonization efforts between major markets facilitate faster drug development timelines while maintaining safety standards.",
+      sourcesSection: null
     };
   }
 
