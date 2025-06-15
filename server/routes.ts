@@ -1597,10 +1597,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('No pharmaceutical intelligence found, generating pharmaceutical data...');
         news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
         
-        // If Perplexity AI fails, fallback to pharmaceutical method
+        // If Perplexity AI fails, return error - no fallback allowed
         if (!news) {
-          console.log('Perplexity AI pharmaceutical intelligence generation failed, trying pharmaceutical fallback...');
-          news = await pharmaNewsService.getTodaysPharmaNews();
+          console.log('Perplexity AI pharmaceutical intelligence generation failed - no fallback allowed');
+          return res.status(503).json({ error: "Pharmaceutical intelligence service temporarily unavailable" });
         }
       }
       
@@ -1844,12 +1844,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
       
       if (!news) {
-        console.log('Perplexity AI generation failed, trying fallback method...');
-        const fallbackNews = await pharmaNewsService.getTodaysPharmaNews();
-        if (!fallbackNews) {
-          return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
-        }
-        return res.json(fallbackNews);
+        console.log('Perplexity AI generation failed - no fallback allowed');
+        return res.status(503).json({ error: "Pharmaceutical intelligence service temporarily unavailable" });
       }
       
       console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');

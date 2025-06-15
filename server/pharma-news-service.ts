@@ -133,7 +133,7 @@ export class PharmaNewsService {
       setTimeout(() => {
         this.isGenerating = false;
       }, 120000);
-      return this.getFallbackPharmaNews();
+      return null; // No fallback - only authentic data allowed
     }
 
     this.isGenerating = true;

@@ -13,6 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
+### June 15, 2025 - Completely Eliminated URL Fabrication System and Hardcoded Fallback Data
+**Major System Overhaul:**
+- **Identified and removed root cause of 404 source links** - System was fabricating URLs using `validateAndCorrectUrl()` and `createSpecificUrl()` instead of preserving authentic Perplexity URLs
+- **Eliminated all hardcoded fallback pharmaceutical content** in `pharma-news-service.ts` that was displaying static text instead of authentic Perplexity intelligence
+- **Removed URL manipulation functions** that created fake article URLs leading to 404 errors
+- **Disabled all fallback mechanisms** in routes ensuring only authentic Perplexity data is ever displayed
+- **Verified authentic URL preservation** with real sources like FDA drug approvals, WHO health reports, and STAT News pharmaceutical coverage
+
+**Technical Implementation:**
+- Completely removed `validateAndCorrectUrl()` function that created fabricated URLs
+- Eliminated `createSpecificUrl()` function that generated fake article paths
+- Removed `getFallbackPharmaContent()` containing hardcoded pharmaceutical content
+- Disabled fallback calls in routes.ts ensuring 503 errors instead of fake data
+- Enhanced citation processing to preserve exact URLs provided by Perplexity API
+- Maintained title fetching for authentic article titles while preserving original URLs
+
+**User Impact:**
+- Intelligence Sources & References section now contains working links to authentic articles used by Perplexity
+- Source links lead directly to real FDA announcements, WHO reports, and pharmaceutical news articles
+- Eliminated all 404 errors from fabricated URLs
+- No hardcoded content ever appears - only authentic Perplexity-generated intelligence
+- Professional source attribution with meaningful article titles and functional URLs
+- Enhanced credibility with verifiable links to exact content referenced in analysis
+
 ### June 15, 2025 - Fixed Perplexity Citation Collection Failure
 **Major Citation System Fix:**
 - **Identified root cause of empty sources sections** - Perplexity API was providing authentic citations but overly aggressive filtering was removing all of them
