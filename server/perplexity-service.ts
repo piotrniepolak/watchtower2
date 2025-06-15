@@ -769,15 +769,15 @@ class PerplexityService {
   }
 
   // Store all citations collected during brief generation
-  private allBriefCitations: Array<{ url: string; title: string; snippet?: string }> = [];
+  private currentBriefCitations: Array<{ url: string; title: string; snippet?: string }> = [];
 
   private async createConsolidatedSourcesSection(): Promise<string> {
-    if (this.allBriefCitations.length === 0) {
+    if (this.currentBriefCitations.length === 0) {
       return '';
     }
 
     // Remove duplicates based on URL
-    const uniqueCitations = this.allBriefCitations.filter((citation, index, self) => 
+    const uniqueCitations = this.currentBriefCitations.filter((citation, index, self) => 
       index === self.findIndex(c => c.url === citation.url)
     );
 
