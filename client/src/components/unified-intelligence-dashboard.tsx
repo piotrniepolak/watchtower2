@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -99,7 +98,7 @@ export function UnifiedIntelligenceDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       });
-      
+
       if (response.ok) {
         await refetch();
       } else {
@@ -167,7 +166,7 @@ export function UnifiedIntelligenceDashboard() {
               );
             })}
           </div>
-          
+
           <div className="flex items-center justify-between mb-4">
             <h2 className={`text-xl font-semibold ${config.textColor}`}>
               {config.name}

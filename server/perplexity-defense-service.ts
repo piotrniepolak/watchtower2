@@ -1,3 +1,4 @@
+
 import { yahooFinanceService } from './yahoo-finance-service.js';
 import { storage } from './storage.js';
 import { perplexityConflictService } from './perplexity-conflict-service.js';
@@ -162,6 +163,9 @@ export class PerplexityDefenseService {
       console.error('❌ PERPLEXITY_API_KEY not configured - cannot generate defense intelligence');
       return null;
     }
+
+    // Reset generation lock to fix the issue
+    this.isGenerating = false;
 
     if (this.isGenerating) {
       console.log('Defense intelligence generation already in progress, skipping...');
