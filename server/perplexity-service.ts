@@ -662,7 +662,7 @@ class PerplexityService {
   }
 
   // Store all citations collected during brief generation
-  private allBriefCitations: Array<{ url: string; title: string; snippet: string }> = [];
+  private allBriefCitations: Array<{ url: string; title: string; snippet?: string }> = [];
 
   private createConsolidatedSourcesSection(): string {
     if (this.allBriefCitations.length === 0) {
@@ -684,7 +684,7 @@ class PerplexityService {
     return sourcesSection;
   }
 
-  async generateExecutiveSummaryWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet: string }> }> {
+  async generateExecutiveSummaryWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Search specifically for recent articles from:
     - STAT News (statnews.com)
     - BioPharma Dive (biopharmadive.com) 
@@ -713,7 +713,7 @@ class PerplexityService {
     return { content: cleanContent, citations: result.citations };
   }
 
-  async generateKeyDevelopmentsWithCitations(): Promise<{ content: string[]; citations: Array<{ url: string; title: string; snippet: string }> }> {
+  async generateKeyDevelopmentsWithCitations(): Promise<{ content: string[]; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     const prompt = `Search for 5 specific, recent pharmaceutical industry developments from the past week from these news sources:
     - STAT News (statnews.com)
     - BioPharma Dive (biopharmadive.com)
@@ -750,7 +750,7 @@ class PerplexityService {
     return { content: developments, citations: result.citations };
   }
 
-  async generateHealthCrisisUpdatesWithCitations(): Promise<{ content: Array<{ region: string; severity: string; description: string; healthImpact: string }>; citations: Array<{ url: string; title: string; snippet: string }> }> {
+  async generateHealthCrisisUpdatesWithCitations(): Promise<{ content: Array<{ region: string; severity: string; description: string; healthImpact: string }>; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     const prompt = `Search for current global health crises and their pharmaceutical implications from authoritative sources:
     - WHO (who.int)
     - CDC (cdc.gov) 
@@ -785,7 +785,7 @@ class PerplexityService {
     return { content: updates, citations: result.citations };
   }
 
-  async generateMarketImpactAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet: string }> }> {
+  async generateMarketImpactAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     const prompt = `Analyze today's pharmaceutical market developments and their financial impact. Search recent articles from:
     - Bloomberg Healthcare (bloomberg.com)
     - Reuters Business/Healthcare (reuters.com/business/healthcare-pharmaceuticals/)
@@ -821,7 +821,7 @@ class PerplexityService {
     return { content: cleanContent, citations: result.citations };
   }
 
-  async generateRegulatoryAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet: string }> }> {
+  async generateRegulatoryAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
     const prompt = `Analyze current pharmaceutical regulatory developments and policy changes. Search recent articles from:
     - FDA (fda.gov/news-events)
     - STAT News (statnews.com)
