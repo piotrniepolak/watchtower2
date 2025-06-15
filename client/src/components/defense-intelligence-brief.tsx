@@ -99,46 +99,7 @@ export function DefenseIntelligenceBrief() {
     );
   }
 
-  if (error || !defenseNews) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-600" />
-            Daily Defense Intelligence Brief
-            <Badge variant="secondary" className="ml-auto">
-              {new Date().toLocaleDateString()}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">
-              No defense intelligence brief available for today.
-            </p>
-            <Button 
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Generating Intelligence...
-                </>
-              ) : (
-                <>
-                  <Target className="h-4 w-4 mr-2" />
-                  Generate Defense Intelligence Brief
-                </>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Always show the comparison tabs, even if legacy data is missing
 
   return (
     <div className="w-full space-y-6">
@@ -227,7 +188,34 @@ export function DefenseIntelligenceBrief() {
                 </div>
               </CardHeader>
 
-      <CardContent className="space-y-4">
+              <CardContent className="space-y-4">
+                {(error || !defenseNews) ? (
+                  <div className="text-center py-8">
+                    <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">
+                      No defense intelligence brief available for today.
+                    </p>
+                    <Button 
+                      onClick={handleGenerate}
+                      disabled={isGenerating}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          Generating Intelligence...
+                        </>
+                      ) : (
+                        <>
+                          <Target className="h-4 w-4 mr-2" />
+                          Generate Defense Intelligence Brief
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Legacy content when data is available */}
         {/* Executive Summary */}
         <Collapsible open={executiveSummaryOpen} onOpenChange={setExecutiveSummaryOpen}>
           <CollapsibleTrigger asChild>
@@ -743,8 +731,10 @@ export function DefenseIntelligenceBrief() {
             title="Defense Intelligence Sources & References"
           />
         </div>
-      </CardContent>
-    </Card>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
