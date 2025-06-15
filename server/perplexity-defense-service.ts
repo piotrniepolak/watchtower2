@@ -351,23 +351,27 @@ export class PerplexityDefenseService {
             },
             {
               role: 'user',
-              content: `Provide a comprehensive defense industry intelligence briefing covering the following areas:
+              content: `Generate a comprehensive defense industry intelligence briefing with the following specific sections:
 
-1. DEFENSE INDUSTRY DEVELOPMENTS: Recent contract awards, earnings reports, mergers & acquisitions, and company announcements from major defense contractors including Lockheed Martin (LMT), Raytheon Technologies (RTX), Northrop Grumman (NOC), General Dynamics (GD), Boeing Defense (BA), L3Harris (LHX), Huntington Ingalls (HII), and Leidos (LDOS).
+**CURRENT GEOPOLITICAL DEVELOPMENTS (Required - Main Focus):**
+- Latest NATO defense initiatives and alliance activities today
+- Current U.S.-China military competition and technology tensions
+- Ukraine conflict updates affecting defense contractors this week
+- Indo-Pacific security developments and defense partnerships
+- Middle East military operations and regional security changes
+- Congressional defense authorization votes and funding decisions
+- International arms sales and military aid announcements
 
-2. GEOPOLITICAL ANALYSIS: Current global security developments including:
-   - NATO activities and defense spending commitments
-   - U.S.-China strategic competition in defense technology
-   - Ukraine conflict impact on defense procurement
-   - Indo-Pacific security developments affecting defense contractors
-   - Middle East regional security dynamics
-   - Congressional defense authorization and appropriations updates
+**DEFENSE CONTRACT AWARDS:**
+Recent contract announcements from Lockheed Martin (LMT), Raytheon Technologies (RTX), Northrop Grumman (NOC), General Dynamics (GD), Boeing Defense (BA), L3Harris (LHX), Huntington Ingalls (HII), and Leidos (LDOS) including specific dollar amounts and program details.
 
-3. MARKET IMPACT: How current geopolitical events are affecting defense stock prices, government procurement patterns, and investor sentiment toward defense contractors.
+**MARKET IMPACT ANALYSIS:**
+How today's geopolitical events are driving defense stock prices, government procurement decisions, and institutional investor activity in defense sectors.
 
-4. TECHNOLOGY & INNOVATION: Recent developments in defense technologies including hypersonics, AI/ML applications, cyber warfare capabilities, space defense systems, and next-generation weapons platforms.
+**DEFENSE TECHNOLOGY BREAKTHROUGHS:**
+Recent announcements in hypersonics, AI/ML military applications, cyber warfare capabilities, space defense systems, and next-generation weapons platforms.
 
-Focus on developments from the past 24-48 hours and provide specific details including dollar amounts, company names, stock movements, and geopolitical implications.`
+Provide specific recent events from the past 24-48 hours with exact details: company names, contract values, stock movements, government officials quoted, specific military programs mentioned, and quantifiable geopolitical impacts. Focus heavily on current geopolitical developments affecting defense industry.`
             }
           ],
           max_tokens: 4000,
@@ -698,27 +702,41 @@ Focus on developments from the past 24-48 hours and provide specific details inc
       }
     }
 
-    // If no dedicated section found, extract relevant paragraphs
+    // If no dedicated section found, extract relevant paragraphs with expanded keyword detection
     if (!geoAnalysis) {
-      const geoKeywords = ['nato', 'ukraine', 'china', 'taiwan', 'russia', 'indo-pacific', 'alliance', 'strategic competition', 'defense spending', 'security cooperation', 'military aid', 'geopolitical', 'international', 'diplomatic'];
-      const paragraphs = content.split('\n').filter(p => p.trim().length > 100);
+      const geoKeywords = [
+        'nato', 'ukraine', 'china', 'taiwan', 'russia', 'indo-pacific', 'alliance', 'strategic competition', 
+        'defense spending', 'security cooperation', 'military aid', 'geopolitical', 'international', 'diplomatic',
+        'pentagon', 'congress', 'defense authorization', 'appropriations', 'military', 'conflict', 'tensions',
+        'arms sales', 'weapons', 'contract', 'procurement', 'defense budget', 'security', 'threat', 'regional',
+        'bilateral', 'multilateral', 'sanctions', 'embargo', 'export control', 'technology transfer',
+        'joint exercises', 'deployment', 'deterrence', 'containment', 'modernization'
+      ];
+      
+      const paragraphs = content.split(/\n+/).filter(p => p.trim().length > 50);
+      const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 50);
+      const allText = [...paragraphs, ...sentences];
       const relevantParagraphs = [];
 
-      for (const paragraph of paragraphs) {
-        const paragraphLower = paragraph.toLowerCase();
+      for (const text of allText) {
+        const textLower = text.toLowerCase();
         let keywordCount = 0;
         
         for (const keyword of geoKeywords) {
-          if (paragraphLower.includes(keyword)) {
+          if (textLower.includes(keyword)) {
             keywordCount++;
           }
         }
         
-        if (keywordCount >= 2 && paragraph.length > 150) {
-          relevantParagraphs.push(this.cleanFormattingSymbols(paragraph.trim()));
+        // Lower threshold for keyword matching and include longer content
+        if (keywordCount >= 1 && text.length > 100) {
+          const cleanText = this.cleanFormattingSymbols(text.trim());
+          if (cleanText.length > 50 && !relevantParagraphs.some(p => p.includes(cleanText.substring(0, 30)))) {
+            relevantParagraphs.push(cleanText);
+          }
         }
         
-        if (relevantParagraphs.length >= 3) break;
+        if (relevantParagraphs.length >= 5) break;
       }
 
       if (relevantParagraphs.length > 0) {
@@ -728,15 +746,8 @@ Focus on developments from the past 24-48 hours and provide specific details inc
 
     // Only use fallback if we truly have no relevant content
     if (!geoAnalysis || geoAnalysis.length < 100) {
-      console.log('⚠️ Using fallback geopolitical analysis - insufficient content extracted');
-      const today = new Date().toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      
-      geoAnalysis = `Geopolitical analysis based on current defense intelligence as of ${today}: Global security environment characterized by multi-domain competition between major powers, driving sustained defense investment across traditional and emerging threat vectors. NATO alliance strengthening in response to Eastern European security challenges, while Indo-Pacific partnerships expand to address regional strategic competition. Defense contractors benefiting from increased government procurement priorities across air, land, sea, space, and cyber domains.`;
+      console.error('❌ No geopolitical analysis content extracted from Perplexity - aborting generation');
+      throw new Error('Insufficient geopolitical content from Perplexity API');
     }
 
     console.log(`✅ Extracted geopolitical analysis: ${geoAnalysis.length} characters`);
