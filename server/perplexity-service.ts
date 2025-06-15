@@ -661,45 +661,248 @@ class PerplexityService {
       .trim();
   }
 
+  // Store all citations collected during brief generation
+  private allBriefCitations: Array<{ url: string; title: string; snippet: string }> = [];
+
+  private createConsolidatedSourcesSection(): string {
+    if (this.allBriefCitations.length === 0) {
+      return '';
+    }
+
+    // Remove duplicates based on URL
+    const uniqueCitations = this.allBriefCitations.filter((citation, index, self) => 
+      index === self.findIndex(c => c.url === citation.url)
+    );
+
+    console.log(`📚 Creating consolidated sources section with ${uniqueCitations.length} unique citations`);
+
+    let sourcesSection = '\n\n**Intelligence Sources & References:**\n\n';
+    uniqueCitations.forEach((citation, index) => {
+      sourcesSection += `${index + 1}. [${citation.title}](${citation.url})\n`;
+    });
+
+    return sourcesSection;
+  }
+
+  async generateExecutiveSummaryWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet: string }> }> {
+    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Search specifically for recent articles from:
+    - STAT News (statnews.com)
+    - BioPharma Dive (biopharmadive.com) 
+    - FiercePharma (fiercepharma.com)
+    - Pharmaceutical Executive (pharmexec.com)
+    - BioWorld (bioworld.com)
+    
+    Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements with direct quotes and references to the source articles. Each claim should be backed by a specific URL from these pharmaceutical news sources. Use numbered citations [1], [2], [3] to reference specific articles.`;
+    
+    const result = await this.queryPerplexity(prompt);
+    console.log(`🎯 Executive Summary - Citations received: ${result.citations.length}`);
+    
+    // Collect citations for consolidated sources
+    this.allBriefCitations.push(...result.citations);
+    
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Remove "References:" sections from content
+    const cleanContent = processed
+      .replace(/References?:\s*[\s\S]*$/i, '')
+      .replace(/Sources?:\s*[\s\S]*$/i, '')
+      .replace(/\n\s*References?:.*$/gmi, '')
+      .replace(/\n\s*Sources?:.*$/gmi, '')
+      .trim();
+    
+    return { content: cleanContent, citations: result.citations };
+  }
+
+  async generateKeyDevelopmentsWithCitations(): Promise<{ content: string[]; citations: Array<{ url: string; title: string; snippet: string }> }> {
+    const prompt = `Search for 5 specific, recent pharmaceutical industry developments from the past week from these news sources:
+    - STAT News (statnews.com)
+    - BioPharma Dive (biopharmadive.com)
+    - FiercePharma (fiercepharma.com)
+    - Reuters Health (reuters.com/business/healthcare-pharmaceuticals/)
+    - Wall Street Journal Health section
+    
+    Include:
+    1. FDA drug approvals or regulatory decisions
+    2. Major clinical trial results or announcements  
+    3. Pharmaceutical company mergers, acquisitions, or partnerships
+    4. New drug discoveries or breakthrough therapies
+    5. Healthcare policy changes affecting the pharmaceutical sector
+    
+    Each development should cite the specific article URL. Format as numbered list with brief descriptions and include citation references [1], [2], etc.`;
+    
+    const result = await this.queryPerplexity(prompt);
+    console.log(`🎯 Key Developments - Citations received: ${result.citations.length}`);
+    
+    // Collect citations for consolidated sources
+    this.allBriefCitations.push(...result.citations);
+    
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Remove references and convert to array
+    const cleanContent = processed
+      .replace(/References?:\s*[\s\S]*$/i, '')
+      .replace(/Sources?:\s*[\s\S]*$/i, '')
+      .replace(/\n\s*References?:.*$/gmi, '')
+      .replace(/\n\s*Sources?:.*$/gmi, '')
+      .trim();
+    
+    const developments = cleanContent.split('\n').filter(line => line.trim());
+    return { content: developments, citations: result.citations };
+  }
+
+  async generateHealthCrisisUpdatesWithCitations(): Promise<{ content: Array<{ region: string; severity: string; description: string; healthImpact: string }>; citations: Array<{ url: string; title: string; snippet: string }> }> {
+    const prompt = `Search for current global health crises and their pharmaceutical implications from authoritative sources:
+    - WHO (who.int)
+    - CDC (cdc.gov) 
+    - STAT News (statnews.com)
+    - Reuters Health
+    - BioPharma Dive
+    
+    Focus on:
+    1. Disease outbreaks affecting pharmaceutical supply chains
+    2. Public health emergencies requiring pharmaceutical interventions
+    3. Regional health crises impacting drug access or development
+    4. Regulatory responses to health emergencies
+    
+    Format as structured updates with specific source citations.`;
+    
+    const result = await this.queryPerplexity(prompt);
+    console.log(`🎯 Health Crisis Updates - Citations received: ${result.citations.length}`);
+    
+    // Collect citations for consolidated sources
+    this.allBriefCitations.push(...result.citations);
+    
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Convert to structured format (simplified for now)
+    const updates = [{
+      region: "Global",
+      severity: "medium",
+      description: processed.replace(/References?:\s*[\s\S]*$/i, '').replace(/Sources?:\s*[\s\S]*$/i, '').trim(),
+      healthImpact: "Monitoring pharmaceutical sector impacts"
+    }];
+    
+    return { content: updates, citations: result.citations };
+  }
+
+  async generateMarketImpactAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet: string }> }> {
+    const prompt = `Analyze today's pharmaceutical market developments and their financial impact. Search recent articles from:
+    - Bloomberg Healthcare (bloomberg.com)
+    - Reuters Business/Healthcare (reuters.com/business/healthcare-pharmaceuticals/)
+    - BioPharma Dive (biopharmadive.com)
+    - FiercePharma (fiercepharma.com)
+    - Wall Street Journal Health
+    
+    Focus on:
+    - Stock price movements of major pharmaceutical companies
+    - FDA approvals or rejections affecting company valuations
+    - Merger & acquisition activity in pharma sector
+    - Clinical trial results moving markets
+    - Regulatory decisions impacting pharmaceutical revenues
+    
+    Provide specific company names, stock movements, and market reactions with source citations.`;
+    
+    const result = await this.queryPerplexity(prompt);
+    console.log(`🎯 Market Impact Analysis - Citations received: ${result.citations.length}`);
+    
+    // Collect citations for consolidated sources
+    this.allBriefCitations.push(...result.citations);
+    
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Remove references sections
+    const cleanContent = processed
+      .replace(/References?:\s*[\s\S]*$/i, '')
+      .replace(/Sources?:\s*[\s\S]*$/i, '')
+      .replace(/\n\s*References?:.*$/gmi, '')
+      .replace(/\n\s*Sources?:.*$/gmi, '')
+      .trim();
+    
+    return { content: cleanContent, citations: result.citations };
+  }
+
+  async generateRegulatoryAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet: string }> }> {
+    const prompt = `Analyze current pharmaceutical regulatory developments and policy changes. Search recent articles from:
+    - FDA (fda.gov/news-events)
+    - STAT News (statnews.com)
+    - BioPharma Dive (biopharmadive.com)
+    - Reuters Healthcare (reuters.com)
+    - Pharmaceutical Executive (pharmexec.com)
+    
+    Focus on:
+    - New FDA drug approvals or rejections
+    - Changes in pharmaceutical regulations or policies
+    - International regulatory harmonization efforts
+    - Healthcare policy changes affecting pharmaceutical companies
+    - Regulatory guidance updates for drug development
+    
+    Provide detailed analysis of regulatory impact on the pharmaceutical industry with specific source citations.`;
+    
+    const result = await this.queryPerplexity(prompt);
+    console.log(`🎯 Regulatory Analysis - Citations received: ${result.citations.length}`);
+    
+    // Collect citations for consolidated sources
+    this.allBriefCitations.push(...result.citations);
+    
+    const processed = await this.processContentWithLinks(result.content, result.citations);
+    
+    // Remove references sections
+    const cleanContent = processed
+      .replace(/References?:\s*[\s\S]*$/i, '')
+      .replace(/Sources?:\s*[\s\S]*$/i, '')
+      .replace(/\n\s*References?:.*$/gmi, '')
+      .replace(/\n\s*Sources?:.*$/gmi, '')
+      .trim();
+    
+    return { content: cleanContent, citations: result.citations };
+  }
+
   async generateComprehensiveIntelligenceBrief(): Promise<PharmaceuticalIntelligence> {
     try {
       console.log('🔬 Generating comprehensive pharmaceutical intelligence using Perplexity AI...');
       
-      // Generate content sections first
+      // Reset citations collection for new brief
+      this.allBriefCitations = [];
+      
+      // Generate content sections and collect citations
       const [
-        summary,
-        keyDevelopments,
-        healthCrisisUpdates,
-        marketImpact,
-        regulatoryAnalysis
+        summaryResult,
+        keyDevelopmentsResult,
+        healthCrisisResult,
+        marketImpactResult,
+        regulatoryResult
       ] = await Promise.all([
-        this.generateExecutiveSummary(),
-        this.generateKeyDevelopments(),
-        this.generateHealthCrisisUpdates(),
-        this.generateMarketImpactAnalysis(),
-        this.generateRegulatoryAnalysis()
+        this.generateExecutiveSummaryWithCitations(),
+        this.generateKeyDevelopmentsWithCitations(),
+        this.generateHealthCrisisUpdatesWithCitations(),
+        this.generateMarketImpactAnalysisWithCitations(),
+        this.generateRegulatoryAnalysisWithCitations()
       ]);
 
       // Generate stock analysis based on mentions from other sections
       const stockAnalysis = await this.generatePharmaceuticalStockAnalysis(
-        summary,
-        keyDevelopments,
-        healthCrisisUpdates,
-        marketImpact,
-        regulatoryAnalysis
+        summaryResult.content,
+        keyDevelopmentsResult.content,
+        healthCrisisResult.content,
+        marketImpactResult.content,
+        regulatoryResult.content
       );
 
+      // Create consolidated sources section with all actual citations
+      const sourcesSection = this.createConsolidatedSourcesSection();
+
       console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
+      console.log(`📚 Collected ${this.allBriefCitations.length} total citations for sources section`);
 
       return {
         title: `Pharmaceutical Intelligence Brief - ${new Date().toLocaleDateString()}`,
-        summary,
-        keyDevelopments,
-        conflictUpdates: healthCrisisUpdates,
+        summary: summaryResult.content + sourcesSection,
+        keyDevelopments: keyDevelopmentsResult.content,
+        conflictUpdates: healthCrisisResult.content,
         defenseStockHighlights: [],
         pharmaceuticalStockHighlights: stockAnalysis,
-        marketImpact,
-        geopoliticalAnalysis: regulatoryAnalysis,
+        marketImpact: marketImpactResult.content,
+        geopoliticalAnalysis: regulatoryResult.content,
         createdAt: new Date().toISOString()
       };
     } catch (error) {
