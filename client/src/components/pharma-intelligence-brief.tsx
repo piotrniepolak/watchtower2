@@ -85,50 +85,7 @@ const extractReferences = (sourcesSection: string | undefined): Array<{title: st
     });
   }
 
-  // If no references section found, look for inline citations
-  if (references.length === 0) {
-    const titlePatterns = [
-      /BioPharma Dive:\s*[""]([^""]+)[""]?/gi,
-      /STAT News:\s*[""]([^""]+)[""]?/gi,
-      /Reuters Health:\s*[""]([^""]+)[""]?/gi,
-      /PubMed:\s*[""]([^""]+)[""]?/gi,
-      /FDA\.gov:\s*[""]([^""]+)[""]?/gi,
-      /Bloomberg:\s*[""]([^""]+)[""]?/gi
-    ];
 
-    titlePatterns.forEach(pattern => {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
-        const fullMatch = match[0];
-        const title = match[1];
-        const source = fullMatch.split(':')[0];
-
-        // Generate article-specific URLs for inline citations
-        let url = '';
-        const titleSlug = title.toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-          .replace(/\s+/g, '-') // Replace spaces with hyphens
-          .replace(/-+/g, '-') // Remove multiple consecutive hyphens
-          .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-
-        if (source.includes('BioPharma Dive')) {
-          url = `https://www.biopharmadive.com/news/${titleSlug}/`;
-        } else if (source.includes('STAT')) {
-          url = `https://www.statnews.com/${titleSlug}/`;
-        } else if (source.includes('Reuters')) {
-          url = `https://www.reuters.com/business/healthcare-pharmaceuticals/${titleSlug}/`;
-        } else if (source.includes('PubMed')) {
-          url = `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(title)}`;
-        } else if (source.includes('FDA')) {
-          url = `https://www.fda.gov/news-events/press-announcements/${titleSlug}`;
-        } else if (source.includes('Bloomberg')) {
-          url = `https://www.bloomberg.com/news/articles/2024/${titleSlug}`;
-        }
-
-        references.push({ title, source, url });
-      }
-    });
-  }
 
   return references;
 };
