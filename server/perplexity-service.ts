@@ -85,26 +85,10 @@ class PerplexityService {
       });
 
       if (!response.ok) {
-        throw new Error(`Perplexity API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Perplexity API error: ${response.status}`);
       }
 
       const data = await response.json() as PerplexityResponse;
-      
-      // Debug logging for citations
-      console.log('🔍 Perplexity API Response Debug:');
-      console.log('Full response structure:', JSON.stringify(data, null, 2));
-      console.log('Citations received:', data.citations?.length || 0);
-      if (data.citations && data.citations.length > 0) {
-        console.log('First citation:', data.citations[0]);
-        console.log('All citations:', data.citations);
-      } else {
-        console.log('❌ NO CITATIONS IN RESPONSE - checking response structure');
-        console.log('Response keys:', Object.keys(data));
-        console.log('Choices array:', data.choices?.length || 0);
-        if (data.choices?.[0]) {
-          console.log('Message keys:', Object.keys(data.choices[0].message || {}));
-        }
-      }
       
       // Normalize citations to consistent format and fetch real titles
       console.log('🔄 Normalizing citations and fetching real titles...');
@@ -127,26 +111,13 @@ class PerplexityService {
             snippet: citation.snippet || ''
           };
         }
-        
-        // Fetch real article title if we don't have one or it's generic
-        if (!normalizedCitation.title || normalizedCitation.title.startsWith('Source ')) {
-          console.log(`🔍 Fetching real title for: ${normalizedCitation.url}`);
-          const realTitle = await this.fetchArticleTitle(normalizedCitation.url);
-          if (realTitle && realTitle.length > 10) {
-            normalizedCitation.title = realTitle;
-            console.log(`✅ Retrieved title: "${realTitle}"`);
-          } else {
-            // Use original URL as-is if we can't get a meaningful title
-            try {
-              const url = new URL(normalizedCitation.url);
-              const domain = url.hostname.replace('www.', '');
-              normalizedCitation.title = `Article from ${domain}`;
-            } catch {
-              normalizedCitation.title = `Article ${i + 1}`;
-            }
-          }
+
+        // Try to fetch the actual title from the web page
+        const webTitle = await this.fetchArticleTitle(normalizedCitation.url);
+        if (webTitle && webTitle.length > 10) {
+          normalizedCitation.title = webTitle;
         }
-        
+
         normalizedCitations.push(normalizedCitation);
       }
 
@@ -161,10 +132,6 @@ class PerplexityService {
       throw error;
     }
   }
-
-  // Removed URL fabrication system - now preserving authentic Perplexity URLs only
-
-  // Removed URL fabrication function - only using authentic Perplexity URLs
 
   private async fetchArticleTitle(url: string): Promise<string | null> {
     try {
@@ -260,60 +227,45 @@ class PerplexityService {
 
   private cleanFormattingSymbols(content: string): string {
     return content
-      // Remove markdown formatting symbols
-      .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold markdown
-      .replace(/\*([^*]+)\*/g, '$1')      // Remove italic markdown
-      .replace(/#{1,6}\s*/g, '')          // Remove hashtag headers
-      .replace(/`([^`]+)`/g, '$1')        // Remove code formatting
-      .replace(/~~([^~]+)~~/g, '$1')      // Remove strikethrough
-      .replace(/_([^_]+)_/g, '$1')        // Remove underline formatting
-      .replace(/\|/g, '')                 // Remove table separators
-      .replace(/[-]{3,}/g, '')            // Remove horizontal rules
-      .replace(/\s{2,}/g, ' ')            // Replace multiple spaces with single space
-      .replace(/\n{3,}/g, '\n\n')         // Replace multiple newlines with double newline
+      .replace(/\*\*/g, '')  // Remove bold markdown
+      .replace(/\*/g, '')    // Remove italic markdown  
+      .replace(/__/g, '')    // Remove underline markdown
+      .replace(/_/g, '')     // Remove single underscore
+      .replace(/#{1,6}\s/g, '') // Remove headers
+      .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
+      .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links but keep text
+      .replace(/`([^`]+)`/g, '$1') // Remove code formatting
+      .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
   }
 
-  private async processContentWithLinks(content: string, citations: Array<{ url: string; title: string; snippet?: string }>): Promise<string> {
-    console.log(`🔗 Processing content with ${citations?.length || 0} citations`);
-    console.log(`🔗 Citations received in processContentWithLinks:`, JSON.stringify(citations, null, 2));
-    
-    if (!citations || citations.length === 0) {
-      console.log('⚠️ No citations provided for content processing');
-      return content;
+  private currentBriefCitations: Array<{ url: string; title: string; snippet?: string }> = [];
+
+  private async createConsolidatedSourcesSection(): Promise<string> {
+    if (this.currentBriefCitations.length === 0) {
+      return '';
     }
 
-    // Debug log all citations
-    citations.forEach((citation, index) => {
-      console.log(`   Citation ${index + 1}: Title="${citation.title || 'No title'}" URL="${citation.url || 'No URL'}"`);
-    });
+    // Remove duplicates based on URL
+    const uniqueCitations = this.currentBriefCitations.filter((citation, index, self) => 
+      index === self.findIndex(c => c.url === citation.url)
+    );
 
-    // The citations are already normalized at this point, so validate the URLs
-    const validCitations = citations.filter((citation, index) => {
+    // Filter out generic URLs and keep only authentic article URLs
+    const authenticCitations = uniqueCitations.filter((citation, index) => {
       const isValidUrl = citation.url && 
-                        (citation.url.startsWith('http://') || citation.url.startsWith('https://')) && 
-                        citation.url.length > 10 &&
-                        !citation.url.includes('undefined') &&
-                        !citation.url.includes('null');
+                        typeof citation.url === 'string' && 
+                        citation.url.startsWith('http') && 
+                        citation.url.length > 10;
       
-      // Filter out generic URLs that redirect to homepages
-      const isGenericUrl = citation.url.endsWith('/news') ||
-                          citation.url.endsWith('/news/') ||
-                          citation.url === 'https://www.biopharmadive.com/news/' ||
-                          citation.url.match(/\/news\/?$/) ||
-                          citation.url.match(/\/(index|home|main)(\.(html|php|asp))?$/i) ||
-                          citation.url.split('/').length <= 4; // Too generic (domain + single path)
+      const isGenericUrl = citation.url === 'https://www.biopharmadive.com/news/' ||
+                          citation.url === 'https://www.statnews.com/' ||
+                          citation.url === 'https://www.fda.gov/' ||
+                          citation.url.match(/^https:\/\/[^\/]+\/?$/);
       
-      // Filter out malformed titles
-      const hasGenericTitle = citation.title.toLowerCase().includes('www.') ||
-                             citation.title.toLowerCase().startsWith('http') ||
-                             citation.title.toLowerCase() === citation.url.toLowerCase() ||
-                             citation.title.toLowerCase().includes('source from') ||
-                             citation.title.match(/^source \d+$/i) ||
-                             citation.title.length < 15; // Increased minimum length for more specificity
-      
-      if (!isValidUrl || isGenericUrl || hasGenericTitle) {
-        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);
+      if (!isValidUrl || isGenericUrl) {
+        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
         return false;
       } else {
         console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
@@ -321,103 +273,28 @@ class PerplexityService {
       }
     });
 
-    if (validCitations.length === 0) {
-      console.log('❌ No valid citations found after filtering, returning original content');
-      return content;
+    console.log(`📚 Creating consolidated sources section with ${authenticCitations.length} authentic citations`);
+
+    if (authenticCitations.length === 0) {
+      return '';
     }
 
-    // Remove all citation numbers [1], [2], etc. from the main content
-    let processedContent = content;
+    let sourcesSection = '\n\n**Intelligence Sources & References:**\n\n';
     
-    console.log(`🔧 Before citation removal: ${processedContent.substring(0, 200)}...`);
-    
-    // Remove all citation patterns like [1], [2], [3], including clustered ones like [1][3]
-    processedContent = processedContent.replace(/\[\d+\]/g, '');
-    
-    // Apply formatting cleanup to remove markdown symbols and clean text
-    processedContent = this.cleanFormattingSymbols(processedContent);
-    
-    console.log(`🔧 After citation removal and formatting cleanup: ${processedContent.substring(0, 200)}...`);
-    
-    // Clean up any extra spaces left by removed citations
-    processedContent = processedContent.replace(/\s+/g, ' ').trim();
-
-    // Add clean reference list below the content
-    if (validCitations.length > 0) {
-      processedContent += '\n\n**References:**\n\n';
+    for (let index = 0; index < authenticCitations.length; index++) {
+      const citation = authenticCitations[index];
+      let displayTitle = citation.title;
       
-      // Use for loop to enable async/await for web scraping
-      for (let index = 0; index < validCitations.length; index++) {
-        const citation = validCitations[index];
-        let displayTitle = citation.title;
-        
-        // Always try to fetch the actual title from the web page first
-        const webTitle = await this.fetchArticleTitle(citation.url);
-        
-        if (webTitle && webTitle.length > 10 && !webTitle.includes('Source from')) {
-          console.log(`🔍 Raw title extracted: "${webTitle}"`);
-          displayTitle = webTitle;
-          console.log(`✅ Extracted meaningful title: "${displayTitle}"`);
-        } else {
-          // Fallback to URL parsing if web scraping fails or if title is generic
-          if (!displayTitle || 
-              displayTitle.includes('Source from') || 
-              displayTitle.toLowerCase().includes('biopharmadive.com') || 
-              displayTitle.toLowerCase().includes('statnews.com') ||
-              displayTitle.toLowerCase().includes("don't miss tomorrow's biopharma industry news") ||
-              displayTitle.toLowerCase().includes('subscribe to biopharmadive') ||
-              displayTitle.match(/^\d+$/) || // Just a number
-              displayTitle.length < 10) { // Too short to be meaningful
-            
-            const urlParts = citation.url.split('/');
-            let articleSlug = '';
-            
-            if (citation.url.includes('biopharmadive.com/news/')) {
-              const newsIndex = urlParts.findIndex(part => part === 'news');
-              if (newsIndex !== -1 && urlParts[newsIndex + 1]) {
-                articleSlug = urlParts[newsIndex + 1];
-              }
-            } else if (citation.url.includes('statnews.com/')) {
-              const lastPart = urlParts[urlParts.length - 1];
-              const secondLastPart = urlParts[urlParts.length - 2];
-              
-              if (lastPart && !lastPart.match(/^\d{4}$/) && lastPart.length > 3) {
-                articleSlug = lastPart;
-              } else if (secondLastPart && secondLastPart.length > 3) {
-                articleSlug = secondLastPart;
-              }
-            } else {
-              for (let i = urlParts.length - 1; i >= 0; i--) {
-                const part = urlParts[i];
-                if (part && part.length > 3 && !part.match(/^\d+$/) && part !== 'news' && part !== 'articles') {
-                  articleSlug = part;
-                  break;
-                }
-              }
-            }
-            
-            if (articleSlug && articleSlug !== '') {
-              displayTitle = articleSlug
-                .replace(/-/g, ' ')
-                .replace(/\b\w/g, l => l.toUpperCase())
-                .replace(/\b(And|Of|The|In|On|At|To|For|With|By)\b/g, word => word.toLowerCase())
-                .replace(/\b(A|An)\b/g, word => word.toLowerCase())
-                .trim();
-            } else {
-              const domain = new URL(citation.url).hostname.replace('www.', '');
-              displayTitle = `Article from ${domain}`;
-            }
-          }
-        }
-        
-        // Keep original URL to preserve authentic Perplexity citations
-        processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
+      // If no authentic title was fetched, skip this citation
+      if (!displayTitle || displayTitle.length < 10 || displayTitle.includes('Article from')) {
+        console.log(`❌ Skipping citation without authentic title: ${citation.url}`);
+        continue;
       }
       
-      console.log(`✅ Added clean reference list with ${validCitations.length} valid citations`);
+      sourcesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
     }
 
-    return processedContent;
+    return sourcesSection;
   }
 
   async generateExecutiveSummary(): Promise<string> {
@@ -431,604 +308,92 @@ class PerplexityService {
     Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements with direct quotes and references to the source articles. Each claim should be backed by a specific URL from these pharmaceutical news sources. Use numbered citations [1], [2], [3] to reference specific articles.`;
     
     const result = await this.queryPerplexity(prompt);
-    console.log(`🎯 Executive Summary - Citations received: ${result.citations.length}`);
-    if (result.citations.length > 0) {
-      console.log(`🎯 Executive Summary - First citation: ${result.citations[0].url || result.citations[0]}`);
-    }
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    console.log(`🎯 Executive Summary - Processed length: ${processed.length}, Has references: ${processed.includes('**References:**')}`);
+    this.currentBriefCitations.push(...result.citations);
     
-    // Remove "References:" sections from Executive Summary content while preserving dedicated sources section
-    return processed
-      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
-      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
-      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
-      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
-      .trim();
+    return this.cleanFormattingSymbols(result.content);
   }
 
   async generateKeyDevelopments(): Promise<string[]> {
-    const prompt = `Search for 5 specific, recent pharmaceutical industry developments from the past week from these news sources:
-    - STAT News (statnews.com)
-    - BioPharma Dive (biopharmadive.com)
-    - FiercePharma (fiercepharma.com)
-    - Reuters Health (reuters.com/business/healthcare-pharmaceuticals/)
-    - Wall Street Journal Health section
+    const prompt = `List the top 5 key pharmaceutical industry developments from today. Focus on:
+    - New drug approvals by FDA
+    - Clinical trial results
+    - Regulatory announcements
+    - Major pharmaceutical company news
+    - Healthcare policy changes
     
-    Include:
-    1. FDA drug approvals or regulatory decisions
-    2. Major clinical trial results or announcements  
-    3. Pharmaceutical company mergers, acquisitions, or partnerships
-    4. New drug discoveries or breakthrough therapies
-    5. Healthcare policy changes affecting the pharmaceutical sector
-    
-    Each development should cite the specific article URL. Format as numbered list with brief descriptions and include citation references [1], [2], etc.`;
+    Format as bullet points with specific details and sources. Include company names, drug names, and specific outcomes.`;
     
     const result = await this.queryPerplexity(prompt);
+    this.currentBriefCitations.push(...result.citations);
     
-    // Parse the numbered list into array
-    const developments = result.content
-      .split(/\d+\./)
-      .slice(1)
-      .map(item => item.trim())
-      .filter(item => item.length > 0)
-      .slice(0, 5);
-    
-    return developments;
-  }
-
-  async generateHealthCrisisUpdates(): Promise<Array<{
-    region: string;
-    severity: string;
-    description: string;
-    healthImpact: string;
-  }>> {
-    const prompt = `Identify 3-4 current global health challenges or disease outbreaks that are impacting pharmaceutical markets and drug development. Include information about geographic regions affected, severity levels, and pharmaceutical industry responses. Focus on recent developments within the past month.`;
-    
-    const response = await this.queryPerplexity(prompt);
-    
-    // Parse response into structured health crisis updates
-    const updates = [
-      {
-        region: "Global",
-        severity: "high",
-        description: "Antimicrobial resistance surveillance and new antibiotic development initiatives",
-        healthImpact: "Driving increased R&D investment in novel antimicrobial compounds"
-      },
-      {
-        region: "Sub-Saharan Africa",
-        severity: "critical",
-        description: "Malaria drug resistance patterns affecting treatment protocols",
-        healthImpact: "Accelerating development of next-generation antimalarial therapies"
-      },
-      {
-        region: "Asia-Pacific",
-        severity: "medium",
-        description: "Seasonal influenza variant monitoring and vaccine development",
-        healthImpact: "Influencing annual vaccine composition and manufacturing strategies"
-      }
-    ];
-    
-    return updates;
-  }
-
-  private extractCompanyMentions(content: string): string[] {
-    // Enhanced pharmaceutical company patterns to match - more comprehensive list
-    const pharmaPatterns = [
-      // Full company names - comprehensive list
-      /\b(Pfizer|Johnson\s*&\s*Johnson|J&J|Moderna|AstraZeneca|Novartis|Roche|Merck|Bristol\s*Myers\s*Squibb|Bristol\s*Myers|Eli\s*Lilly|Lilly|Abbott|Amgen|Gilead|Biogen|Regeneron|Vertex|AbbVie|Sanofi|GlaxoSmithKline|GSK|Bayer|Boehringer\s*Ingelheim|Takeda|Daiichi\s*Sankyo|Astellas|Eisai|Ono\s*Pharmaceutical|Chugai|Shionogi|Sumitomo\s*Dainippon|Mitsubishi\s*Tanabe|Kyowa\s*Kirin|Otsuka|Teva|Mylan|Viatris|Allergan|Celgene|Kite\s*Pharma|Juno\s*Therapeutics|CAR-T|Immunomedics|Seattle\s*Genetics|Seagen|BioNTech|CureVac|Inovio|Novavax|Valneva|Bavarian\s*Nordic|Emergent\s*BioSolutions|CSL\s*Behring|Grifols|Octapharma|Kedrion|Biotest|LFB|Plasma\s*Protein\s*Therapeutics|Association|Nuvation|Ultragenyx|Argenx|Incyte|Blueprint\s*Medicines|Alnylam|Exact\s*Sciences|Illumina|10x\s*Genomics|Pacific\s*Biosciences|Twist\s*Bioscience|Solid\s*Biosciences|Stoke\s*Therapeutics|Catalent|IQVIA|Syneos|Thermo\s*Fisher|Charles\s*River|Laboratory\s*Corporation|LabCorp|Quest\s*Diagnostics|Danaher|Agilent|Waters|PerkinElmer|Mettler\s*Toledo|Sartorius|Lonza|WuXi\s*AppTec|Pharmaceutical\s*Research|Associates|ICON|Parexel|PPD|Covance|Quintiles)\b/gi,
-      // Stock ticker patterns - comprehensive list
-      /\b(PFE|JNJ|MRNA|AZN|NVS|RHHBY|MRK|BMY|LLY|ABT|AMGN|GILD|BIIB|REGN|VRTX|ABBV|SNY|GSK|BAYRY|BMRN|TAK|DSNKY|ALPMY|ESALY|SHTDY|SUMIY|MTBHY|KYKHY|OTSKY|TEVA|MYL|VTRS|AGN|CELG|KITE|JUNO|CART|IMMU|SGEN|BNTX|CVAC|INO|NVAX|VALN|BVNRY|EBS|CSL|GRFS|OCTA|KEDR|BIOTEST|LFB|PPTA|NUVB|RARE|ARGX|INCY|BPMC|ALNY|EXAS|ILMN|TXG|PACB|TWST|SLDB|STOK|CTLT|IQV|SYNH|TMO|CRL|LH|DGX|DHR|A|WAT|PKI|MTD|SARKY|LONZ|WXI|PRA|ICLR|PRXL|PPD|CVN|Q)\b/g
-    ];
-
-    const mentions = new Set<string>();
-    
-    pharmaPatterns.forEach(pattern => {
-      const matches = content.match(pattern);
-      if (matches) {
-        matches.forEach(match => mentions.add(match.trim()));
-      }
-    });
-
-    return Array.from(mentions);
-  }
-
-  private getStockSymbolFromMention(mention: string): string | null {
-    // Map company names and variations to stock symbols
-    const companyToSymbol: Record<string, string> = {
-      'pfizer': 'PFE',
-      'johnson & johnson': 'JNJ',
-      'johnson&johnson': 'JNJ',
-      'j&j': 'JNJ',
-      'moderna': 'MRNA',
-      'astrazeneca': 'AZN',
-      'novartis': 'NVS',
-      'roche': 'RHHBY',
-      'merck': 'MRK',
-      'bayer': 'BAYRY',
-      'bristol myers squibb': 'BMY',
-      'bristol-myers squibb': 'BMY',
-      'bms': 'BMY',
-      'eli lilly': 'LLY',
-      'lilly': 'LLY',
-      'abbott': 'ABT',
-      'amgen': 'AMGN',
-      'gilead': 'GILD',
-      'biogen': 'BIIB',
-      'regeneron': 'REGN',
-      'vertex': 'VRTX',
-      'abbvie': 'ABBV',
-      'sanofi': 'SNY',
-      'glaxosmithkline': 'GSK',
-      'gsk': 'GSK',
-      'biomarin': 'BMRN',
-      'takeda': 'TAK',
-      'daiichi sankyo': 'DSNKY',
-      'astellas': 'ALPMY',
-      'eisai': 'ESALY',
-      'shionogi': 'SHTDY',
-      'sumitomo dainippon': 'SUMIY',
-      'mitsubishi tanabe': 'MTBHY',
-      'kyowa kirin': 'KYKHY',
-      'otsuka': 'OTSKY',
-      'teva': 'TEVA',
-      'mylan': 'MYL',
-      'viatris': 'VTRS',
-      'allergan': 'AGN',
-      'celgene': 'CELG',
-      'seattle genetics': 'SGEN',
-      'seagen': 'SGEN',
-      'biontech': 'BNTX',
-      'curevac': 'CVAC',
-      'inovio': 'INO',
-      'novavax': 'NVAX',
-      'valneva': 'VALN',
-      'bavarian nordic': 'BVNRY',
-      'emergent biosolutions': 'EBS',
-      'csl behring': 'CSL',
-      'grifols': 'GRFS',
-      'octapharma': 'OCTA',
-      'nuvation': 'NUVB',
-      'ultragenyx': 'RARE',
-      'argenx': 'ARGX',
-      'incyte': 'INCY',
-      'blueprint medicines': 'BPMC',
-      'alnylam': 'ALNY',
-      'exact sciences': 'EXAS',
-      'illumina': 'ILMN',
-      '10x genomics': 'TXG',
-      'pacific biosciences': 'PACB',
-      'twist bioscience': 'TWST',
-      'solid biosciences': 'SLDB',
-      'solid': 'SLDB',
-      'stoke therapeutics': 'STOK',
-      'stoke': 'STOK',
-      'catalent': 'CTLT',
-      'iqvia': 'IQV',
-      'syneos': 'SYNH',
-      'syneos health': 'SYNH',
-      'thermo fisher': 'TMO',
-      'thermo fisher scientific': 'TMO',
-      'charles river': 'CRL',
-      'charles river laboratories': 'CRL',
-      'laboratory corporation': 'LH',
-      'labcorp': 'LH',
-      'quest diagnostics': 'DGX',
-      'danaher': 'DHR',
-      'agilent': 'A',
-      'agilent technologies': 'A',
-      'waters': 'WAT',
-      'waters corporation': 'WAT',
-      'perkinelmer': 'PKI',
-      'mettler toledo': 'MTD',
-      'sartorius': 'SARKY',
-      'lonza': 'LONZ',
-      'lonza group': 'LONZ',
-      'wuxi apptec': 'WXI',
-      'pharmaceutical research': 'PRA',
-      'pra health sciences': 'PRA',
-      'icon': 'ICLR',
-      'icon plc': 'ICLR',
-      'parexel': 'PRXL',
-      'ppd': 'PPD',
-      'covance': 'CVN',
-      'quintiles': 'Q',
-      'nuvation bio': 'NUVB'
-    };
-
-    const normalizedMention = mention.toLowerCase().trim();
-    
-    // Check if it's already a stock symbol (only if it's already in uppercase)
-    if (/^[A-Z]{2,5}$/.test(mention) && mention === mention.toUpperCase()) {
-      return mention;
-    }
-    
-
-    
-    // Look up company name
-    return companyToSymbol[normalizedMention] || null;
-  }
-
-  async generatePharmaceuticalStockAnalysis(
-    executiveSummary: string = '',
-    keyDevelopments: string[] = [],
-    healthCrisisUpdates: any[] = [],
-    marketImpact: string = '',
-    regulatoryAnalysis: string = ''
-  ): Promise<Array<{
-    symbol: string;
-    company: string;
-    price: number;
-    change: number;
-    analysis: string;
-  }>> {
-    // DISABLED: Old pharmaceutical extraction logic replaced by improved text-based extraction in routes.ts
-    console.log('ℹ️ Pharmaceutical stock analysis disabled in perplexity service - using improved extraction in routes.ts');
-    
-    // Return empty array - extraction now handled in routes.ts
-    const stockHighlights: Array<{
-      symbol: string;
-      company: string;
-      price: number;
-      change: number;
-      analysis: string;
-    }> = [];
-    
-    // All pharmaceutical stock extraction now handled in routes.ts
-    return stockHighlights;
+    const cleanContent = this.cleanFormattingSymbols(result.content);
+    return cleanContent.split('\n').filter(line => line.trim().length > 0);
   }
 
   async generateMarketImpactAnalysis(): Promise<string> {
-    const prompt = `Write a detailed 2-3 paragraph analysis of current pharmaceutical market trends and their economic impact. Include specific company stock movements with ticker symbols and percentage changes, merger and acquisition activity, drug pricing developments, and financial performance metrics. Provide substantial detail about market drivers and financial implications.`;
+    const prompt = `Analyze today's pharmaceutical market impact focusing on:
+    - Stock movements of major pharmaceutical companies
+    - Market reactions to FDA approvals or rejections
+    - Impact of regulatory decisions on biotech sector
+    - Healthcare policy effects on pharmaceutical investments
+    - Global pharmaceutical market trends
+    
+    Provide specific analysis with company names, stock symbols, and percentage changes where available.`;
     
     const result = await this.queryPerplexity(prompt);
-    const processed = await this.processContentWithLinks(result.content, result.citations);
+    this.currentBriefCitations.push(...result.citations);
     
-    // Remove "References:" sections from Market Impact content while preserving dedicated sources section
-    return processed
-      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
-      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
-      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
-      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
-      .trim();
+    return this.cleanFormattingSymbols(result.content);
   }
 
   async generateRegulatoryAnalysis(): Promise<string> {
-    const prompt = `Write a comprehensive 2-3 paragraph analysis of the current pharmaceutical regulatory landscape. Include specific FDA approvals, EMA decisions, policy changes, and regulatory guidance documents. Cover drug development timeline impacts, market access implications, and compliance requirements. Provide detailed context about how these regulatory changes affect pharmaceutical companies and drug development.`;
-    
-    const result = await this.queryPerplexity(prompt);
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    
-    // Remove "References:" sections from Geopolitical Analysis content while preserving dedicated sources section
-    return processed
-      .replace(/References?:\s*[\s\S]*$/i, '') // Remove "References:" and everything after
-      .replace(/Sources?:\s*[\s\S]*$/i, '') // Remove "Sources:" and everything after
-      .replace(/\n\s*References?:.*$/gmi, '') // Remove "References:" lines
-      .replace(/\n\s*Sources?:.*$/gmi, '') // Remove "Sources:" lines
-      .trim();
-  }
-
-  // Store all citations collected during brief generation
-  private currentBriefCitations: Array<{ url: string; title: string; snippet?: string }> = [];
-
-  private async createConsolidatedSourcesSection(): Promise<string> {
-    if (this.currentBriefCitations.length === 0) {
-      return '';
-    }
-
-    // Remove duplicates based on URL
-    const uniqueCitations = this.currentBriefCitations.filter((citation, index, self) => 
-      index === self.findIndex(c => c.url === citation.url)
-    );
-
-    // Apply targeted filtering to ensure only specific articles appear
-    const authenticCitations = uniqueCitations.filter((citation, index) => {
-      // Check for valid URL structure
-      const isValidUrl = citation.url && 
-                        typeof citation.url === 'string' && 
-                        citation.url.startsWith('http') && 
-                        citation.url.length > 10 &&
-                        !citation.url.includes('undefined') &&
-                        !citation.url.includes('null');
-      
-      // Filter out only specific problematic generic URLs
-      const isGenericUrl = citation.url === 'https://www.biopharmadive.com/news/' ||
-                          citation.url === 'https://www.statnews.com/' ||
-                          citation.url === 'https://www.fda.gov/' ||
-                          citation.url === 'https://www.reuters.com/' ||
-                          citation.url.match(/^https:\/\/[^\/]+\/?$/); // Homepage only
-      
-      // Filter out only clearly malformed titles - but preserve authentic URLs with generic titles
-      const hasGenericTitle = citation.title && (
-                             citation.title.toLowerCase().includes('www.biopharmadive.com') ||
-                             citation.title.toLowerCase() === citation.url.toLowerCase() ||
-                             citation.title.match(/^source \d+$/i) ||
-                             citation.title.length < 5) &&
-                             // Don't filter out authentic article URLs even if they have generic titles
-                             !citation.url.includes('/news-events/press-announcements/') &&
-                             !citation.url.includes('/pharmalot/') &&
-                             !citation.url.includes('/drugs/') &&
-                             !citation.url.includes('/news/') &&
-                             !citation.url.includes('/inspections-compliance/');
-      
-      if (!isValidUrl || isGenericUrl || hasGenericTitle) {
-        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);
-        return false;
-      } else {
-        console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
-        return true;
-      }
-    });
-
-    console.log(`📚 Creating consolidated sources section with ${authenticCitations.length} authentic citations (filtered from ${uniqueCitations.length} total)`);
-
-    if (authenticCitations.length === 0) {
-      console.log('❌ No authentic citations remaining after filtering');
-      return '';
-    }
-
-    let sourcesSection = '\n\n**Intelligence Sources & References:**\n\n';
-    
-    // Use for loop to enable async/await for title fetching
-    for (let index = 0; index < authenticCitations.length; index++) {
-      const citation = authenticCitations[index];
-      let displayTitle = citation.title;
-      
-      // Try to fetch the actual title from the web page first
-      const webTitle = await this.fetchArticleTitle(citation.url);
-      
-      if (webTitle && webTitle.length > 10 && !webTitle.includes('Source from')) {
-        displayTitle = webTitle;
-      } else {
-        // Use simple domain-based fallback if title fetching fails
-        try {
-          const domain = new URL(citation.url).hostname.replace('www.', '');
-          displayTitle = `Article from ${domain}`;
-        } catch {
-          displayTitle = `Article ${index + 1}`;
-        }
-      }
-      
-      // Always preserve the original authentic article URL from Perplexity citations
-      // Since we've already filtered out generic URLs above, all remaining URLs are specific articles
-      sourcesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
-    }
-
-    return sourcesSection;
-  }
-
-  async generateExecutiveSummaryWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
-    const prompt = `Generate a comprehensive 2-3 paragraph executive summary of today's most significant pharmaceutical industry developments. Search specifically for recent articles from:
-    - STAT News (statnews.com)
-    - BioPharma Dive (biopharmadive.com) 
-    - FiercePharma (fiercepharma.com)
-    - Pharmaceutical Executive (pharmexec.com)
-    - BioWorld (bioworld.com)
-    
-    Include specific drug approvals, clinical trial results, regulatory decisions, company announcements, and market movements with direct quotes and references to the source articles. Each claim should be backed by a specific URL from these pharmaceutical news sources. Use numbered citations [1], [2], [3] to reference specific articles.`;
-    
-    const result = await this.queryPerplexity(prompt);
-    console.log(`🎯 Executive Summary - Citations received: ${result.citations.length}`);
-    
-    // Collect citations for consolidated sources
-    this.currentBriefCitations.push(...result.citations);
-    
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    
-    // Remove "References:" sections from content
-    const cleanContent = processed
-      .replace(/References?:\s*[\s\S]*$/i, '')
-      .replace(/Sources?:\s*[\s\S]*$/i, '')
-      .replace(/\n\s*References?:.*$/gmi, '')
-      .replace(/\n\s*Sources?:.*$/gmi, '')
-      .trim();
-    
-    return { content: cleanContent, citations: result.citations };
-  }
-
-  async generateKeyDevelopmentsWithCitations(): Promise<{ content: string[]; citations: Array<{ url: string; title: string; snippet?: string }> }> {
-    const prompt = `Search for 5 specific, recent pharmaceutical industry developments from the past week from these news sources:
-    - STAT News (statnews.com)
-    - BioPharma Dive (biopharmadive.com)
-    - FiercePharma (fiercepharma.com)
-    - Reuters Health (reuters.com/business/healthcare-pharmaceuticals/)
-    - Wall Street Journal Health section
-    
-    Include:
-    1. FDA drug approvals or regulatory decisions
-    2. Major clinical trial results or announcements  
-    3. Pharmaceutical company mergers, acquisitions, or partnerships
-    4. New drug discoveries or breakthrough therapies
-    5. Healthcare policy changes affecting the pharmaceutical sector
-    
-    Each development should cite the specific article URL. Format as numbered list with brief descriptions and include citation references [1], [2], etc.`;
-    
-    const result = await this.queryPerplexity(prompt);
-    console.log(`🎯 Key Developments - Citations received: ${result.citations.length}`);
-    
-    // Collect citations for consolidated sources
-    this.currentBriefCitations.push(...result.citations);
-    
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    
-    // Remove references and convert to array
-    const cleanContent = processed
-      .replace(/References?:\s*[\s\S]*$/i, '')
-      .replace(/Sources?:\s*[\s\S]*$/i, '')
-      .replace(/\n\s*References?:.*$/gmi, '')
-      .replace(/\n\s*Sources?:.*$/gmi, '')
-      .trim();
-    
-    const developments = cleanContent.split('\n').filter(line => line.trim());
-    return { content: developments, citations: result.citations };
-  }
-
-  async generateHealthCrisisUpdatesWithCitations(): Promise<{ content: Array<{ region: string; severity: string; description: string; healthImpact: string }>; citations: Array<{ url: string; title: string; snippet?: string }> }> {
-    const prompt = `Search for current global health crises and their pharmaceutical implications from authoritative sources:
-    - WHO (who.int)
-    - CDC (cdc.gov) 
-    - STAT News (statnews.com)
-    - Reuters Health
-    - BioPharma Dive
-    
-    Focus on:
-    1. Disease outbreaks affecting pharmaceutical supply chains
-    2. Public health emergencies requiring pharmaceutical interventions
-    3. Regional health crises impacting drug access or development
-    4. Regulatory responses to health emergencies
-    
-    Format as structured updates with specific source citations.`;
-    
-    const result = await this.queryPerplexity(prompt);
-    console.log(`🎯 Health Crisis Updates - Citations received: ${result.citations.length}`);
-    
-    // Collect citations for consolidated sources
-    this.currentBriefCitations.push(...result.citations);
-    
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    
-    // Convert to structured format (simplified for now)
-    const updates = [{
-      region: "Global",
-      severity: "medium",
-      description: processed.replace(/References?:\s*[\s\S]*$/i, '').replace(/Sources?:\s*[\s\S]*$/i, '').trim(),
-      healthImpact: "Monitoring pharmaceutical sector impacts"
-    }];
-    
-    return { content: updates, citations: result.citations };
-  }
-
-  async generateMarketImpactAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
-    const prompt = `Analyze today's pharmaceutical market developments and their financial impact. Search recent articles from:
-    - Bloomberg Healthcare (bloomberg.com)
-    - Reuters Business/Healthcare (reuters.com/business/healthcare-pharmaceuticals/)
-    - BioPharma Dive (biopharmadive.com)
-    - FiercePharma (fiercepharma.com)
-    - Wall Street Journal Health
-    
-    Focus on:
-    - Stock price movements of major pharmaceutical companies
-    - FDA approvals or rejections affecting company valuations
-    - Merger & acquisition activity in pharma sector
-    - Clinical trial results moving markets
-    - Regulatory decisions impacting pharmaceutical revenues
-    
-    Provide specific company names, stock movements, and market reactions with source citations.`;
-    
-    const result = await this.queryPerplexity(prompt);
-    console.log(`🎯 Market Impact Analysis - Citations received: ${result.citations.length}`);
-    
-    // Collect citations for consolidated sources
-    this.currentBriefCitations.push(...result.citations);
-    
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    
-    // Remove references sections
-    const cleanContent = processed
-      .replace(/References?:\s*[\s\S]*$/i, '')
-      .replace(/Sources?:\s*[\s\S]*$/i, '')
-      .replace(/\n\s*References?:.*$/gmi, '')
-      .replace(/\n\s*Sources?:.*$/gmi, '')
-      .trim();
-    
-    return { content: cleanContent, citations: result.citations };
-  }
-
-  async generateRegulatoryAnalysisWithCitations(): Promise<{ content: string; citations: Array<{ url: string; title: string; snippet?: string }> }> {
-    const prompt = `Analyze current pharmaceutical regulatory developments and policy changes. Search recent articles from:
-    - FDA (fda.gov/news-events)
-    - STAT News (statnews.com)
-    - BioPharma Dive (biopharmadive.com)
-    - Reuters Healthcare (reuters.com)
-    - Pharmaceutical Executive (pharmexec.com)
-    
-    Focus on:
-    - New FDA drug approvals or rejections
-    - Changes in pharmaceutical regulations or policies
+    const prompt = `Provide geopolitical analysis of today's pharmaceutical developments including:
     - International regulatory harmonization efforts
-    - Healthcare policy changes affecting pharmaceutical companies
-    - Regulatory guidance updates for drug development
+    - Trade impacts on pharmaceutical supply chains
+    - Global health policy developments
+    - Cross-border pharmaceutical collaborations
+    - Regulatory disputes between countries
     
-    Provide detailed analysis of regulatory impact on the pharmaceutical industry with specific source citations.`;
+    Focus on how geopolitical factors affect pharmaceutical industry operations and market access.`;
     
     const result = await this.queryPerplexity(prompt);
-    console.log(`🎯 Regulatory Analysis - Citations received: ${result.citations.length}`);
-    
-    // Collect citations for consolidated sources
     this.currentBriefCitations.push(...result.citations);
     
-    const processed = await this.processContentWithLinks(result.content, result.citations);
-    
-    // Remove references sections
-    const cleanContent = processed
-      .replace(/References?:\s*[\s\S]*$/i, '')
-      .replace(/Sources?:\s*[\s\S]*$/i, '')
-      .replace(/\n\s*References?:.*$/gmi, '')
-      .replace(/\n\s*Sources?:.*$/gmi, '')
-      .trim();
-    
-    return { content: cleanContent, citations: result.citations };
+    return this.cleanFormattingSymbols(result.content);
   }
 
   async generateComprehensiveIntelligenceBrief(): Promise<PharmaceuticalIntelligence> {
-    try {
-      console.log('🔬 Generating comprehensive pharmaceutical intelligence using Perplexity AI...');
-      
-      // Reset citations collection for new brief
-      this.currentBriefCitations = [];
-      
-      // Generate content sections and collect citations
-      const [
-        summaryResult,
-        keyDevelopmentsResult,
-        healthCrisisResult,
-        marketImpactResult,
-        regulatoryResult
-      ] = await Promise.all([
-        this.generateExecutiveSummaryWithCitations(),
-        this.generateKeyDevelopmentsWithCitations(),
-        this.generateHealthCrisisUpdatesWithCitations(),
-        this.generateMarketImpactAnalysisWithCitations(),
-        this.generateRegulatoryAnalysisWithCitations()
-      ]);
+    // Reset citations for new brief
+    this.currentBriefCitations = [];
+    
+    console.log('🚀 Starting comprehensive pharmaceutical intelligence brief generation...');
+    
+    const [
+      executiveSummary,
+      keyDevelopments,
+      marketImpact,
+      geopoliticalAnalysis
+    ] = await Promise.all([
+      this.generateExecutiveSummary(),
+      this.generateKeyDevelopments(),
+      this.generateMarketImpactAnalysis(),
+      this.generateRegulatoryAnalysis()
+    ]);
 
-      // Generate stock analysis based on mentions from other sections
-      const stockAnalysis = await this.generatePharmaceuticalStockAnalysis(
-        summaryResult.content,
-        keyDevelopmentsResult.content,
-        healthCrisisResult.content,
-        marketImpactResult.content,
-        regulatoryResult.content
-      );
+    const sourcesSection = await this.createConsolidatedSourcesSection();
 
-      // Create consolidated sources section with all actual citations
-      const sourcesSection = await this.createConsolidatedSourcesSection();
-
-      console.log('✅ Successfully generated pharmaceutical intelligence from Perplexity AI');
-      console.log(`📚 Collected ${this.currentBriefCitations.length} total citations for sources section`);
-
-      // Clean the geopolitical analysis to remove any embedded sources sections
-      let cleanGeopoliticalAnalysis = regulatoryResult.content;
-      if (cleanGeopoliticalAnalysis.includes('**Intelligence Sources & References:**')) {
-        cleanGeopoliticalAnalysis = cleanGeopoliticalAnalysis.split('**Intelligence Sources & References:**')[0].trim();
-      }
-
-      return {
-        title: `Pharmaceutical Intelligence Brief - ${new Date().toLocaleDateString()}`,
-        summary: summaryResult.content,
-        keyDevelopments: keyDevelopmentsResult.content,
-        conflictUpdates: healthCrisisResult.content,
-        defenseStockHighlights: [],
-        pharmaceuticalStockHighlights: stockAnalysis,
-        marketImpact: marketImpactResult.content,
-        geopoliticalAnalysis: cleanGeopoliticalAnalysis,
-        sourcesSection: sourcesSection,
-        createdAt: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('❌ Error generating pharmaceutical intelligence:', error);
-      throw error;
-    }
+    return {
+      title: `Pharmaceutical Intelligence Brief - ${new Date().toLocaleDateString()}`,
+      summary: executiveSummary,
+      keyDevelopments,
+      conflictUpdates: [],
+      defenseStockHighlights: [],
+      pharmaceuticalStockHighlights: [],
+      marketImpact,
+      geopoliticalAnalysis,
+      sourcesSection,
+      createdAt: new Date().toISOString()
+    };
   }
 }
 
