@@ -309,6 +309,44 @@ export const insertDailyNewsSchema = createInsertSchema(dailyNews, {
 export type InsertDailyNews = z.infer<typeof insertDailyNewsSchema>;
 export type DailyNews = typeof dailyNews.$inferSelect;
 
+// Four-Step Intelligence Schema for authentic article extraction
+export const fourStepIntelligence = pgTable("four_step_intelligence", {
+  id: serial("id").primaryKey(),
+  date: varchar("date").notNull(),
+  sector: varchar("sector", { length: 50 }).notNull(),
+  title: text("title").notNull(),
+  executiveSummary: text("executive_summary").notNull(),
+  keyDevelopments: jsonb("key_developments").notNull(),
+  marketImpactAnalysis: text("market_impact_analysis").notNull(),
+  geopoliticalAnalysis: text("geopolitical_analysis").notNull(),
+  extractedArticles: jsonb("extracted_articles").notNull(),
+  sourceUrls: jsonb("source_urls").notNull(),
+  methodologyUsed: text("methodology_used").notNull().default("four-step-authentic-extraction"),
+  articleCount: integer("article_count").notNull(),
+  sourcesVerified: boolean("sources_verified").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  uniqueDateSector: unique().on(table.date, table.sector),
+}));
+
+export const insertFourStepIntelligenceSchema = createInsertSchema(fourStepIntelligence, {
+  keyDevelopments: z.array(z.string()),
+  extractedArticles: z.array(z.object({
+    title: z.string(),
+    url: z.string(),
+    source: z.string(),
+    publishDate: z.string(),
+    content: z.string(),
+  })),
+  sourceUrls: z.array(z.string()),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertFourStepIntelligence = z.infer<typeof insertFourStepIntelligenceSchema>;
+export type FourStepIntelligence = typeof fourStepIntelligence.$inferSelect;
+
 export interface NewsConflictUpdate {
   conflict: string;
   update: string;

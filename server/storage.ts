@@ -1,8 +1,8 @@
 import { 
-  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews,
+  conflicts, stocks, correlationEvents, users, stockWatchlists, conflictWatchlists, dailyQuizzes, userQuizResponses, dailyNews, fourStepIntelligence,
   discussions, discussionReplies, discussionVotes, chatMessages, quizQuestions, quizResponses, learningStats, dailyQuestions, userVisits,
-  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews,
-  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type UpsertUser,
+  type Conflict, type Stock, type CorrelationEvent, type User, type StockWatchlist, type ConflictWatchlist, type DailyQuiz, type UserQuizResponse, type DailyNews, type FourStepIntelligence,
+  type InsertConflict, type InsertStock, type InsertCorrelationEvent, type InsertUser, type InsertStockWatchlist, type InsertConflictWatchlist, type InsertDailyQuiz, type InsertUserQuizResponse, type InsertDailyNews, type InsertFourStepIntelligence, type UpsertUser,
   type Discussion, type InsertDiscussion, type DiscussionReply, type InsertDiscussionReply, type DiscussionVote, type InsertDiscussionVote,
   type ChatMessage, type InsertChatMessage, type DailyQuestion, type InsertDailyQuestion,
   type QuizQuestion, type InsertQuizQuestion, type QuizResponse, type InsertQuizResponse, type LearningStats, type InsertLearningStats
