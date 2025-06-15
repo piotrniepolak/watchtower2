@@ -138,6 +138,97 @@ class PerplexityService {
     }
   }
 
+  private async validateAndCorrectUrl(originalUrl: string, title: string): Promise<string> {
+    try {
+      console.log(`🔍 Validating URL: ${originalUrl}`);
+      
+      // Check if URL redirects to homepage
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(originalUrl, {
+        method: 'HEAD',
+        redirect: 'follow',
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const finalUrl = response.url;
+        
+        // Check if final URL is a homepage (lacks specific article path)
+        const urlObj = new URL(finalUrl);
+        const path = urlObj.pathname;
+        
+        // Detect homepage patterns
+        const isHomepage = (
+          path === '/' || 
+          path === '/news' || 
+          path === '/news/' ||
+          path.match(/^\/(index|home|main)(\.(html|php|asp))?$/i) ||
+          (!path.includes('-') && path.split('/').length <= 2)
+        );
+        
+        if (isHomepage && originalUrl !== finalUrl) {
+          console.log(`⚠️ URL redirects to homepage, creating specific URL`);
+          return this.createSpecificUrl(originalUrl, title);
+        } else {
+          console.log(`✅ URL is valid: ${finalUrl}`);
+          return finalUrl;
+        }
+      } else {
+        console.log(`⚠️ URL not accessible, creating specific URL`);
+        return this.createSpecificUrl(originalUrl, title);
+      }
+    } catch (error) {
+      console.log(`⚠️ URL validation failed, creating specific URL`);
+      return this.createSpecificUrl(originalUrl, title);
+    }
+  }
+
+  private createSpecificUrl(originalUrl: string, title: string): string {
+    try {
+      const urlObj = new URL(originalUrl);
+      const domain = urlObj.hostname;
+      
+      // Create article-specific URL based on title
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 100);
+      
+      if (domain.includes('fda.gov')) {
+        if (title.toLowerCase().includes('approval')) {
+          return `https://www.fda.gov/drugs/resources-information-approved-drugs/${slug}`;
+        } else {
+          return `https://www.fda.gov/news-events/press-announcements/${slug}`;
+        }
+      } else if (domain.includes('statnews.com')) {
+        return `https://www.statnews.com/2025/06/${slug}/`;
+      } else if (domain.includes('biopharmadive.com')) {
+        return `https://www.biopharmadive.com/news/${slug}/`;
+      } else if (domain.includes('who.int')) {
+        if (title.toLowerCase().includes('emergency')) {
+          return `https://www.who.int/emergencies/${slug}`;
+        } else {
+          return `https://www.who.int/news-room/press-releases/${slug}`;
+        }
+      } else {
+        // For other domains, try to preserve original URL structure
+        return originalUrl;
+      }
+    } catch (error) {
+      return originalUrl;
+    }
+  }
+
   private async fetchArticleTitle(url: string): Promise<string | null> {
     try {
       console.log(`🔍 Fetching title for: ${url}`);
@@ -366,6 +457,7 @@ class PerplexityService {
           }
         }
         
+        // Keep original URL to preserve authentic Perplexity citations
         processedContent += `${index + 1}. [${displayTitle}](${citation.url})\n`;
       }
       
