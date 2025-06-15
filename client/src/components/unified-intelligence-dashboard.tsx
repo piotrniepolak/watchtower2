@@ -1,43 +1,23 @@
+
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import { SourceLinks, generateSectorSources } from "./source-links";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { SourceLinks } from "./source-links";
 import { 
   Shield, 
-  Pill,
-  Zap,
+  Pill, 
+  Zap, 
+  RefreshCw, 
+  ChevronDown, 
+  FileText, 
+  Globe, 
+  BarChart3, 
   TrendingUp,
-  TrendingDown, 
-  AlertTriangle, 
-  Clock, 
-  Target,
-  RefreshCw,
-  ChevronDown,
-  FileText,
-  Globe,
-  BarChart3,
-  Users,
-  Building2,
-  DollarSign,
-  ExternalLink,
-  Award,
-  Activity
+  AlertTriangle,
+  Building2
 } from "lucide-react";
 
 interface UnifiedBriefData {
@@ -45,30 +25,19 @@ interface UnifiedBriefData {
   title: string;
   summary: string;
   date: string;
+  createdAt: string;
   keyDevelopments: string[];
   marketImpact: string;
   geopoliticalAnalysis: string;
-  defenseStockHighlights?: Array<{
-    symbol: string;
-    name: string;
-    change: number;
-    changePercent: number;
-    reason: string;
-  }>;
-  pharmaceuticalStockHighlights?: Array<{
-    symbol: string;
-    name: string;
-    price: number;
-    change: number;
-    changePercent: number;
-    reason: string;
-  }>;
-  energyStockHighlights?: Array<{
-    symbol: string;
-    name: string;
-    change: number;
-    changePercent: number;
-    reason: string;
+  conflictUpdates?: any[];
+  defenseStockHighlights?: any[];
+  pharmaceuticalStockHighlights?: any[];
+  energyStockHighlights?: any[];
+  sources?: Array<{
+    title: string;
+    url: string;
+    domain: string;
+    category: string;
   }>;
 }
 
@@ -104,6 +73,12 @@ const sectorConfig = {
 
 export function UnifiedIntelligenceDashboard() {
   const [selectedSector, setSelectedSector] = useState<keyof typeof sectorConfig>("defense");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(true);
+  const [developmentsOpen, setDevelopmentsOpen] = useState(false);
+  const [stocksOpen, setStocksOpen] = useState(false);
+  const [marketOpen, setMarketOpen] = useState(false);
+  const [geoOpen, setGeoOpen] = useState(false);
 
   const config = sectorConfig[selectedSector];
   const IconComponent = config.icon;
@@ -116,6 +91,7 @@ export function UnifiedIntelligenceDashboard() {
   });
 
   const handleGenerate = async () => {
+    setIsGenerating(true);
     const generateEndpoint = config.endpoint.replace("/today", "/generate");
     try {
       const response = await fetch(generateEndpoint, {
@@ -123,239 +99,277 @@ export function UnifiedIntelligenceDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       });
-
+      
       if (response.ok) {
-        refetch();
+        await refetch();
+      } else {
+        console.error("Failed to generate intelligence brief");
       }
     } catch (error) {
-      console.error("Error generating brief:", error);
+      console.error("Error generating intelligence brief:", error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   const getStockHighlights = () => {
-    if (selectedSector === "defense") return briefData?.defenseStockHighlights || [];
-    if (selectedSector === "pharma") return briefData?.pharmaceuticalStockHighlights || [];
-    if (selectedSector === "energy") return briefData?.energyStockHighlights || [];
+    if (selectedSector === 'defense') return briefData?.defenseStockHighlights || [];
+    if (selectedSector === 'pharma') return briefData?.pharmaceuticalStockHighlights || [];
+    if (selectedSector === 'energy') return briefData?.energyStockHighlights || [];
     return [];
   };
 
-  const formatContent = (content: string) => {
-    if (!content) return '';
-    
-    // Remove embedded source links and clean content
-    return content
-      .replace(/\*\*/g, "")
-      .replace(/\*/g, "")
-      .replace(/\[([^\]]+)\]/g, "$1")
-      // Remove inline source references
-      .replace(/Sources?:\s*[^.]*?\.com[^.]*?\b/gi, '')
-      .replace(/Sources?:\s*<a[^>]*>.*?<\/a>\s*/gi, '')
-      .replace(/Sources?:\s*https?:\/\/[^\s\)]+/gi, '')
-      .replace(/Sources?:\s*[a-zA-Z0-9.-]+\.com[^\s]*/gi, '')
-      // Remove trailing source indicators
-      .replace(/\s*Sources?:\s*$/gi, '')
-      .replace(/\s*Source:\s*$/gi, '')
-      // Clean up extra whitespace
-      .replace(/\s+/g, " ")
-      .trim();
-  };
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <IconComponent className="h-5 w-5" />
+            Loading {config.name}...
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center p-8">
+            <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header with Sector Selector */}
-      <Card className={`${config.borderColor} border-2`}>
+      {/* Sector Selector */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className={`bg-gradient-to-r ${config.color} text-white p-3 rounded-lg`}>
-                <IconComponent className="h-6 w-6" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Global Intelligence Center</CardTitle>
-                <CardDescription>Comprehensive analysis across defense, pharmaceutical, and energy sectors</CardDescription>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Select value={selectedSector} onValueChange={(value: keyof typeof sectorConfig) => setSelectedSector(value)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue>
-                    <div className="flex items-center space-x-2">
-                      <IconComponent className="w-4 h-4" />
-                      <span>{config.name}</span>
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="defense">
-                    <div className="flex items-center space-x-2">
-                      <Shield className="w-4 h-4" />
-                      <span>Defense Intelligence</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="pharma">
-                    <div className="flex items-center space-x-2">
-                      <Pill className="w-4 h-4" />
-                      <span>Pharmaceutical Intelligence</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="energy">
-                    <div className="flex items-center space-x-2">
-                      <Zap className="w-4 h-4" />
-                      <span>Energy Intelligence</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button onClick={handleGenerate} size="sm" variant="outline">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Generate Fresh Brief
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Global Intelligence Center
+            </span>
+            <Badge variant="secondary">Real-time AI Intelligence</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2 mb-4">
+            {Object.entries(sectorConfig).map(([key, sector]) => {
+              const SectorIcon = sector.icon;
+              return (
+                <Button
+                  key={key}
+                  variant={selectedSector === key ? "default" : "outline"}
+                  onClick={() => setSelectedSector(key as keyof typeof sectorConfig)}
+                  className="flex items-center gap-2"
+                >
+                  <SectorIcon className="h-4 w-4" />
+                  {sector.name}
+                </Button>
+              );
+            })}
+          </div>
+          
+          <div className="flex items-center justify-between mb-4">
+            <h2 className={`text-xl font-semibold ${config.textColor}`}>
+              {config.name}
+            </h2>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">
+                {new Date().toLocaleDateString()}
+              </Badge>
+              <Button 
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                size="sm"
+                variant="outline"
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Generate New Brief
+                  </>
+                )}
               </Button>
             </div>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
-      {isLoading ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p>Loading intelligence brief...</p>
-          </CardContent>
-        </Card>
-      ) : briefData ? (
-        <div className="grid gap-6">
-          {/* Brief Title and Summary */}
-          <Card className={`${config.bgColor}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>{briefData.title}</span>
-                <Badge variant="secondary">{briefData.date}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                className="text-sm text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: formatContent(briefData.summary) }}
-              />
-            </CardContent>
-          </Card>
+      {briefData ? (
+        <div className="space-y-4">
+          {/* Executive Summary */}
+          <Collapsible open={summaryOpen} onOpenChange={setSummaryOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+                <div className="flex items-center gap-3">
+                  <FileText className={`h-5 w-5 ${config.textColor}`} />
+                  <span className="font-medium text-base">Executive Summary</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <div className={`${config.bgColor} rounded-lg p-4`}>
+                <div className="text-sm leading-relaxed text-muted-foreground">
+                  {briefData.summary}
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <Badge className={config.borderColor}>
+                    Real-time Intelligence
+                  </Badge>
+                  <Badge variant="outline">
+                    Powered by Perplexity AI
+                  </Badge>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Key Developments */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Key Developments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {briefData.keyDevelopments.map((development, index) => (
-                  <div key={index} className="border-l-4 border-gray-200 pl-4">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {formatContent(development)}
-                    </p>
-                  </div>
-                ))}
+          <Collapsible open={developmentsOpen} onOpenChange={setDevelopmentsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className={`h-5 w-5 ${config.textColor}`} />
+                  <span className="font-medium text-base">Key Developments</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${developmentsOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <div className={`${config.bgColor} rounded-lg p-4`}>
+                {briefData.keyDevelopments && briefData.keyDevelopments.length > 0 ? (
+                  <ul className="space-y-3">
+                    {briefData.keyDevelopments.map((development, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className={`w-1.5 h-1.5 ${config.textColor.replace('text-', 'bg-')} rounded-full mt-2 flex-shrink-0`} />
+                        <span className="text-sm text-muted-foreground leading-relaxed">
+                          {development}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No key developments available</p>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Stock Highlights */}
           {getStockHighlights().length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {selectedSector === "defense" && "Defense Stocks Mentioned"}
-                  {selectedSector === "pharma" && "Pharmaceutical Stocks Mentioned"}
-                  {selectedSector === "energy" && "Energy Stocks Mentioned"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3">
-                  {getStockHighlights().map((stock: any, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <span className="font-semibold text-sm">{stock.symbol}</span>
-                          <span className="text-sm text-gray-600">{stock.name}</span>
-                          {stock.price && (
-                            <span className="text-sm font-medium">${stock.price.toFixed(2)}</span>
-                          )}
-                        </div>
-                        {stock.reason && (
-                          <p className="text-xs text-gray-500 mt-1">{formatContent(stock.reason)}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {stock.changePercent !== undefined && (
-                          <div className={`flex items-center space-x-1 ${stock.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {stock.changePercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                            <span className="text-xs font-medium">
-                              {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                            </span>
+            <Collapsible open={stocksOpen} onOpenChange={setStocksOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+                  <div className="flex items-center gap-3">
+                    <Building2 className={`h-5 w-5 ${config.textColor}`} />
+                    <span className="font-medium text-base">Companies Mentioned</span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${stocksOpen ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-4 pb-4">
+                <div className={`${config.bgColor} rounded-lg p-4`}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {getStockHighlights().map((stock: any, index: number) => (
+                      <div key={index} className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex flex-col">
+                            <span className={`font-bold ${config.textColor}`}>{stock.symbol}</span>
+                            <span className="text-xs text-muted-foreground truncate">{stock.name}</span>
                           </div>
-                        )}
+                          <div className="text-right">
+                            <div className="font-semibold">${stock.price?.toFixed(2) || '0.00'}</div>
+                            <div className={`text-xs ${(stock.changePercent || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {(stock.changePercent || 0) >= 0 ? '+' : ''}{stock.changePercent?.toFixed(2) || '0.00'}%
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {stock.reason || 'Mentioned in intelligence brief'}
+                        </p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </CollapsibleContent>
+            </Collapsible>
           )}
 
-          {/* Market Impact and Geopolitical Analysis */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Market Impact</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="text-sm text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: formatContent(briefData.marketImpact) }}
-                />
-              </CardContent>
-            </Card>
+          {/* Market Impact */}
+          <Collapsible open={marketOpen} onOpenChange={setMarketOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className={`h-5 w-5 ${config.textColor}`} />
+                  <span className="font-medium text-base">Market Impact Analysis</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${marketOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <div className={`${config.bgColor} rounded-lg p-4`}>
+                <div className="text-sm leading-relaxed text-muted-foreground">
+                  {briefData.marketImpact || 'No market impact analysis available'}
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Geopolitical Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="text-sm text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: formatContent(briefData.geopoliticalAnalysis) }}
-                />
-              </CardContent>
-            </Card>
-          </div>
+          {/* Geopolitical Analysis */}
+          <Collapsible open={geoOpen} onOpenChange={setGeoOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-4 h-auto text-left">
+                <div className="flex items-center gap-3">
+                  <Globe className={`h-5 w-5 ${config.textColor}`} />
+                  <span className="font-medium text-base">Geopolitical Analysis</span>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${geoOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="px-4 pb-4">
+              <div className={`${config.bgColor} rounded-lg p-4`}>
+                <div className="text-sm leading-relaxed text-muted-foreground">
+                  {briefData.geopoliticalAnalysis || 'No geopolitical analysis available'}
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Comprehensive Source Links for Selected Sector */}
+          {/* Sector-specific Sources */}
           <div className="mt-6">
             <SourceLinks 
-              sources={generateSectorSources(selectedSector)}
+              sources={briefData.sources || []}
               title={`${config.name} Sources & References`}
             />
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-gray-500 mb-4">No intelligence brief available for {config.name.toLowerCase()}</p>
-              <Button onClick={handleGenerate} variant="outline">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Generate Brief
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Source Links for No Data State */}
-          <SourceLinks 
-            sources={generateSectorSources(selectedSector)}
-            title={`${config.name} Sources & References`}
-          />
-        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">
+              No {config.name.toLowerCase()} brief available. Generate a new brief using real-time data.
+            </p>
+            <Button onClick={handleGenerate} disabled={isGenerating}>
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <IconComponent className="h-4 w-4 mr-2" />
+                  Generate {config.name} Brief
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

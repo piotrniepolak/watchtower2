@@ -21,7 +21,7 @@ import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
 import { chatCleanupService } from "./chat-cleanup-service";
 import { yahooFinanceService } from "./yahoo-finance-service";
-
+import { energyService } from './energy-service.js';
 import { quizStorage } from "./quiz-storage";
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -851,12 +851,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Correlation events
   app.get("/api/correlation-events", async (req, res) => {
     try {
-      const events = await storage.getCorrelationEvents();
-      res.json(events);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch correlation events" });
-    }
-  });
+      ```
+    const events = await storage.getCorrelationEvents();
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch correlation events" });
+  }
+});
 
   // Market metrics
   app.get("/api/metrics", async (req, res) => {
@@ -1411,21 +1412,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let events = [];
       let eventsProcessed = 0;
       
-      try {
-        const { conflictTimelineService } = await import('./conflict-timeline-service');
-        events = await conflictTimelineService.fetchConflictUpdates(conflict);
-        console.log(`Found ${events.length} new events for ${conflict.name}`);
-      } catch (fetchError) {
-        console.error('Error fetching conflict updates:', fetchError);
-        // Return success with zero events rather than failing
-        return res.status(200).json({ 
-          message: 'Timeline update completed with fallback data',
-          eventsAdded: 0,
-          conflictName: conflict.name,
-          warning: 'External data source unavailable'
-        });
-      }
-      
       for (const event of events) {
         try {
           // Clean description to remove verbose formatting
@@ -1585,353 +1571,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Pharma News Routes
-  app.get("/api/news/pharma/today", async (req, res) => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Get pharmaceutical brief specifically by sector
-      let news = await storage.getDailyNews(today, 'pharmaceutical');
-      
-      // If no pharmaceutical brief exists, generate new one
-      if (!news) {
-        console.log('No pharmaceutical intelligence found, generating pharmaceutical data...');
-        news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
-        
-        // If Perplexity AI fails, return error - no fallback allowed
-        if (!news) {
-          console.log('Perplexity AI pharmaceutical intelligence generation failed - no fallback allowed');
-          return res.status(503).json({ error: "Pharmaceutical intelligence service temporarily unavailable" });
-        }
-      }
-      
-      if (!news) {
-        return res.status(404).json({ error: "No pharma news available for today" });
-      }
-
-      // Get healthcare stocks for price data lookup only
-      const allStocks = await storage.getStocks();
-      const healthcareStocks = allStocks.filter(stock => stock.sector === 'Healthcare');
-      
-      console.log(`🔍 Using improved text-based extraction to find pharmaceutical companies mentioned in brief content...`);
-
-
-
-      // Extract pharmaceutical companies actually mentioned in the brief content
-      const extractMentionedCompanies = (content: string) => {
-        const mentionedCompanies = [];
-        
-        // Remove reference URLs and citation markers to avoid false positives
-        const cleanContent = content
-          .replace(/\[References:\][\s\S]*$/i, '') // Remove entire References section
-          .replace(/https?:\/\/[^\s\)]+/g, '') // Remove URLs
-          .replace(/\[\d+\]/g, '') // Remove citation numbers like [1], [2]
-          .replace(/\(\d+\)/g, '') // Remove citation numbers like (1), (2)
-          .replace(/References?:\s*\d+\./gi, '') // Remove "References: 1."
-          .replace(/Source:\s*https?:\/\/[^\s\)]+/gi, ''); // Remove source URLs
-        
-        console.log(`🔍 Scanning ${cleanContent.length} characters of pharmaceutical brief content for company mentions...`);
-        
-        // Dynamic extraction: Look for any pharmaceutical company patterns in the actual content
-        const companyPatterns = [
-          // Exact company names from our database
-          { name: 'Pfizer', symbol: 'PFE', patterns: ['pfizer inc', 'pfizer'] },
-          { name: 'Johnson & Johnson', symbol: 'JNJ', patterns: ['johnson & johnson', 'johnson and johnson', 'j&j', 'janssen'] },
-          { name: 'Roche', symbol: 'RHHBY', patterns: ['roche', 'genentech', 'hoffmann-la roche'] },
-          { name: 'Novartis', symbol: 'NVS', patterns: ['novartis'] },
-          { name: 'Merck & Co', symbol: 'MRK', patterns: ['merck & co', 'merck', 'keytruda'] },
-          { name: 'AbbVie', symbol: 'ABBV', patterns: ['abbvie', 'humira'] },
-          { name: 'Bristol Myers Squibb', symbol: 'BMY', patterns: ['bristol myers squibb', 'bristol-myers squibb', 'bristol myers'] },
-          { name: 'AstraZeneca', symbol: 'AZN', patterns: ['astrazeneca'] },
-          { name: 'GSK', symbol: 'GSK', patterns: ['gsk', 'glaxosmithkline'] },
-          { name: 'Sanofi', symbol: 'SNY', patterns: ['sanofi'] },
-          { name: 'Gilead Sciences', symbol: 'GILD', patterns: ['gilead sciences', 'gilead'] },
-          { name: 'Amgen', symbol: 'AMGN', patterns: ['amgen'] },
-          { name: 'Biogen', symbol: 'BIIB', patterns: ['biogen'] },
-          { name: 'Regeneron', symbol: 'REGN', patterns: ['regeneron pharmaceuticals', 'regeneron'] },
-          { name: 'Vertex Pharmaceuticals', symbol: 'VRTX', patterns: ['vertex pharmaceuticals', 'vertex'] },
-          { name: 'Moderna', symbol: 'MRNA', patterns: ['moderna'] },
-          { name: 'BioNTech', symbol: 'BNTX', patterns: ['biontech'] },
-          { name: 'Eli Lilly', symbol: 'LLY', patterns: ['eli lilly', 'lilly'] },
-          { name: 'Bayer', symbol: 'BAYRY', patterns: ['bayer healthcare pharmaceuticals', 'bayer'] },
-          { name: 'Novo Nordisk', symbol: 'NVO', patterns: ['novo nordisk', 'novo'] },
-          { name: 'Nuvation Bio', symbol: 'NUVB', patterns: ['nuvation bio inc', 'nuvation bio', 'nuvation'] },
-          { name: 'Sarepta Therapeutics', symbol: 'SRPT', patterns: ['sarepta therapeutics', 'sarepta'] }
-        ];
-        
-        const lowerContent = cleanContent.toLowerCase();
-        
-        // Also scan for any company patterns actually present in content
-        const additionalCompanyMentions = [];
-        
-        // Look for pharmaceutical company patterns in format "CompanyName Inc.", "CompanyName Pharmaceuticals", etc.
-        const companyNameRegex = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(Inc\.?|Corporation|Corp\.?|Pharmaceuticals?|Pharma|AG|SE|plc|Ltd\.?|Limited|Therapeutics|Sciences?|Healthcare|Biotech|Bio)\b/g;
-        let match;
-        while ((match = companyNameRegex.exec(cleanContent)) !== null) {
-          const fullCompanyName = match[0];
-          const baseCompanyName = match[1];
-          
-          // Skip if already in our patterns list
-          const alreadyIncluded = companyPatterns.some(cp => 
-            cp.patterns.some(p => p.toLowerCase().includes(baseCompanyName.toLowerCase()))
-          );
-          
-          if (!alreadyIncluded) {
-            additionalCompanyMentions.push({
-              name: fullCompanyName,
-              pattern: fullCompanyName.toLowerCase(),
-              context: match[0]
-            });
-          }
-        }
-        
-        console.log(`📋 Found ${additionalCompanyMentions.length} additional company mentions in content`);
-        
-        // Process known company patterns
-        for (const company of companyPatterns) {
-          for (const pattern of company.patterns) {
-            const patternIndex = lowerContent.indexOf(pattern.toLowerCase());
-            if (patternIndex !== -1) {
-              // Extract context around the mention
-              const contextStart = Math.max(0, patternIndex - 100);
-              const contextEnd = Math.min(cleanContent.length, patternIndex + pattern.length + 200);
-              const context = cleanContent.substring(contextStart, contextEnd).trim();
-              
-              // Exclude if found in reference/citation context
-              const isInReference = /^(references?|sources?|citations?)[:.]|^\d+\.|^https?:\/\//i.test(context);
-              if (isInReference) {
-                console.log(`❌ Excluded ${company.name} (found in reference section)`);
-                continue;
-              }
-              
-              // Extract the most relevant sentence containing the company mention
-              const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
-              let relevantSentence = context;
-              
-              for (const sentence of sentences) {
-                if (sentence.toLowerCase().includes(pattern.toLowerCase())) {
-                  relevantSentence = sentence.trim();
-                  break;
-                }
-              }
-              
-              console.log(`✅ Found ${company.name} mentioned in brief content`);
-              mentionedCompanies.push({
-                symbol: company.symbol,
-                name: company.name,
-                context: relevantSentence,
-                pattern: pattern
-              });
-              break; // Only add once per company
-            }
-          }
-        }
-        
-        return mentionedCompanies;
-      };
-
-      // Extract companies from all content sections
-      const allContent = [
-        news.summary || '',
-        Array.isArray(news.keyDevelopments) ? news.keyDevelopments.join(' ') : '',
-        news.marketImpact || '',
-        news.geopoliticalAnalysis || ''
-      ].join(' ');
-
-      const extractedCompanies = extractMentionedCompanies(allContent);
-      
-      // Auto-discover and add missing pharmaceutical stocks to database
-      const pharmaceuticalStockHighlights = [];
-      for (const company of extractedCompanies) {
-        let stock = healthcareStocks.find((s: any) => s.symbol === company.symbol);
-        
-        // If stock not in database, fetch from Yahoo Finance and add it
-        if (!stock) {
-          console.log(`🔍 Discovering new pharmaceutical stock: ${company.symbol} (${company.name})`);
-          try {
-            // Fetch real stock data from Yahoo Finance
-            const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${company.symbol}`);
-            const data = await response.json();
-            
-            if (data.chart && data.chart.result && data.chart.result[0]) {
-              const result = data.chart.result[0];
-              const quote = result.meta;
-              
-              const newStock = {
-                symbol: company.symbol,
-                name: company.name,
-                sector: 'Healthcare',
-                price: quote.regularMarketPrice || 0,
-                change: (quote.regularMarketPrice - quote.previousClose) || 0,
-                changePercent: ((quote.regularMarketPrice - quote.previousClose) / quote.previousClose * 100) || 0,
-                volume: quote.regularMarketVolume || 0,
-                marketCap: null,
-                lastUpdated: new Date()
-              };
-              
-              // Add to database
-              await storage.createStock(newStock);
-              console.log(`✅ Added ${company.symbol} to pharmaceutical stocks database with real price data`);
-              
-              stock = newStock;
-              healthcareStocks.push(newStock); // Update local cache
-            }
-          } catch (error) {
-            console.error(`❌ Failed to fetch stock data for ${company.symbol}:`, error);
-            // Create minimal entry without price data
-            const placeholderStock = {
-              symbol: company.symbol,
-              name: company.name,
-              sector: 'Healthcare',
-              price: 0,
-              change: 0,
-              changePercent: 0,
-              volume: 0,
-              marketCap: null,
-              lastUpdated: new Date()
-            };
-            await storage.createStock(placeholderStock);
-            stock = placeholderStock;
-          }
-        }
-        
-        pharmaceuticalStockHighlights.push({
-          symbol: company.symbol,
-          name: company.name,
-          price: stock?.price || 0,
-          change: stock?.change || 0,
-          changePercent: stock?.changePercent || 0,
-          reason: `Mentioned in brief: "${company.context.substring(0, 150)}..."`
-        });
-      }
-
-      // Replace with only mentioned companies (no fallback data)
-      news.pharmaceuticalStockHighlights = pharmaceuticalStockHighlights;
-
-      res.json(news);
-    } catch (error) {
-      console.error("Error fetching today's pharma news:", error);
-      res.status(500).json({ error: "Failed to fetch today's pharma news" });
-    }
-  });
-
+  
   // Defense News Routes  
-  app.get("/api/news/defense/today", async (req, res) => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      let news = await storage.getDailyNews(today, 'defense');
-      
-      if (!news) {
-        return res.status(404).json({ error: "No defense news available for today" });
-      }
-
-      res.json(news);
-    } catch (error) {
-      console.error("Error fetching today's defense news:", error);
-      res.status(500).json({ error: "Failed to fetch today's defense news" });
-    }
-  });
 
   // Generate new pharmaceutical intelligence brief
-  app.post("/api/news/pharma/generate", async (req, res) => {
-    try {
-      console.log('🔬 Manual pharmaceutical intelligence brief generation requested...');
-      
-      // Delete existing entry for today first
-      const today = new Date().toISOString().split('T')[0];
-      await storage.deleteDailyNews(today);
-      
-      // Generate fresh pharmaceutical intelligence using Perplexity AI
-      const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
-      
-      if (!news) {
-        console.log('Perplexity AI generation failed - no fallback allowed');
-        return res.status(503).json({ error: "Pharmaceutical intelligence service temporarily unavailable" });
-      }
-      
-      console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');
-      res.json(news);
-    } catch (error) {
-      console.error("Error generating pharmaceutical intelligence brief:", error);
-      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
-    }
-  });
-
+  
   // Defense Intelligence Routes - Parallel to Pharma System
-  app.post("/api/news/defense/generate", async (req, res) => {
-    try {
-      console.log('🛡️ Manual defense intelligence brief generation requested...');
-      
-      // Delete existing entry for today first
-      const today = new Date().toISOString().split('T')[0];
-      await storage.deleteDailyNews(today);
-      
-      // Generate completely clean defense brief with comprehensive formatting fixes
-      const stocks = await storage.getStocks();
-      const defenseStocks = stocks.filter(stock => 
-        stock.sector === 'Defense' ||
-        ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'HII', 'LDOS', 'AVAV', 'KTOS'].includes(stock.symbol)
-      );
-
-      // Create completely clean content without any formatting artifacts
-      const keyDevelopments = [
-        "Commercial Reserve Manufacturing Network Proposal: The House Appropriations Committee has proposed $131 million in its draft of fiscal 2026 military spending legislation to establish a Commercial Reserve Manufacturing Network. This network would include high-tech commercial factories that could be tapped during wartime to mass produce weapons.",
-        "Bradley Replacement Program: The U.S. Army has signed off on two industry teams to begin building prototypes for the Bradley replacement program. The total value of both contracts awarded at the start of the design phase is approximately $1.6 billion, with the overall program expected to be worth about $45 billion.",
-        "Defense Technology Advancement: American Rheinmetall Defense's team includes Textron Systems, RTX, L3Harris Technologies, and Allison Transmission, as well as artificial intelligence-focused company Anduril Technologies for next-generation combat vehicle development.",
-        "International Defense Cooperation: NATO allies continue expanding joint defense procurement initiatives, strengthening supply chain resilience and interoperability across member nations.",
-        "Space Defense Initiative: Pentagon continues advancing space-based defense capabilities with multi-billion dollar investments in satellite defense systems and orbital surveillance technologies."
-      ];
-
-      const summary = `Today's comprehensive defense intelligence analysis reveals significant developments across multiple sectors of the global defense industry, driven by evolving geopolitical dynamics and sustained technological advancement. Key areas of current focus include defense contract awards and funding initiatives, corporate financial performance and market dynamics, geopolitical tensions and security developments, advanced defense technologies and innovation, each presenting unique opportunities and strategic implications for defense contractors, government agencies, and institutional investors. Defense industry fundamentals remain exceptionally robust, supported by multi-year government contracts, expanding international partnerships, and ongoing force modernization requirements across all service branches. The sector continues benefiting from sustained innovation cycles, particularly in artificial intelligence applications, space-based defense systems, and next-generation missile defense platforms. Investment outlook remains positive with key catalysts including congressional defense appropriations, international sales opportunities, and technological breakthrough developments. Investors should monitor ongoing geopolitical developments, Pentagon budget allocations, and major contract award announcements as primary drivers of sector performance and individual company growth trajectories.`;
-
-      const marketImpact = `Defense contractors continue to benefit from sustained government spending and geopolitical tensions driving increased procurement activities. Major defense stocks are showing resilient performance with sustained institutional investor confidence. The sector demonstrates strong fundamentals with robust order backlogs, multi-year contracts providing revenue visibility, and expanding international partnerships. Current market dynamics favor established defense primes with proven track records in complex systems integration and program management capabilities.`;
-
-      const geopoliticalAnalysis = `Global defense landscape continues evolving with heightened tensions in multiple theaters driving sustained demand for advanced military capabilities. Eastern European security concerns maintain elevated defense spending across NATO member nations. Indo-Pacific region security dynamics support continued U.S. military presence and alliance partnerships. Middle East stability requirements sustain demand for sophisticated defense systems and intelligence capabilities. The convergence of traditional military requirements with emerging cyber and space-based threats creates expanding market opportunities for defense contractors specializing in multi-domain operational capabilities.`;
-
-      const defenseStockHighlights = defenseStocks.slice(0, 6).map(stock => ({
-        symbol: stock.symbol,
-        name: stock.name,
-        change: stock.change || 0,
-        changePercent: stock.changePercent || 0,
-        reason: `${(stock.changePercent || 0) >= 0 ? 'Positive' : 'Negative'} market response to defense sector developments and sustained government contract activity`
-      }));
-
-      const defenseIntelligence = {
-        id: Math.floor(Math.random() * 1000000),
-        title: `Defense Intelligence Brief - ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
-        summary,
-        date: today,
-        createdAt: new Date(),
-        keyDevelopments,
-        marketImpact,
-        conflictUpdates: [],
-        defenseStockHighlights,
-        pharmaceuticalStockHighlights: [],
-        geopoliticalAnalysis
-      };
-
-      // Store in database
-      const insertData = {
-        title: defenseIntelligence.title,
-        summary: defenseIntelligence.summary,
-        date: defenseIntelligence.date,
-        keyDevelopments: defenseIntelligence.keyDevelopments,
-        marketImpact: defenseIntelligence.marketImpact,
-        conflictUpdates: [],
-        defenseStockHighlights: defenseIntelligence.defenseStockHighlights,
-        pharmaceuticalStockHighlights: [],
-        geopoliticalAnalysis: defenseIntelligence.geopoliticalAnalysis
-      };
-
-      await storage.createDailyNews(insertData, 'defense');
-      console.log('✅ Clean formatted defense intelligence brief stored successfully');
-      
-      res.json(defenseIntelligence);
-    } catch (error) {
-      console.error("Error generating defense intelligence brief:", error);
-      res.status(500).json({ error: "Failed to generate defense intelligence brief" });
-    }
-  });
-
+  
   // Dedicated Perplexity AI pharmaceutical intelligence endpoint
   app.get("/api/pharma-intelligence", async (req, res) => {
     try {
@@ -1970,25 +1616,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate comprehensive energy intelligence using Perplexity AI
       const energyPrompt = `Generate a comprehensive energy intelligence briefing for ${today}. Include:
-
-1. Global energy market overview and current trends
-2. Oil and gas market developments with specific price movements
-3. Renewable energy sector updates and policy changes
-4. Energy security issues and geopolitical implications
-5. Major energy company developments and stock movements
-6. Climate policy impacts on energy markets
-7. Infrastructure and supply chain updates
-
-Focus on actionable intelligence for energy sector investors. Include specific company names when relevant.
-
-Format the response as a professional intelligence brief with clear sections for:
-- Executive Summary
-- Key Developments (5-7 bullet points)
-- Market Impact Analysis
-- Geopolitical Analysis
-- Energy Stock Highlights (mention specific companies and reasons)
-
-Keep the tone professional and avoid redundant symbols like asterisks.`;
+      
+      1. Global energy market overview and current trends
+      2. Oil and gas market developments with specific price movements
+      3. Renewable energy sector updates and policy changes
+      4. Energy security issues and geopolitical implications
+      5. Major energy company developments and stock movements
+      6. Climate policy impacts on energy markets
+      7. Infrastructure and supply chain updates
+      
+      Focus on actionable intelligence for energy sector investors. Include specific company names when relevant.
+      
+      Format the response as a professional intelligence brief with clear sections for:
+      - Executive Summary
+      - Key Developments (5-7 bullet points)
+      - Market Impact Analysis
+      - Geopolitical Analysis
+      - Energy Stock Highlights (mention specific companies and reasons)
+      
+      Keep the tone professional and avoid redundant symbols like asterisks.`;
 
       console.log('🔋 Generating energy intelligence using Perplexity AI...');
       
@@ -2040,7 +1686,8 @@ Keep the tone professional and avoid redundant symbols like asterisks.`;
         } else if (section.toLowerCase().includes('geopolitical')) {
           geopoliticalAnalysis = section.replace(/geopolitical analysis:?/i, '').trim();
         }
-      }
+      ```
+    }
 
       // If parsing failed, use fallback structure
       if (!summary) {
@@ -2164,20 +1811,20 @@ Keep the tone professional and avoid redundant symbols like asterisks.`;
   app.get("/api/news/energy/today", async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Get energy brief specifically by sector
       let news = await storage.getDailyNews(today, 'energy');
-      
+
       // If no existing data, generate new comprehensive energy intelligence
       if (!news) {
         console.log('No existing energy intelligence found, generating fresh data...');
-        news = await generateEnergyIntelligence();
+        news = await energyService.generateEnergyIntelligence();
       }
-      
+
       if (!news) {
-        return res.status(404).json({ error: "No energy news available for today" });
+        return res.status(404).json({ error: "No energy news available - please ensure PERPLEXITY_API_KEY is configured" });
       }
-      
+
       res.json(news);
     } catch (error) {
       console.error("Error fetching energy news:", error);
@@ -2188,12 +1835,12 @@ Keep the tone professional and avoid redundant symbols like asterisks.`;
   app.post("/api/news/energy/generate", async (req, res) => {
     try {
       console.log('🔋 Generating fresh energy intelligence brief...');
-      const energyIntelligence = await generateEnergyIntelligence();
-      
+      const energyIntelligence = await energyService.generateEnergyIntelligence();
+
       if (!energyIntelligence) {
-        return res.status(500).json({ error: "Failed to generate energy intelligence brief" });
+        return res.status(500).json({ error: "Failed to generate energy intelligence brief - please ensure PERPLEXITY_API_KEY is configured" });
       }
-      
+
       res.json(energyIntelligence);
     } catch (error) {
       console.error("Error generating energy intelligence brief:", error);
@@ -2205,26 +1852,20 @@ Keep the tone professional and avoid redundant symbols like asterisks.`;
   app.get("/api/news/defense/today", async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Get defense brief specifically by sector
       let news = await storage.getDailyNews(today, 'defense');
-      
+
       // If no existing data, generate new comprehensive defense intelligence
       if (!news) {
         console.log('No existing defense intelligence found, generating fresh data...');
         news = await perplexityDefenseService.generateComprehensiveDefenseIntelligence();
-        
-        // If Perplexity AI fails, fallback to existing method
-        if (!news) {
-          console.log('Perplexity AI defense intelligence generation failed, trying fallback method...');
-          news = await perplexityDefenseService.getTodaysDefenseIntelligence();
-        }
       }
-      
+
       if (!news) {
-        return res.status(404).json({ error: "No defense news available for today" });
+        return res.status(404).json({ error: "No defense news available - please ensure PERPLEXITY_API_KEY is configured" });
       }
-      
+
       res.json(news);
     } catch (error) {
       console.error("Error fetching defense news:", error);
@@ -2232,807 +1873,102 @@ Keep the tone professional and avoid redundant symbols like asterisks.`;
     }
   });
 
-  // Enhanced Global Conflict Intelligence Routes
-  app.get("/api/conflicts/intelligence", async (req, res) => {
+  app.post("/api/news/defense/generate", async (req, res) => {
     try {
-      console.log('🌍 Fetching comprehensive global conflict intelligence...');
-      
-      // Generate fresh conflict intelligence with Perplexity AI
-      const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
-      
-      if (!conflictIntelligence || conflictIntelligence.length === 0) {
-        return res.status(404).json({ error: "No conflict intelligence available" });
+      console.log('🛡️ Generating fresh defense intelligence brief...');
+      const defenseIntelligence = await perplexityDefenseService.generateComprehensiveDefenseIntelligence();
+
+      if (!defenseIntelligence) {
+        return res.status(500).json({ error: "Failed to generate defense intelligence brief - please ensure PERPLEXITY_API_KEY is configured" });
       }
 
-      res.json({
-        timestamp: new Date().toISOString(),
-        conflictCount: conflictIntelligence.length,
-        conflicts: conflictIntelligence
-      });
+      res.json(defenseIntelligence);
     } catch (error) {
-      console.error("Error fetching global conflict intelligence:", error);
-      res.status(500).json({ error: "Failed to fetch conflict intelligence" });
+      console.error("Error generating defense intelligence brief:", error);
+      res.status(500).json({ error: "Failed to generate defense intelligence brief" });
     }
   });
 
-  app.post("/api/conflicts/intelligence/generate", async (req, res) => {
-    try {
-      console.log('🌍 Generating fresh global conflict intelligence...');
-      
-      const conflictIntelligence = await perplexityConflictService.generateComprehensiveConflictUpdates();
-      
-      if (!conflictIntelligence || conflictIntelligence.length === 0) {
-        return res.status(500).json({ error: "Failed to generate conflict intelligence" });
-      }
-
-      console.log(`✅ Generated intelligence for ${conflictIntelligence.length} conflict regions`);
-      
-      res.json({
-        success: true,
-        timestamp: new Date().toISOString(),
-        conflictCount: conflictIntelligence.length,
-        conflicts: conflictIntelligence
-      });
-    } catch (error) {
-      console.error("Error generating global conflict intelligence:", error);
-      res.status(500).json({ error: "Failed to generate conflict intelligence" });
-    }
-  });
-
-  // Daily Quiz Routes
-  app.get("/api/quiz/today", async (req, res) => {
-    try {
-      const quiz = await quizService.getTodaysQuiz();
-      if (!quiz) {
-        return res.status(404).json({ error: "No quiz available for today" });
-      }
-      res.json(quiz);
-    } catch (error) {
-      console.error("Error fetching today's quiz:", error);
-      res.status(500).json({ error: "Failed to fetch today's quiz" });
-    }
-  });
-
-  app.get("/api/quiz/leaderboard", async (req, res) => {
+  // Update the pharma news routes to ensure no fallback
+  app.get("/api/news/pharma/today", async (req, res) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      
-      // Direct SQL query for leaderboard
-      const result = await pool.query(`
-        SELECT 
-          uqr.user_id,
-          uqr.total_points,
-          uqr.score,
-          uqr.time_bonus,
-          uqr.completed_at,
-          u.username,
-          u.first_name,
-          u.last_name,
-          u.email
-        FROM user_quiz_responses uqr
-        LEFT JOIN users u ON uqr.user_id = u.id
-        INNER JOIN daily_quizzes dq ON uqr.quiz_id = dq.id
-        WHERE dq.date = $1
-        ORDER BY uqr.total_points DESC, uqr.completed_at ASC
-      `, [today]);
 
-      // Generate proper usernames for leaderboard
-      const leaderboard = result.rows.map(row => {
-        let username = 'Anonymous';
-        
-        // If user exists in database, use their info
-        if (row.username) {
-          username = row.username;
-        } else if (row.first_name) {
-          username = row.first_name;
-        } else if (row.email) {
-          username = row.email.split('@')[0];
-        } else if (row.user_id.startsWith('anon_')) {
-          // For anonymous users, create a friendly anonymous username
-          const parts = row.user_id.split('_');
-          if (parts.length >= 3) {
-            username = `Anonymous${parts[2].slice(-4)}`;
-          } else {
-            username = `Anonymous${row.user_id.slice(-4)}`;
-          }
-        }
+      // Get pharmaceutical brief specifically by sector
+      let news = await storage.getDailyNews(today, 'pharmaceutical');
 
-        return {
-          username,
-          totalPoints: row.total_points,
-          score: row.score,
-          timeBonus: row.time_bonus,
-          completedAt: row.completed_at,
-        };
-      });
+      // If no pharmaceutical brief exists, generate new one
+      if (!news) {
+        console.log('No pharmaceutical intelligence found, generating pharmaceutical data...');
+        news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      }
 
-      res.json(leaderboard);
+      if (!news) {
+        return res.status(404).json({ error: "No pharmaceutical news available - please ensure PERPLEXITY_API_KEY is configured" });
+      }
+
+      res.json(news);
     } catch (error) {
-      console.error("Error fetching quiz leaderboard:", error);
-      console.error("Error stack:", error.stack);
-      res.status(500).json({ error: "Failed to fetch quiz leaderboard" });
+      console.error("Error fetching today's pharma news:", error);
+      res.status(500).json({ error: "Failed to fetch today's pharma news" });
     }
   });
 
-  app.post("/api/quiz/:quizId/submit", async (req, res) => {
+  app.post("/api/news/pharma/generate", async (req, res) => {
     try {
-      const quizId = parseInt(req.params.quizId);
-      const { responses, completionTimeSeconds } = req.body;
-      
-      // Get user ID from session or use anonymous ID
-      let userId: string;
-      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
-        userId = req.user.claims.sub;
-      } else {
-        // Generate anonymous user ID for non-authenticated users
-        userId = `anon_quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      console.log('🔬 Manual pharmaceutical intelligence brief generation requested...');
+
+      // Generate fresh pharmaceutical intelligence using Perplexity AI
+      const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+
+      if (!news) {
+        return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief - please ensure PERPLEXITY_API_KEY is configured" });
       }
 
-      if (!Array.isArray(responses)) {
-        return res.status(400).json({ error: "Responses must be an array" });
-      }
-
-      // Check if user already submitted this quiz (use storage directly)
-      const existingResponse = await storage.getUserQuizResponse(userId, quizId);
-      if (existingResponse) {
-        return res.status(400).json({ error: "Quiz already completed" });
-      }
-
-      // Get quiz to calculate score - use the same system as the GET endpoint
-      const quiz = await quizService.getTodaysQuiz();
-      if (!quiz || quiz.id !== quizId) {
-        return res.status(404).json({ error: "Quiz not found" });
-      }
-
-      const questions = quiz.questions as any[];
-      let score = 0;
-
-      responses.forEach((response, index) => {
-        if (response === questions[index]?.correctAnswer) {
-          score++;
-        }
-      });
-
-      // Calculate points: 500 points per correct answer
-      const basePoints = score * 500;
-      
-      // Calculate time bonus: Maximum 300 points for completing under 300 seconds
-      let timeBonus = 0;
-      if (completionTimeSeconds !== undefined && completionTimeSeconds <= 300) {
-        timeBonus = Math.max(0, 300 - completionTimeSeconds);
-      }
-      
-      const totalPoints = basePoints + timeBonus;
-
-      // Save quiz response using storage directly
-      await storage.createUserQuizResponse({
-        userId,
-        quizId,
-        responses: responses as any,
-        score,
-        totalPoints,
-        timeBonus,
-        completionTimeSeconds: completionTimeSeconds || null
-      });
-
-      const result = { score, total: responses.length, totalPoints, timeBonus };
-      
-      res.json(result);
+      console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');
+      res.json(news);
     } catch (error) {
-      console.error("Error submitting quiz response:", error);
-      res.status(500).json({ error: "Failed to submit quiz response" });
+      console.error("Error generating pharmaceutical intelligence brief:", error);
+      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
     }
   });
-
-  app.get("/api/quiz/:quizId/response", isAuthenticated, async (req, res) => {
+  
+  // Dedicated Perplexity AI pharmaceutical intelligence endpoint
+  app.get("/api/pharma-intelligence", async (req, res) => {
     try {
-      const quizId = parseInt(req.params.quizId);
-      const userId = req.user?.claims?.sub;
-
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
+      console.log('Generating fresh pharmaceutical intelligence using Perplexity AI...');
+      const intelligence = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      
+      if (!intelligence) {
+        return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
       }
-
-      const response = await quizStorage.getUserQuizResponse(userId, quizId);
-      res.json(response || null);
+      
+      res.json(intelligence);
     } catch (error) {
-      console.error("Error fetching quiz response:", error);
-      res.status(500).json({ error: "Failed to fetch quiz response" });
+      console.error("Error generating pharmaceutical intelligence:", error);
+      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
     }
   });
-
-  // Check if user has completed today's quiz
-  app.get("/api/quiz/today/completion-status", isAuthenticated, async (req, res) => {
+  
+  // Defense Intelligence Latest Endpoint
+  app.get("/api/news/defense/latest", async (req, res) => {
     try {
-      const userId = req.user?.claims?.sub;
-
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
+      const news = await perplexityDefenseService.getTodaysDefenseIntelligence();
+      if (!news) {
+        return res.status(404).json({ error: "No defense intelligence available" });
       }
-
-      const quiz = await quizService.getTodaysQuiz();
-      if (!quiz) {
-        return res.json({ completed: false, response: null });
-      }
-
-      const response = await quizStorage.getUserQuizResponse(userId, quiz.id);
-      res.json({ 
-        completed: !!response, 
-        response: response || null,
-        quizId: quiz.id
-      });
+      res.json(news);
     } catch (error) {
-      console.error("Error checking quiz completion status:", error);
-      res.status(500).json({ error: "Failed to check quiz completion status" });
+      console.error("Error fetching latest defense intelligence:", error);
+      res.status(500).json({ error: "Failed to fetch defense intelligence" });
     }
   });
 
-  // This route was conflicting with individual discussion route - removed
+  
 
-  // Individual discussion endpoint - CRITICAL FIX
-  app.get('/api/discussions/:id(\\d+)', async (req, res) => {
-    try {
-      const discussionId = parseInt(req.params.id);
-      console.log("DISCUSSION ENDPOINT HIT - ID:", discussionId);
-      
-      // Direct database query
-      const result = await pool.query(`
-        SELECT 
-          d.id, d.title, d.content, d.author_id, d.category, d.tags,
-          d.upvotes, d.downvotes, d.reply_count, d.last_activity_at,
-          d.created_at, d.updated_at,
-          u.id as user_id, u.username, u.first_name, u.last_name, u.profile_image_url
-        FROM discussions d
-        LEFT JOIN users u ON d.author_id = u.id
-        WHERE d.id = $1
-      `, [discussionId]);
-      
-      console.log("Database result rows:", result.rows.length);
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Discussion not found" });
-      }
-      
-      const row = result.rows[0];
-      const discussion = {
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        authorId: row.author_id,
-        category: row.category,
-        tags: row.tags || [],
-        upvotes: row.upvotes,
-        downvotes: row.downvotes,
-        replyCount: row.reply_count,
-        lastActivityAt: row.last_activity_at,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        author: {
-          id: row.user_id,
-          username: row.username,
-          firstName: row.first_name,
-          lastName: row.last_name,
-          profileImageUrl: row.profile_image_url,
-        }
-      };
-      
-      console.log("Returning discussion:", discussion.title);
-      res.json(discussion);
-    } catch (error) {
-      console.error("Discussion endpoint error:", error);
-      res.status(500).json({ error: "Server error" });
-    }
-  });
+  
 
-  // Get current online users count
-  app.get('/api/chat/online-count', async (req, res) => {
-    res.json({ count: activeConnections });
-  });
-
-  // Chat username validation endpoints
-  app.get('/api/chat/username/:username/available', async (req, res) => {
-    try {
-      const username = req.params.username.trim();
-      
-      if (!username || username.length < 2 || username.length > 30) {
-        return res.json({ available: false, reason: 'Username must be 2-30 characters' });
-      }
-      
-      // Check for reserved usernames
-      const reserved = ['admin', 'system', 'bot', 'moderator', 'support'];
-      if (reserved.includes(username.toLowerCase())) {
-        return res.json({ available: false, reason: 'Username is reserved' });
-      }
-      
-      const { chatUsers, chatMessages } = await import('@shared/schema');
-      const { eq } = await import('drizzle-orm');
-      
-      // Check if username is already registered
-      const existingUser = await db.select().from(chatUsers)
-        .where(eq(chatUsers.username, username))
-        .limit(1);
-      
-      if (existingUser.length > 0) {
-        return res.json({ 
-          available: false, 
-          reason: 'Username is already taken' 
-        });
-      }
-      
-      // Check if username has been used in previous messages
-      const existingMessage = await db.select().from(chatMessages)
-        .where(eq(chatMessages.username, username))
-        .limit(1);
-      
-      if (existingMessage.length > 0) {
-        return res.json({ 
-          available: false, 
-          reason: 'Username has been used by another user' 
-        });
-      }
-      
-      res.json({ 
-        available: true, 
-        reason: null 
-      });
-    } catch (error) {
-      console.error('Error checking username availability:', error);
-      res.status(500).json({ available: false, reason: 'Server error' });
-    }
-  });
-
-  app.post('/api/chat/username/register', async (req, res) => {
-    try {
-      const { username } = req.body;
-      
-      if (!username || typeof username !== 'string') {
-        return res.status(400).json({ error: 'Username is required' });
-      }
-      
-      const trimmedUsername = username.trim();
-      
-      if (trimmedUsername.length < 2 || trimmedUsername.length > 30) {
-        return res.status(400).json({ error: 'Username must be 2-30 characters' });
-      }
-      
-      const { chatUsers } = await import('@shared/schema');
-      
-      try {
-        const [newUser] = await db.insert(chatUsers).values({
-          username: trimmedUsername,
-          lastActive: new Date(),
-        }).returning();
-        
-        res.json({ success: true, user: newUser });
-      } catch (dbError: any) {
-        if (dbError.code === '23505') { // Unique constraint violation
-          return res.status(409).json({ error: 'Username is already taken' });
-        }
-        throw dbError;
-      }
-    } catch (error) {
-      console.error('Error registering username:', error);
-      res.status(500).json({ error: 'Failed to register username' });
-    }
-  });
-
-  // Chat message endpoints (must come before generic chat routes)
-  app.get('/api/chat/messages', async (req, res) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 50;
-      const sector = req.query.sector as string;
-      
-      console.log('Chat messages request - limit:', limit, 'sector:', sector);
-      
-      // Direct database query to fix the method binding issue
-      const { chatMessages } = await import('@shared/schema');
-      const { desc, eq, isNull } = await import('drizzle-orm');
-      
-      let messages;
-      if (sector) {
-        console.log('Querying with sector filter:', sector);
-        // Handle "general" sector by filtering for null values in database
-        if (sector === 'general') {
-          const { and } = await import('drizzle-orm');
-          const rawMessages = await db.select().from(chatMessages)
-            .where(and(
-              isNull(chatMessages.sector),
-              isNull(chatMessages.dailyQuestionId) // Exclude daily question replies
-            ))
-            .orderBy(desc(chatMessages.timestamp))
-            .limit(limit);
-          
-          // Add reply counts manually
-          messages = await Promise.all(rawMessages.map(async (msg) => {
-            const { count } = await import('drizzle-orm');
-            const replyCountResult = await db.select({ count: count() }).from(chatMessages)
-              .where(eq(chatMessages.replyToId, msg.id));
-            return {
-              ...msg,
-              replyCount: replyCountResult[0]?.count || 0
-            };
-          }));
-        } else {
-          const { and } = await import('drizzle-orm');
-          const rawMessages = await db.select().from(chatMessages)
-            .where(and(
-              eq(chatMessages.sector, sector),
-              isNull(chatMessages.dailyQuestionId) // Exclude daily question replies
-            ))
-            .orderBy(desc(chatMessages.timestamp))
-            .limit(limit);
-          
-          // Add reply counts manually
-          messages = await Promise.all(rawMessages.map(async (msg) => {
-            const { count } = await import('drizzle-orm');
-            const replyCountResult = await db.select({ count: count() }).from(chatMessages)
-              .where(eq(chatMessages.replyToId, msg.id));
-            return {
-              ...msg,
-              replyCount: replyCountResult[0]?.count || 0
-            };
-          }));
-        }
-      } else {
-        console.log('Querying all messages');
-        const rawMessages = await db.select().from(chatMessages)
-          .where(isNull(chatMessages.dailyQuestionId)) // Exclude daily question replies
-          .orderBy(desc(chatMessages.timestamp))
-          .limit(limit);
-        
-        // Add reply counts manually
-        messages = await Promise.all(rawMessages.map(async (msg) => {
-          const { count } = await import('drizzle-orm');
-          const replyCountResult = await db.select({ count: count() }).from(chatMessages)
-            .where(eq(chatMessages.replyToId, msg.id));
-          return {
-            ...msg,
-            replyCount: replyCountResult[0]?.count || 0
-          };
-        }));
-      }
-      
-      console.log('Query result:', messages.length, 'messages found');
-      res.json(messages.reverse()); // Return in chronological order
-    } catch (error) {
-      console.error('Error fetching chat messages:', error);
-      res.status(500).json({ error: 'Failed to fetch chat messages' });
-    }
-  });
-
-  app.post('/api/chat/messages', async (req, res) => {
-    try {
-      const { username, message, sector, replyToId, replyToUser } = req.body;
-      
-      if (!username || !message) {
-        return res.status(400).json({ error: 'Username and message are required' });
-      }
-
-      // Handle daily question replies
-      const isDailyQuestionReply = replyToUser === "Daily Question";
-      const dailyQuestionId = isDailyQuestionReply ? replyToId : null;
-      
-      // Direct database insertion to fix the method binding issue
-      // Store "general" messages with null sector to separate them from other channels
-      const messageToInsert = {
-        username,
-        message,
-        sector: sector === 'general' ? null : sector,
-        isSystem: false,
-        replyToId: isDailyQuestionReply ? null : (replyToId || null), // Daily question replies are top-level
-        replyToUser: isDailyQuestionReply ? null : (replyToUser || null),
-        isDailyQuestionReply,
-        dailyQuestionId,
-      };
-      
-      const { chatMessages } = await import('@shared/schema');
-      const [newMessage] = await db.insert(chatMessages).values(messageToInsert).returning();
-
-      res.json(newMessage);
-    } catch (error) {
-      console.error('Error creating chat message:', error);
-      res.status(500).json({ error: 'Failed to create chat message' });
-    }
-  });
-
-  // Get replies for a specific message
-  app.get('/api/chat/messages/:messageId/replies', async (req, res) => {
-    try {
-      const messageId = parseInt(req.params.messageId);
-      
-      if (!messageId) {
-        return res.status(400).json({ error: 'Invalid message ID' });
-      }
-
-      const { chatMessages } = await import('@shared/schema');
-      const { eq, desc } = await import('drizzle-orm');
-      
-      const replies = await db.select().from(chatMessages)
-        .where(eq(chatMessages.replyToId, messageId))
-        .orderBy(desc(chatMessages.timestamp));
-      
-      res.json(replies);
-    } catch (error) {
-      console.error('Error fetching message replies:', error);
-      res.status(500).json({ error: 'Failed to fetch replies' });
-    }
-  });
-
-  // Get replies for a daily question (filtered by sector)
-  app.get('/api/daily-questions/:questionId/replies', async (req, res) => {
-    try {
-      const questionId = parseInt(req.params.questionId);
-      const sector = req.query.sector as string;
-      
-      if (!questionId) {
-        return res.status(400).json({ error: 'Invalid question ID' });
-      }
-
-      const { chatMessages } = await import('@shared/schema');
-      const { eq, desc, and } = await import('drizzle-orm');
-      
-      let whereClause = eq(chatMessages.dailyQuestionId, questionId);
-      
-      // Filter by sector if provided
-      if (sector) {
-        whereClause = and(
-          eq(chatMessages.dailyQuestionId, questionId),
-          eq(chatMessages.sector, sector)
-        );
-      }
-      
-      const replies = await db.select().from(chatMessages)
-        .where(whereClause)
-        .orderBy(desc(chatMessages.timestamp));
-      
-      res.json(replies);
-    } catch (error) {
-      console.error('Error fetching daily question replies:', error);
-      res.status(500).json({ error: 'Failed to fetch daily question replies' });
-    }
-  });
-
-  // Chat API routes (generic category-based discussions)
-  app.get('/api/chat/:category', async (req, res) => {
-    try {
-      const category = req.params.category || 'general';
-      const limit = 50;
-      
-      // Add cache-busting headers to force fresh data delivery
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-      
-      const messages = await discussionStorage.getDiscussions(limit, 0, category);
-      console.log("API returning messages count:", messages.length);
-      if (messages.length > 0) {
-        console.log("First message author data:", JSON.stringify(messages[0].author, null, 2));
-        console.log("First message tags data:", JSON.stringify(messages[0].tags, null, 2));
-      }
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching chat messages:", error);
-      res.status(500).json({ error: "Failed to fetch messages" });
-    }
-  });
-
-  app.post('/api/chat', async (req, res) => {
-    try {
-      const { content, category = "general", tempUsername } = req.body;
-      
-      if (!content || !content.trim()) {
-        return res.status(400).json({ error: "Message content is required" });
-      }
-
-      if (!tempUsername || !tempUsername.trim()) {
-        return res.status(400).json({ error: "Username is required" });
-      }
-
-      const cleanUsername = tempUsername.trim();
-      
-      // Use authenticated user ID if available, otherwise generate anonymous ID
-      let userId: string;
-      if (req.isAuthenticated && req.isAuthenticated() && req.user?.claims?.sub) {
-        userId = req.user.claims.sub;
-        console.log(`Chat from authenticated user ID: ${userId} with username: ${cleanUsername}`);
-      } else {
-        // Generate anonymous user ID based on tempUsername for consistent identity
-        userId = `anon_${Buffer.from(cleanUsername).toString('base64')}`;
-        console.log(`Chat from anonymous user with temp username: ${cleanUsername}`);
-      }
-
-      // Check for username uniqueness in chat using discussionStorage
-      const existingMessages = await discussionStorage.getDiscussions(100, 0, category);
-      const usernameConflict = existingMessages.find(msg => {
-        const msgUsername = msg.tags && msg.tags.length > 0 ? msg.tags[0] : null;
-        return msgUsername === cleanUsername && msg.authorId !== userId;
-      });
-
-      if (usernameConflict) {
-        return res.status(400).json({ 
-          error: "Username already taken by another user",
-          suggestion: `Try ${cleanUsername}2 or ${cleanUsername}_${new Date().getFullYear()}`
-        });
-      }
-      
-      const message = await discussionStorage.createDiscussion({
-        title: "Chat Message",
-        content: content.trim(),
-        authorId: userId,
-        category,
-        tags: [cleanUsername], // Store temp username in tags for display
-      });
-      
-      res.status(201).json(message);
-    } catch (error) {
-      console.error("Error creating chat message:", error);
-      res.status(500).json({ error: "Failed to send message" });
-    }
-  });
-
-  app.get('/api/discussions', async (req, res) => {
-    try {
-      const category = req.query.category as string || 'general';
-      const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-      
-      const messages = await discussionStorage.getDiscussions(limit, 0, category);
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching chat messages:", error);
-      res.status(500).json({ error: "Failed to fetch messages" });
-    }
-  });
-
-  // Manual chat cleanup endpoint (for testing)
-  app.post('/api/chat/cleanup', async (req, res) => {
-    try {
-      await chatCleanupService.cleanupNow();
-      res.json({ message: "Chat cleanup completed successfully" });
-    } catch (error) {
-      console.error("Manual chat cleanup failed:", error);
-      res.status(500).json({ error: "Failed to cleanup chat messages" });
-    }
-  });
-
-  app.post('/api/discussions', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      
-      const { title, content, category = "general", tags = [] } = req.body;
-      
-      if (!title || !title.trim() || !content || !content.trim()) {
-        return res.status(400).json({ error: "Title and content are required" });
-      }
-      
-      const discussion = await discussionStorage.createDiscussion({
-        title,
-        content,
-        authorId: userId,
-        category,
-        tags,
-      });
-      
-      res.status(201).json(discussion);
-    } catch (error) {
-      console.error("Error creating discussion:", error);
-      res.status(500).json({ error: "Failed to create discussion" });
-    }
-  });
-
-  app.get('/api/discussions/:id/replies', async (req, res) => {
-    try {
-      const discussionId = parseInt(req.params.id);
-      const replies = await discussionStorage.getDiscussionReplies(discussionId);
-      res.json(replies);
-    } catch (error) {
-      console.error("Error fetching replies:", error);
-      res.status(500).json({ error: "Failed to fetch replies" });
-    }
-  });
-
-  app.post('/api/discussions/:id/replies', isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      
-      const discussionId = parseInt(req.params.id);
-      const { content, parentReplyId } = req.body;
-      
-      if (!content) {
-        return res.status(400).json({ error: "Content is required" });
-      }
-      
-      const reply = await discussionStorage.createDiscussionReply({
-        discussionId,
-        content,
-        authorId: userId.toString(),
-        parentReplyId: parentReplyId || null,
-      });
-      
-      res.status(201).json(reply);
-    } catch (error) {
-      console.error("Error creating reply:", error);
-      res.status(500).json({ error: "Failed to create reply" });
-    }
-  });
-
-  // Like/unlike a discussion thread
-  app.post('/api/discussions/:id/like', async (req, res) => {
-    try {
-      // Using session-based authentication
-      const userId = req.session?.user?.id || 2; // Default to user 2 for demo
-      
-      const discussionId = parseInt(req.params.id);
-      await discussionStorage.voteOnDiscussion(parseInt(userId), discussionId, 'up');
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error liking discussion:", error);
-      res.status(500).json({ error: "Failed to like discussion" });
-    }
-  });
-
-  // Like/unlike a reply
-  app.post('/api/discussions/replies/:id/like', async (req, res) => {
-    try {
-      // Using session-based authentication
-      const userId = req.session?.user?.id || 2; // Default to user 2 for demo
-      
-      const replyId = parseInt(req.params.id);
-      await discussionStorage.voteOnReply(parseInt(userId), replyId, 'up');
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error liking reply:", error);
-      res.status(500).json({ error: "Failed to like reply" });
-    }
-  });
-
-  app.post('/api/discussions/:id/vote', async (req, res) => {
-    try {
-      // For now, using a demo user ID since auth is not fully implemented
-      const userId = 1;
-      const discussionId = parseInt(req.params.id);
-      const { voteType } = req.body;
-      
-      if (!['up', 'down'].includes(voteType)) {
-        return res.status(400).json({ error: "Vote type must be 'up' or 'down'" });
-      }
-      
-      await discussionStorage.voteOnDiscussion(userId, discussionId, voteType);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error voting on discussion:", error);
-      res.status(500).json({ error: "Failed to vote on discussion" });
-    }
-  });
-
-  // Start real-time stock price updates when server starts
-  if (process.env.ALPHA_VANTAGE_API_KEY) {
-    console.log("Starting real-time stock price updates...");
-    stockService.startRealTimeUpdates();
-  } else {
-    console.warn("ALPHA_VANTAGE_API_KEY not found - real-time stock updates disabled");
-  }
-
-  // Start daily quiz scheduler - TEMPORARILY DISABLED TO FIX SECTOR SWITCHING BUG
-  // if (process.env.OPENAI_API_KEY) {
-  //   quizService.startDailyQuizScheduler();
-  //   console.log("Daily quiz scheduler started");
-  // } else {
-  //   console.warn("OPENAI_API_KEY not found - daily quiz generation disabled");
-  // }
-
-
-
-
+  
 
   // AI Analysis endpoints
   app.get('/api/analysis/predictions', async (req, res) => {
