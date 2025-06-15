@@ -60,6 +60,11 @@ export interface IStorage {
   createDailyNews(news: InsertDailyNews, sector: string): Promise<DailyNews>;
   deleteDailyNews(date: string): Promise<void>;
   
+  // Four-Step Intelligence
+  getFourStepIntelligence(date: string, sector: string): Promise<FourStepIntelligence | undefined>;
+  createFourStepIntelligence(intelligence: InsertFourStepIntelligence): Promise<FourStepIntelligence>;
+  deleteFourStepIntelligence(date: string, sector: string): Promise<void>;
+  
   // Quiz Leaderboard
   getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]>;
   
@@ -302,6 +307,23 @@ export class DatabaseStorage implements IStorage {
   async updateDailyNews(id: number, updateData: Partial<InsertDailyNews>): Promise<DailyNews> {
     const [news] = await db.update(dailyNews).set(updateData).where(eq(dailyNews.id, id)).returning();
     return news;
+  }
+
+  // Four-Step Intelligence Methods
+  async getFourStepIntelligence(date: string, sector: string): Promise<FourStepIntelligence | undefined> {
+    const [intelligence] = await db.select().from(fourStepIntelligence)
+      .where(and(eq(fourStepIntelligence.date, date), eq(fourStepIntelligence.sector, sector)));
+    return intelligence || undefined;
+  }
+
+  async createFourStepIntelligence(insertIntelligence: InsertFourStepIntelligence): Promise<FourStepIntelligence> {
+    const [intelligence] = await db.insert(fourStepIntelligence).values(insertIntelligence).returning();
+    return intelligence;
+  }
+
+  async deleteFourStepIntelligence(date: string, sector: string): Promise<void> {
+    await db.delete(fourStepIntelligence)
+      .where(and(eq(fourStepIntelligence.date, date), eq(fourStepIntelligence.sector, sector)));
   }
 
   async getDailyQuizLeaderboard(date: string): Promise<{ username: string; totalPoints: number; score: number; timeBonus: number; completedAt: Date | null }[]> {

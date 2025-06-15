@@ -1846,6 +1846,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import 4-Step Intelligence Service
+  const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
+
+  // Four-Step Intelligence Routes (Authentic Article Extraction)
+  app.get("/api/intelligence/defense/four-step", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if 4-step intelligence already exists
+      let intelligence = await storage.getFourStepIntelligence(today, 'defense');
+      
+      // If no existing data, generate using 4-step methodology
+      if (!intelligence) {
+        console.log('🔬 Generating 4-step defense intelligence with authentic article extraction...');
+        const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
+        
+        const insertData = {
+          date: today,
+          sector: 'defense',
+          title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
+          executiveSummary: fourStepBrief.executiveSummary,
+          keyDevelopments: fourStepBrief.keyDevelopments,
+          marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+          geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+          extractedArticles: fourStepBrief.extractedArticles,
+          sourceUrls: fourStepBrief.sourceUrls,
+          methodologyUsed: fourStepBrief.methodologyUsed,
+          articleCount: fourStepBrief.extractedArticles.length,
+          sourcesVerified: true
+        };
+        
+        intelligence = await storage.createFourStepIntelligence(insertData);
+        console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      }
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("❌ Error generating 4-step defense intelligence:", error);
+      res.status(500).json({ error: "Failed to generate 4-step defense intelligence" });
+    }
+  });
+
+  app.get("/api/intelligence/pharmaceutical/four-step", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if 4-step intelligence already exists
+      let intelligence = await storage.getFourStepIntelligence(today, 'pharmaceutical');
+      
+      // If no existing data, generate using 4-step methodology
+      if (!intelligence) {
+        console.log('🔬 Generating 4-step pharmaceutical intelligence with authentic article extraction...');
+        const fourStepBrief = await fourStepIntelligenceService.generatePharmaceuticalIntelligence();
+        
+        const insertData = {
+          date: today,
+          sector: 'pharmaceutical',
+          title: `Pharmaceutical Intelligence Brief - ${today} (4-Step Methodology)`,
+          executiveSummary: fourStepBrief.executiveSummary,
+          keyDevelopments: fourStepBrief.keyDevelopments,
+          marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+          geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+          extractedArticles: fourStepBrief.extractedArticles,
+          sourceUrls: fourStepBrief.sourceUrls,
+          methodologyUsed: fourStepBrief.methodologyUsed,
+          articleCount: fourStepBrief.extractedArticles.length,
+          sourcesVerified: true
+        };
+        
+        intelligence = await storage.createFourStepIntelligence(insertData);
+        console.log(`✅ 4-step pharmaceutical intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      }
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("❌ Error generating 4-step pharmaceutical intelligence:", error);
+      res.status(500).json({ error: "Failed to generate 4-step pharmaceutical intelligence" });
+    }
+  });
+
+  app.post("/api/intelligence/defense/four-step/regenerate", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Delete existing 4-step intelligence
+      await storage.deleteFourStepIntelligence(today, 'defense');
+      
+      console.log('🔬 Regenerating 4-step defense intelligence with fresh article extraction...');
+      const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
+      
+      const insertData = {
+        date: today,
+        sector: 'defense',
+        title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
+        executiveSummary: fourStepBrief.executiveSummary,
+        keyDevelopments: fourStepBrief.keyDevelopments,
+        marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+        geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+        extractedArticles: fourStepBrief.extractedArticles,
+        sourceUrls: fourStepBrief.sourceUrls,
+        methodologyUsed: fourStepBrief.methodologyUsed,
+        articleCount: fourStepBrief.extractedArticles.length,
+        sourcesVerified: true
+      };
+      
+      const intelligence = await storage.createFourStepIntelligence(insertData);
+      console.log(`✅ 4-step defense intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("❌ Error regenerating 4-step defense intelligence:", error);
+      res.status(500).json({ error: "Failed to regenerate 4-step defense intelligence" });
+    }
+  });
+
+  app.post("/api/intelligence/pharmaceutical/four-step/regenerate", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Delete existing 4-step intelligence
+      await storage.deleteFourStepIntelligence(today, 'pharmaceutical');
+      
+      console.log('🔬 Regenerating 4-step pharmaceutical intelligence with fresh article extraction...');
+      const fourStepBrief = await fourStepIntelligenceService.generatePharmaceuticalIntelligence();
+      
+      const insertData = {
+        date: today,
+        sector: 'pharmaceutical',
+        title: `Pharmaceutical Intelligence Brief - ${today} (4-Step Methodology)`,
+        executiveSummary: fourStepBrief.executiveSummary,
+        keyDevelopments: fourStepBrief.keyDevelopments,
+        marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+        geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+        extractedArticles: fourStepBrief.extractedArticles,
+        sourceUrls: fourStepBrief.sourceUrls,
+        methodologyUsed: fourStepBrief.methodologyUsed,
+        articleCount: fourStepBrief.extractedArticles.length,
+        sourcesVerified: true
+      };
+      
+      const intelligence = await storage.createFourStepIntelligence(insertData);
+      console.log(`✅ 4-step pharmaceutical intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("❌ Error regenerating 4-step pharmaceutical intelligence:", error);
+      res.status(500).json({ error: "Failed to regenerate 4-step pharmaceutical intelligence" });
+    }
+  });
+
   // Defense News Routes
   app.get("/api/news/defense/today", async (req, res) => {
     try {

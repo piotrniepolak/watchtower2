@@ -1,0 +1,296 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { ExternalLink, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ExtractedArticle {
+  title: string;
+  url: string;
+  source: string;
+  publishDate: string;
+  content: string;
+}
+
+interface FourStepIntelligence {
+  id: number;
+  date: string;
+  sector: string;
+  title: string;
+  executiveSummary: string;
+  keyDevelopments: string[];
+  marketImpactAnalysis: string;
+  geopoliticalAnalysis: string;
+  extractedArticles: ExtractedArticle[];
+  sourceUrls: string[];
+  methodologyUsed: string;
+  articleCount: number;
+  sourcesVerified: boolean;
+  createdAt: string;
+}
+
+interface FourStepIntelligenceBriefProps {
+  sector: 'defense' | 'pharmaceutical';
+}
+
+export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefProps) {
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Fetch 4-step intelligence
+  const { data: intelligence, isLoading, error } = useQuery<FourStepIntelligence>({
+    queryKey: [`/api/intelligence/${sector}/four-step`],
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnWindowFocus: false,
+  });
+
+  // Regenerate intelligence mutation
+  const regenerateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/intelligence/${sector}/four-step/regenerate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to regenerate intelligence');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
+      setIsRegenerating(false);
+    },
+    onError: () => {
+      setIsRegenerating(false);
+    },
+  });
+
+  const handleRegenerate = () => {
+    setIsRegenerating(true);
+    regenerateMutation.mutate();
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+            Loading 4-Step Intelligence Analysis...
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600">
+            <AlertTriangle className="h-5 w-5" />
+            Error Loading Intelligence
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertDescription>
+              Failed to load 4-step intelligence analysis. Please ensure PERPLEXITY_API_KEY is configured.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!intelligence) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>No Intelligence Available</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>No 4-step intelligence data found for today.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6 w-full">
+      {/* Header */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <CardTitle className="text-2xl font-bold">
+                {intelligence.title}
+              </CardTitle>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  {intelligence.methodologyUsed}
+                </Badge>
+                <Badge variant="secondary">
+                  {intelligence.articleCount} Authentic Articles
+                </Badge>
+                <Badge variant="outline">
+                  {intelligence.sourcesVerified ? 'Sources Verified' : 'Sources Pending'}
+                </Badge>
+                <Badge variant="outline">
+                  {new Date(intelligence.date).toLocaleDateString()}
+                </Badge>
+              </div>
+            </div>
+            <Button
+              onClick={handleRegenerate}
+              disabled={isRegenerating || regenerateMutation.isPending}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={cn("h-4 w-4", (isRegenerating || regenerateMutation.isPending) && "animate-spin")} />
+              Regenerate
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Executive Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Executive Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700 leading-relaxed">
+            {intelligence.executiveSummary}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Key Developments */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Key Developments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-3">
+            {intelligence.keyDevelopments.map((development, index) => (
+              <li key={index} className="flex items-start gap-3">
+                <div className="h-2 w-2 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
+                <p className="text-gray-700 leading-relaxed">{development}</p>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+
+      {/* Market Impact Analysis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Market Impact Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700 leading-relaxed">
+            {intelligence.marketImpactAnalysis}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Geopolitical Analysis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Geopolitical Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700 leading-relaxed">
+            {intelligence.geopoliticalAnalysis}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Extracted Articles */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Source Articles Used in Analysis</CardTitle>
+          <p className="text-sm text-gray-600">
+            {intelligence.articleCount} authentic articles extracted from verified news sources
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {intelligence.extractedArticles.map((article, index) => (
+              <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 space-y-2">
+                    <h4 className="font-semibold text-gray-900 line-clamp-2">
+                      {article.title}
+                    </h4>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="font-medium">{article.source}</span>
+                      <Separator orientation="vertical" className="h-4" />
+                      <span>{article.publishDate}</span>
+                    </div>
+                    {article.content && (
+                      <p className="text-sm text-gray-700 line-clamp-3">
+                        {article.content}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="flex-shrink-0"
+                  >
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Read
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Methodology Information */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-lg text-blue-900">4-Step Methodology</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3 text-sm text-blue-800">
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">1</div>
+              <p>Identify exactly 20 news sources (15 sector-specific + 5 general)</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">2</div>
+              <p>Extract ALL articles published today/yesterday from these sources</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">3</div>
+              <p>Use ONLY extracted articles to write analysis sections</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">4</div>
+              <p>Include direct article URLs without modification</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
