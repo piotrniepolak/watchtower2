@@ -484,7 +484,7 @@ Provide specific recent events from the past 24-48 hours with exact details: com
     }
 
     if (companyMatches.length > 0) {
-      const uniqueCompanies = [...new Set(companyMatches.slice(0, 3))];
+      const uniqueCompanies = Array.from(new Set(companyMatches.slice(0, 3)));
       summary += `Major defense contractors including ${uniqueCompanies.join(', ')} are central to today's market developments and strategic initiatives. `;
     }
 
@@ -518,7 +518,7 @@ Provide specific recent events from the past 24-48 hours with exact details: com
     const bulletRegex = /[•\-\*]\s*(.+)/g;
     const numberedRegex = /\d+\.\s*(.+)/g;
 
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = bulletRegex.exec(content)) !== null && developments.length < 8) {
       if (match[1].trim().length > 30) {
         let cleanDevelopment = this.cleanFormattingSymbols(match[1].trim());
@@ -529,7 +529,7 @@ Provide specific recent events from the past 24-48 hours with exact details: com
     }
 
     while ((match = numberedRegex.exec(content)) !== null && developments.length < 8) {
-      if (match[1].trim().length > 30 && !developments.some(dev => dev.includes(match[1].trim().substring(0, 50)))) {
+      if (match && match[1] && match[1].trim().length > 30 && !developments.some(dev => dev.includes(match[1].trim().substring(0, 50)))) {
         let cleanDevelopment = this.cleanFormattingSymbols(match[1].trim());
         if (cleanDevelopment.length > 20) {
           developments.push(cleanDevelopment);
@@ -587,7 +587,7 @@ Provide specific recent events from the past 24-48 hours with exact details: com
       }
 
       if (companyMatches.length > 0) {
-        const uniqueCompanies = [...new Set(companyMatches.slice(0, 3))];
+        const uniqueCompanies = Array.from(new Set(companyMatches.slice(0, 3)));
         marketImpact += `Key defense primes including ${uniqueCompanies.join(', ')} are positioned to benefit from today's defense spending and technological advancement programs. `;
       }
 
@@ -717,7 +717,7 @@ Provide specific recent events from the past 24-48 hours with exact details: com
       const paragraphs = content.split(/\n+/).filter(p => p.trim().length > 50);
       const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 50);
       const allText = [...paragraphs, ...sentences];
-      const relevantParagraphs = [];
+      const relevantParagraphs: string[] = [];
 
       for (const text of allText) {
         const textLower = text.toLowerCase();
