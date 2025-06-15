@@ -359,8 +359,21 @@ class PerplexityService {
                         !citation.url.includes('undefined') &&
                         !citation.url.includes('null');
       
-      if (!isValidUrl) {
-        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}"`);
+      // Filter out generic URLs that redirect to homepages
+      const isGenericUrl = citation.url.endsWith('/news') ||
+                          citation.url.endsWith('/news/') ||
+                          citation.url === 'https://www.biopharmadive.com/news/' ||
+                          citation.url.match(/\/news\/?$/) ||
+                          citation.url.split('/').length <= 4; // Too generic (domain + single path)
+      
+      // Filter out malformed titles
+      const hasGenericTitle = citation.title.toLowerCase().includes('www.') ||
+                             citation.title.toLowerCase().startsWith('http') ||
+                             citation.title.toLowerCase() === citation.url.toLowerCase() ||
+                             citation.title.length < 10;
+      
+      if (!isValidUrl || isGenericUrl || hasGenericTitle) {
+        console.log(`❌ Invalid citation ${index + 1} filtered out: "${citation.url}" (title: "${citation.title}")`);
         return false;
       } else {
         console.log(`✅ Valid citation ${index + 1}: ${citation.url}`);
