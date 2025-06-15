@@ -851,13 +851,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Correlation events
   app.get("/api/correlation-events", async (req, res) => {
     try {
-      ```
-    const events = await storage.getCorrelationEvents();
-    res.json(events);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch correlation events" });
-  }
-});
+      const events = await storage.getCorrelationEvents();
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch correlation events" });
+    }
+  });
 
   // Market metrics
   app.get("/api/metrics", async (req, res) => {
@@ -1686,7 +1685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (section.toLowerCase().includes('geopolitical')) {
           geopoliticalAnalysis = section.replace(/geopolitical analysis:?/i, '').trim();
         }
-      ```
+      }
     }
 
       // If parsing failed, use fallback structure
@@ -1745,7 +1744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: stockData.name,
               change: stockData.change,
               changePercent: stockData.changePercent,
-              reason: `Mentioned in energy intelligence brief for market developments and sector analysis`
+              reason: "Mentioned in energy intelligence brief for market developments and sector analysis"
             });
           }
         }
