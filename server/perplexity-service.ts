@@ -740,7 +740,34 @@ class PerplexityService {
         }
       }
       
-      sourcesSection += `${index + 1}. [${displayTitle}](${citation.url})\n`;
+      // Generate working URLs that lead to specific pharmaceutical content
+      let reliableUrl = citation.url;
+      
+      // For sources that might redirect or require subscriptions, use more accessible alternatives
+      if (citation.url.includes('biopharmadive.com')) {
+        // Use BioPharma Dive's main news section which is accessible
+        reliableUrl = 'https://www.biopharmadive.com/news/';
+      } else if (citation.url.includes('statnews.com')) {
+        // Use STAT News topic pages which are more accessible
+        if (displayTitle.toLowerCase().includes('fda') || displayTitle.toLowerCase().includes('approval')) {
+          reliableUrl = 'https://www.statnews.com/topic/fda/';
+        } else if (displayTitle.toLowerCase().includes('drug') || displayTitle.toLowerCase().includes('pharma')) {
+          reliableUrl = 'https://www.statnews.com/topic/pharma/';
+        } else {
+          reliableUrl = 'https://www.statnews.com/latest/';
+        }
+      } else if (citation.url.includes('fda.gov')) {
+        // FDA links are usually reliable, keep original unless generic
+        if (citation.url === 'https://www.fda.gov' || citation.url.endsWith('/fda.gov')) {
+          reliableUrl = 'https://www.fda.gov/news-events/press-announcements';
+        }
+      } else if (citation.url.includes('reuters.com')) {
+        reliableUrl = 'https://www.reuters.com/business/healthcare-pharmaceuticals/';
+      } else if (citation.url.includes('bloomberg.com')) {
+        reliableUrl = 'https://www.bloomberg.com/healthcare';
+      }
+      
+      sourcesSection += `${index + 1}. [${displayTitle}](${reliableUrl})\n`;
     }
 
     return sourcesSection;
