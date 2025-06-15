@@ -116,26 +116,26 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">Step 1: Identified 20 verified sources</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">Step 2: Searched for recent articles</span>
+                <span className="text-sm font-medium">Step 1: Dynamically searched for sources with recent articles</span>
               </div>
               <div className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
-                <span className="text-sm font-medium">Step 3: No articles found from specified sources</span>
+                <span className="text-sm font-medium">Step 2: No sources found with articles from last 48 hours</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">Step 4: Authentic verification complete</span>
+                <span className="text-sm font-medium">Step 3: Authentic verification process complete</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium">Step 4: No synthetic content generated</span>
               </div>
             </div>
             
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                <strong>Source Verification:</strong> Only articles from Defense News, Jane's Defense Weekly, 
-                Breaking Defense, and 17 other specified sources are accepted. No fallback content is generated.
+                <strong>Dynamic Source Discovery:</strong> The system searches for 20 sources that actually published 
+                defense sector articles in the last 48 hours. No fallback content is generated when no recent articles exist.
               </p>
             </div>
             

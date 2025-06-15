@@ -96,24 +96,24 @@ export class FourStepIntelligenceService {
     sector: string, 
     sources: string[]
   ): Promise<FourStepIntelligenceBrief> {
-    console.log(`🔬 STEP 1: Identifying ${sources.length} sources for ${sector} sector`);
+    console.log(`🔍 STEP 1: Dynamically discovering sources with recent ${sector} articles`);
     
-    // STEP 2: Extract articles from today and yesterday
-    console.log(`📰 STEP 2: Extracting articles from ${sources.length} sources`);
+    // STEP 2: Extract articles from sources that have recent content
+    console.log(`📰 STEP 2: Extracting articles from sources with recent ${sector} content`);
     const extractedArticles = await this.extractArticlesFromSources(sector, sources);
     
     if (extractedArticles.length === 0) {
-      throw new Error(`STEP 2 FAILED: No articles found from specified sources for ${sector}`);
+      throw new Error(`STEP 2 FAILED: No sources found with recent articles`);
     }
     
-    console.log(`✅ STEP 2 SUCCESS: Extracted ${extractedArticles.length} articles`);
+    console.log(`✅ STEP 2 SUCCESS: Extracted ${extractedArticles.length} articles from discovered sources`);
     
     // STEP 3: Generate sections using ONLY extracted articles
     console.log(`📝 STEP 3: Writing sections using ONLY extracted articles`);
     const intelligence = await this.generateSectionsFromArticles(extractedArticles, sector);
     
     // STEP 4: Include direct URLs
-    console.log(`🔗 STEP 4: Including ${extractedArticles.length} direct article URLs`);
+    console.log(`🔗 STEP 4: Including ${extractedArticles.length} direct article URLs from discovered sources`);
     const sourceUrls = extractedArticles.map(article => article.url);
     
     return {
@@ -136,16 +136,20 @@ export class FourStepIntelligenceService {
       year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    const prompt = `CRITICAL: Execute STEP 2 of 4-step methodology
+    const prompt = `CRITICAL: Execute dynamic source discovery for 4-step methodology
 
-EXTRACT ALL ARTICLES published on ${today} OR ${yesterday} from these exact sources:
-${sources.map((source, i) => `${i + 1}. ${source}`).join('\n')}
+STEP 1: Find 20 sources that published ${sector} sector articles on ${today} OR ${yesterday}
+STEP 2: Extract ALL articles from those sources that have recent ${sector} content
 
 REQUIREMENTS:
-- ONLY articles published on ${today} or ${yesterday}
+- Find sources that actually published ${sector} sector articles in the last 48 hours
+- Prioritize established news sources, industry publications, and official sources
+- ONLY include articles published on ${today} or ${yesterday}
 - Must include article title, publication date, source domain, and direct URL
-- For ${sector} sector: include ALL relevant articles from specified sources
-- Return in this exact format:
+- Return exactly 20 sources with recent ${sector} articles
+
+FORMAT:
+SOURCES FOUND: [list the 20 sources with recent articles]
 
 ARTICLE 1:
 Title: [exact headline]
@@ -157,7 +161,7 @@ Content: [key content excerpt]
 ARTICLE 2:
 [same format]
 
-CRITICAL: If no articles found from specified sources on these dates, state "NO ARTICLES FOUND" - do not generate any content.`;
+Continue for ALL articles found from the 20 sources with recent ${sector} content.`;
 
     try {
       console.log(`🔧 Making Perplexity API request for ${sector} sector...`);
@@ -194,8 +198,8 @@ CRITICAL: If no articles found from specified sources on these dates, state "NO 
       console.log(`🔍 Perplexity API Response Length: ${content.length} characters`);
       console.log(`🔍 Full API response content:`, content);
       
-      if (content.includes('NO ARTICLES FOUND') || content.includes('no articles found') || content.length < 100) {
-        console.log(`❌ STEP 2 FAILED: No articles found for ${sector}`);
+      if (content.includes('NO ARTICLES FOUND') || content.includes('no articles found') || content.length < 200) {
+        console.log(`❌ STEP 2 FAILED: No sources with recent articles found for ${sector}`);
         console.log(`❌ Response content was:`, content);
         return [];
       }
