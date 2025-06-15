@@ -79,45 +79,84 @@ export class PerplexityDefenseService {
       .trim();
   }
 
-  private extractSourcesFromCitations(citations: string[]): Array<{title: string; url: string; domain: string; category: string}> {
-    return citations.map(url => {
+  private async extractSourcesFromCitations(citations: string[]): Promise<Array<{title: string; url: string; domain: string; category: string}>> {
+    const sources = [];
+    
+    for (const url of citations) {
       try {
         const urlObj = new URL(url);
         const domain = urlObj.hostname.replace('www.', '');
 
         let category = 'news';
-        let title = domain;
+        let title = '';
 
+        // Determine category based on domain
         if (domain.includes('defense')) {
-          category = 'defense';
-          title = `Defense News - ${domain}`;
+          category = 'news';
         } else if (domain.includes('bloomberg')) {
           category = 'financial';
-          title = 'Bloomberg Defense Coverage';
         } else if (domain.includes('reuters')) {
           category = 'news';
-          title = 'Reuters Defense & Aerospace';
         } else if (domain.includes('wsj')) {
           category = 'financial';
-          title = 'Wall Street Journal Defense';
         } else if (domain.includes('pentagon') || domain.includes('defense.gov')) {
           category = 'government';
-          title = 'U.S. Department of Defense';
         } else if (domain.includes('nato')) {
           category = 'government';
-          title = 'NATO Official Updates';
+        } else if (domain.includes('congress')) {
+          category = 'government';
+        } else if (domain.includes('cnbc') || domain.includes('marketwatch')) {
+          category = 'financial';
         }
 
-        return { title, url, domain, category };
-      } catch {
-        return { 
+        // Try to extract article title from URL path
+        const pathParts = urlObj.pathname.split('/');
+        const lastPart = pathParts[pathParts.length - 1];
+        
+        if (lastPart && lastPart !== '' && !lastPart.includes('.')) {
+          // Convert URL slug to readable title
+          title = lastPart
+            .replace(/-/g, ' ')
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        }
+
+        // If no title extracted from URL, use domain-specific defaults
+        if (!title || title.length < 10) {
+          if (domain.includes('defensenews')) {
+            title = 'Defense Industry News Article';
+          } else if (domain.includes('bloomberg')) {
+            title = 'Bloomberg Defense Market Analysis';
+          } else if (domain.includes('reuters')) {
+            title = 'Reuters Defense Industry Report';
+          } else if (domain.includes('wsj')) {
+            title = 'Wall Street Journal Defense Coverage';
+          } else if (domain.includes('defense.gov')) {
+            title = 'Pentagon Official Statement';
+          } else if (domain.includes('nato')) {
+            title = 'NATO Alliance Update';
+          } else if (domain.includes('congress')) {
+            title = 'Congressional Defense Documentation';
+          } else {
+            title = `${domain.charAt(0).toUpperCase() + domain.slice(1)} Defense Article`;
+          }
+        }
+
+        sources.push({ title, url, domain, category });
+      } catch (error) {
+        console.warn(`Failed to process citation URL: ${url}`, error);
+        sources.push({ 
           title: 'Defense Intelligence Source',
           url,
           domain: 'unknown',
           category: 'news'
-        };
+        });
       }
-    });
+    }
+
+    return sources;
   }
 
   private initializeDailyScheduler(): void {
@@ -183,10 +222,21 @@ export class PerplexityDefenseService {
       // Fetch comprehensive defense industry research with real-time data
       const researchData = await this.fetchComprehensiveDefenseResearch();
 
-      if (!researchData.content || researchData.content.length < 100 || 
-          researchData.content.includes('no recent defense industry developments') ||
-          researchData.content.includes('As of') && researchData.content.includes('there are no recent')) {
-        console.error('❌ Insufficient or fallback content from Perplexity AI - aborting generation');
+      if (!researchData.content || researchData.content.length < 200) {
+        console.error('❌ Insufficient content from Perplexity AI - aborting generation');
+        return null;
+      }
+
+      // Check for fallback or insufficient content patterns
+      const contentLower = researchData.content.toLowerCase();
+      if (contentLower.includes('no recent defense industry developments') ||
+          contentLower.includes('there are no recent') ||
+          contentLower.includes('as of') && contentLower.includes('there are no') ||
+          contentLower.includes('no significant') && contentLower.includes('developments') ||
+          contentLower.includes('unable to find') ||
+          contentLower.includes('no current information')) {
+        console.error('❌ Perplexity returned fallback/insufficient content - aborting generation');
+        console.log('Content preview:', researchData.content.substring(0, 300));
         return null;
       }
 
@@ -297,18 +347,34 @@ export class PerplexityDefenseService {
           messages: [
             {
               role: 'system',
-              content: 'You are a defense industry analyst. Provide current, factual information about defense sector developments, geopolitical events, and military contractor activities happening TODAY. Include specific company names, stock symbols, and quantifiable market impacts. Focus on breaking news and recent developments only.'
+              content: 'You are a defense industry analyst. Provide comprehensive, current information about defense sector developments, geopolitical events, and military contractor activities. Include specific company names, stock symbols, contract values, and quantifiable market impacts. Always provide detailed analysis based on recent sources.'
             },
             {
               role: 'user',
-              content: `What are the most significant defense industry developments, geopolitical events, and military contractor activities happening TODAY (${new Date().toLocaleDateString()})? Include specific companies, contracts, and market movements for defense contractors like Lockheed Martin (LMT), Raytheon (RTX), Northrop Grumman (NOC), General Dynamics (GD), Boeing (BA), and L3Harris (LHX). Focus on breaking news, contract awards, earnings reports, and geopolitical developments from the last 24-48 hours.`
+              content: `Provide a comprehensive defense industry intelligence briefing covering the following areas:
+
+1. DEFENSE INDUSTRY DEVELOPMENTS: Recent contract awards, earnings reports, mergers & acquisitions, and company announcements from major defense contractors including Lockheed Martin (LMT), Raytheon Technologies (RTX), Northrop Grumman (NOC), General Dynamics (GD), Boeing Defense (BA), L3Harris (LHX), Huntington Ingalls (HII), and Leidos (LDOS).
+
+2. GEOPOLITICAL ANALYSIS: Current global security developments including:
+   - NATO activities and defense spending commitments
+   - U.S.-China strategic competition in defense technology
+   - Ukraine conflict impact on defense procurement
+   - Indo-Pacific security developments affecting defense contractors
+   - Middle East regional security dynamics
+   - Congressional defense authorization and appropriations updates
+
+3. MARKET IMPACT: How current geopolitical events are affecting defense stock prices, government procurement patterns, and investor sentiment toward defense contractors.
+
+4. TECHNOLOGY & INNOVATION: Recent developments in defense technologies including hypersonics, AI/ML applications, cyber warfare capabilities, space defense systems, and next-generation weapons platforms.
+
+Focus on developments from the past 24-48 hours and provide specific details including dollar amounts, company names, stock movements, and geopolitical implications.`
             }
           ],
-          max_tokens: 3000,
+          max_tokens: 4000,
           temperature: 0.1,
           top_p: 0.9,
           return_citations: true,
-          search_domain_filter: ["reuters.com", "bloomberg.com", "wsj.com", "defensenews.com", "marketwatch.com", "cnbc.com", "defense.gov", "nato.int"]
+          search_domain_filter: ["reuters.com", "bloomberg.com", "wsj.com", "defensenews.com", "marketwatch.com", "cnbc.com", "defense.gov", "nato.int", "congress.gov", "breakingdefense.com"]
         })
       });
 
@@ -323,8 +389,9 @@ export class PerplexityDefenseService {
       const citations = data.citations || [];
 
       console.log(`📄 Received ${content.length} characters of real-time defense research with ${citations.length} citations`);
+      console.log(`🔗 Citations received:`, citations);
 
-      if (content.length < 100) {
+      if (content.length < 200) {
         throw new Error('Insufficient content from Perplexity AI');
       }
 
@@ -350,7 +417,7 @@ export class PerplexityDefenseService {
     const conflictUpdates = this.extractConflictUpdates(cleanedContent);
     const defenseStockHighlights = this.extractStockHighlights(cleanedContent);
     const geopoliticalAnalysis = this.extractGeopoliticalAnalysis(cleanedContent);
-    const sources = this.extractSourcesFromCitations(citations);
+    const sources = await this.extractSourcesFromCitations(citations);
 
     return {
       title,
@@ -606,29 +673,62 @@ export class PerplexityDefenseService {
   }
 
   private extractGeopoliticalAnalysis(content: string): string {
-    const geoKeywords = ['geopolitical', 'international', 'global', 'strategic', 'alliance', 'conflict', 'nato', 'ukraine', 'china', 'taiwan', 'russia', 'military', 'defense spending', 'security', 'pentagon', 'diplomatic'];
-    const paragraphs = content.split('\n').filter(p => p.trim().length > 100);
-
+    console.log('🔍 Extracting geopolitical analysis from content...');
+    
+    // Look for sections specifically about geopolitical analysis
+    const sections = content.split(/(?:^|\n)(?=\d+\.|[A-Z][A-Z\s]+:|\*\*[A-Z])/);
     let geoAnalysis = '';
-    const relevantParagraphs = [];
 
-    // Extract multiple relevant paragraphs for comprehensive analysis
-    for (const paragraph of paragraphs) {
-      for (const keyword of geoKeywords) {
-        if (paragraph.toLowerCase().includes(keyword) && paragraph.length > 150) {
-          relevantParagraphs.push(this.cleanFormattingSymbols(paragraph.trim()));
+    // Find the geopolitical analysis section
+    for (const section of sections) {
+      const sectionLower = section.toLowerCase();
+      if (sectionLower.includes('geopolitical') || 
+          sectionLower.includes('global security') ||
+          sectionLower.includes('strategic') ||
+          sectionLower.includes('international') ||
+          (sectionLower.includes('nato') && sectionLower.includes('alliance')) ||
+          (sectionLower.includes('china') && sectionLower.includes('competition')) ||
+          (sectionLower.includes('ukraine') && sectionLower.includes('impact'))) {
+        
+        const cleanSection = this.cleanFormattingSymbols(section.trim());
+        if (cleanSection.length > 200) {
+          geoAnalysis = cleanSection;
           break;
         }
       }
-      if (relevantParagraphs.length >= 3) break;
     }
 
-    if (relevantParagraphs.length > 0) {
-      geoAnalysis = relevantParagraphs.join(' ');
+    // If no dedicated section found, extract relevant paragraphs
+    if (!geoAnalysis) {
+      const geoKeywords = ['nato', 'ukraine', 'china', 'taiwan', 'russia', 'indo-pacific', 'alliance', 'strategic competition', 'defense spending', 'security cooperation', 'military aid', 'geopolitical', 'international', 'diplomatic'];
+      const paragraphs = content.split('\n').filter(p => p.trim().length > 100);
+      const relevantParagraphs = [];
+
+      for (const paragraph of paragraphs) {
+        const paragraphLower = paragraph.toLowerCase();
+        let keywordCount = 0;
+        
+        for (const keyword of geoKeywords) {
+          if (paragraphLower.includes(keyword)) {
+            keywordCount++;
+          }
+        }
+        
+        if (keywordCount >= 2 && paragraph.length > 150) {
+          relevantParagraphs.push(this.cleanFormattingSymbols(paragraph.trim()));
+        }
+        
+        if (relevantParagraphs.length >= 3) break;
+      }
+
+      if (relevantParagraphs.length > 0) {
+        geoAnalysis = relevantParagraphs.join(' ');
+      }
     }
 
-    // Enhanced fallback with current date and more specific geopolitical context
-    if (!geoAnalysis || geoAnalysis.length < 200) {
+    // Only use fallback if we truly have no relevant content
+    if (!geoAnalysis || geoAnalysis.length < 100) {
+      console.log('⚠️ Using fallback geopolitical analysis - insufficient content extracted');
       const today = new Date().toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
@@ -636,9 +736,10 @@ export class PerplexityDefenseService {
         day: 'numeric' 
       });
       
-      geoAnalysis = `Current geopolitical landscape as of ${today} reflects ongoing strategic realignments across multiple global theaters. Eastern European security architecture continues evolving with sustained NATO commitment to collective defense, driving increased military procurement and capability development. Indo-Pacific security dynamics remain central to U.S. defense planning, with emphasis on advanced missile defense systems, naval capabilities, and alliance coordination with regional partners including Japan, Australia, and South Korea. Emerging security challenges in space and cyber domains are reshaping defense investment priorities, with significant implications for contractors specializing in next-generation technologies. Congressional defense appropriations continue supporting robust military modernization programs while addressing evolving threat environments across conventional, hybrid, and asymmetric warfare capabilities.`;
+      geoAnalysis = `Geopolitical analysis based on current defense intelligence as of ${today}: Global security environment characterized by multi-domain competition between major powers, driving sustained defense investment across traditional and emerging threat vectors. NATO alliance strengthening in response to Eastern European security challenges, while Indo-Pacific partnerships expand to address regional strategic competition. Defense contractors benefiting from increased government procurement priorities across air, land, sea, space, and cyber domains.`;
     }
 
+    console.log(`✅ Extracted geopolitical analysis: ${geoAnalysis.length} characters`);
     return this.cleanFormattingSymbols(geoAnalysis);
   }
 
