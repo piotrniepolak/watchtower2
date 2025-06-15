@@ -352,33 +352,35 @@ export class PerplexityDefenseService {
             },
             {
               role: 'user',
-              content: `Generate a comprehensive defense industry intelligence briefing with the following specific sections:
+              content: `TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Generate a comprehensive defense industry intelligence briefing focusing EXCLUSIVELY on events from the past 24-48 hours. DO NOT include any events older than 48 hours.
 
-**CURRENT GEOPOLITICAL DEVELOPMENTS (Required - Main Focus):**
-- Latest NATO defense initiatives and alliance activities today
-- Current U.S.-China military competition and technology tensions
-- Ukraine conflict updates affecting defense contractors this week
-- Indo-Pacific security developments and defense partnerships
-- Middle East military operations and regional security changes
-- Congressional defense authorization votes and funding decisions
-- International arms sales and military aid announcements
+**CRITICAL REQUIREMENT: ONLY EVENTS FROM THE LAST 48 HOURS (${new Date(Date.now() - 48*60*60*1000).toLocaleDateString()} to ${new Date().toLocaleDateString()})**
 
-**DEFENSE CONTRACT AWARDS:**
-Recent contract announcements from Lockheed Martin (LMT), Raytheon Technologies (RTX), Northrop Grumman (NOC), General Dynamics (GD), Boeing Defense (BA), L3Harris (LHX), Huntington Ingalls (HII), and Leidos (LDOS) including specific dollar amounts and program details.
+**TODAY'S GEOPOLITICAL DEVELOPMENTS:**
+- Defense developments that occurred TODAY or YESTERDAY only
+- NATO activities announced in the last 48 hours
+- U.S.-China military tensions from this week only
+- Ukraine conflict updates from the past 2 days
+- Congressional defense votes or announcements from yesterday/today
+- Military aid announcements made in the last 48 hours
 
-**MARKET IMPACT ANALYSIS:**
-How today's geopolitical events are driving defense stock prices, government procurement decisions, and institutional investor activity in defense sectors.
+**DEFENSE CONTRACTS AWARDED IN LAST 48 HOURS:**
+Recent contract announcements (yesterday/today only) from major defense contractors including dollar amounts, program details, and announcement dates.
 
-**DEFENSE TECHNOLOGY BREAKTHROUGHS:**
-Recent announcements in hypersonics, AI/ML military applications, cyber warfare capabilities, space defense systems, and next-generation weapons platforms.
+**STOCK MARKET MOVEMENTS (LAST 48 HOURS):**
+Defense stock price changes from yesterday and today, driven by current events.
 
-Provide specific recent events from the past 24-48 hours with exact details: company names, contract values, stock movements, government officials quoted, specific military programs mentioned, and quantifiable geopolitical impacts. Focus heavily on current geopolitical developments affecting defense industry.`
+**BREAKING DEFENSE TECHNOLOGY NEWS:**
+Technology announcements, test results, or breakthroughs reported in the last 48 hours only.
+
+MANDATORY: Include exact dates for ALL events mentioned. Reject any information older than 48 hours. If no significant defense events occurred in the last 48 hours, state that explicitly rather than using older content.`
             }
           ],
           max_tokens: 4000,
           temperature: 0.1,
           top_p: 0.9,
           return_citations: true,
+          search_recency_filter: "day",
           search_domain_filter: ["reuters.com", "bloomberg.com", "wsj.com", "defensenews.com", "marketwatch.com", "cnbc.com", "defense.gov", "nato.int", "congress.gov", "breakingdefense.com"]
         })
       });
