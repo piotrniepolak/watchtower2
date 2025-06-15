@@ -106,34 +106,49 @@ class PerplexityService {
         }
       }
       
-      // Normalize citations to consistent format
-      console.log('🔄 Normalizing citations...');
-      const normalizedCitations: Array<{ url: string; title: string; snippet: string }> = (data.citations || []).map((citation, index) => {
+      // Normalize citations to consistent format and fetch real titles
+      console.log('🔄 Normalizing citations and fetching real titles...');
+      const normalizedCitations: Array<{ url: string; title: string; snippet: string }> = [];
+      
+      for (let i = 0; i < (data.citations || []).length; i++) {
+        const citation = data.citations![i];
+        let normalizedCitation;
+        
         if (typeof citation === 'string') {
-          // Extract domain for title fallback
-          try {
-            const url = new URL(citation);
-            const domain = url.hostname.replace('www.', '');
-            return {
-              url: citation,
-              title: `Source from ${domain}`,
-              snippet: ''
-            };
-          } catch {
-            return {
-              url: citation,
-              title: `Source ${index + 1}`,
-              snippet: ''
-            };
-          }
+          normalizedCitation = {
+            url: citation,
+            title: '',
+            snippet: ''
+          };
         } else {
-          return {
+          normalizedCitation = {
             url: citation.url,
-            title: citation.title || `Source ${index + 1}`,
+            title: citation.title || '',
             snippet: citation.snippet || ''
           };
         }
-      });
+        
+        // Fetch real article title if we don't have one or it's generic
+        if (!normalizedCitation.title || normalizedCitation.title.startsWith('Source ')) {
+          console.log(`🔍 Fetching real title for: ${normalizedCitation.url}`);
+          const realTitle = await this.fetchArticleTitle(normalizedCitation.url);
+          if (realTitle && realTitle.length > 10) {
+            normalizedCitation.title = realTitle;
+            console.log(`✅ Retrieved title: "${realTitle}"`);
+          } else {
+            // Only use generic fallback if we can't fetch real title
+            try {
+              const url = new URL(normalizedCitation.url);
+              const domain = url.hostname.replace('www.', '');
+              normalizedCitation.title = `Source from ${domain}`;
+            } catch {
+              normalizedCitation.title = `Source ${i + 1}`;
+            }
+          }
+        }
+        
+        normalizedCitations.push(normalizedCitation);
+      }
 
       console.log(`✅ Normalized ${normalizedCitations.length} citations:`, normalizedCitations.map(c => c.url));
 
