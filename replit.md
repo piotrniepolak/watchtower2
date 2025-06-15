@@ -13,6 +13,26 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
+### June 15, 2025 - Successfully Restored Pharmaceutical Intelligence with Authentic Perplexity Sources
+**Major System Recovery:**
+- **Fixed corrupted perplexity-service.ts file** that was preventing pharmaceutical intelligence generation
+- **Restored authentic Perplexity API integration** enabling real-time pharmaceutical intelligence briefs
+- **Eliminated all fallback titles** - system now only displays sources with authentic article titles
+- **Verified working sources section** showing real article titles like "FDA approves darolutamide for metastatic castration-sensitive prostate cancer"
+- **Confirmed authentic URLs** leading directly to STAT News pharmaceutical coverage and FDA drug approval announcements
+
+**Technical Implementation:**
+- Replaced corrupted perplexity service file with working version containing proper citation processing
+- Enhanced title extraction to skip citations without meaningful titles instead of using fallbacks
+- Maintained markdown format compatibility for frontend rendering
+- Preserved original Perplexity URLs for authentic source attribution
+
+**User Impact:**
+- Intelligence Sources & References section now displays only authentic article titles from successful web page extraction
+- Source links lead directly to real pharmaceutical news articles and FDA announcements used by Perplexity
+- No generic "Article from domain.com" titles ever appear
+- Professional source attribution with verifiable links to exact content referenced in analysis
+
 ### June 15, 2025 - Completely Eliminated URL Fabrication System and Hardcoded Fallback Data
 **Major System Overhaul:**
 - **Identified and removed root cause of 404 source links** - System was fabricating URLs using `validateAndCorrectUrl()` and `createSpecificUrl()` instead of preserving authentic Perplexity URLs
