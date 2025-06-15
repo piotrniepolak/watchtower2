@@ -109,13 +109,31 @@ class PerplexityService {
             },
             {
               role: 'user', 
-              content: `URGENT: TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (${new Date().toISOString().split('T')[0]}). ${prompt}
+              content: `Follow this exact 4-step methodology to generate a pharmaceutical intelligence brief for ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}:
 
-MANDATORY REQUIREMENTS:
-- REJECT ALL content from 2024, 2023, 2022, 2021, 2020 or earlier
-- ONLY include events with today's date (${new Date().toLocaleDateString()}) or yesterday's date (${new Date(Date.now() - 24*60*60*1000).toLocaleDateString()})
-- Include EXACT timestamps and publication dates for every event mentioned
-- If no significant pharmaceutical events occurred in the last 24 hours, state "No major pharmaceutical developments in the last 24 hours" rather than using old content`
+STEP 1: Identify exactly these 20 news sources:
+Pharmaceutical Sources (15): STAT News, BioPharma Dive, Fierce Pharma, PharmaLive, Pharmaceutical Technology, Drug Discovery & Development, FDA News, Regulatory Affairs Professionals Society, BioWorld, Nature Biotechnology, Science Translational Medicine, Cell, The Lancet, NEJM, PharmaVOICE
+General Sources (5): Reuters, Associated Press, Bloomberg, Wall Street Journal, Financial Times
+
+STEP 2: Extract ALL articles published on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} or ${new Date(Date.now() - 24*60*60*1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} from:
+- ALL 15 pharmaceutical sources (any pharma-related articles)
+- The 5 general sources (only articles mentioning pharmaceuticals/drugs/FDA)
+
+STEP 3: Write these sections using ONLY the extracted articles:
+**EXECUTIVE SUMMARY** - Synthesize key themes from all extracted articles
+**KEY DEVELOPMENTS** - List major events from the extracted articles with publication dates
+**MARKET IMPACT ANALYSIS** - Analyze market implications based on extracted articles only
+**GEOPOLITICAL ANALYSIS** - Assess geopolitical implications using only extracted articles
+
+STEP 4: Create sources section with every article's direct URL, unmodified.
+
+CRITICAL REQUIREMENTS:
+- Use ONLY articles from today (${new Date().toLocaleDateString()}) and yesterday (${new Date(Date.now() - 24*60*60*1000).toLocaleDateString()})
+- No fallback content, no hallucination, no hardcoded data
+- Include direct article URLs without any modification
+- If insufficient articles found, state that explicitly
+
+Begin the 4-step process now.`
             }
           ],
           max_tokens: 1000,

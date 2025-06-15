@@ -392,32 +392,31 @@ export class PerplexityDefenseService {
             },
             {
               role: 'user',
-              content: `URGENT: TODAY IS ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} (${new Date().toISOString().split('T')[0]}). I need ONLY breaking news and events from the LAST 24 HOURS (since ${new Date(Date.now() - 24*60*60*1000).toISOString().split('T')[0]}). 
+              content: `Follow this exact 4-step methodology to generate a defense intelligence brief for ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}:
 
-MANDATORY REQUIREMENTS:
-- REJECT ALL content from 2024, 2023, 2022, 2021, 2020 or earlier
-- ONLY include events with today's date (${new Date().toLocaleDateString()}) or yesterday's date (${new Date(Date.now() - 24*60*60*1000).toLocaleDateString()})
-- Include EXACT timestamps and publication dates for every event mentioned
-- If no significant events occurred in the last 24 hours, state "No major defense developments in the last 24 hours" rather than using old content
+STEP 1: Identify exactly these 20 news sources:
+Defense Sources (15): Defense News, Jane's Defense Weekly, Breaking Defense, Defense One, The War Zone, Military.com, C4ISRNET, National Defense Magazine, Defense Daily, Inside Defense, DefenseScoop, Army Times, Navy Times, Air Force Times, Space Force Times
+General Sources (5): Reuters, Associated Press, Bloomberg, Wall Street Journal, Financial Times
 
-**TODAY'S GEOPOLITICAL DEVELOPMENTS:**
-- Defense developments that occurred TODAY or YESTERDAY only
-- NATO activities announced in the last 48 hours
-- U.S.-China military tensions from this week only
-- Ukraine conflict updates from the past 2 days
-- Congressional defense votes or announcements from yesterday/today
-- Military aid announcements made in the last 48 hours
+STEP 2: Extract ALL articles published on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} or ${new Date(Date.now() - 24*60*60*1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} from:
+- ALL 15 defense sources (any defense-related articles)
+- The 5 general sources (only articles mentioning defense/military)
 
-**DEFENSE CONTRACTS AWARDED IN LAST 48 HOURS:**
-Recent contract announcements (yesterday/today only) from major defense contractors including dollar amounts, program details, and announcement dates.
+STEP 3: Write these sections using ONLY the extracted articles:
+**EXECUTIVE SUMMARY** - Synthesize key themes from all extracted articles
+**KEY DEVELOPMENTS** - List major events from the extracted articles with publication dates
+**MARKET IMPACT ANALYSIS** - Analyze market implications based on extracted articles only
+**GEOPOLITICAL ANALYSIS** - Assess geopolitical implications using only extracted articles
 
-**STOCK MARKET MOVEMENTS (LAST 48 HOURS):**
-Defense stock price changes from yesterday and today, driven by current events.
+STEP 4: Create sources section with every article's direct URL, unmodified.
 
-**BREAKING DEFENSE TECHNOLOGY NEWS:**
-Technology announcements, test results, or breakthroughs reported in the last 48 hours only.
+CRITICAL REQUIREMENTS:
+- Use ONLY articles from today (${new Date().toLocaleDateString()}) and yesterday (${new Date(Date.now() - 24*60*60*1000).toLocaleDateString()})
+- No fallback content, no hallucination, no hardcoded data
+- Include direct article URLs without any modification
+- If insufficient articles found, state that explicitly
 
-MANDATORY: Include exact dates for ALL events mentioned. Reject any information older than 48 hours. If no significant defense events occurred in the last 48 hours, state that explicitly rather than using older content.`
+Begin the 4-step process now.`
             }
           ],
           max_tokens: 4000,
