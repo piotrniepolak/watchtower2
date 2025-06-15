@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { SourceLinks, extractSourcesFromText } from "./source-links";
+import { FourStepIntelligenceBrief } from "./four-step-intelligence-brief";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Collapsible,
   CollapsibleContent,
@@ -27,7 +29,9 @@ import {
   DollarSign,
   ExternalLink,
   Award,
-  Activity
+  Activity,
+  CheckCircle,
+  Settings
 } from "lucide-react";
 
 // Clean content while removing embedded source links
@@ -137,38 +141,91 @@ export function DefenseIntelligenceBrief() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-xl">
-            <Shield className="h-6 w-6 text-blue-600" />
-            Daily Defense Intelligence Brief
-          </CardTitle>
-          <div className="flex items-center gap-2">
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Shield className="h-6 w-6 text-blue-600" />
+              Global Intelligence Center - Defense Sector
+            </CardTitle>
             <Badge variant="secondary">
               {new Date().toLocaleDateString()}
             </Badge>
-            <Button 
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              size="sm"
-              variant="outline"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh
-                </>
-              )}
-            </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
+      </Card>
+
+      {/* Methodology Comparison Tabs */}
+      <Tabs defaultValue="four-step" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="four-step" className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            4-Step Authentic Intelligence
+          </TabsTrigger>
+          <TabsTrigger value="legacy" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Legacy System
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="four-step" className="mt-6">
+          <div className="space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 className="font-semibold text-green-800 flex items-center gap-2 mb-2">
+                <CheckCircle className="h-5 w-5" />
+                Authentic Article Extraction Methodology
+              </h3>
+              <p className="text-sm text-green-700">
+                This intelligence uses the 4-step methodology to extract authentic articles from 20 verified news sources, 
+                ensuring all content is derived exclusively from real articles published today or yesterday.
+              </p>
+            </div>
+            <FourStepIntelligenceBrief sector="defense" />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="legacy" className="mt-6">
+          <div className="space-y-4">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h3 className="font-semibold text-orange-800 flex items-center gap-2 mb-2">
+                <Settings className="h-5 w-5" />
+                Legacy Content Generation System
+              </h3>
+              <p className="text-sm text-orange-700">
+                This is the previous system that may include synthetic content generation. 
+                Compare with the 4-step methodology to see the difference in source authenticity.
+              </p>
+            </div>
+            
+            <Card>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    <Shield className="h-6 w-6 text-blue-600" />
+                    Daily Defense Intelligence Brief (Legacy)
+                  </CardTitle>
+                  <Button 
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh Legacy Brief
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
 
       <CardContent className="space-y-4">
         {/* Executive Summary */}
@@ -688,5 +745,9 @@ export function DefenseIntelligenceBrief() {
         </div>
       </CardContent>
     </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
