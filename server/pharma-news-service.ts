@@ -202,7 +202,7 @@ export class PharmaNewsService {
           reason: stock.analysis
         })) || [],
         geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-        sourcesSection: intelligenceBrief.sourcesSection
+        sourcesSection: intelligenceBrief.sourcesSection || null
       };
 
     } catch (error) {
@@ -301,7 +301,8 @@ export class PharmaNewsService {
           reason: stock.analysis
         })),
         marketImpact: intelligenceBrief.marketImpact,
-        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis
+        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
+        sourcesSection: intelligenceBrief.sourcesSection
       };
 
       // Delete existing entry for today and create fresh one with extracted companies
