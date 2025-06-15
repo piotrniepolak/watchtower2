@@ -13,30 +13,28 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 15, 2025 - Implemented Authentic Article Citation System for Pharmaceutical Intelligence
-**Major Intelligence Sources Enhancement:**
-- **Implemented comprehensive citation collection system** that gathers actual URLs from all Perplexity API responses across pharmaceutical brief sections
-- **Created consolidated Intelligence Sources & References section** with authentic article links from STAT News, BioPharma Dive, FDA, and WHO
-- **Added real article title fetching** to display meaningful source names instead of generic domains
-- **Successfully generated pharmaceutical brief with 21 actual article sources** including "Trump administration demands pharma companies begin drug price negotiations" and FDA regulatory updates
-- **Removed all duplicate "References:" sections from Market Impact, Geopolitical Analysis, and summary content** ensuring clean, professional presentation
-- **Enhanced content cleaning functions** to strip embedded reference content while preserving dedicated sources section
+### June 15, 2025 - Fixed Source Links to Point to Specific Articles Used by Perplexity
+**Major Source Link Authentication:**
+- **Fixed source links redirecting to homepages instead of specific articles** by preserving original Perplexity citation URLs
+- **Implemented authentic article URL preservation** that keeps the exact URLs from which Perplexity generated intelligence content
+- **Generated fresh pharmaceutical brief with 22 specific article links** including "Trump administration demands pharma companies begin drug price negotiations" and "FDA approves taletrectinib for ROS1-positive non-small cell lung cancer"
+- **Eliminated generic news section redirects** by only replacing truly broken URLs while preserving specific article paths
+- **Maintained clean Market Impact and Geopolitical Analysis sections** without embedded reference content
+- **Enhanced source link reliability** ensuring all URLs point to the actual articles referenced in intelligence analysis
 
 **Technical Implementation:**
-- Built citation collection system in perplexity-service.ts that tracks citations across all brief generation methods
-- Implemented generateExecutiveSummaryWithCitations, generateKeyDevelopmentsWithCitations, generateMarketImpactAnalysisWithCitations, and generateRegulatoryAnalysisWithCitations functions
-- Added createConsolidatedSourcesSection method that removes duplicate URLs and creates professional source links
-- Enhanced processContentWithLinks to fetch actual article titles from source URLs
-- Updated pharmaceutical intelligence generation to append consolidated sources section to summary
-- Maintained existing SourceLinks component functionality with authentic URLs instead of search fallbacks
+- Modified createConsolidatedSourcesSection in perplexity-service.ts to preserve original specific article URLs from Perplexity citations
+- Updated URL replacement logic to only modify truly generic URLs (homepage-level) while keeping all article-specific paths intact
+- Improved article title fetching to display meaningful titles like "FDA approves darolutamide for metastatic castration-sensitive prostate cancer"
+- Maintained citation collection system that gathers authentic URLs from all Perplexity API responses
+- Enhanced URL validation to distinguish between specific articles and generic domain redirects
 
 **User Impact:**
-- Intelligence Sources & References section now contains actual articles from which brief information was retrieved
-- Professional clickable source buttons link directly to STAT News, BioPharma Dive, FDA, and WHO articles used in analysis
-- Clean Market Impact and Geopolitical Analysis sections without embedded reference text
-- Authentic pharmaceutical intelligence sourcing eliminates generic domain fallbacks
-- Enhanced credibility with verifiable source attribution for all intelligence claims
-- Professional presentation matching enterprise intelligence platform standards with real article sources
+- Intelligence Sources & References section now contains direct links to the actual articles Perplexity used for intelligence generation
+- Source links lead to specific FDA drug approval announcements, STAT News pharmaceutical coverage, and WHO regulatory updates
+- Eliminated homepage redirects ensuring users access the exact content referenced in intelligence analysis
+- Professional source attribution with authentic article titles and working URLs
+- Enhanced credibility with verifiable links to source material used in brief generation
 
 ### June 13, 2025 - Implemented Streamlined Clickable Source Links
 **Major User Experience Enhancement:**
