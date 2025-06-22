@@ -544,13 +544,13 @@ Use ONLY information from the extracted articles. Reference specific details, co
           
           // Ensure we have exactly 6 developments
           while (keyDevelopments.length < 6) {
-            keyDevelopments.push(`Additional development point ${keyDevelopments.length + 1} from ${sector} sector analysis.`);
+            keyDevelopments.push(`Additional development point ${keyDevelopments.length + 1} from sector analysis.`);
           }
           
           console.log(`✅ Created ${keyDevelopments.length} developments ensuring minimum of 6`);
         }
       } else {
-        keyDevelopments = [`Insufficient content available to extract key developments from ${sector} intelligence brief`];
+        keyDevelopments = [`Insufficient content available to extract key developments from intelligence brief`];
         console.log(`⚠️ Using minimal fallback for insufficient content`);
       }
     }
