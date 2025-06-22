@@ -16,11 +16,11 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 ### June 22, 2025 - COMPLETED: Fixed Pharmaceutical/Energy Content Parsing and Removed All Fallback Data
 
 **System Enhancement - AUTHENTIC DATA ONLY:**
-- **Identified and fixed root cause of pharmaceutical/energy parsing failures** - Perplexity was generating 2,700+ character responses but regex patterns were failing to extract sections
-- **Replaced format-dependent parsing with content-based extraction** that works regardless of Perplexity's response structure
-- **Fixed section extraction using paragraph-based logic** instead of relying on specific header formats
+- **Enhanced key developments extraction to pull insights from all sections** instead of just executive summary bullet points
+- **Implemented comprehensive cross-section analysis** extracting key developments from executive summary, market impact, and geopolitical sections
+- **Fixed pharmaceutical/energy parsing failures** - Perplexity was generating substantial responses but regex patterns failed to extract sections
+- **Replaced format-dependent parsing with content-based extraction** working regardless of Perplexity's response structure
 - **Eliminated all fallback data mechanisms** ensuring only authentic Perplexity-generated content appears
-- **Maintained defense sector functionality** which was working perfectly throughout
 
 **Technical Implementation:**
 - Enhanced parseExtractedArticles() to validate authentic content and reject mock data before processing

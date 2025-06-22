@@ -428,68 +428,63 @@ Use ONLY information from the extracted articles. Reference specific details, co
       }
     }
 
-    const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
-    
-    // Enhanced parsing for key developments from authentic content
+    // Extract key developments from ALL sections, not just one
     let keyDevelopments: string[] = [];
     
-    console.log(`🔍 Parsing key developments from text: "${keyDevelopmentsText.substring(0, 200)}..."`);
+    console.log(`🔍 Extracting key developments from all sections of the brief...`);
     
-    if (keyDevelopmentsText && keyDevelopmentsText.length > 10) {
-      // Extract sentences that mention specific companies, developments, or actions
-      const sentences = keyDevelopmentsText
+    // Combine all section content for comprehensive extraction
+    const allSectionContent = [
+      executiveSummaryMatch?.[1] || '',
+      marketImpactMatch?.[1] || '',
+      geopoliticalMatch?.[1] || '',
+      keyDevelopmentsMatch?.[1] || ''
+    ].join(' ');
+    
+    if (allSectionContent.length > 100) {
+      // Extract key insights from across all sections
+      const sentences = allSectionContent
         .split(/[.!?]+/)
         .map(s => s.trim())
         .filter(sentence => {
-          return sentence.length > 20 && (
-            sentence.match(/\b[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]*)*\s*(?:Inc|Ltd|Corp|Company|Group|Systems|Technologies|Defense|Pentagon|Administration)\b/i) ||
-            sentence.match(/\b(announced|launched|signed|acquired|merged|developed|partnered|expanded|reported|conducted|strikes?|operations?)\b/i) ||
-            sentence.match(/\$[\d,]+|\d+%|\d+\s*(million|billion|trillion)/i) ||
-            sentence.match(/\b(policy|strategy|agreement|contract|deal|investment|funding|budget)\b/i)
+          return sentence.length > 25 && (
+            // Company actions and announcements
+            sentence.match(/\b(announced|launched|signed|acquired|merged|developed|partnered|expanded|reported|conducted|completed|approved|released)\b/i) ||
+            // Financial metrics and figures
+            sentence.match(/\$[\d,]+|\d+%|\d+\s*(million|billion|trillion|percent)/i) ||
+            // Strategic initiatives
+            sentence.match(/\b(strategy|initiative|program|policy|regulation|agreement|contract|deal|investment|funding)\b/i) ||
+            // Market movements and trends
+            sentence.match(/\b(increased|decreased|rose|fell|growing|declining|expanding|reducing|rising|falling)\b/i) ||
+            // Sector-specific developments
+            sentence.match(/\b(pharmaceutical|defense|energy|oil|gas|nuclear|military|drug|vaccine|treatment|facility|pipeline|production)\b/i)
+          );
+        })
+        .filter((sentence, index, array) => {
+          // Remove duplicates and very similar sentences
+          return !array.slice(0, index).some(prevSentence => 
+            prevSentence.substring(0, 50) === sentence.substring(0, 50)
           );
         });
       
-      keyDevelopments = sentences.slice(0, 10).map(sentence => {
-        let cleaned = sentence.replace(/^[^A-Z]*/, '').replace(/\s+/g, ' ').trim();
-        if (cleaned && cleaned.length > 0) {
-          cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-        }
-        return cleaned;
-      }).filter(dev => dev.length > 15);
-      
-      console.log(`✅ Extracted ${keyDevelopments.length} developments from KEY DEVELOPMENTS section`);
-    } else {
-      // If no dedicated KEY DEVELOPMENTS section, extract from executive summary
-      console.log(`❌ No KEY DEVELOPMENTS section found, extracting from executive summary...`);
-      const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
-      
-      if (executiveSummary && executiveSummary.length > 100) {
-        const sentences = executiveSummary
-          .split(/[.!?]+/)
-          .map(s => s.trim())
-          .filter(sentence => {
-            return sentence.length > 30 && (
-              sentence.match(/\b(U\.S\.|United States|Pentagon|Defense Secretary|President|strikes?|conducted|announced|emphasized|stated)\b/i) ||
-              sentence.match(/\b(Iran|Israeli?|nuclear|sites?|facilities?|conflict|missiles?|attacks?)\b/i) ||
-              sentence.match(/\$[\d,]+|\d+%|\d+\s*(million|billion|trillion)/i) ||
-              sentence.match(/\b[A-Z][a-zA-Z]+\s+(?:Inc|Ltd|Corp|Company|Group|Systems|Technologies)\b/i)
-            );
-          });
-        
-        keyDevelopments = sentences.slice(0, 8).map(sentence => {
+      // Select the most significant developments
+      keyDevelopments = sentences
+        .slice(0, 12)
+        .map(sentence => {
           let cleaned = sentence.replace(/^[^A-Z]*/, '').replace(/\s+/g, ' ').trim();
           if (cleaned && cleaned.length > 0) {
             cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
           }
           return cleaned;
-        }).filter(dev => dev.length > 20);
-        
-        console.log(`✅ Extracted ${keyDevelopments.length} developments from executive summary`);
+        })
+        .filter(dev => dev.length > 20)
+        .slice(0, 8); // Limit to 8 key developments
+      
+      console.log(`✅ Extracted ${keyDevelopments.length} key developments from all sections`);
+      
+      if (keyDevelopments.length > 0) {
+        console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
       }
-    }
-    
-    if (keyDevelopments.length > 0) {
-      console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
     }
 
     const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
