@@ -132,7 +132,14 @@ export class FourStepIntelligenceService {
     
     // STEP 3: Generate sections using ONLY extracted articles
     console.log(`📝 STEP 3: Writing sections using ONLY extracted articles`);
-    const intelligence = await this.generateSectionsFromArticles(extractedArticles, sector);
+    const sections = await this.generateSectionsFromArticles(extractedArticles, sector);
+    
+    // If no key developments were extracted, create them from articles
+    if (sections.keyDevelopments.length === 0) {
+      console.log(`🔄 Creating key developments from article content...`);
+      sections.keyDevelopments = this.createKeyDevelopmentsFromArticles(extractedArticles);
+      console.log(`📝 Created ${sections.keyDevelopments.length} key developments from articles`);
+    }
     
     // STEP 4: Include direct URLs
     console.log(`🔗 STEP 4: Including ${extractedArticles.length} direct article URLs from discovered sources`);
@@ -442,26 +449,36 @@ Use ONLY information from the extracted articles. Reference specific details, co
   private createKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
     const developments: string[] = [];
     
-    articles.forEach(article => {
+    console.log(`🔄 Creating developments from ${articles.length} articles...`);
+    
+    articles.forEach((article, index) => {
       const { title, source, content } = article;
+      console.log(`📰 Processing article ${index + 1}: "${title}" from ${source}`);
       
       // Create development from article title and content
       if (title && title.length > 10) {
-        // Extract company name from source or title
-        const companyMatch = source.match(/^([A-Z][a-zA-Z\s]+?)(?:\s+(?:News|Ltd|Inc|Corp|Company))?$/i);
-        const company = companyMatch?.[1]?.trim() || source.split(' ')[0];
+        // Extract company/organization name from source
+        const cleanSource = source.replace(/\.com$|News$|Ltd\.?$|Inc\.?$|Corp\.?$/gi, '').trim();
+        const company = cleanSource || source.split(' ')[0];
         
-        // Create structured development entry
-        if (content && content.length > 50) {
-          const summary = content.substring(0, 150).replace(/\.$/, '') + '...';
-          developments.push(`${company}: ${title} - ${summary}`);
+        // Create concise development entry
+        let development = '';
+        if (content && content.length > 20) {
+          // Extract key action words or important details
+          const keyInfo = content.substring(0, 100).replace(/\.$/, '');
+          development = `${company}: ${keyInfo}`;
         } else {
-          developments.push(`${company}: ${title}`);
+          development = `${company}: ${title}`;
         }
+        
+        developments.push(development);
+        console.log(`✅ Created development: "${development}"`);
       }
     });
     
-    return developments.slice(0, 8); // Limit to 8 developments
+    const finalDevelopments = developments.slice(0, 8);
+    console.log(`📝 Final ${finalDevelopments.length} developments created`);
+    return finalDevelopments;
   }
 }
 
