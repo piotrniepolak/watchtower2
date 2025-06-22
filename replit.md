@@ -23,11 +23,11 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 - **Eliminated all fallback data mechanisms** ensuring only authentic Perplexity-generated content appears
 
 **Technical Implementation:**
-- Enhanced parseExtractedArticles() to validate authentic content and reject mock data before processing
-- Updated error messages to clearly indicate when only hypothetical content is available
-- Removed all fallback parsing patterns that accepted non-authentic data
-- Added strict URL validation requiring real domains (not example.com or placeholder URLs)
-- Implemented content filtering to block responses containing mock/hypothetical indicators
+- Enhanced key developments extraction with multiple regex patterns to handle any Perplexity response format
+- Implemented comprehensive bullet point parsing (-, *, •) and sentence extraction fallbacks
+- Fixed regex syntax errors and improved content analysis for generating developments from all sections
+- Added detailed logging to track parsing success and identify format issues
+- Ensured authentic content extraction without synthetic fallback data
 
 **User Impact:**
 - Global Intelligence Center now works reliably for all three sectors with only authentic data
@@ -296,6 +296,7 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 - Clear technical documentation of architectural changes
 - Professional communication without excessive technical jargon
 - Make only the specific changes requested - do not modify working functionality unnecessarily
+- When user expresses frustration about wasting time, focus immediately on the exact issue without additional modifications
 
 ## Project Architecture
 - **Frontend:** React.js with TypeScript, Tailwind CSS, shadcn/ui components

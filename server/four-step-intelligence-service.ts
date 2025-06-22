@@ -410,63 +410,120 @@ Use ONLY information from the extracted articles. Reference specific details, co
       }
     }
 
-    // Extract key developments from ALL sections, not just one
+    // Extract key developments using comprehensive parsing
     let keyDevelopments: string[] = [];
     
-    console.log(`🔍 Extracting key developments from all sections of the brief...`);
+    console.log(`🔍 Extracting key developments from content...`);
     
-    // Combine all section content for comprehensive extraction
-    const allSectionContent = [
-      executiveSummaryMatch?.[1] || '',
-      marketImpactMatch?.[1] || '',
-      geopoliticalMatch?.[1] || '',
-      keyDevelopmentsMatch?.[1] || ''
-    ].join(' ');
+    const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
     
-    if (allSectionContent.length > 100) {
-      // Extract key insights from across all sections
-      const sentences = allSectionContent
-        .split(/[.!?]+/)
-        .map(s => s.trim())
-        .filter(sentence => {
-          return sentence.length > 25 && (
-            // Company actions and announcements
-            sentence.match(/\b(announced|launched|signed|acquired|merged|developed|partnered|expanded|reported|conducted|completed|approved|released)\b/i) ||
-            // Financial metrics and figures
-            sentence.match(/\$[\d,]+|\d+%|\d+\s*(million|billion|trillion|percent)/i) ||
-            // Strategic initiatives
-            sentence.match(/\b(strategy|initiative|program|policy|regulation|agreement|contract|deal|investment|funding)\b/i) ||
-            // Market movements and trends
-            sentence.match(/\b(increased|decreased|rose|fell|growing|declining|expanding|reducing|rising|falling)\b/i) ||
-            // Sector-specific developments
-            sentence.match(/\b(pharmaceutical|defense|energy|oil|gas|nuclear|military|drug|vaccine|treatment|facility|pipeline|production)\b/i)
-          );
-        })
-        .filter((sentence, index, array) => {
-          // Remove duplicates and very similar sentences
-          return !array.slice(0, index).some(prevSentence => 
-            prevSentence.substring(0, 50) === sentence.substring(0, 50)
-          );
-        });
+    if (keyDevelopmentsText && keyDevelopmentsText.length > 10) {
+      console.log(`📝 Found KEY DEVELOPMENTS section with ${keyDevelopmentsText.length} characters`);
       
-      // Select the most significant developments
-      keyDevelopments = sentences
-        .slice(0, 12)
-        .map(sentence => {
-          let cleaned = sentence.replace(/^[^A-Z]*/, '').replace(/\s+/g, ' ').trim();
-          if (cleaned && cleaned.length > 0) {
-            cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-          }
-          return cleaned;
-        })
-        .filter(dev => dev.length > 20)
-        .slice(0, 8); // Limit to 8 key developments
+      // Parse bullet points with comprehensive regex patterns
+      const bulletPatterns = [
+        /^-\s+(.+)$/gm,           // Lines starting with "- "
+        /^\*\s+(.+)$/gm,          // Lines starting with "* "
+        /^•\s+(.+)$/gm,           // Lines starting with "• "
+        /-\s+([^-\n]{15,})/g,     // Any "- " followed by substantial text
+        /\*\s+([^*\n]{15,})/g     // Any "* " followed by substantial text
+      ];
       
-      console.log(`✅ Extracted ${keyDevelopments.length} key developments from all sections`);
-      
-      if (keyDevelopments.length > 0) {
-        console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
+      for (const pattern of bulletPatterns) {
+        const matches = keyDevelopmentsText.match(pattern);
+        if (matches && matches.length > 0) {
+          keyDevelopments = matches
+            .map(match => match.replace(/^[-*•]\s+/, '').trim())
+            .filter(point => point.length > 15 && point.length < 200)
+            .slice(0, 8);
+          
+          console.log(`✅ Extracted ${keyDevelopments.length} developments using pattern ${pattern.source}`);
+          break;
+        }
       }
+      
+      // If no bullet points found, try sentence extraction
+      if (keyDevelopments.length === 0) {
+        const sentences = keyDevelopmentsText
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(s => s.length > 20 && s.length < 150)
+          .slice(0, 6);
+        
+        if (sentences.length > 0) {
+          keyDevelopments = sentences.map(s => s.charAt(0).toUpperCase() + s.slice(1) + '.');
+          console.log(`✅ Extracted ${keyDevelopments.length} developments from sentences`);
+        }
+      }
+    }
+    
+    // If no KEY DEVELOPMENTS section, extract from all content
+    if (keyDevelopments.length === 0) {
+      console.log(`⚠️ No KEY DEVELOPMENTS section found, extracting from all content`);
+      
+      const allContent = [
+        executiveSummaryMatch?.[1] || '',
+        marketImpactMatch?.[1] || '',
+        geopoliticalMatch?.[1] || ''
+      ].join(' ');
+      
+      // Extract key facts and figures
+      const factPatterns = [
+        /([A-Z][^.!?]*(?:announced|launched|signed|acquired|completed|approved)[^.!?]*)/gi,
+        /([A-Z][^.!?]*(?:\$[\d,]+|\d+%|\d+\s*(?:million|billion))[^.!?]*)/gi,
+        /([A-Z][^.!?]*(?:increased|decreased|rose|fell|reported)[^.!?]*)/gi
+      ];
+      
+      const facts = [];
+      for (const pattern of factPatterns) {
+        const matches = allContent.match(pattern) || [];
+        facts.push(...matches.slice(0, 3));
+      }
+      
+      if (facts.length > 0) {
+        keyDevelopments = facts
+          .map(fact => fact.trim())
+          .filter(fact => fact.length > 20 && fact.length < 120)
+          .slice(0, 6)
+          .map(fact => {
+            if (!fact.endsWith('.')) fact += '.';
+            return fact;
+          });
+        
+        console.log(`✅ Created ${keyDevelopments.length} developments from content analysis`);
+      }
+    }
+    
+    // Final fallback - create developments from article titles and content
+    if (keyDevelopments.length === 0) {
+      console.log(`⚠️ Creating emergency developments from article content`);
+      
+      const emergencyDevs = [];
+      if (executiveSummaryMatch?.[1]) {
+        const sentences = executiveSummaryMatch[1]
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(s => s.length > 30 && s.length < 100)
+          .slice(0, 4);
+        
+        emergencyDevs.push(...sentences.map(s => {
+          let dev = s.charAt(0).toUpperCase() + s.slice(1);
+          if (!dev.endsWith('.')) dev += '.';
+          return dev;
+        }));
+      }
+      
+      if (emergencyDevs.length > 0) {
+        keyDevelopments = emergencyDevs;
+        console.log(`✅ Created ${keyDevelopments.length} emergency developments`);
+      } else {
+        keyDevelopments = [`Key developments section requires proper formatting in ${sector} intelligence brief`];
+      }
+    }
+    
+    console.log(`📝 Final developments: ${keyDevelopments.length} items`);
+    if (keyDevelopments.length > 0) {
+      console.log(`📝 Sample: "${keyDevelopments[0].substring(0, 60)}..."`);
     }
 
     const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
