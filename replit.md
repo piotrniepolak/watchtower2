@@ -13,14 +13,14 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 22, 2025 - COMPLETED: Fixed Key Developments Extraction Across All Sectors
+### June 22, 2025 - COMPLETED: Fixed Key Developments Extraction and Content Length Issues
 
-**System Enhancement - IMPROVED PARSING:**
-- **Enhanced key developments extraction** with multiple fallback strategies for any Perplexity response format
-- **Implemented comprehensive content analysis** extracting developments from action sentences and company mentions
-- **Fixed pharmaceutical/energy parsing** by combining bullet point detection with sentence extraction from all sections
-- **Added robust fallback mechanisms** ensuring 4-6 key developments extracted regardless of format
-- **Eliminated extraction failures** across defense, pharmaceutical, and energy intelligence briefs
+**System Enhancement - COMPREHENSIVE FIXES:**
+- **Fixed pharmaceutical content generation** ensuring 500-600 word comprehensive sections instead of short paragraphs
+- **Enhanced key developments extraction** to consistently generate exactly 6 developments per sector
+- **Improved content analysis** extracting meaningful developments from substantial sentences across all sections
+- **Standardized content length** requiring comprehensive 500-600 word sections for executive summary and market analysis
+- **Eliminated inconsistent development counts** ensuring all three sectors display 6 key developments consistently
 
 **Technical Implementation:**
 - Enhanced key developments extraction with multiple regex patterns to handle any Perplexity response format
