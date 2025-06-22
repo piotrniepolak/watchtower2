@@ -236,98 +236,77 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
   private parseExtractedArticles(content: string): ExtractedArticle[] {
     const articles: ExtractedArticle[] = [];
     
-    // Try multiple parsing patterns to handle different response formats
+    // Parse numbered articles with structured format
+    const numberedSections = content.split(/###?\s*\d+\.\s*\*\*(.+?)\*\*/g);
     
-    // Pattern 1: Standard ARTICLE format
-    const articleBlocks = content.split(/ARTICLE \d+:/i).slice(1);
-    for (const block of articleBlocks) {
-      const titleMatch = block.match(/Title:\s*(.+)/i);
-      const sourceMatch = block.match(/Source:\s*(.+)/i);
-      const dateMatch = block.match(/Date:\s*(.+)/i);
-      const urlMatch = block.match(/URL:\s*(https?:\/\/[^\s]+)/i);
-      const contentMatch = block.match(/Content:\s*([\s\S]+?)(?=\n\n|\n[A-Z]|$)/i);
-
-      if (titleMatch && sourceMatch && urlMatch) {
-        articles.push({
-          title: titleMatch[1].trim(),
-          source: sourceMatch[1].trim(),
-          publishDate: dateMatch?.[1]?.trim() || '',
-          url: urlMatch[1].trim(),
-          content: contentMatch?.[1]?.trim() || ''
-        });
-      }
-    }
-    
-    // Pattern 2: Header-based format (#### Source)
-    if (articles.length === 0) {
-      const headerSections = content.split(/####\s*(.+)/);
-      for (let i = 1; i < headerSections.length; i += 2) {
-        const source = headerSections[i]?.trim();
-        const sectionContent = headerSections[i + 1] || '';
+    for (let i = 1; i < numberedSections.length; i += 2) {
+      const source = numberedSections[i]?.trim();
+      const sectionContent = numberedSections[i + 1] || '';
+      
+      if (source && sectionContent.length > 50) {
+        // Extract article details from structured content
+        const titleMatch = sectionContent.match(/[-•]\s*\*\*Article Title:\*\*\s*(.+?)(?:\n|$)/i);
+        const dateMatch = sectionContent.match(/[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i);
+        const urlMatch = sectionContent.match(/[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i);
+        const contentMatch = sectionContent.match(/[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|$)/i);
         
-        // Multiple patterns for title extraction
-        let titleMatch = sectionContent.match(/[-•]\s*Article Title:\s*(.+)/i);
-        if (!titleMatch) {
-          titleMatch = sectionContent.match(/[-•]\s*(.+?)(?:\n|$)/);
+        let title = titleMatch?.[1]?.trim();
+        let url = urlMatch?.[1]?.trim();
+        let content = contentMatch?.[1]?.trim();
+        let date = dateMatch?.[1]?.trim();
+        
+        // Fallback patterns for simpler formats
+        if (!title) {
+          const simpleTitleMatch = sectionContent.match(/[-•]\s*(.+?)(?:\n|- \*\*Source|\n\*\*Date|$)/i);
+          title = simpleTitleMatch?.[1]?.trim();
         }
         
-        const dateMatch = sectionContent.match(/Date:\s*(.+)/i);
-        const urlPattern = /(https?:\/\/[^\s\)]+)/;
-        const urlMatch = sectionContent.match(urlPattern);
-        const contentMatch = sectionContent.match(/Content:\s*(.+)/i);
+        if (!url) {
+          const simpleUrlMatch = sectionContent.match(/(https?:\/\/[^\s\]]+)/);
+          url = simpleUrlMatch?.[1]?.trim();
+        }
         
-        if (titleMatch && source) {
-          // Use original URLs when available
-          let articleUrl = urlMatch?.[1] || '';
-          if (!articleUrl) {
-            // Map source names to known domains
-            const sourceDomain = source.toLowerCase();
-            if (sourceDomain.includes('cnn')) {
-              articleUrl = 'https://www.cnn.com';
-            } else if (sourceDomain.includes('reuters')) {
-              articleUrl = 'https://www.reuters.com';
-            } else if (sourceDomain.includes('military')) {
-              articleUrl = 'https://www.militarytimes.com';
-            } else if (sourceDomain.includes('jane')) {
-              articleUrl = 'https://www.janes.com';
-            } else if (sourceDomain.includes('politico')) {
-              articleUrl = 'https://www.politico.com';
-            } else if (sourceDomain.includes('hill')) {
-              articleUrl = 'https://thehill.com';
-            } else if (sourceDomain.includes('foreign')) {
-              articleUrl = 'https://foreignpolicy.com';
-            } else {
-              articleUrl = `https://${sourceDomain.replace(/\s+/g, '').replace(/[^a-z]/g, '')}.com`;
-            }
-          }
+        if (title && title.length > 10 && 
+            !title.match(/^(article title|source|date|url|content|note:|for sources)/i)) {
           
           articles.push({
-            title: titleMatch[1].trim(),
-            source: source,
-            publishDate: dateMatch?.[1]?.trim() || 'June 15, 2025',
-            url: articleUrl,
-            content: contentMatch?.[1]?.trim() || titleMatch[1].trim()
+            title: title.replace(/^\*\*|\*\*$/g, ''),
+            source: source.replace(/^\*\*|\*\*$/g, ''),
+            publishDate: date || 'June 22, 2025',
+            url: url || this.generateSourceUrl(source),
+            content: content || title
           });
         }
       }
     }
     
-    // Pattern 3: Bullet point format
+    // Fallback: Parse markdown links if no structured articles found
     if (articles.length === 0) {
-      const bulletMatches = content.match(/[-•]\s*([^-•\n]+)/g);
-      if (bulletMatches) {
-        for (const bullet of bulletMatches) {
-          const titleMatch = bullet.match(/[-•]\s*(.+)/);
-          if (titleMatch) {
-            articles.push({
-              title: titleMatch[1].trim(),
-              source: 'Defense News Source',
-              publishDate: 'June 15, 2025',
-              url: 'https://defensenews.com',
-              content: titleMatch[1].trim()
-            });
+      const markdownLinks = content.match(/\d+\.\s*\[(.+?)\]\((https?:\/\/[^\)]+)\)/g);
+      if (markdownLinks) {
+        markdownLinks.forEach((match) => {
+          const linkMatch = match.match(/\d+\.\s*\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
+          if (linkMatch) {
+            const title = linkMatch[1].trim();
+            const url = linkMatch[2].trim();
+            
+            try {
+              const domain = new URL(url).hostname.replace('www.', '');
+              
+              if (title.length > 10) {
+                articles.push({
+                  title,
+                  source: domain,
+                  publishDate: 'June 22, 2025',
+                  url,
+                  content: title
+                });
+              }
+            } catch (e) {
+              // Skip invalid URLs
+            }
           }
-        }
+        });
       }
     }
 
