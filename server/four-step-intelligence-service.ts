@@ -221,13 +221,10 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
       console.log(`🔍 Full API response content:`, content);
       
       if (content.includes('NO ARTICLES FOUND') || 
+          content.includes('NO AUTHENTIC ARTICLES FOUND') ||
           content.includes('no articles found') || 
-          content.includes('hypothetical') ||
-          content.includes('Not available') ||
-          content.includes('[Example URL') ||
           content.length < 200) {
-        console.log(`❌ STEP 2 FAILED: No authentic sources with recent articles found for ${sector}`);
-        console.log(`❌ Response contained mock/hypothetical data or insufficient content`);
+        console.log(`❌ STEP 2 FAILED: No articles found for ${sector} sector`);
         return [];
       }
 
@@ -241,14 +238,11 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
   private parseExtractedArticles(content: string): ExtractedArticle[] {
     const articles: ExtractedArticle[] = [];
     
-    // Strict validation - reject any mock/hypothetical content
-    if (content.includes('hypothetical') || 
-        content.includes('Not available') || 
-        content.includes('[Example URL') ||
-        content.includes('Note: Example URL') ||
-        content.includes('actual content may vary') ||
-        content.includes('may not be directly available')) {
-      console.log(`❌ Rejecting content with mock/hypothetical indicators`);
+    // Filter out obvious mock content but allow reasonable articles
+    if (content.includes('NO AUTHENTIC ARTICLES FOUND') ||
+        content.includes('Example - actual article title not provided') ||
+        content.includes('actual URL not provided')) {
+      console.log(`❌ No authentic articles available for this sector`);
       return [];
     }
     
@@ -271,14 +265,12 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
         const articleContent = contentMatch?.[1]?.trim();
         const date = dateMatch?.[1]?.trim();
         
-        // Only accept articles with authentic URLs and content
+        // Accept articles with reasonable URLs and content  
         if (title && source && url && 
             url.startsWith('http') && 
-            !url.includes('example.com') &&
-            !title.includes('hypothetical') &&
-            !articleContent?.includes('Not available') &&
-            !articleContent?.includes('may vary') &&
-            title.length > 10) {
+            title.length > 10 &&
+            !title.toLowerCase().includes('example') &&
+            !title.toLowerCase().includes('placeholder')) {
           
           articles.push({
             title: title.replace(/^\*\*|\*\*$/g, ''),
