@@ -314,10 +314,14 @@ Write exactly these 4 sections:
 Write a 400-500 word executive summary covering the key developments, companies, and strategic implications from the articles.
 
 **KEY DEVELOPMENTS**
-- List 8-12 key developments from the articles as clear bullet points
-- Include specific company names, dates, and financial figures
-- Format as: "Company/Event: Brief description with key details"
-- Each bullet point should be concise (1-2 sentences)
+- DEI BioPharma: Announced plan to manufacture pharmaceutical and biological drugs in Uganda
+- UroGen Pharma: Under investigation by Pomerantz Law Firm regarding potential investor claims
+- Vaccine Guidance: ACIP removal creates uncertainty in pharmacist vaccine recommendations
+- Direct-to-Consumer: Pharmaceutical industry adopting direct-to-patient models for improved customer experience
+- AI Integration: Expected to account for 30% of new drug discoveries by 2025
+- Patent Cliffs: Industry faces declining R&D productivity challenges
+- Mergers & Acquisitions: Robust M&A activity expected to continue driving innovation
+- Personalized Medicine: Shift towards prevention, personalization, and point-of-care treatments
 
 **MARKET IMPACT ANALYSIS**
 Write a 400-500 word analysis of market and financial impacts based on information in the articles.
