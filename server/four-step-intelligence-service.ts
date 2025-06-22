@@ -379,11 +379,11 @@ Use ONLY information from the extracted articles. Reference specific details, co
     console.log(`📝 Generated sections content (${content.length} characters)`);
     console.log(`📝 Content preview: ${content.substring(0, 300)}`);
 
-    // Parse sections with comprehensive pattern matching
-    let executiveSummaryMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)EXECUTIVE SUMMARY(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
-    let keyDevelopmentsMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)KEY DEVELOPMENTS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
-    let marketImpactMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)MARKET IMPACT ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
-    let geopoliticalMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)GEOPOLITICAL ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
+    // Parse sections with precise boundary detection
+    let executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*KEY DEVELOPMENTS\*\*|\*\*MARKET IMPACT|\*\*GEOPOLITICAL|$)/i);
+    let keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*MARKET IMPACT ANALYSIS\*\*|\*\*GEOPOLITICAL|$)/i);
+    let marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*GEOPOLITICAL ANALYSIS\*\*|$)/i);
+    let geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)$/i);
 
     // Force comprehensive content extraction regardless of structured parsing
     if (content.length > 1000) {
