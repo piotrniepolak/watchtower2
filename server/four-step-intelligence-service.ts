@@ -313,17 +313,21 @@ Search for: industry deals, policy changes, military contracts, market developme
 
 ${articlesText}
 
-Write exactly these 4 sections:
+Write exactly these 4 sections with this exact formatting:
 
 **EXECUTIVE SUMMARY**
 Write a 400-500 word executive summary covering the key developments, companies, and strategic implications from the articles.
 
 **KEY DEVELOPMENTS**
-Based on the extracted articles, provide 8-12 key developments in bullet point format:
-- Use only information directly from the source articles
-- Format as: "Company/Organization: Specific development or announcement"
-- Include financial figures, dates, and concrete actions mentioned in articles
-- Each bullet point should be 1-2 sentences maximum
+Write 6-8 bullet points using this exact format:
+- [Company/Organization]: [Specific action/announcement/development from articles]
+- [Company/Organization]: [Another specific action/announcement/development from articles]
+- [Company/Organization]: [Third specific action/announcement/development from articles]
+- [Company/Organization]: [Fourth specific action/announcement/development from articles]
+- [Company/Organization]: [Fifth specific action/announcement/development from articles]
+- [Company/Organization]: [Sixth specific action/announcement/development from articles]
+
+Each bullet point must start with a dash and space "- " and include specific company/organization name from articles with concrete actions, announcements, or developments.
 
 **MARKET IMPACT ANALYSIS**
 Write a 400-500 word analysis of market and financial impacts based on information in the articles.
@@ -425,8 +429,8 @@ Use ONLY information from the extracted articles. Reference specific details, co
         /^-\s+(.+)$/gm,           // Lines starting with "- "
         /^\*\s+(.+)$/gm,          // Lines starting with "* "
         /^•\s+(.+)$/gm,           // Lines starting with "• "
-        /-\s+([^-\n]{15,})/g,     // Any "- " followed by substantial text
-        /\*\s+([^*\n]{15,})/g     // Any "* " followed by substantial text
+        /-\s+([^\n]{20,})/g,      // Any "- " followed by substantial text
+        /\*\s+([^\n]{20,})/g      // Any "* " followed by substantial text
       ];
       
       for (const pattern of bulletPatterns) {
@@ -494,30 +498,61 @@ Use ONLY information from the extracted articles. Reference specific details, co
       }
     }
     
-    // Final fallback - create developments from article titles and content
+    // Create developments from any available content
     if (keyDevelopments.length === 0) {
-      console.log(`⚠️ Creating emergency developments from article content`);
+      console.log(`⚠️ Creating developments from all available content`);
       
-      const emergencyDevs = [];
-      if (executiveSummaryMatch?.[1]) {
-        const sentences = executiveSummaryMatch[1]
+      const allContent = [executiveSummaryMatch?.[1], marketImpactMatch?.[1], geopoliticalMatch?.[1]]
+        .filter(content => content && content.length > 100)
+        .join(' ');
+      
+      if (allContent.length > 200) {
+        // Extract meaningful sentences with key information
+        const actionSentences = allContent
           .split(/[.!?]+/)
           .map(s => s.trim())
-          .filter(s => s.length > 30 && s.length < 100)
+          .filter(s => s.length > 40 && s.length < 120)
+          .filter(s => /\b(?:announced|launched|reported|signed|completed|acquired|developed|approved|increased|decreased|struck|conducted)\b/i.test(s))
           .slice(0, 4);
         
-        emergencyDevs.push(...sentences.map(s => {
-          let dev = s.charAt(0).toUpperCase() + s.slice(1);
-          if (!dev.endsWith('.')) dev += '.';
-          return dev;
-        }));
-      }
-      
-      if (emergencyDevs.length > 0) {
-        keyDevelopments = emergencyDevs;
-        console.log(`✅ Created ${keyDevelopments.length} emergency developments`);
+        // Also extract company/organization mentions
+        const companyMentions = allContent
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(s => s.length > 30 && s.length < 110)
+          .filter(s => /\b(?:[A-Z][a-zA-Z]+\s+(?:Corp|Inc|Ltd|LLC|Company|Pharmaceutical|Defense|Energy))\b/i.test(s))
+          .slice(0, 3);
+        
+        // Combine both types
+        const allSentences = [...actionSentences, ...companyMentions];
+        
+        if (allSentences.length > 0) {
+          keyDevelopments = allSentences
+            .slice(0, 6)
+            .map(s => {
+              let dev = s.charAt(0).toUpperCase() + s.slice(1);
+              if (!dev.endsWith('.')) dev += '.';
+              return dev;
+            });
+          console.log(`✅ Created ${keyDevelopments.length} developments from action sentences and company mentions`);
+        } else {
+          // Final fallback to any substantial sentences
+          const fallbackSentences = allContent
+            .split(/[.!?]+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 50 && s.length < 100)
+            .slice(0, 5);
+          
+          keyDevelopments = fallbackSentences.map(s => {
+            let dev = s.charAt(0).toUpperCase() + s.slice(1);
+            if (!dev.endsWith('.')) dev += '.';
+            return dev;
+          });
+          console.log(`✅ Created ${keyDevelopments.length} final fallback developments`);
+        }
       } else {
-        keyDevelopments = [`Key developments section requires proper formatting in ${sector} intelligence brief`];
+        keyDevelopments = [`Insufficient content available to extract key developments from ${sector} intelligence brief`];
+        console.log(`⚠️ Using minimal fallback for insufficient content`);
       }
     }
     
