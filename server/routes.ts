@@ -14,8 +14,7 @@ import { DatabaseStorage } from "./storage";
 import { stockService } from "./stock-service";
 import { quizService } from "./quiz-service";
 import { newsService } from "./news-service";
-import { pharmaNewsService } from "./pharma-news-service";
-import { perplexityDefenseService } from "./perplexity-defense-service";
+// Legacy services removed - only 4-step methodology available
 import { perplexityConflictService } from "./perplexity-conflict-service.js";
 import { lobbyingService } from "./lobbying-service";
 import { modernLobbyingService } from "./modern-lobbying-service";
@@ -1555,14 +1554,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up periodic stock updates broadcast
   setInterval(broadcastStockUpdate, 15000); // Every 15 seconds
   
-  // Daily News Routes - Modern Defense Intelligence System
+  // Legacy routes removed - redirect to 4-step methodology
   app.get("/api/news/today", async (req, res) => {
     try {
-      const news = await perplexityDefenseService.getTodaysDefenseIntelligence();
-      if (!news) {
-        return res.status(404).json({ error: "No defense intelligence available for today" });
-      }
-      res.json(news);
+      return res.status(404).json({ error: "Legacy system removed - use /api/intelligence/defense/four-step instead" });
     } catch (error) {
       console.error("Error fetching today's defense intelligence:", error);
       res.status(500).json({ error: "Failed to fetch today's defense intelligence" });
@@ -1581,7 +1576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pharma-intelligence", async (req, res) => {
     try {
       console.log('Generating fresh pharmaceutical intelligence using Perplexity AI...');
-      const intelligence = await pharmaNewsService.generatePerplexityIntelligenceBrief();
+      const intelligence = null; // Legacy service removed
       
       if (!intelligence) {
         return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
@@ -1996,107 +1991,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Defense News Routes
-  app.get("/api/news/defense/today", async (req, res) => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-
-      // Get defense brief specifically by sector
-      let news = await storage.getDailyNews(today, 'defense');
-
-      // If no existing data, generate new comprehensive defense intelligence
-      if (!news) {
-        console.log('No existing defense intelligence found, generating fresh data...');
-        news = await perplexityDefenseService.generateComprehensiveDefenseIntelligence();
-      }
-
-      if (!news) {
-        return res.status(404).json({ error: "No defense news available - please ensure PERPLEXITY_API_KEY is configured" });
-      }
-
-      res.json(news);
-    } catch (error) {
-      console.error("Error fetching defense news:", error);
-      res.status(500).json({ error: "Failed to fetch defense news" });
-    }
-  });
-
-  app.post("/api/news/defense/generate", async (req, res) => {
-    try {
-      console.log('🛡️ Generating fresh defense intelligence brief...');
-      const defenseIntelligence = await perplexityDefenseService.generateComprehensiveDefenseIntelligence();
-
-      if (!defenseIntelligence) {
-        return res.status(500).json({ error: "Failed to generate defense intelligence brief - please ensure PERPLEXITY_API_KEY is configured" });
-      }
-
-      res.json(defenseIntelligence);
-    } catch (error) {
-      console.error("Error generating defense intelligence brief:", error);
-      res.status(500).json({ error: "Failed to generate defense intelligence brief" });
-    }
-  });
-
-  // Update the pharma news routes to ensure no fallback
-  app.get("/api/news/pharma/today", async (req, res) => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-
-      // Get pharmaceutical brief specifically by sector
-      let news = await storage.getDailyNews(today, 'pharmaceutical');
-
-      // If no pharmaceutical brief exists, generate new one
-      if (!news) {
-        console.log('No pharmaceutical intelligence found, generating pharmaceutical data...');
-        news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
-      }
-
-      if (!news) {
-        return res.status(404).json({ error: "No pharmaceutical news available - please ensure PERPLEXITY_API_KEY is configured" });
-      }
-
-      res.json(news);
-    } catch (error) {
-      console.error("Error fetching today's pharma news:", error);
-      res.status(500).json({ error: "Failed to fetch today's pharma news" });
-    }
-  });
-
-  app.post("/api/news/pharma/generate", async (req, res) => {
-    try {
-      console.log('🔬 Manual pharmaceutical intelligence brief generation requested...');
-
-      // Generate fresh pharmaceutical intelligence using Perplexity AI
-      const news = await pharmaNewsService.generatePerplexityIntelligenceBrief();
-
-      if (!news) {
-        return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief - please ensure PERPLEXITY_API_KEY is configured" });
-      }
-
-      console.log('✅ Fresh pharmaceutical intelligence brief generated successfully');
-      res.json(news);
-    } catch (error) {
-      console.error("Error generating pharmaceutical intelligence brief:", error);
-      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence brief" });
-    }
-  });
-  
-  // Dedicated Perplexity AI pharmaceutical intelligence endpoint
-  app.get("/api/pharma-intelligence", async (req, res) => {
-    try {
-      console.log('Generating fresh pharmaceutical intelligence using Perplexity AI...');
-      const intelligence = await pharmaNewsService.generatePerplexityIntelligenceBrief();
-      
-      if (!intelligence) {
-        return res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
-      }
-      
-      res.json(intelligence);
-    } catch (error) {
-      console.error("Error generating pharmaceutical intelligence:", error);
-      res.status(500).json({ error: "Failed to generate pharmaceutical intelligence" });
-    }
-  });
+  // Legacy routes removed - only 4-step methodology available
   
   // Defense Intelligence Latest Endpoint
   app.get("/api/news/defense/latest", async (req, res) => {

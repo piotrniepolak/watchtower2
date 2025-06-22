@@ -13,7 +13,29 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 15, 2025 - MAJOR BREAKTHROUGH: Dynamic Source Discovery with Enhanced Parsing Logic
+### June 22, 2025 - COMPLETED: Legacy System Removal and Expanded 4-Step Methodology
+**System Cleanup and Enhancement:**
+- **Completely removed all legacy intelligence system components** including defense-intelligence-service.ts, pharma-news-service.ts, and perplexity-defense-service.ts
+- **Eliminated all legacy route endpoints** - only 4-step methodology endpoints remain operational
+- **Enhanced 4-step intelligence sections for detailed content** - each section now generates 400-750 words of comprehensive analysis
+- **Updated frontend components** to exclusively use 4-step methodology with no legacy system references
+- **Expanded section requirements** for executive summary, key developments (10-15 items), market impact analysis, and geopolitical analysis
+
+**Technical Implementation:**
+- Removed legacy service files and route handlers that used generic content generation
+- Enhanced generateSectionsFromArticles with detailed content requirements for each section
+- Updated unified intelligence dashboard to only display 4-step methodology components
+- Modified frontend tabs to show "4-Step Methodology" instead of generic "Intelligence Briefs"
+- Added comprehensive prompting for 400-600 word executive summaries and 500-750 word market analysis sections
+
+**User Impact:**
+- Clean system with only authentic source-based intelligence generation
+- More detailed and comprehensive intelligence sections with specific word count requirements
+- Professional 4-step methodology interface without legacy system confusion
+- Enhanced content quality with expanded analysis requirements per section
+- Streamlined user experience focused exclusively on authentic article extraction methodology
+
+### June 15, 2025 - Previous: Dynamic Source Discovery with Enhanced Parsing Logic
 **Critical System Enhancement - PARSING BREAKTHROUGH:**
 - **Successfully implemented dynamic source discovery methodology** replacing fixed 20-source lists with intelligent discovery of sources that actually published recent articles
 - **Enhanced article parsing logic with multiple fallback patterns** to handle real Perplexity API response formats including header-based (#### Source) and bullet point formats

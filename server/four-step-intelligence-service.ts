@@ -328,21 +328,43 @@ Using ONLY these extracted articles from today/yesterday:
 
 ${articlesText}
 
-Write exactly these 4 sections using ONLY the above articles:
+Write exactly these 4 sections using ONLY the above articles with expanded, detailed content:
 
 **EXECUTIVE SUMMARY**
-[Synthesize key themes from extracted articles only]
+Write a comprehensive 400-600 word executive summary synthesizing the major themes, strategic implications, and critical developments from the extracted articles. Include specific companies, financial figures, dates, and strategic context. Analyze interconnections between developments and their broader sector implications. Reference specific details from the articles including contract values, policy changes, regulatory decisions, and market movements.
 
 **KEY DEVELOPMENTS**  
-[List major events from extracted articles with dates]
+List 10-15 specific, detailed developments from the extracted articles. Each development should be 3-4 sentences with comprehensive details including:
+- Specific dates and timelines
+- Companies and organizations involved
+- Financial figures, contract values, or market impacts
+- Strategic significance and context
+- Regulatory or policy implications
+- Technology or product details mentioned in articles
 
 **MARKET IMPACT ANALYSIS**
-[Analyze market implications based on extracted articles only]
+Write a detailed 500-750 word analysis of market implications based exclusively on the extracted articles. Include:
+- Specific stock price movements and market reactions mentioned
+- Sector-wide trends and competitive positioning
+- Investment implications and analyst perspectives
+- Supply chain and operational impacts
+- Regulatory effects on market dynamics
+- International market considerations
+- Long-term strategic market implications
+- Quantitative data and financial metrics from the articles
 
 **GEOPOLITICAL ANALYSIS**
-[Assess geopolitical implications using only extracted articles]
+Provide a comprehensive 400-600 word assessment of geopolitical implications using only the extracted articles. Cover:
+- International relations impacts and diplomatic considerations
+- National security implications and defense policy effects
+- Global supply chain and trade implications
+- Regulatory environment changes across jurisdictions
+- Strategic alliance and partnership effects
+- Regional stability and conflict implications
+- Long-term geopolitical trends and strategic positioning
+- Cross-border collaboration and competition dynamics
 
-CRITICAL: Use ONLY information from the extracted articles above. No additional content.`;
+CRITICAL: Use ONLY information from the extracted articles above. Make each section substantive with specific details, figures, and strategic analysis derived exclusively from the provided articles.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
