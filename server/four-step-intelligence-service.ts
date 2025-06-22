@@ -92,6 +92,28 @@ export class FourStepIntelligenceService {
     return this.executeStepByStepProcess('pharmaceutical', sources);
   }
 
+  async generateEnergyIntelligence(): Promise<FourStepIntelligenceBrief> {
+    const energySources = [
+      'oilprice.com',
+      'energynews.us',
+      'powermag.com',
+      'utilitydive.com',
+      'energycentral.com',
+      'worldoil.com',
+      'petrochemical-technology.com',
+      'offshore-technology.com',
+      'power-technology.com',
+      'renewableenergyworld.com',
+      'windpowerengineering.com',
+      'solarpowerworldonline.com',
+      'hydroworld.com',
+      'nuclearstreet.com',
+      'gasworld.com'
+    ];
+    const sources = [...energySources, ...this.generalSources];
+    return this.executeStepByStepProcess('energy', sources);
+  }
+
   private async executeStepByStepProcess(
     sector: string, 
     sources: string[]
@@ -319,65 +341,46 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
     sector: string
   ): Promise<Omit<FourStepIntelligenceBrief, 'extractedArticles' | 'sourceUrls' | 'methodologyUsed' | 'generatedAt'>> {
     const articlesText = articles.map(article => 
-      `${article.title} (${article.source}, ${article.publishDate}): ${article.content}`
+      `ARTICLE: ${article.title}\nSOURCE: ${article.source}\nDATE: ${article.publishDate}\nCONTENT: ${article.content}\n---`
     ).join('\n\n');
 
-    const prompt = `CRITICAL: Execute STEP 3 of 4-step methodology
-
-Using ONLY these extracted articles from today/yesterday:
+    const prompt = `Create a professional intelligence brief using ONLY these ${articles.length} authentic articles from ${sector} sector sources:
 
 ${articlesText}
 
-Write exactly these 4 sections using ONLY the above articles with expanded, detailed content:
+Write exactly these 4 sections:
 
 **EXECUTIVE SUMMARY**
-Write a comprehensive 400-600 word executive summary synthesizing the major themes, strategic implications, and critical developments from the extracted articles. Include specific companies, financial figures, dates, and strategic context. Analyze interconnections between developments and their broader sector implications. Reference specific details from the articles including contract values, policy changes, regulatory decisions, and market movements.
+Write a 400-500 word executive summary covering the key developments, companies, and strategic implications from the articles.
 
-**KEY DEVELOPMENTS**  
-List 10-15 specific, detailed developments from the extracted articles. Each development should be 3-4 sentences with comprehensive details including:
-- Specific dates and timelines
-- Companies and organizations involved
-- Financial figures, contract values, or market impacts
-- Strategic significance and context
-- Regulatory or policy implications
-- Technology or product details mentioned in articles
+**KEY DEVELOPMENTS**
+- List 8-12 specific developments from the articles
+- Include company names, dates, and financial figures mentioned
+- Each point should be 2-3 sentences with context
 
 **MARKET IMPACT ANALYSIS**
-Write a detailed 500-750 word analysis of market implications based exclusively on the extracted articles. Include:
-- Specific stock price movements and market reactions mentioned
-- Sector-wide trends and competitive positioning
-- Investment implications and analyst perspectives
-- Supply chain and operational impacts
-- Regulatory effects on market dynamics
-- International market considerations
-- Long-term strategic market implications
-- Quantitative data and financial metrics from the articles
+Write a 400-500 word analysis of market and financial impacts based on information in the articles.
 
 **GEOPOLITICAL ANALYSIS**
-Provide a comprehensive 400-600 word assessment of geopolitical implications using only the extracted articles. Cover:
-- International relations impacts and diplomatic considerations
-- National security implications and defense policy effects
-- Global supply chain and trade implications
-- Regulatory environment changes across jurisdictions
-- Strategic alliance and partnership effects
-- Regional stability and conflict implications
-- Long-term geopolitical trends and strategic positioning
-- Cross-border collaboration and competition dynamics
+Write a 300-400 word analysis of strategic and policy implications from the articles.
 
-CRITICAL: Use ONLY information from the extracted articles above. Make each section substantive with specific details, figures, and strategic analysis derived exclusively from the provided articles.`;
+Use ONLY information from the extracted articles. Reference specific details, companies, and figures mentioned in the source material.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.perplexityApiKey}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: 'llama-3.1-sonar-large-128k-online',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 3000,
-          temperature: 0.1
+          messages: [{
+            role: 'user',
+            content: prompt
+          }],
+          temperature: 0.2,
+          max_tokens: 4000
         })
       });
 
@@ -387,7 +390,14 @@ CRITICAL: Use ONLY information from the extracted articles above. Make each sect
 
       const data = await response.json();
       const content = data.choices[0]?.message?.content || '';
+
+      console.log(`📝 Generated sections content (${content.length} characters)`);
+      console.log(`📝 Content preview:`, content.substring(0, 300));
       
+      if (content.length < 100) {
+        throw new Error('Generated content too short - section generation failed');
+      }
+
       return this.parseFourStepSections(content);
     } catch (error) {
       console.error(`❌ STEP 3 ERROR: Section generation failed:`, error);
@@ -396,22 +406,29 @@ CRITICAL: Use ONLY information from the extracted articles above. Make each sect
   }
 
   private parseFourStepSections(content: string): Omit<FourStepIntelligenceBrief, 'extractedArticles' | 'sourceUrls' | 'methodologyUsed' | 'generatedAt'> {
-    const executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|\n\n[A-Z]|$)/i);
-    const keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|\n\n[A-Z]|$)/i);
-    const marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|\n\n[A-Z]|$)/i);
-    const geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|\n\n[A-Z]|$)/i);
+    const executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
+    const keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
+    const marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
+    const geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
 
     const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
     const keyDevelopments = keyDevelopmentsText
-      .split(/\n+/)
-      .filter(line => line.trim().length > 20)
-      .map(line => line.replace(/^[-•*]\s*/, '').trim());
+      .split(/\n/)
+      .filter(line => line.trim().length > 15)
+      .map(line => line.replace(/^[-•*]\s*/, '').trim())
+      .filter(line => line.length > 20);
+
+    const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
+    const marketImpact = marketImpactMatch?.[1]?.trim() || '';
+    const geopolitical = geopoliticalMatch?.[1]?.trim() || '';
+
+    console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpact.length} chars, Geopolitical: ${geopolitical.length} chars, Developments: ${keyDevelopments.length} items`);
 
     return {
-      executiveSummary: executiveSummaryMatch?.[1]?.trim() || '',
-      keyDevelopments: keyDevelopments,
-      marketImpactAnalysis: marketImpactMatch?.[1]?.trim() || '',
-      geopoliticalAnalysis: geopoliticalMatch?.[1]?.trim() || ''
+      executiveSummary,
+      keyDevelopments,
+      marketImpactAnalysis: marketImpact,
+      geopoliticalAnalysis: geopolitical
     };
   }
 }

@@ -83,15 +83,7 @@ export function GlobalIntelligenceCenter() {
       </CardHeader>
       
       <CardContent className={`${config.bgColor} rounded-lg`}>
-        {selectedSector === "energy" ? (
-          <div className="text-center py-8">
-            <Zap className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-900 mb-2">Energy Intelligence Coming Soon</h3>
-            <p className="text-slate-600">4-step methodology for energy sector intelligence is under development</p>
-          </div>
-        ) : (
-          <FourStepIntelligenceBrief sector={selectedSector} />
-        )}
+        <FourStepIntelligenceBrief sector={selectedSector} />
       </CardContent>
     </Card>
   );

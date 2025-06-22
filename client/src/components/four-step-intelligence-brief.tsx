@@ -34,7 +34,7 @@ interface FourStepIntelligence {
 }
 
 interface FourStepIntelligenceBriefProps {
-  sector: 'defense' | 'pharmaceutical';
+  sector: 'defense' | 'pharmaceutical' | 'energy';
 }
 
 export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefProps) {

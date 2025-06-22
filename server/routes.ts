@@ -1844,6 +1844,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import 4-Step Intelligence Service
   const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
 
+  // Energy Intelligence Route
+  app.get("/api/intelligence/energy/four-step", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if 4-step intelligence already exists
+      let intelligence = await storage.getFourStepIntelligence(today, 'energy');
+      
+      // If no existing data, generate using 4-step methodology
+      if (!intelligence) {
+        console.log('🔋 Generating 4-step energy intelligence with authentic article extraction...');
+        const fourStepBrief = await fourStepIntelligenceService.generateEnergyIntelligence();
+        
+        const insertData = {
+          date: today,
+          sector: 'energy',
+          title: `Energy Intelligence Brief - ${today} (4-Step Methodology)`,
+          executiveSummary: fourStepBrief.executiveSummary,
+          keyDevelopments: fourStepBrief.keyDevelopments,
+          marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+          geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+          extractedArticles: fourStepBrief.extractedArticles,
+          sourceUrls: fourStepBrief.sourceUrls,
+          methodologyUsed: fourStepBrief.methodologyUsed,
+          articleCount: fourStepBrief.extractedArticles.length,
+          sourcesVerified: true
+        };
+        
+        try {
+          intelligence = await storage.createFourStepIntelligence(insertData);
+          console.log(`✅ 4-step energy intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        } catch (error: any) {
+          if (error.code === '23505') {
+            // Duplicate key, fetch existing
+            intelligence = await storage.getFourStepIntelligence(today, 'energy');
+          } else {
+            throw error;
+          }
+        }
+      }
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("❌ Error generating 4-step energy intelligence:", error);
+      res.status(500).json({ error: "Failed to generate 4-step energy intelligence" });
+    }
+  });
+
   // Four-Step Intelligence Routes (Authentic Article Extraction)
   app.get("/api/intelligence/defense/four-step", async (req, res) => {
     try {
@@ -1971,6 +2019,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("❌ Error regenerating 4-step defense intelligence:", error);
       res.status(500).json({ error: "Failed to regenerate 4-step defense intelligence" });
+    }
+  });
+
+  app.post("/api/intelligence/energy/four-step/regenerate", async (req, res) => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Delete existing 4-step intelligence
+      await storage.deleteFourStepIntelligence(today, 'energy');
+      
+      console.log('🔋 Regenerating 4-step energy intelligence with fresh article extraction...');
+      const fourStepBrief = await fourStepIntelligenceService.generateEnergyIntelligence();
+      
+      const insertData = {
+        date: today,
+        sector: 'energy',
+        title: `Energy Intelligence Brief - ${today} (4-Step Methodology)`,
+        executiveSummary: fourStepBrief.executiveSummary,
+        keyDevelopments: fourStepBrief.keyDevelopments,
+        marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+        geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+        extractedArticles: fourStepBrief.extractedArticles,
+        sourceUrls: fourStepBrief.sourceUrls,
+        methodologyUsed: fourStepBrief.methodologyUsed,
+        articleCount: fourStepBrief.extractedArticles.length,
+        sourcesVerified: true
+      };
+      
+      const intelligence = await storage.createFourStepIntelligence(insertData);
+      console.log(`✅ 4-step energy intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      
+      res.json(intelligence);
+    } catch (error) {
+      console.error("❌ Error regenerating 4-step energy intelligence:", error);
+      res.status(500).json({ error: "Failed to regenerate 4-step energy intelligence" });
     }
   });
 
