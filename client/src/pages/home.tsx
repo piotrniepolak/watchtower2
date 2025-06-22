@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
-import { FourStepIntelligenceBrief } from "@/components/four-step-intelligence-brief";
+import { GlobalIntelligenceCenter } from "@/components/global-intelligence-center";
 
 import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
@@ -907,33 +907,9 @@ export default function Home() {
           )}
         </Card>
 
-        {/* 4-Step Intelligence Dashboard */}
+        {/* Global Intelligence Center */}
         <div className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-6 w-6 text-blue-600" />
-                  <CardTitle>Defense Intelligence</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <FourStepIntelligenceBrief sector="defense" />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <Pill className="h-6 w-6 text-green-600" />
-                  <CardTitle>Pharmaceutical Intelligence</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <FourStepIntelligenceBrief sector="pharmaceutical" />
-              </CardContent>
-            </Card>
-          </div>
+          <GlobalIntelligenceCenter />
         </div>
 
         {/* Community Chat Section */}
