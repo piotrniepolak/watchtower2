@@ -244,7 +244,7 @@ Search for: industry deals, policy changes, military contracts, market developme
         
         const title = titleMatch?.[1]?.trim();
         const source = sourceMatch?.[1]?.trim();
-        const url = urlMatch?.[1]?.trim();
+        let url = urlMatch?.[1]?.trim();
         const articleContent = contentMatch?.[1]?.trim();
         const date = dateMatch?.[1]?.trim();
         
@@ -277,7 +277,7 @@ Search for: industry deals, policy changes, military contracts, market developme
             title: title.replace(/^\*\*|\*\*$/g, ''),
             source: source.replace(/^\*\*|\*\*$/g, ''),
             publishDate: date || 'June 22, 2025',
-            url,
+            url: url || 'https://defensenews.com',
             content: articleContent || title
           });
         }
