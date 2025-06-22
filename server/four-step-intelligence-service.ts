@@ -380,46 +380,66 @@ Use ONLY information from the extracted articles. Reference specific details, co
 
     const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
     
-    // Enhanced parsing for key developments with debug logging
+    // Enhanced parsing for key developments from authentic content
     let keyDevelopments: string[] = [];
     
     console.log(`🔍 Parsing key developments from text: "${keyDevelopmentsText.substring(0, 200)}..."`);
     
-    if (keyDevelopmentsText) {
-      // Try all parsing approaches and log results
-      const bulletLines = keyDevelopmentsText.match(/^[-•*]\s*(.+)$/gm);
-      const numberedLines = keyDevelopmentsText.match(/^\d+\.\s*(.+)$/gm);
-      const allLines = keyDevelopmentsText.split(/\n+/).filter(line => line.trim().length > 10);
-      
-      console.log(`🔍 Found ${bulletLines?.length || 0} bullet lines, ${numberedLines?.length || 0} numbered lines, ${allLines.length} total lines`);
-      
-      if (bulletLines && bulletLines.length > 0) {
-        keyDevelopments = bulletLines.map(line => 
-          line.replace(/^[-•*]\s*/, '').trim()
-        ).filter(line => line.length > 15);
-        console.log(`✅ Using bullet point parsing, found ${keyDevelopments.length} developments`);
-      } else if (numberedLines && numberedLines.length > 0) {
-        keyDevelopments = numberedLines.map(line => 
-          line.replace(/^\d+\.\s*/, '').trim()
-        ).filter(line => line.length > 15);
-        console.log(`✅ Using numbered list parsing, found ${keyDevelopments.length} developments`);
-      } else {
-        // Fallback: Use any meaningful lines
-        keyDevelopments = allLines
-          .map(line => line.trim())
-          .filter(line => 
-            line.length > 20 && 
-            !line.match(/^(key developments|the following|based on|##)/i) &&
-            !line.match(/^\*\*[A-Z\s]+\*\*$/i)
+    if (keyDevelopmentsText && keyDevelopmentsText.length > 10) {
+      // Extract sentences that mention specific companies, developments, or actions
+      const sentences = keyDevelopmentsText
+        .split(/[.!?]+/)
+        .map(s => s.trim())
+        .filter(sentence => {
+          return sentence.length > 20 && (
+            sentence.match(/\b[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]*)*\s*(?:Inc|Ltd|Corp|Company|Group|Systems|Technologies|Defense|Pentagon|Administration)\b/i) ||
+            sentence.match(/\b(announced|launched|signed|acquired|merged|developed|partnered|expanded|reported|conducted|strikes?|operations?)\b/i) ||
+            sentence.match(/\$[\d,]+|\d+%|\d+\s*(million|billion|trillion)/i) ||
+            sentence.match(/\b(policy|strategy|agreement|contract|deal|investment|funding|budget)\b/i)
           );
-        console.log(`✅ Using fallback parsing, found ${keyDevelopments.length} developments`);
-      }
+        });
       
-      // No fallback - only use what was authentically generated
+      keyDevelopments = sentences.slice(0, 10).map(sentence => {
+        let cleaned = sentence.replace(/^[^A-Z]*/, '').replace(/\s+/g, ' ').trim();
+        if (cleaned && cleaned.length > 0) {
+          cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+        }
+        return cleaned;
+      }).filter(dev => dev.length > 15);
       
-      if (keyDevelopments.length > 0) {
-        console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
+      console.log(`✅ Extracted ${keyDevelopments.length} developments from KEY DEVELOPMENTS section`);
+    } else {
+      // If no dedicated KEY DEVELOPMENTS section, extract from executive summary
+      console.log(`❌ No KEY DEVELOPMENTS section found, extracting from executive summary...`);
+      const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
+      
+      if (executiveSummary && executiveSummary.length > 100) {
+        const sentences = executiveSummary
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(sentence => {
+            return sentence.length > 30 && (
+              sentence.match(/\b(U\.S\.|United States|Pentagon|Defense Secretary|President|strikes?|conducted|announced|emphasized|stated)\b/i) ||
+              sentence.match(/\b(Iran|Israeli?|nuclear|sites?|facilities?|conflict|missiles?|attacks?)\b/i) ||
+              sentence.match(/\$[\d,]+|\d+%|\d+\s*(million|billion|trillion)/i) ||
+              sentence.match(/\b[A-Z][a-zA-Z]+\s+(?:Inc|Ltd|Corp|Company|Group|Systems|Technologies)\b/i)
+            );
+          });
+        
+        keyDevelopments = sentences.slice(0, 8).map(sentence => {
+          let cleaned = sentence.replace(/^[^A-Z]*/, '').replace(/\s+/g, ' ').trim();
+          if (cleaned && cleaned.length > 0) {
+            cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+          }
+          return cleaned;
+        }).filter(dev => dev.length > 20);
+        
+        console.log(`✅ Extracted ${keyDevelopments.length} developments from executive summary`);
       }
+    }
+    
+    if (keyDevelopments.length > 0) {
+      console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
     }
 
     const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
