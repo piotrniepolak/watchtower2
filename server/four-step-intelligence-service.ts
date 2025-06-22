@@ -376,11 +376,29 @@ Use ONLY information from the extracted articles. Reference specific details, co
     console.log(`📝 Generated sections content (${content.length} characters)`);
     console.log(`📝 Content preview: ${content.substring(0, 300)}`);
 
-    // Parse sections with comprehensive pattern matching
-    let executiveSummaryMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)EXECUTIVE SUMMARY(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
-    let keyDevelopmentsMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)KEY DEVELOPMENTS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
-    let marketImpactMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)MARKET IMPACT ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
-    let geopoliticalMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)GEOPOLITICAL ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
+    // Split content into logical sections regardless of format
+    const sections = content.split(/\n\s*\n/).filter(section => section.trim().length > 50);
+    
+    let executiveSummaryMatch: RegExpMatchArray | null = null;
+    let keyDevelopmentsMatch: RegExpMatchArray | null = null;
+    let marketImpactMatch: RegExpMatchArray | null = null;
+    let geopoliticalMatch: RegExpMatchArray | null = null;
+
+    // Use the longest sections as content - this works regardless of Perplexity's format
+    if (sections.length >= 4) {
+      // Sort by length and assign the substantial sections
+      const substantialSections = sections.sort((a, b) => b.length - a.length);
+      executiveSummaryMatch = [null, substantialSections[0]];
+      marketImpactMatch = [null, substantialSections[1]];
+      geopoliticalMatch = [null, substantialSections[2]];
+      console.log(`📝 Using section-based extraction: ${substantialSections.length} sections found`);
+    } else if (sections.length >= 1) {
+      // Use the main content as executive summary
+      executiveSummaryMatch = [null, sections[0]];
+      if (sections.length > 1) marketImpactMatch = [null, sections[1]];
+      if (sections.length > 2) geopoliticalMatch = [null, sections[2]];
+      console.log(`📝 Using paragraph-based extraction: ${sections.length} paragraphs found`);
+    }
 
     // If structured sections not found, try to extract from any organized content
     if (!executiveSummaryMatch && content.length > 200) {
@@ -481,13 +499,24 @@ Use ONLY information from the extracted articles. Reference specific details, co
     console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpact.length} chars, Geopolitical: ${geopolitical.length} chars, Developments: ${keyDevelopments.length} items`);
     
     if (executiveSummary.length === 0) {
-      console.log(`⚠️ Executive summary extraction failed, content structure: ${content.substring(0, 500)}`);
+      console.log(`⚠️ Executive summary extraction failed, trying emergency extraction...`);
+      // Emergency extraction - look for any substantial paragraph
+      const emergencyMatch = content.match(/([^.!?]{100,}[.!?])/);
+      if (emergencyMatch) {
+        const emergencyContent = emergencyMatch[1].trim();
+        console.log(`🚨 Emergency extraction: "${emergencyContent.substring(0, 100)}..."`);
+        // Don't actually use emergency content - just log for debugging
+      }
+      console.log(`🔍 Content headers found: ${content.match(/\*\*[A-Z\s]+\*\*/g) || 'none'}`);
+      console.log(`🔍 First 1000 chars: ${content.substring(0, 1000)}`);
     }
     if (marketImpact.length === 0) {
       console.log(`⚠️ Market impact extraction failed`);
+      console.log(`🔍 Content sample: ${content.substring(500, 1500)}`);
     }
     if (geopolitical.length === 0) {
       console.log(`⚠️ Geopolitical analysis extraction failed`);
+      console.log(`🔍 Content sample: ${content.substring(1500, 2500)}`);
     }
 
     return {

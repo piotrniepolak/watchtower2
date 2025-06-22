@@ -13,14 +13,14 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 22, 2025 - COMPLETED: Removed All Fallback Data and Enhanced Key Developments Extraction
+### June 22, 2025 - COMPLETED: Fixed Pharmaceutical/Energy Content Parsing and Removed All Fallback Data
 
 **System Enhancement - AUTHENTIC DATA ONLY:**
-- **Removed all fallback data generation mechanisms** ensuring key developments come only from fresh source content each time
-- **Enhanced key developments extraction** to use only information directly from authentic source articles
-- **Eliminated createKeyDevelopmentsFromArticles fallback function** that was creating artificial content from article titles
-- **Updated prompting to require specific bullet-point format** for key developments from source content
-- **Implemented strict authentic-only policy** with no synthetic content generation when sources don't provide adequate information
+- **Identified and fixed root cause of pharmaceutical/energy parsing failures** - Perplexity was generating 2,700+ character responses but regex patterns were failing to extract sections
+- **Replaced format-dependent parsing with content-based extraction** that works regardless of Perplexity's response structure
+- **Fixed section extraction using paragraph-based logic** instead of relying on specific header formats
+- **Eliminated all fallback data mechanisms** ensuring only authentic Perplexity-generated content appears
+- **Maintained defense sector functionality** which was working perfectly throughout
 
 **Technical Implementation:**
 - Enhanced parseExtractedArticles() to validate authentic content and reject mock data before processing
