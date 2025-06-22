@@ -385,36 +385,37 @@ Use ONLY information from the extracted articles. Reference specific details, co
     let marketImpactMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)MARKET IMPACT ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
     let geopoliticalMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)GEOPOLITICAL ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
 
-    // If structured sections not found, try to extract comprehensive content
-    if (!executiveSummaryMatch && content.length > 200) {
-      // Extract first 500-800 words as executive summary
-      const words = content.split(/\s+/);
-      const summaryWords = words.slice(0, Math.min(800, words.length / 3));
-      if (summaryWords.length > 50) {
-        executiveSummaryMatch = [null, summaryWords.join(' ').trim()];
-        console.log(`📝 Extracted comprehensive executive summary: ${summaryWords.length} words`);
-      }
-    }
-
-    if (!marketImpactMatch && content.length > 500) {
-      // Extract middle portion for market analysis
-      const words = content.split(/\s+/);
-      const startIdx = Math.floor(words.length / 3);
-      const marketWords = words.slice(startIdx, startIdx + Math.min(600, words.length / 3));
-      if (marketWords.length > 50) {
-        marketImpactMatch = [null, marketWords.join(' ').trim()];
-        console.log(`📝 Extracted comprehensive market analysis: ${marketWords.length} words`);
-      }
-    }
-
-    if (!geopoliticalMatch && content.length > 500) {
-      // Extract final portion for geopolitical analysis
-      const words = content.split(/\s+/);
-      const startIdx = Math.floor((words.length * 2) / 3);
-      const geoWords = words.slice(startIdx);
-      if (geoWords.length > 50) {
-        geopoliticalMatch = [null, geoWords.join(' ').trim()];
-        console.log(`📝 Extracted comprehensive geopolitical analysis: ${geoWords.length} words`);
+    // Force comprehensive content extraction regardless of structured parsing
+    if (content.length > 1000) {
+      console.log(`📝 Force extracting comprehensive sections from ${content.length} chars`);
+      
+      // Clean content by removing headers and bullet points
+      const cleanContent = content
+        .replace(/\*\*[A-Z\s]+\*\*/g, '')
+        .replace(/##\s*[A-Z\s]+/g, '')
+        .replace(/^-\s+/gm, '')
+        .replace(/^\*\s+/gm, '')
+        .trim();
+      
+      const sentences = cleanContent.split(/[.!?]+/).filter(s => s.trim().length > 20);
+      
+      if (sentences.length >= 12) {
+        // Executive Summary: First 40% of sentences
+        const execSentences = sentences.slice(0, Math.floor(sentences.length * 0.4));
+        executiveSummaryMatch = [null, execSentences.join('. ').trim() + '.'];
+        console.log(`📝 Force extracted executive summary: ${execSentences.length} sentences`);
+        
+        // Market Impact: Middle 30% of sentences  
+        const marketStart = Math.floor(sentences.length * 0.4);
+        const marketSentences = sentences.slice(marketStart, marketStart + Math.floor(sentences.length * 0.3));
+        marketImpactMatch = [null, marketSentences.join('. ').trim() + '.'];
+        console.log(`📝 Force extracted market analysis: ${marketSentences.length} sentences`);
+        
+        // Geopolitical: Final 30% of sentences
+        const geoStart = Math.floor(sentences.length * 0.7);
+        const geoSentences = sentences.slice(geoStart);
+        geopoliticalMatch = [null, geoSentences.join('. ').trim() + '.'];
+        console.log(`📝 Force extracted geopolitical analysis: ${geoSentences.length} sentences`);
       }
     }
 
