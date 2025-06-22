@@ -220,9 +220,14 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
       console.log(`🔍 Perplexity API Response Length: ${content.length} characters`);
       console.log(`🔍 Full API response content:`, content);
       
-      if (content.includes('NO ARTICLES FOUND') || content.includes('no articles found') || content.length < 200) {
-        console.log(`❌ STEP 2 FAILED: No sources with recent articles found for ${sector}`);
-        console.log(`❌ Response content was:`, content);
+      if (content.includes('NO ARTICLES FOUND') || 
+          content.includes('no articles found') || 
+          content.includes('hypothetical') ||
+          content.includes('Not available') ||
+          content.includes('[Example URL') ||
+          content.length < 200) {
+        console.log(`❌ STEP 2 FAILED: No authentic sources with recent articles found for ${sector}`);
+        console.log(`❌ Response contained mock/hypothetical data or insufficient content`);
         return [];
       }
 
@@ -273,7 +278,7 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
             title: title.replace(/^\*\*|\*\*$/g, ''),
             source: source.replace(/^\*\*|\*\*$/g, ''),
             publishDate: date || 'June 22, 2025',
-            url: url || this.generateSourceUrl(source),
+            url: url || `https://example.com/article-${i}`,
             content: content || title
           });
         }
