@@ -134,12 +134,7 @@ export class FourStepIntelligenceService {
     console.log(`📝 STEP 3: Writing sections using ONLY extracted articles`);
     const sections = await this.generateSectionsFromArticles(extractedArticles, sector);
     
-    // If no key developments were extracted, create them from articles
-    if (sections.keyDevelopments.length === 0) {
-      console.log(`🔄 Creating key developments from article content...`);
-      sections.keyDevelopments = this.createKeyDevelopmentsFromArticles(extractedArticles);
-      console.log(`📝 Created ${sections.keyDevelopments.length} key developments from articles`);
-    }
+    // No fallback - only use authentic source-generated key developments
     
     // STEP 4: Include direct URLs
     console.log(`🔗 STEP 4: Including ${extractedArticles.length} direct article URLs from discovered sources`);
@@ -324,14 +319,11 @@ Write exactly these 4 sections:
 Write a 400-500 word executive summary covering the key developments, companies, and strategic implications from the articles.
 
 **KEY DEVELOPMENTS**
-- DEI BioPharma: Announced plan to manufacture pharmaceutical and biological drugs in Uganda
-- UroGen Pharma: Under investigation by Pomerantz Law Firm regarding potential investor claims
-- Vaccine Guidance: ACIP removal creates uncertainty in pharmacist vaccine recommendations
-- Direct-to-Consumer: Pharmaceutical industry adopting direct-to-patient models for improved customer experience
-- AI Integration: Expected to account for 30% of new drug discoveries by 2025
-- Patent Cliffs: Industry faces declining R&D productivity challenges
-- Mergers & Acquisitions: Robust M&A activity expected to continue driving innovation
-- Personalized Medicine: Shift towards prevention, personalization, and point-of-care treatments
+Based on the extracted articles, provide 8-12 key developments in bullet point format:
+- Use only information directly from the source articles
+- Format as: "Company/Organization: Specific development or announcement"
+- Include financial figures, dates, and concrete actions mentioned in articles
+- Each bullet point should be 1-2 sentences maximum
 
 **MARKET IMPACT ANALYSIS**
 Write a 400-500 word analysis of market and financial impacts based on information in the articles.
@@ -423,11 +415,7 @@ Use ONLY information from the extracted articles. Reference specific details, co
         console.log(`✅ Using fallback parsing, found ${keyDevelopments.length} developments`);
       }
       
-      // If still no developments found, create from extracted articles directly
-      if (keyDevelopments.length === 0) {
-        console.log(`🔄 No key developments found in generated content, creating from articles...`);
-        // This function will be called from the main process with articles
-      }
+      // No fallback - only use what was authentically generated
       
       if (keyDevelopments.length > 0) {
         console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
@@ -448,40 +436,7 @@ Use ONLY information from the extracted articles. Reference specific details, co
     };
   }
 
-  private createKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
-    const developments: string[] = [];
-    
-    console.log(`🔄 Creating developments from ${articles.length} articles...`);
-    
-    articles.forEach((article, index) => {
-      const { title, source, content } = article;
-      console.log(`📰 Processing article ${index + 1}: "${title}" from ${source}`);
-      
-      // Create development from article title and content
-      if (title && title.length > 10) {
-        // Extract company/organization name from source
-        const cleanSource = source.replace(/\.com$|News$|Ltd\.?$|Inc\.?$|Corp\.?$/gi, '').trim();
-        const company = cleanSource || source.split(' ')[0];
-        
-        // Create concise development entry
-        let development = '';
-        if (content && content.length > 20) {
-          // Extract key action words or important details
-          const keyInfo = content.substring(0, 100).replace(/\.$/, '');
-          development = `${company}: ${keyInfo}`;
-        } else {
-          development = `${company}: ${title}`;
-        }
-        
-        developments.push(development);
-        console.log(`✅ Created development: "${development}"`);
-      }
-    });
-    
-    const finalDevelopments = developments.slice(0, 8);
-    console.log(`📝 Final ${finalDevelopments.length} developments created`);
-    return finalDevelopments;
-  }
+
 }
 
 export const fourStepIntelligenceService = new FourStepIntelligenceService();
