@@ -374,32 +374,44 @@ Use ONLY information from the extracted articles. Reference specific details, co
 
     const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
     
-    // Enhanced parsing for key developments with multiple approaches
+    // Enhanced parsing for key developments with debug logging
     let keyDevelopments: string[] = [];
     
+    console.log(`🔍 Parsing key developments from text: "${keyDevelopmentsText.substring(0, 200)}..."`);
+    
     if (keyDevelopmentsText) {
-      // First try: Parse bullet points or numbered lists
-      const bulletLines = keyDevelopmentsText.match(/[-•*]\s*(.+?)(?=\n[-•*]|\n\n|$)/g);
-      const numberedLines = keyDevelopmentsText.match(/\d+\.\s*(.+?)(?=\n\d+\.|\n\n|$)/g);
+      // Try all parsing approaches and log results
+      const bulletLines = keyDevelopmentsText.match(/^[-•*]\s*(.+)$/gm);
+      const numberedLines = keyDevelopmentsText.match(/^\d+\.\s*(.+)$/gm);
+      const allLines = keyDevelopmentsText.split(/\n+/).filter(line => line.trim().length > 10);
+      
+      console.log(`🔍 Found ${bulletLines?.length || 0} bullet lines, ${numberedLines?.length || 0} numbered lines, ${allLines.length} total lines`);
       
       if (bulletLines && bulletLines.length > 0) {
         keyDevelopments = bulletLines.map(line => 
           line.replace(/^[-•*]\s*/, '').trim()
         ).filter(line => line.length > 15);
+        console.log(`✅ Using bullet point parsing, found ${keyDevelopments.length} developments`);
       } else if (numberedLines && numberedLines.length > 0) {
         keyDevelopments = numberedLines.map(line => 
           line.replace(/^\d+\.\s*/, '').trim()
         ).filter(line => line.length > 15);
+        console.log(`✅ Using numbered list parsing, found ${keyDevelopments.length} developments`);
       } else {
-        // Fallback: Split by newlines and filter meaningful content
-        keyDevelopments = keyDevelopmentsText
-          .split(/\n+/)
+        // Fallback: Use any meaningful lines
+        keyDevelopments = allLines
           .map(line => line.trim())
           .filter(line => 
-            line.length > 15 && 
-            !line.match(/^(key developments|the following|based on)/i) &&
-            !line.match(/^\*\*[A-Z\s]+\*\*$/i)
+            line.length > 20 && 
+            !line.match(/^(key developments|the following|based on|##)/i) &&
+            !line.match(/^\*\*[A-Z\s]+\*\*$/i) &&
+            line.includes(':') // Look for structured content
           );
+        console.log(`✅ Using fallback parsing, found ${keyDevelopments.length} developments`);
+      }
+      
+      if (keyDevelopments.length > 0) {
+        console.log(`📝 Sample development: "${keyDevelopments[0]}"`);
       }
     }
 
