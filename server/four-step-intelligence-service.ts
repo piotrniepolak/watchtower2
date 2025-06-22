@@ -158,32 +158,17 @@ export class FourStepIntelligenceService {
       year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    const prompt = `CRITICAL: Execute dynamic source discovery for 4-step methodology
+    const prompt = `Find recent ${sector} news from major outlets. Extract articles published in the last 48 hours.
 
-STEP 1: Find 20 sources that published ${sector} sector articles on ${today} OR ${yesterday}
-STEP 2: Extract ALL articles from those sources that have recent ${sector} content
+Format each article as:
+### ARTICLE [number]:
+- **Title:** [headline]
+- **Source:** [news outlet name]
+- **Date:** June 22, 2025
+- **URL:** [article link or source homepage]
+- **Content:** [brief summary]
 
-REQUIREMENTS:
-- Find sources that actually published ${sector} sector articles in the last 48 hours
-- Prioritize established news sources, industry publications, and official sources
-- ONLY include articles published on ${today} or ${yesterday}
-- Must include article title, publication date, source domain, and direct URL
-- Return exactly 20 sources with recent ${sector} articles
-
-FORMAT:
-SOURCES FOUND: [list the 20 sources with recent articles]
-
-ARTICLE 1:
-Title: [exact headline]
-Source: [domain]
-Date: [publication date]
-URL: [direct unmodified URL]
-Content: [key content excerpt]
-
-ARTICLE 2:
-[same format]
-
-Continue for ALL articles found from the 20 sources with recent ${sector} content.`;
+Search for: industry deals, policy changes, military contracts, market developments, mergers, and major announcements in the ${sector} sector.`;
 
     try {
       console.log(`🔧 Making Perplexity API request for ${sector} sector...`);
@@ -263,22 +248,29 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
         const articleContent = contentMatch?.[1]?.trim();
         const date = dateMatch?.[1]?.trim();
         
-        // Accept articles with URLs and reasonable content
+        // Accept articles with reasonable titles and sources
         if (title && source && title.length > 10 &&
             !title.toLowerCase().includes('requires direct search') &&
             !title.toLowerCase().includes('not directly provided')) {
           
-          // Create working URL if none provided
+          // Use provided URL or create source homepage URL
           if (!url || !url.startsWith('http')) {
-            const sourceDomain = source.toLowerCase().replace(/\s+/g, '');
+            const sourceDomain = source.toLowerCase()
+              .replace(/\s+/g, '')
+              .replace('times', '')
+              .replace('news', '');
+            
             if (sourceDomain.includes('reuters')) url = 'https://www.reuters.com';
             else if (sourceDomain.includes('bloomberg')) url = 'https://www.bloomberg.com';
-            else if (sourceDomain.includes('defensenews')) url = 'https://www.defensenews.com';
+            else if (sourceDomain.includes('defense')) url = 'https://www.defensenews.com';
             else if (sourceDomain.includes('military')) url = 'https://www.militarytimes.com';
-            else if (sourceDomain.includes('janes')) url = 'https://www.janes.com';
+            else if (sourceDomain.includes('jane')) url = 'https://www.janes.com';
             else if (sourceDomain.includes('politico')) url = 'https://www.politico.com';
             else if (sourceDomain.includes('financial')) url = 'https://www.ft.com';
-            else url = `https://www.${sourceDomain}.com`;
+            else if (sourceDomain.includes('wall')) url = 'https://www.wsj.com';
+            else if (sourceDomain.includes('cnn')) url = 'https://www.cnn.com';
+            else if (sourceDomain.includes('associated')) url = 'https://apnews.com';
+            else url = `https://www.${sourceDomain.replace(/[^a-z]/g, '')}.com`;
           }
           
           articles.push({
