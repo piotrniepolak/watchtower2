@@ -314,9 +314,10 @@ Write exactly these 4 sections:
 Write a 400-500 word executive summary covering the key developments, companies, and strategic implications from the articles.
 
 **KEY DEVELOPMENTS**
-- List 8-12 specific developments from the articles
-- Include company names, dates, and financial figures mentioned
-- Each point should be 2-3 sentences with context
+- List 8-12 key developments from the articles as clear bullet points
+- Include specific company names, dates, and financial figures
+- Format as: "Company/Event: Brief description with key details"
+- Each bullet point should be concise (1-2 sentences)
 
 **MARKET IMPACT ANALYSIS**
 Write a 400-500 word analysis of market and financial impacts based on information in the articles.
@@ -372,11 +373,35 @@ Use ONLY information from the extracted articles. Reference specific details, co
     const geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
 
     const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
-    const keyDevelopments = keyDevelopmentsText
-      .split(/\n/)
-      .filter(line => line.trim().length > 15)
-      .map(line => line.replace(/^[-•*]\s*/, '').trim())
-      .filter(line => line.length > 20);
+    
+    // Enhanced parsing for key developments with multiple approaches
+    let keyDevelopments: string[] = [];
+    
+    if (keyDevelopmentsText) {
+      // First try: Parse bullet points or numbered lists
+      const bulletLines = keyDevelopmentsText.match(/[-•*]\s*(.+?)(?=\n[-•*]|\n\n|$)/g);
+      const numberedLines = keyDevelopmentsText.match(/\d+\.\s*(.+?)(?=\n\d+\.|\n\n|$)/g);
+      
+      if (bulletLines && bulletLines.length > 0) {
+        keyDevelopments = bulletLines.map(line => 
+          line.replace(/^[-•*]\s*/, '').trim()
+        ).filter(line => line.length > 15);
+      } else if (numberedLines && numberedLines.length > 0) {
+        keyDevelopments = numberedLines.map(line => 
+          line.replace(/^\d+\.\s*/, '').trim()
+        ).filter(line => line.length > 15);
+      } else {
+        // Fallback: Split by newlines and filter meaningful content
+        keyDevelopments = keyDevelopmentsText
+          .split(/\n+/)
+          .map(line => line.trim())
+          .filter(line => 
+            line.length > 15 && 
+            !line.match(/^(key developments|the following|based on)/i) &&
+            !line.match(/^\*\*[A-Z\s]+\*\*$/i)
+          );
+      }
+    }
 
     const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
     const marketImpact = marketImpactMatch?.[1]?.trim() || '';
