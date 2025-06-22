@@ -376,37 +376,38 @@ Use ONLY information from the extracted articles. Reference specific details, co
     console.log(`📝 Generated sections content (${content.length} characters)`);
     console.log(`📝 Content preview: ${content.substring(0, 300)}`);
 
-    // Enhanced parsing with multiple pattern attempts - matching exact format used in defense
-    let executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
-    if (!executiveSummaryMatch) {
-      executiveSummaryMatch = content.match(/##\s*\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
-    }
-    if (!executiveSummaryMatch) {
-      executiveSummaryMatch = content.match(/###?\s*EXECUTIVE SUMMARY\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    // Parse sections with comprehensive pattern matching
+    let executiveSummaryMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)EXECUTIVE SUMMARY(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
+    let keyDevelopmentsMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)KEY DEVELOPMENTS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
+    let marketImpactMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)MARKET IMPACT ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
+    let geopoliticalMatch = content.match(/(?:\*\*|##\s*\*\*|###?\s*)GEOPOLITICAL ANALYSIS(?:\*\*)?[:\s]*([\s\S]*?)(?=(?:\*\*|##\s*\*\*|###?\s*)[A-Z]|$)/i);
+
+    // If structured sections not found, try to extract from any organized content
+    if (!executiveSummaryMatch && content.length > 200) {
+      // Look for the first substantial paragraph as executive summary
+      const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 100);
+      if (paragraphs.length > 0) {
+        executiveSummaryMatch = [null, paragraphs[0].trim()];
+        console.log(`📝 Extracted executive summary from first paragraph: ${paragraphs[0].substring(0, 100)}...`);
+      }
     }
 
-    let keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
-    if (!keyDevelopmentsMatch) {
-      keyDevelopmentsMatch = content.match(/##\s*\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
-    }
-    if (!keyDevelopmentsMatch) {
-      keyDevelopmentsMatch = content.match(/###?\s*KEY DEVELOPMENTS\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
-    }
-
-    let marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
-    if (!marketImpactMatch) {
-      marketImpactMatch = content.match(/##\s*\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
-    }
-    if (!marketImpactMatch) {
-      marketImpactMatch = content.match(/###?\s*MARKET IMPACT ANALYSIS\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    if (!marketImpactMatch && content.length > 500) {
+      // Look for market-related content
+      const marketContent = content.match(/([\s\S]*?(?:market|financial|economic|investment|revenue|profit|stock|price|trading|fund)[\s\S]{200,}?)(?=\n\s*[A-Z]|$)/i);
+      if (marketContent) {
+        marketImpactMatch = [null, marketContent[1].trim()];
+        console.log(`📝 Extracted market analysis from market-related content`);
+      }
     }
 
-    let geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
-    if (!geopoliticalMatch) {
-      geopoliticalMatch = content.match(/##\s*\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
-    }
-    if (!geopoliticalMatch) {
-      geopoliticalMatch = content.match(/###?\s*GEOPOLITICAL ANALYSIS\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    if (!geopoliticalMatch && content.length > 500) {
+      // Look for geopolitical content
+      const geoContent = content.match(/([\s\S]*?(?:geopolitical|policy|regulatory|government|international|global|strategic)[\s\S]{200,}?)(?=\n\s*[A-Z]|$)/i);
+      if (geoContent) {
+        geopoliticalMatch = [null, geoContent[1].trim()];
+        console.log(`📝 Extracted geopolitical analysis from policy-related content`);
+      }
     }
 
     const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
