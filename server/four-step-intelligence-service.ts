@@ -125,10 +125,10 @@ export class FourStepIntelligenceService {
     const extractedArticles = await this.extractArticlesFromSources(sector, sources);
     
     if (extractedArticles.length === 0) {
-      throw new Error(`STEP 2 FAILED: No sources found with recent articles`);
+      throw new Error(`STEP 2 FAILED: No authentic sources found with recent articles - only mock/hypothetical content available`);
     }
     
-    console.log(`✅ STEP 2 SUCCESS: Extracted ${extractedArticles.length} articles from discovered sources`);
+    console.log(`✅ STEP 2 SUCCESS: Extracted ${extractedArticles.length} authentic articles from discovered sources`);
     
     // STEP 3: Generate sections using ONLY extracted articles
     console.log(`📝 STEP 3: Writing sections using ONLY extracted articles`);
@@ -241,82 +241,65 @@ Continue for ALL articles found from the 20 sources with recent ${sector} conten
   private parseExtractedArticles(content: string): ExtractedArticle[] {
     const articles: ExtractedArticle[] = [];
     
-    // Parse numbered articles with structured format
-    const numberedSections = content.split(/###?\s*\d+\.\s*\*\*(.+?)\*\*/g);
+    // Strict validation - reject any mock/hypothetical content
+    if (content.includes('hypothetical') || 
+        content.includes('Not available') || 
+        content.includes('[Example URL') ||
+        content.includes('Note: Example URL') ||
+        content.includes('actual content may vary') ||
+        content.includes('may not be directly available')) {
+      console.log(`❌ Rejecting content with mock/hypothetical indicators`);
+      return [];
+    }
     
-    for (let i = 1; i < numberedSections.length; i += 2) {
-      const source = numberedSections[i]?.trim();
-      const sectionContent = numberedSections[i + 1] || '';
+    // Parse real ARTICLE sections only
+    const articleSections = content.split(/###\s*ARTICLE\s*\d+:/i);
+    
+    for (let i = 1; i < articleSections.length; i++) {
+      const section = articleSections[i].trim();
       
-      if (source && sectionContent.length > 50) {
-        // Extract article details from structured content
-        const titleMatch = sectionContent.match(/[-•]\s*\*\*Article Title:\*\*\s*(.+?)(?:\n|$)/i);
-        const dateMatch = sectionContent.match(/[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i);
-        const urlMatch = sectionContent.match(/[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i);
-        const contentMatch = sectionContent.match(/[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|$)/i);
+      if (section.length > 50) {
+        const titleMatch = section.match(/[-•]\s*\*\*Title:\*\*\s*(.+?)(?:\n|$)/i);
+        const sourceMatch = section.match(/[-•]\s*\*\*Source:\*\*\s*(.+?)(?:\n|$)/i);
+        const dateMatch = section.match(/[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i);
+        const urlMatch = section.match(/[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i);
+        const contentMatch = section.match(/[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|$)/i);
         
-        let title = titleMatch?.[1]?.trim();
-        let url = urlMatch?.[1]?.trim();
-        let content = contentMatch?.[1]?.trim();
-        let date = dateMatch?.[1]?.trim();
+        const title = titleMatch?.[1]?.trim();
+        const source = sourceMatch?.[1]?.trim();
+        const url = urlMatch?.[1]?.trim();
+        const articleContent = contentMatch?.[1]?.trim();
+        const date = dateMatch?.[1]?.trim();
         
-        // Fallback patterns for simpler formats
-        if (!title) {
-          const simpleTitleMatch = sectionContent.match(/[-•]\s*(.+?)(?:\n|- \*\*Source|\n\*\*Date|$)/i);
-          title = simpleTitleMatch?.[1]?.trim();
-        }
-        
-        if (!url) {
-          const simpleUrlMatch = sectionContent.match(/(https?:\/\/[^\s\]]+)/);
-          url = simpleUrlMatch?.[1]?.trim();
-        }
-        
-        if (title && title.length > 10 && 
-            !title.match(/^(article title|source|date|url|content|note:|for sources)/i)) {
+        // Only accept articles with authentic URLs and content
+        if (title && source && url && 
+            url.startsWith('http') && 
+            !url.includes('example.com') &&
+            !title.includes('hypothetical') &&
+            !articleContent?.includes('Not available') &&
+            !articleContent?.includes('may vary') &&
+            title.length > 10) {
           
           articles.push({
             title: title.replace(/^\*\*|\*\*$/g, ''),
             source: source.replace(/^\*\*|\*\*$/g, ''),
             publishDate: date || 'June 22, 2025',
-            url: url || `https://example.com/article-${i}`,
-            content: content || title
+            url,
+            content: articleContent || title
           });
         }
       }
     }
-    
-    // Fallback: Parse markdown links if no structured articles found
-    if (articles.length === 0) {
-      const markdownLinks = content.match(/\d+\.\s*\[(.+?)\]\((https?:\/\/[^\)]+)\)/g);
-      if (markdownLinks) {
-        markdownLinks.forEach((match) => {
-          const linkMatch = match.match(/\d+\.\s*\[(.+?)\]\((https?:\/\/[^\)]+)\)/);
-          if (linkMatch) {
-            const title = linkMatch[1].trim();
-            const url = linkMatch[2].trim();
-            
-            try {
-              const domain = new URL(url).hostname.replace('www.', '');
-              
-              if (title.length > 10) {
-                articles.push({
-                  title,
-                  source: domain,
-                  publishDate: 'June 22, 2025',
-                  url,
-                  content: title
-                });
-              }
-            } catch (e) {
-              // Skip invalid URLs
-            }
-          }
-        });
-      }
-    }
 
-    console.log(`📰 Parsed ${articles.length} articles from extraction`);
-    console.log(`📰 Sample articles:`, articles.slice(0, 2));
+    console.log(`📰 Parsed ${articles.length} authentic articles (rejected ${articleSections.length - 1 - articles.length} mock articles)`);
+    if (articles.length > 0) {
+      console.log(`📰 Sample authentic article:`, { 
+        title: articles[0].title, 
+        source: articles[0].source, 
+        url: articles[0].url 
+      });
+    }
+    
     return articles;
   }
 
