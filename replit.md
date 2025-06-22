@@ -295,6 +295,7 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 - Comprehensive system-wide improvements over quick fixes
 - Clear technical documentation of architectural changes
 - Professional communication without excessive technical jargon
+- Make only the specific changes requested - do not modify working functionality unnecessarily
 
 ## Project Architecture
 - **Frontend:** React.js with TypeScript, Tailwind CSS, shadcn/ui components
