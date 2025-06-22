@@ -13,7 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 22, 2025 - COMPLETED: Legacy System Removal and Expanded 4-Step Methodology
+### June 22, 2025 - COMPLETED: Fixed 4-Step Methodology with Independent Sector Data Paths and Global Intelligence Center
+**System Fixes and Enhancement:**
+- **Fixed duplicate key constraint errors** preventing intelligence brief generation by adding proper error handling for concurrent requests
+- **Confirmed completely separate data paths** for defense and pharmaceutical sectors with independent source lists and article extraction
+- **Created unified Global Intelligence Center** with dropdown selector replacing separate intelligence cards
+- **Defense sources:** 15 defense-specific publications + 5 general sources (defensenews.com, janes.com, breakingdefense.com, etc.)
+- **Pharmaceutical sources:** 15 pharma-specific publications + 5 general sources (statnews.com, biopharmadive.com, fiercepharma.com, etc.)
+- **Added energy sector placeholder** for future expansion in Global Intelligence Center
+
+**Technical Implementation:**
+- Enhanced route error handling to prevent duplicate key violations during concurrent intelligence generation
+- Verified separate executeStepByStepProcess calls for each sector using distinct source arrays
+- Replaced dual intelligence cards with unified Global Intelligence Center component featuring sector dropdown
+- Maintained original homepage layout while consolidating intelligence briefs into organized interface
+- Added proper try-catch blocks in routes to handle database constraint conflicts gracefully
+
+**User Impact:**
+- Both defense and pharmaceutical 4-step methodology now working properly with authentic article extraction
+- Clean sector switching interface allowing users to toggle between intelligence types
+- No shared data between sectors - each uses completely independent article sources and generation processes
+- Professional Global Intelligence Center interface with proper sector identification and color coding
+- Eliminated system errors from concurrent intelligence generation requests
+
+### June 22, 2025 - Previous: Legacy System Removal and Expanded 4-Step Methodology
 **System Cleanup and Enhancement:**
 - **Completely removed all legacy intelligence system components** including defense-intelligence-service.ts, pharma-news-service.ts, and perplexity-defense-service.ts
 - **Eliminated all legacy route endpoints** - only 4-step methodology endpoints remain operational

@@ -1872,8 +1872,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sourcesVerified: true
         };
         
-        intelligence = await storage.createFourStepIntelligence(insertData);
-        console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        try {
+          intelligence = await storage.createFourStepIntelligence(insertData);
+          console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        } catch (error: any) {
+          if (error.code === '23505') {
+            // Duplicate key, fetch existing
+            intelligence = await storage.getFourStepIntelligence(today, 'defense');
+          } else {
+            throw error;
+          }
+        }
       }
       
       res.json(intelligence);
@@ -1910,8 +1919,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sourcesVerified: true
         };
         
-        intelligence = await storage.createFourStepIntelligence(insertData);
-        console.log(`✅ 4-step pharmaceutical intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        try {
+          intelligence = await storage.createFourStepIntelligence(insertData);
+          console.log(`✅ 4-step pharmaceutical intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        } catch (error: any) {
+          if (error.code === '23505') {
+            // Duplicate key, fetch existing
+            intelligence = await storage.getFourStepIntelligence(today, 'pharmaceutical');
+          } else {
+            throw error;
+          }
+        }
       }
       
       res.json(intelligence);
