@@ -447,6 +447,16 @@ Use ONLY information from the extracted articles. Reference specific details, co
     const geopolitical = geopoliticalMatch?.[1]?.trim() || '';
 
     console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpact.length} chars, Geopolitical: ${geopolitical.length} chars, Developments: ${keyDevelopments.length} items`);
+    
+    if (executiveSummary.length === 0) {
+      console.log(`⚠️ Executive summary extraction failed, content structure: ${content.substring(0, 500)}`);
+    }
+    if (marketImpact.length === 0) {
+      console.log(`⚠️ Market impact extraction failed`);
+    }
+    if (geopolitical.length === 0) {
+      console.log(`⚠️ Geopolitical analysis extraction failed`);
+    }
 
     return {
       executiveSummary,
