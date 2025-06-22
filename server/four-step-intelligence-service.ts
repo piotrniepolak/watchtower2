@@ -553,8 +553,22 @@ Use ONLY information from the extracted articles. Reference specific details, co
           console.log(`✅ Created ${keyDevelopments.length} developments from available content`);
         }
       } else {
-        keyDevelopments = [`Insufficient content available to extract key developments from intelligence brief`];
-        console.log(`⚠️ Using minimal fallback for insufficient content`);
+        // Force extraction from any available text
+        const emergencyExtraction = content
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(s => s.length > 20 && s.length < 200)
+          .slice(0, 6);
+        
+        keyDevelopments = emergencyExtraction.length > 0 
+          ? emergencyExtraction.map(s => {
+              let dev = s.charAt(0).toUpperCase() + s.slice(1);
+              if (!dev.endsWith('.')) dev += '.';
+              return dev;
+            })
+          : [`No extractable developments found in content`];
+        
+        console.log(`⚠️ Emergency extraction yielded ${keyDevelopments.length} developments`);
       }
     }
     
