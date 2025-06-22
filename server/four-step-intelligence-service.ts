@@ -373,10 +373,41 @@ Use ONLY information from the extracted articles. Reference specific details, co
   }
 
   private parseFourStepSections(content: string): Omit<FourStepIntelligenceBrief, 'extractedArticles' | 'sourceUrls' | 'methodologyUsed' | 'generatedAt'> {
-    const executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
-    const keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
-    const marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
-    const geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|$)/i);
+    console.log(`📝 Generated sections content (${content.length} characters)`);
+    console.log(`📝 Content preview: ${content.substring(0, 300)}`);
+
+    // Enhanced parsing with multiple pattern attempts - matching exact format used in defense
+    let executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
+    if (!executiveSummaryMatch) {
+      executiveSummaryMatch = content.match(/##\s*\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
+    }
+    if (!executiveSummaryMatch) {
+      executiveSummaryMatch = content.match(/###?\s*EXECUTIVE SUMMARY\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    }
+
+    let keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
+    if (!keyDevelopmentsMatch) {
+      keyDevelopmentsMatch = content.match(/##\s*\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
+    }
+    if (!keyDevelopmentsMatch) {
+      keyDevelopmentsMatch = content.match(/###?\s*KEY DEVELOPMENTS\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    }
+
+    let marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
+    if (!marketImpactMatch) {
+      marketImpactMatch = content.match(/##\s*\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
+    }
+    if (!marketImpactMatch) {
+      marketImpactMatch = content.match(/###?\s*MARKET IMPACT ANALYSIS\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    }
+
+    let geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*[A-Z]|##\s*\*\*[A-Z]|$)/i);
+    if (!geopoliticalMatch) {
+      geopoliticalMatch = content.match(/##\s*\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)(?=##\s*\*\*[A-Z]|$)/i);
+    }
+    if (!geopoliticalMatch) {
+      geopoliticalMatch = content.match(/###?\s*GEOPOLITICAL ANALYSIS\s*([\s\S]*?)(?=###?\s*[A-Z]|$)/i);
+    }
 
     const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
     
