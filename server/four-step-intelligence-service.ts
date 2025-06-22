@@ -408,10 +408,15 @@ Use ONLY information from the extracted articles. Reference specific details, co
           .filter(line => 
             line.length > 20 && 
             !line.match(/^(key developments|the following|based on|##)/i) &&
-            !line.match(/^\*\*[A-Z\s]+\*\*$/i) &&
-            line.includes(':') // Look for structured content
+            !line.match(/^\*\*[A-Z\s]+\*\*$/i)
           );
         console.log(`✅ Using fallback parsing, found ${keyDevelopments.length} developments`);
+      }
+      
+      // If still no developments found, create from extracted articles directly
+      if (keyDevelopments.length === 0) {
+        console.log(`🔄 No key developments found in generated content, creating from articles...`);
+        // This function will be called from the main process with articles
       }
       
       if (keyDevelopments.length > 0) {
@@ -431,6 +436,32 @@ Use ONLY information from the extracted articles. Reference specific details, co
       marketImpactAnalysis: marketImpact,
       geopoliticalAnalysis: geopolitical
     };
+  }
+}
+
+  private createKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
+    const developments: string[] = [];
+    
+    articles.forEach(article => {
+      const { title, source, content } = article;
+      
+      // Create development from article title and content
+      if (title && title.length > 10) {
+        // Extract company name from source or title
+        const companyMatch = source.match(/^([A-Z][a-zA-Z\s]+?)(?:\s+(?:News|Ltd|Inc|Corp|Company))?$/i);
+        const company = companyMatch?.[1]?.trim() || source.split(' ')[0];
+        
+        // Create structured development entry
+        if (content && content.length > 50) {
+          const summary = content.substring(0, 150).replace(/\.$/, '') + '...';
+          developments.push(`${company}: ${title} - ${summary}`);
+        } else {
+          developments.push(`${company}: ${title}`);
+        }
+      }
+    });
+    
+    return developments.slice(0, 8); // Limit to 8 developments
   }
 }
 
