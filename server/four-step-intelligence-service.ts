@@ -538,13 +538,6 @@ Use ONLY information from the extracted articles. Reference specific details, co
         if (allSentences.length >= 6) {
           keyDevelopments = allSentences.map(s => {
             let dev = s.charAt(0).toUpperCase() + s.slice(1);
-            // Clean formatting issues
-            dev = dev
-              .replace(/\[[\d,\s-]+\]/g, '') // Remove citation numbers
-              .replace(/#{1,6}\s*/g, '') // Remove hashtags
-              .replace(/\*{1,3}/g, '') // Remove asterisks
-              .replace(/\s+/g, ' ') // Normalize whitespace
-              .trim();
             if (!dev.endsWith('.')) dev += '.';
             return dev;
           });
@@ -559,13 +552,6 @@ Use ONLY information from the extracted articles. Reference specific details, co
           
           keyDevelopments = anySentences.map(s => {
             let dev = s.charAt(0).toUpperCase() + s.slice(1);
-            // Clean formatting issues
-            dev = dev
-              .replace(/\[[\d,\s-]+\]/g, '') // Remove citation numbers
-              .replace(/#{1,6}\s*/g, '') // Remove hashtags
-              .replace(/\*{1,3}/g, '') // Remove asterisks
-              .replace(/\s+/g, ' ') // Normalize whitespace
-              .trim();
             if (!dev.endsWith('.')) dev += '.';
             return dev;
           });
@@ -597,19 +583,9 @@ Use ONLY information from the extracted articles. Reference specific details, co
       console.log(`📝 Sample: "${keyDevelopments[0].substring(0, 60)}..."`);
     }
 
-    // Clean up formatting issues from extracted content
-    const cleanFormat = (text: string) => {
-      return text
-        .replace(/\[[\d,\s-]+\]/g, '') // Remove citation numbers like [1], [2,3], [1-5]
-        .replace(/#{1,6}\s*/g, '') // Remove hashtags # ## ### etc
-        .replace(/\*{1,3}/g, '') // Remove asterisks * ** ***
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .trim();
-    };
-
-    const executiveSummary = cleanFormat(executiveSummaryMatch?.[1] || '');
-    const marketImpact = cleanFormat(marketImpactMatch?.[1] || '');
-    const geopolitical = cleanFormat(geopoliticalMatch?.[1] || '');
+    const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
+    const marketImpact = marketImpactMatch?.[1]?.trim() || '';
+    const geopolitical = geopoliticalMatch?.[1]?.trim() || '';
 
     console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpact.length} chars, Geopolitical: ${geopolitical.length} chars, Developments: ${keyDevelopments.length} items`);
     
