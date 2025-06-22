@@ -521,33 +521,36 @@ Use ONLY information from the extracted articles. Reference specific details, co
           .filter(s => s.length > 30 && s.length < 120)
           .slice(0, 6);
         
-        if (substantialSentences.length >= 6) {
-          keyDevelopments = substantialSentences.map(s => {
+        // Always extract 6 developments from content
+        const allSentences = allContent
+          .split(/[.!?]+/)
+          .map(s => s.trim())
+          .filter(s => s.length > 25 && s.length < 150)
+          .filter(s => !/^(The|This|These|It|They|That)\s+article/.test(s))
+          .slice(0, 6);
+        
+        if (allSentences.length >= 6) {
+          keyDevelopments = allSentences.map(s => {
             let dev = s.charAt(0).toUpperCase() + s.slice(1);
             if (!dev.endsWith('.')) dev += '.';
             return dev;
           });
-          console.log(`✅ Created ${keyDevelopments.length} developments from substantial sentences`);
+          console.log(`✅ Created ${keyDevelopments.length} developments from content sentences`);
         } else {
-          // If not enough content, pad with action-based sentences
-          const allSentences = allContent
+          // Extract any available sentences
+          const anySentences = allContent
             .split(/[.!?]+/)
             .map(s => s.trim())
-            .filter(s => s.length > 20 && s.length < 150);
+            .filter(s => s.length > 15 && s.length < 200)
+            .slice(0, 6);
           
-          const selectedSentences = allSentences.slice(0, 6);
-          keyDevelopments = selectedSentences.map(s => {
+          keyDevelopments = anySentences.map(s => {
             let dev = s.charAt(0).toUpperCase() + s.slice(1);
             if (!dev.endsWith('.')) dev += '.';
             return dev;
           });
           
-          // Ensure we have exactly 6 developments
-          while (keyDevelopments.length < 6) {
-            keyDevelopments.push(`Additional development point ${keyDevelopments.length + 1} from sector analysis.`);
-          }
-          
-          console.log(`✅ Created ${keyDevelopments.length} developments ensuring minimum of 6`);
+          console.log(`✅ Created ${keyDevelopments.length} developments from available content`);
         }
       } else {
         keyDevelopments = [`Insufficient content available to extract key developments from intelligence brief`];
