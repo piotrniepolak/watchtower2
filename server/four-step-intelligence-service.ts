@@ -146,7 +146,10 @@ export class FourStepIntelligenceService {
     const sourceUrls = extractedArticles.map(article => article.url);
     
     return {
-      ...intelligence,
+      executiveSummary: sections.executiveSummary,
+      keyDevelopments: sections.keyDevelopments,
+      marketImpactAnalysis: sections.marketImpactAnalysis,
+      geopoliticalAnalysis: sections.geopoliticalAnalysis,
       extractedArticles,
       sourceUrls,
       methodologyUsed: 'four-step-authentic-extraction',
@@ -444,7 +447,6 @@ Use ONLY information from the extracted articles. Reference specific details, co
       geopoliticalAnalysis: geopolitical
     };
   }
-}
 
   private createKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
     const developments: string[] = [];
