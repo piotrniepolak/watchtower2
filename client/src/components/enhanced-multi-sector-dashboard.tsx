@@ -37,26 +37,13 @@ interface StockData {
 export default function EnhancedMultiSectorDashboard({ defaultSector = "defense" }: EnhancedMultiSectorDashboardProps) {
   const [location] = useLocation();
   
-  // Initialize sector from URL parameters immediately to prevent flash
-  const getInitialSector = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sectorParam = urlParams.get('sector');
-    if (sectorParam && ['defense', 'health', 'energy'].includes(sectorParam)) {
-      return sectorParam;
-    }
-    return defaultSector;
-  };
-  
-  const [currentSector, setCurrentSector] = useState(getInitialSector);
+  // Use the defaultSector prop directly for path-based routing
+  const [currentSector, setCurrentSector] = useState(defaultSector);
 
-  // Update sector when location changes
+  // Update sector when defaultSector prop changes
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sectorParam = urlParams.get('sector');
-    if (sectorParam && ['defense', 'health', 'energy'].includes(sectorParam)) {
-      setCurrentSector(sectorParam);
-    }
-  }, [location]);
+    setCurrentSector(defaultSector);
+  }, [defaultSector]);
 
   // Fetch sector-specific data
   const { data: sectorStocks = [], isLoading: stocksLoading } = useQuery<StockData[]>({

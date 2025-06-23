@@ -17,5 +17,5 @@ export default function SectorDashboardWrapper() {
     }
   }, [location]);
 
-  return <EnhancedMultiSectorDashboard initialSector={sector} />;
+  return <EnhancedMultiSectorDashboard defaultSector={sector} />;
 }
