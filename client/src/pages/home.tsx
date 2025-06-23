@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, Lightbulb, TrendingDown, Clock, DollarSign, User, ChevronDown, ChevronUp } from "lucide-react";
+import { getActiveSectors } from "@shared/sectors";
 import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -156,6 +157,11 @@ export default function Home() {
     retry: false,
   });
 
+  const dataSourcesCount = getActiveSectors().reduce(
+    (total, sector) => total + Object.keys(sector.dataSources).length,
+    0
+  );
+
   const sectors = [
     {
       key: "defense",
@@ -240,7 +246,7 @@ export default function Home() {
     },
     {
       label: "Data Sources",
-      value: 12,
+      value: dataSourcesCount,
       icon: BarChart3,
       color: "text-purple-600"
     }
