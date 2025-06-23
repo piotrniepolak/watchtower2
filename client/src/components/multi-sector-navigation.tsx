@@ -35,11 +35,11 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Shield,
     color: "from-blue-600 to-purple-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/dashboard?sector=defense" },
-      { key: "conflicts", label: "Conflicts", href: "/conflicts" },
-      { key: "markets", label: "Markets", href: "/markets" },
-      { key: "reports", label: "Reports", href: "/reports" },
-      { key: "learning", label: "Learning", href: "/learning" }
+      { key: "dashboard", label: "Dashboard", href: "/defense/dashboard" },
+      { key: "conflicts", label: "Conflicts", href: "/defense/conflicts" },
+      { key: "markets", label: "Markets", href: "/defense/markets" },
+      { key: "reports", label: "Reports", href: "/defense/reports" },
+      { key: "learning", label: "Learning", href: "/defense/learning" }
     ]
   },
   health: {
@@ -49,11 +49,11 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Pill,
     color: "from-green-600 to-teal-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/dashboard?sector=health" },
-      { key: "outbreaks", label: "Outbreaks", href: "/outbreaks" },
-      { key: "pharma", label: "Pharma Markets", href: "/pharma" },
-      { key: "research", label: "Research Intel", href: "/research" },
-      { key: "studies", label: "Case Studies", href: "/case-studies" }
+      { key: "dashboard", label: "Dashboard", href: "/health/dashboard" },
+      { key: "outbreaks", label: "Outbreaks", href: "/health/outbreaks" },
+      { key: "pharma", label: "Pharma Markets", href: "/health/pharma" },
+      { key: "research", label: "Research Intel", href: "/health/research" },
+      { key: "studies", label: "Case Studies", href: "/health/case-studies" }
     ]
   },
   energy: {
@@ -63,11 +63,11 @@ const sectorConfigs: Record<string, SectorConfig> = {
     icon: Zap,
     color: "from-orange-600 to-red-600",
     navigation: [
-      { key: "dashboard", label: "Dashboard", href: "/dashboard?sector=energy" },
-      { key: "regulations", label: "Regulations", href: "/regulations" },
-      { key: "commodities", label: "Commodities", href: "/commodities" },
-      { key: "analysis", label: "Market Analysis", href: "/market-analysis" },
-      { key: "trends", label: "Trends", href: "/trends" }
+      { key: "dashboard", label: "Dashboard", href: "/energy/dashboard" },
+      { key: "regulations", label: "Regulations", href: "/energy/regulations" },
+      { key: "commodities", label: "Commodities", href: "/energy/commodities" },
+      { key: "trends", label: "Market Trends", href: "/energy/trends" },
+      { key: "analysis", label: "Market Analysis", href: "/energy/market-analysis" }
     ]
   }
 };
@@ -91,10 +91,8 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
     // Update parent component state
     onSectorChange(newSector);
     
-    // Navigate to dashboard with new sector parameter
-    if (location === "/" || location === "/dashboard" || location.startsWith("/dashboard")) {
-      navigate(`/dashboard?sector=${newSector}`);
-    }
+    // Navigate to sector-specific route
+    navigate(`/${newSector}/dashboard`);
   };
 
   const handleLogout = () => {
@@ -184,8 +182,8 @@ export default function MultiSectorNavigation({ currentSector, onSectorChange }:
               </Link>
             </div>
 
-            {/* Sector Selector - Show on dashboard pages */}
-            {(location === "/" || location === "/dashboard" || location.startsWith("/dashboard")) && (
+            {/* Sector Selector - Show on sector pages */}
+            {(location.startsWith("/defense") || location.startsWith("/health") || location.startsWith("/energy")) && (
               <div className="ml-4">
                 <Select value={currentSector} onValueChange={handleSectorChange}>
                   <SelectTrigger className="w-36 h-8 text-xs border-slate-300">

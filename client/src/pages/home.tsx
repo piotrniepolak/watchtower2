@@ -67,7 +67,6 @@ interface ConflictStoryline {
 export default function Home() {
   // Get sector from URL parameters with proper initialization
   const [selectedSector, setSelectedSector] = useState("defense");
-  const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
   const [isAIAnalysisExpanded, setIsAIAnalysisExpanded] = useState(false);
   const queryClient = useQueryClient();
 
@@ -101,61 +100,7 @@ export default function Home() {
     queryKey: ["/api/stocks"],
   });
 
-  // Fetch AI analysis data based on selected sector
-  const { data: predictions = [], isLoading: predictionsLoading } = useQuery({
-    queryKey: ["/api/analysis/predictions", selectedSector],
-    queryFn: async () => {
-      console.log(`Frontend: Fetching predictions for sector: ${selectedSector}`);
-      const response = await fetch(`/api/analysis/predictions?sector=${selectedSector}&cache=${Date.now()}`);
-      if (!response.ok) throw new Error('Failed to fetch predictions');
-      return response.json();
-    },
-    enabled: !!selectedSector && selectedSector !== '',
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: false,
-  });
 
-  const { data: marketAnalysis, isLoading: marketLoading } = useQuery({
-    queryKey: ["/api/analysis/market", selectedSector],
-    queryFn: async () => {
-      console.log(`Frontend: Fetching market analysis for sector: ${selectedSector}`);
-      const response = await fetch(`/api/analysis/market?sector=${selectedSector}&cache=${Date.now()}`);
-      if (!response.ok) throw new Error('Failed to fetch market analysis');
-      return response.json();
-    },
-    enabled: !!selectedSector && selectedSector !== '',
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: false,
-  });
-
-
-
-  // Fetch storylines for sector
-  const { data: storylines = [], isLoading: storylinesLoading } = useQuery({
-    queryKey: ["/api/analysis/storylines", selectedSector, selectedConflictId],
-    queryFn: async () => {
-      console.log(`Frontend: Fetching storylines for sector: ${selectedSector}`);
-      let url = `/api/analysis/storylines?sector=${selectedSector}&cache=${Date.now()}`;
-      if (selectedConflictId) {
-        url += `&conflictId=${selectedConflictId}`;
-      }
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch storylines');
-      return response.json();
-    },
-    enabled: !!selectedSector && selectedSector !== '',
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: false,
-  });
 
   // Calculate authentic data sources count
   const { data: dataSourcesCount = 25 } = useQuery({
@@ -178,16 +123,7 @@ export default function Home() {
       borderColor: "border-blue-200",
       textColor: "text-blue-700",
       bgColor: "bg-blue-50",
-      features: [
-        "Real-time conflict monitoring",
-        "Defense stock analytics",
-        "Geopolitical risk assessment",
-        "AI-powered conflict prediction"
-      ],
-      stats: {
-        conflicts: conflicts.length,
-        stocks: stocks.filter(s => s.sector === 'Defense').length
-      }
+      href: "/defense"
     },
     {
       key: "health",
@@ -198,16 +134,7 @@ export default function Home() {
       borderColor: "border-green-200",
       textColor: "text-green-700",
       bgColor: "bg-green-50",
-      features: [
-        "Disease outbreak tracking",
-        "WHO health data analytics",
-        "Pharmaceutical market insights",
-        "Global health score mapping"
-      ],
-      stats: {
-        countries: 195,
-        stocks: stocks.filter(s => s.sector === 'Healthcare').length
-      }
+      href: "/health"
     },
     {
       key: "energy",
@@ -323,11 +250,11 @@ export default function Home() {
                       {sector.key === 'defense' && (
                         <>
                           <div className="text-center">
-                            <span className="font-semibold text-slate-900 block">{sector.stats.conflicts}</span>
+                            <span className="font-semibold text-slate-900 block">{conflicts.length}</span>
                             <span className="text-slate-600">Conflicts</span>
                           </div>
                           <div className="text-center">
-                            <span className="font-semibold text-slate-900 block">{sector.stats.stocks}</span>
+                            <span className="font-semibold text-slate-900 block">{stocks.filter(s => s.sector === 'Defense').length}</span>
                             <span className="text-slate-600">Stocks</span>
                           </div>
                         </>
@@ -335,11 +262,11 @@ export default function Home() {
                       {sector.key === 'health' && (
                         <>
                           <div className="text-center">
-                            <span className="font-semibold text-slate-900 block">{sector.stats.countries}</span>
+                            <span className="font-semibold text-slate-900 block">195</span>
                             <span className="text-slate-600">Countries</span>
                           </div>
                           <div className="text-center">
-                            <span className="font-semibold text-slate-900 block">{sector.stats.stocks}</span>
+                            <span className="font-semibold text-slate-900 block">{stocks.filter(s => s.sector === 'Healthcare').length}</span>
                             <span className="text-slate-600">Stocks</span>
                           </div>
                         </>
@@ -347,11 +274,11 @@ export default function Home() {
                       {sector.key === 'energy' && (
                         <>
                           <div className="text-center">
-                            <span className="font-semibold text-slate-900 block">{sector.stats.commodities}</span>
+                            <span className="font-semibold text-slate-900 block">8</span>
                             <span className="text-slate-600">Commodities</span>
                           </div>
                           <div className="text-center">
-                            <span className="font-semibold text-slate-900 block">{sector.stats.stocks}</span>
+                            <span className="font-semibold text-slate-900 block">{stocks.filter(s => s.sector === 'Energy').length}</span>
                             <span className="text-slate-600">Stocks</span>
                           </div>
                         </>
@@ -359,7 +286,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <Link href={`/dashboard?sector=${sector.key}`}>
+                  <Link href={sector.href}>
                     <Button size="sm" className={`w-full bg-gradient-to-r ${sector.color} text-white hover:opacity-90 text-xs`}>
                       Explore {sector.name}
                     </Button>
@@ -402,50 +329,10 @@ export default function Home() {
                 {isAIAnalysisExpanded && (
                   <>
                     <span className="text-sm font-medium text-slate-700">Sector:</span>
-                    <Select value={selectedSector} onValueChange={(value) => {
-                      console.log(`Frontend: Switching to sector: ${value}`);
-                      
-                      // Clear all existing cache for AI analysis
-                      queryClient.removeQueries({ queryKey: ["/api/analysis/predictions"] });
-                      queryClient.removeQueries({ queryKey: ["/api/analysis/market"] });
-                      
-                      setSelectedSector(value);
-                    }}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue>
-                      <div className="flex items-center space-x-2">
-                        {selectedSector === 'defense' && <Shield className="w-4 h-4" />}
-                        {selectedSector === 'health' && <Pill className="w-4 h-4" />}
-                        {selectedSector === 'energy' && <Zap className="w-4 h-4" />}
-                        <span>
-                          {selectedSector === 'defense' && 'ConflictWatch'}
-                          {selectedSector === 'health' && 'PharmaWatch'}
-                          {selectedSector === 'energy' && 'EnergyWatch'}
-                        </span>
-                      </div>
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="defense">
-                      <div className="flex items-center space-x-2">
-                        <Shield className="w-4 h-4" />
-                        <span>ConflictWatch</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="health">
-                      <div className="flex items-center space-x-2">
-                        <Pill className="w-4 h-4" />
-                        <span>PharmaWatch</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="energy">
-                      <div className="flex items-center space-x-2">
-                        <Zap className="w-4 h-4" />
-                        <span>EnergyWatch</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                    <div className="text-center">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">Choose Your Intelligence Sector</h3>
+                  <p className="text-sm text-slate-600">Select a sector to access specialized analytics and intelligence</p>
+                </div>
                   </>
                 )}
               </div>

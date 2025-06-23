@@ -13,7 +13,31 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 22, 2025 - COMPLETED: Fixed Key Developments Extraction and Content Length Issues
+### June 23, 2025 - Restructured Website Paths for Equal Sector Treatment
+
+**Major Navigation and Routing Overhaul:**
+- **Restructured URL paths** from `/dashboard?sector=X` to dedicated sector routes: `/defense`, `/health`, `/energy`
+- **Made homepage sector-agnostic** removing automatic defense sector selection and URL parameters
+- **Implemented equal treatment for all sectors** with dedicated path structures (/sector/page format)
+- **Created sector selection interface** on homepage with visual cards for each intelligence sector
+- **Updated navigation components** to use sector-specific routes instead of query parameters
+- **Added SectorDashboardWrapper** component to handle sector detection from URL paths
+
+**Technical Implementation:**
+- Modified App.tsx routing to support `/defense/*`, `/health/*`, `/energy/*` path structures
+- Updated multi-sector-navigation.tsx to use sector-specific URLs instead of query parameters
+- Redesigned homepage to show sector selection cards instead of defaulting to defense
+- Created wrapper component to extract sector from URL path and pass to dashboard
+- Updated all sector configuration hrefs to use new path structure
+
+**User Impact:**
+- Homepage no longer shows `?sector=defense` in URL - now clean sector-agnostic interface
+- Each sector has dedicated URL space: ConflictWatch at `/defense`, PharmaWatch at `/health`, EnergyWatch at `/energy`
+- Bookmarkable sector-specific URLs with clear hierarchical structure
+- Equal visual treatment of all three intelligence sectors on homepage
+- Professional sector selection experience with dedicated entry points
+
+### June 22, 2025 - Previous: Fixed Key Developments Extraction and Content Length Issues
 
 **System Enhancement - COMPREHENSIVE FIXES:**
 - **Fixed pharmaceutical content generation** ensuring 500-600 word comprehensive sections instead of short paragraphs

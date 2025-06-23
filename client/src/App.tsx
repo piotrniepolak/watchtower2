@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/auth-context";
 import Dashboard from "@/pages/dashboard";
 import EnhancedMultiSectorDashboard from "@/components/enhanced-multi-sector-dashboard";
+import SectorDashboardWrapper from "@/components/sector-dashboard-wrapper";
 import Conflicts from "@/pages/conflicts";
 import Markets from "@/pages/markets";
 
@@ -44,13 +45,34 @@ function Router() {
       <Route path="/landing" component={Landing} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
-      <Route path="/dashboard" component={EnhancedMultiSectorDashboard} />
-      <Route path="/conflicts" component={Conflicts} />
-      <Route path="/markets" component={Markets} />
+      
+      {/* Sector-specific routes with equal treatment */}
+      <Route path="/defense" component={SectorDashboardWrapper} />
+      <Route path="/defense/dashboard" component={SectorDashboardWrapper} />
+      <Route path="/defense/conflicts" component={Conflicts} />
+      <Route path="/defense/markets" component={Markets} />
+      <Route path="/defense/reports" component={Reports} />
+      <Route path="/defense/learning" component={Learning} />
+      
+      <Route path="/health" component={SectorDashboardWrapper} />
+      <Route path="/health/dashboard" component={SectorDashboardWrapper} />
+      <Route path="/health/outbreaks" component={Outbreaks} />
+      <Route path="/health/pharma" component={Pharma} />
+      <Route path="/health/research" component={ResearchIntel} />
+      <Route path="/health/case-studies" component={CaseStudies} />
+      
+      <Route path="/energy" component={SectorDashboardWrapper} />
+      <Route path="/energy/dashboard" component={SectorDashboardWrapper} />
+      <Route path="/energy/regulations" component={Regulations} />
+      <Route path="/energy/commodities" component={Commodities} />
+      <Route path="/energy/trends" component={Trends} />
+      <Route path="/energy/market-analysis" component={MarketAnalysis} />
 
-      <Route path="/reports" component={Reports} />
+      {/* Legacy dashboard route redirects to home */}
+      <Route path="/dashboard" component={Home} />
+      
+      {/* Global/shared routes */}
       <Route path="/watchlist" component={DedicatedWatchlist} />
-      <Route path="/learning" component={Learning} />
       <Route path="/quiz" component={Quiz} />
       <Route path="/profile" component={Profile} />
       <Route path="/settings" component={Settings} />
@@ -60,16 +82,8 @@ function Router() {
       <Route path="/api" component={ApiDocs} />
       <Route path="/support" component={Support} />
       <Route path="/discussions" component={Discussions} />
-      <Route path="/health" component={EnhancedMultiSectorDashboard} />
-      <Route path="/outbreaks" component={Outbreaks} />
-      <Route path="/pharma" component={Pharma} />
-      <Route path="/research" component={ResearchIntel} />
-      <Route path="/case-studies" component={CaseStudies} />
-      <Route path="/regulations" component={Regulations} />
-      <Route path="/commodities" component={Commodities} />
-      <Route path="/trends" component={Trends} />
-      <Route path="/market-analysis" component={MarketAnalysis} />
-      <Route path="*" component={Home} />
+      
+      <Route path="*" component={NotFound} />
     </Switch>
   );
 }
