@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, Lightbulb, TrendingDown, Clock, DollarSign, User, ChevronDown, ChevronUp } from "lucide-react";
+import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, AlertTriangle, Brain, Lightbulb, Clock, DollarSign, User, ChevronDown, ChevronUp } from "lucide-react";
+import { generateSectorSources } from "@/components/source-links";
+import { getActiveSectors } from "@shared/sectors";
 import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -156,6 +158,21 @@ export default function Home() {
     retry: false,
   });
 
+  const dataSourcesCount = (() => {
+    const uniqueDomains = new Set<string>(["finance.yahoo.com"]);
+    getActiveSectors().forEach((sector) => {
+      const key = sector.key === "health" ? "pharma" : sector.key;
+      generateSectorSources(key as "defense" | "pharma" | "energy").forEach((src) => {
+        try {
+          uniqueDomains.add(new URL(src.url).hostname.replace(/^www\./, ""));
+        } catch {
+          // ignore invalid URLs
+        }
+      });
+    });
+    return uniqueDomains.size;
+  })();
+
   const sectors = [
     {
       key: "defense",
@@ -240,7 +257,7 @@ export default function Home() {
     },
     {
       label: "Data Sources",
-      value: 12,
+      value: dataSourcesCount,
       icon: BarChart3,
       color: "text-purple-600"
     }
