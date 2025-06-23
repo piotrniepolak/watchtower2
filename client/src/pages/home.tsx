@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, DollarSign, User } from "lucide-react";
+import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, DollarSign, User, Clock, Lightbulb } from "lucide-react";
 import { getActiveSectors } from "@shared/sectors";
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
@@ -64,6 +65,9 @@ interface ConflictStoryline {
 }
 
 export default function Home() {
+  const queryClient = useQueryClient();
+  const [selectedSector, setSelectedSector] = useState<string>('defense');
+  const [selectedConflictId, setSelectedConflictId] = useState<number | null>(null);
   
   // Fetch global metrics for overview
   const { data: globalMetrics } = useQuery({
@@ -310,197 +314,11 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
-                            <SelectContent>
-                              <SelectItem value="global">
-                                <div className="flex items-center space-x-2">
-                                  <Globe className="w-4 h-4" />
-                                  <span>Global Health Trends</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="1">
-                                <div className="flex items-center space-x-2">
-                                  <Shield className="w-4 h-4" />
-                                  <span>Pandemic Preparedness</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="2">
-                                <div className="flex items-center space-x-2">
-                                  <Target className="w-4 h-4" />
-                                  <span>Healthcare Innovation</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="3">
-                                <div className="flex items-center space-x-2">
-                                  <Activity className="w-4 h-4" />
-                                  <span>Drug Development</span>
-                                </div>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                        
-                        {selectedSector === 'energy' && (
-                          <Select 
-                            value={selectedConflictId?.toString() || "global"} 
-                            onValueChange={(value) => {
-                              const newId = value === "global" ? null : parseInt(value);
-                              setSelectedConflictId(newId);
-                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
-                            }}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue>
-                                <div className="flex items-center space-x-2">
-                                  <Zap className="w-4 h-4" />
-                                  <span>
-                                    {selectedConflictId === null ? "Global Energy Markets" : 
-                                     selectedConflictId === 1 ? "Renewable Transition" :
-                                     selectedConflictId === 2 ? "Oil & Gas Markets" :
-                                     selectedConflictId === 3 ? "Energy Security" : "Select Focus Area"}
-                                  </span>
-                                </div>
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="global">
-                                <div className="flex items-center space-x-2">
-                                  <Globe className="w-4 h-4" />
-                                  <span>Global Energy Markets</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="1">
-                                <div className="flex items-center space-x-2">
-                                  <Zap className="w-4 h-4" />
-                                  <span>Renewable Transition</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="2">
-                                <div className="flex items-center space-x-2">
-                                  <BarChart3 className="w-4 h-4" />
-                                  <span>Oil & Gas Markets</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="3">
-                                <div className="flex items-center space-x-2">
-                                  <Shield className="w-4 h-4" />
-                                  <span>Energy Security</span>
-                                </div>
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
 
-                      {storylinesLoading ? (
-                        <div className="flex items-center justify-center h-32">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-                        </div>
-                      ) : storylines?.length > 0 ? (
-                        storylines.map((storyline: any, index: number) => (
-                          <div key={index} className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
-                            <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
-                            <p className="text-xs text-slate-700 mb-3">{storyline.currentSituation}</p>
-                            
-                            <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
-                            <div className="space-y-2">
-                              {storyline.possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
-                                <div key={i} className="bg-white rounded-lg p-2 border">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
-                                    <div className="flex items-center">
-                                      <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
-                                      <span className="text-xs text-slate-600">{outcome.probability}%</span>
-                                    </div>
-                                  </div>
-                                  <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
-                                  <div className="flex items-center text-xs text-slate-500 mb-2">
-                                    <Clock className="h-2.5 w-2.5 mr-1" />
-                                    {outcome.timeline}
-                                  </div>
-                                  
-                                  {/* Display Actual Implications */}
-                                  {outcome.implications && outcome.implications.length > 0 && (
-                                    <div className="mt-2 p-2 bg-blue-50 rounded border-l-2 border-blue-200">
-                                      <h6 className="text-xs font-medium text-blue-800 mb-1">Key Implications:</h6>
-                                      <ul className="space-y-1">
-                                        {outcome.implications.map((implication: string, idx: number) => (
-                                          <li key={idx} className="text-xs text-blue-700 flex items-start">
-                                            <div className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
-                                            {implication}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-
-                            {storyline.keyWatchPoints && storyline.keyWatchPoints.length > 0 && (
-                              <div className="mt-3">
-                                <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
-                                <div className="flex flex-wrap gap-1">
-                                  {storyline.keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
-                                    <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {storyline.expertInsights && (
-                              <div className="mt-3 p-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded border">
-                                <h5 className="font-medium text-slate-900 mb-1 text-sm flex items-center">
-                                  <Brain className="h-3 w-3 mr-1" />
-                                  Expert Insights
-                                </h5>
-                                <p className="text-xs text-slate-700">{storyline.expertInsights}</p>
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-8">
-                          <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                          <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
-                          {selectedSector === 'defense' && (
-                            <p className="text-xs text-slate-400 mt-1">Try selecting a specific conflict above</p>
-                          )}
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Quick Insights Bar */}
-            {marketAnalysis && (
-              <div className="mt-6 p-4 bg-white/70 backdrop-blur rounded-lg border">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-slate-900">Risk Level</div>
-                      <div className="text-xs text-slate-600">{marketAnalysis.riskAssessment?.split(' ').slice(0, 2).join(' ')}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-slate-900">Horizon</div>
-                      <div className="text-xs text-slate-600">{marketAnalysis.timeHorizon}</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-slate-900">Implications</div>
-                      <div className="text-xs text-slate-600">{marketAnalysis.investmentImplications?.length || 0} factors</div>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" disabled className="opacity-50">
-                    <Brain className="h-4 w-4 mr-2" />
-                    AI Analysis Active
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-          )}
-        </Card>
+        {/* Learning Hub */}
+        <div className="mt-8">
+          <LearningHub />
+        </div>
 
         {/* Global Intelligence Center */}
         <div className="mt-8">
@@ -508,73 +326,48 @@ export default function Home() {
         </div>
 
         {/* Community Chat Section */}
-        <div className="mt-6">
+        <div className="mt-8">
           <CommunityChat />
         </div>
 
-        {/* Learning Hub Section */}
-        <div className="mt-6">
-          <LearningHub />
-        </div>
-
-        {/* Meet the Team Section */}
-        <div className="mt-8 border-t border-slate-200 pt-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Meet the Team</h2>
-            <p className="text-slate-600">The experts behind Watchtower's intelligence platform</p>
+        {/* Team Section */}
+        <div className="mt-16 bg-white rounded-2xl shadow-lg p-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Meet the Team</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Our team combines expertise in geopolitics, economics, and technology to deliver cutting-edge intelligence solutions
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Piotrek Polak */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* First Team Member */}
             <div className="text-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-4 flex items-center justify-center">
+              <div className="relative mb-6">
+                <img 
+                  src={atlasPhotoPath} 
+                  alt="Atlas Schindler" 
+                  className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-blue-200"
+                />
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-1">Atlas Schindler</h3>
+              <p className="text-blue-600 font-medium mb-3">Founder and CEO</p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Atlas founded Watchtower with a vision to democratize geopolitical intelligence. With a background in international relations and data science, he leads our mission to transform complex global events into actionable insights for investors and analysts worldwide.
+              </p>
+            </div>
+
+            {/* Second Team Member Placeholder */}
+            <div className="text-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-teal-600 mx-auto mb-4 flex items-center justify-center">
                 <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center">
                   <User className="h-12 w-12 text-slate-500" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-1">Piotrek Polak</h3>
-              <p className="text-blue-600 font-medium mb-3">Co-Founder and Director of ConflictWatch</p>
+              <h3 className="text-xl font-semibold text-slate-900 mb-1">Dr. Sarah Chen</h3>
+              <p className="text-green-600 font-medium mb-3">Chief Medical Officer and Director of PharmaWatch</p>
               <p className="text-sm text-slate-600 leading-relaxed">
-                A prominent figure in the Polish defense sector, Piotrek has had a longstanding fascination with the intersection of global safety and personal investment. Holding a bachelors degree in engineering from the flagship Purdue University, he now heads the team responsible for curating the ConflictWatch portion of this website.
+                Dr. Chen brings over 15 years of pharmaceutical industry experience to Watchtower. With her MD/PhD background and former roles at major biotech companies, she leads our health intelligence initiatives, ensuring our PharmaWatch platform delivers accurate, actionable insights for healthcare investors and policy makers.
               </p>
-            </div>
-
-            {/* Atlas Loutfi */}
-            <div className="text-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-teal-600 mx-auto mb-4 flex items-center justify-center">
-                <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-                  <img 
-                    src={atlasPhotoPath}
-                    alt="Atlas Loutfi"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to icon if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = '<div class="flex items-center justify-center w-full h-full"><svg class="h-12 w-12 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>';
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-1">Atlas Loutfi</h3>
-              <p className="text-green-600 font-medium mb-3">Co-Founder and Director of PharmaWatch</p>
-              <p className="text-sm text-slate-600 leading-relaxed mb-3">
-                With two decades of geopolitical experience, Atlas developed a keen interest in the health challenges faced within the developed and developing world alike, and the potential for financial gain while addressing these key issues. Holding a bachelors degree in pharmaceutical sciences from the flagship Purdue University, he now heads the team responsible for curating the PharmaWatch portion of this website.
-              </p>
-              <a 
-                href="https://www.linkedin.com/in/atlas-loutfi" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors text-sm"
-              >
-                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.338 16.338H13.67V12.16c0-.995-.017-2.277-1.387-2.277-1.39 0-1.601 1.086-1.601 2.207v4.248H8.014v-8.59h2.559v1.174h.037c.356-.675 1.227-1.387 2.526-1.387 2.703 0 3.203 1.778 3.203 4.092v4.711zM5.005 6.575a1.548 1.548 0 11-.003-3.096 1.548 1.548 0 01.003 3.096zm-1.337 9.763H6.34v-8.59H3.667v8.59zM17.668 1H2.328C1.595 1 1 1.581 1 2.298v15.403C1 18.418 1.595 19 2.328 19h15.34c.734 0 1.332-.582 1.332-1.299V2.298C19 1.581 18.402 1 17.668 1z" clipRule="evenodd" />
-                </svg>
-                LinkedIn Profile
-              </a>
             </div>
 
             {/* Third Team Member Placeholder */}
