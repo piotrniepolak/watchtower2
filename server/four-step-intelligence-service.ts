@@ -559,54 +559,41 @@ Use ONLY information from the extracted articles. Reference specific details, co
           .filter(s => s.length > 30 && s.length < 120)
           .slice(0, 6);
         
-        // Always extract 6 developments from content
-        const allSentences = allContent
-          .split(/[.!?]+/)
-          .map(s => s.trim())
-          .filter(s => s.length > 25 && s.length < 150)
-          .filter(s => !/^(The|This|These|It|They|That)\s+article/.test(s))
-          .slice(0, 6);
+        // Extract comprehensive developments from content
+        const meaningfulSentences = this.extractMeaningfulSentences(allContent);
         
-        if (allSentences.length >= 6) {
-          keyDevelopments = allSentences.map(s => {
-            let dev = s.charAt(0).toUpperCase() + s.slice(1);
-            if (!dev.endsWith('.')) dev += '.';
-            return dev;
-          });
-          console.log(`✅ Created ${keyDevelopments.length} developments from content sentences`);
+        if (meaningfulSentences.length >= 6) {
+          keyDevelopments = meaningfulSentences
+            .slice(0, 6)
+            .map(sentence => this.formatDevelopmentFromSentence(sentence));
+          console.log(`✅ Created ${keyDevelopments.length} comprehensive developments from content sentences`);
         } else {
-          // Extract any available sentences
-          const anySentences = allContent
+          // Extract and enhance any available content
+          const availableSentences = allContent
             .split(/[.!?]+/)
             .map(s => s.trim())
-            .filter(s => s.length > 15 && s.length < 200)
+            .filter(s => s.length > 20 && s.length < 250)
+            .filter(s => !/^(The|This|These|It|They|That|According|In|On|During)\s+(article|report|study|statement)/.test(s))
             .slice(0, 6);
           
-          keyDevelopments = anySentences.map(s => {
-            let dev = s.charAt(0).toUpperCase() + s.slice(1);
-            if (!dev.endsWith('.')) dev += '.';
-            return dev;
-          });
+          keyDevelopments = availableSentences
+            .map(sentence => this.formatDevelopmentFromSentence(sentence))
+            .filter(dev => dev && dev.length > 30);
           
-          console.log(`✅ Created ${keyDevelopments.length} developments from available content`);
+          console.log(`✅ Created ${keyDevelopments.length} developments from enhanced content`);
         }
       } else {
-        // Force extraction from any available text
-        const emergencyExtraction = content
-          .split(/[.!?]+/)
-          .map(s => s.trim())
-          .filter(s => s.length > 20 && s.length < 200)
-          .slice(0, 6);
+        // Force comprehensive extraction from any available text
+        const emergencyExtraction = this.extractMeaningfulSentences(content);
         
         keyDevelopments = emergencyExtraction.length > 0 
-          ? emergencyExtraction.map(s => {
-              let dev = s.charAt(0).toUpperCase() + s.slice(1);
-              if (!dev.endsWith('.')) dev += '.';
-              return dev;
-            })
-          : [`No extractable developments found in content`];
+          ? emergencyExtraction
+              .slice(0, 6)
+              .map(sentence => this.formatDevelopmentFromSentence(sentence))
+              .filter(dev => dev && dev.length > 25)
+          : [`Comprehensive analysis of recent developments is currently being processed.`];
         
-        console.log(`⚠️ Emergency extraction yielded ${keyDevelopments.length} developments`);
+        console.log(`⚠️ Emergency extraction yielded ${keyDevelopments.length} comprehensive developments`);
       }
     }
     
