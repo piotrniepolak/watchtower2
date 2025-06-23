@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, Lightbulb, TrendingDown, Clock, DollarSign, User, ChevronDown, ChevronUp } from "lucide-react";
-import { getActiveSectors } from "@shared/sectors";
+import { generateSectorSources } from "@/components/source-links";
 import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -157,10 +157,19 @@ export default function Home() {
     retry: false,
   });
 
-  const dataSourcesCount = getActiveSectors().reduce(
-    (total, sector) => total + Object.keys(sector.dataSources).length,
-    0
-  );
+  const dataSourcesCount = (() => {
+    const uniqueDomains = new Set<string>(["finance.yahoo.com"]);
+    ["defense", "pharma", "energy"].forEach((sector) => {
+      generateSectorSources(sector as "defense" | "pharma" | "energy").forEach((src) => {
+        try {
+          uniqueDomains.add(new URL(src.url).hostname.replace("www.", ""));
+        } catch {
+          // ignore invalid URLs
+        }
+      });
+    });
+    return uniqueDomains.size;
+  })();
 
   const sectors = [
     {
