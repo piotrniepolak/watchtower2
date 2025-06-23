@@ -13,7 +13,21 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 23, 2025 - Restructured Website Paths for Equal Sector Treatment
+### June 23, 2025 - Restored AI-Powered Analysis Widget and Fixed Team Section
+
+**AI Analysis Widget Restoration:**
+- **Restored complete AI-powered analysis functionality** with interactive sector selection (Defense, Health, Energy)
+- **Added three analysis tabs:** Predictions, Market Analysis, and Storylines with real-time data
+- **Connected to existing API endpoints** for authentic predictions and market insights
+- **Implemented loading states and error handling** ensuring smooth user experience
+- **Maintained quick access links** to full sector dashboards
+
+**Team Section Correction:**
+- **Restored original Meet the Team section** exactly as it was before modifications
+- **Preserved team member details:** Piotrek Polak (ConflictWatch), Atlas Loutfi (PharmaWatch), Szymon Kordyl (EnergyWatch)
+- **Maintained Atlas Loutfi's LinkedIn profile link** and proper styling
+
+### June 23, 2025 - Previous: Restructured Website Paths for Equal Sector Treatment
 
 **URL Structure Changes Only (Homepage Content Preserved):**
 - **Restructured URL paths** from `/dashboard?sector=X` to dedicated sector routes: `/defense`, `/health`, `/energy`
