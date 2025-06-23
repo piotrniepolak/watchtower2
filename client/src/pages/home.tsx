@@ -13,6 +13,7 @@ import type { Conflict, Stock } from "@shared/schema";
 import { CommunityChat } from "@/components/community-chat";
 import { LearningHub } from "../components/learning-hub";
 import { GlobalIntelligenceCenter } from "@/components/global-intelligence-center";
+import ModernLobbyingAnalysis from "@/components/modern-lobbying-analysis";
 
 import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
@@ -23,46 +24,7 @@ interface SectorMetrics {
   volatility: number;
 }
 
-interface ConflictPrediction {
-  conflictId: number;
-  conflictName: string;
-  scenario: "escalation" | "de-escalation" | "stalemate" | "resolution";
-  probability: number;
-  timeframe: string;
-  narrative: string;
-  keyFactors: string[];
-  economicImpact: string;
-  defenseStockImpact: {
-    affected: string[];
-    direction: "positive" | "negative" | "neutral";
-    magnitude: "low" | "medium" | "high";
-  };
-  geopoliticalImplications: string[];
-  riskFactors: string[];
-  mitigationStrategies: string[];
-}
 
-interface MarketAnalysis {
-  overallSentiment: "bullish" | "bearish" | "neutral";
-  sectorOutlook: string;
-  keyDrivers: string[];
-  riskAssessment: string;
-  investmentImplications: string[];
-  timeHorizon: string;
-}
-
-interface ConflictStoryline {
-  currentSituation: string;
-  possibleOutcomes: Array<{
-    scenario: string;
-    probability: number;
-    description: string;
-    timeline: string;
-    implications: string[];
-  }>;
-  keyWatchPoints: string[];
-  expertInsights: string;
-}
 
 // AI Analysis Components
 function AIAnalysisPredictions({ selectedSector }: { selectedSector: string }) {
@@ -497,104 +459,8 @@ export default function Home() {
         </div>
 
 
-        {/* AI Analysis Section - 6:12 PM Layout */}
-        <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 rounded-lg mr-4">
-                  <Brain className="h-8 w-8" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl text-slate-900">AI-Powered Analysis</CardTitle>
-                  <CardDescription className="text-lg">
-                    Real-time predictions and market insights powered by advanced AI
-                  </CardDescription>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-slate-600">Sector:</span>
-                <Select value={selectedSector} onValueChange={setSelectedSector}>
-                  <SelectTrigger className="w-36">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="defense">ConflictWatch</SelectItem>
-                    <SelectItem value="health">PharmaWatch</SelectItem>
-                    <SelectItem value="energy">EnergyWatch</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Side - Market Analysis */}
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-                  <h3 className="text-lg font-semibold text-slate-900">Market Analysis</h3>
-                </div>
-                <AIAnalysisMarket selectedSector={selectedSector} />
-              </div>
-              
-              {/* Right Side - AI Analysis Hub */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Target className="h-5 w-5 text-indigo-600" />
-                    <h3 className="text-lg font-semibold text-slate-900">AI Analysis Hub</h3>
-                  </div>
-                  <span className="text-sm text-indigo-600 font-medium">Real-time Analysis</span>
-                </div>
-                <p className="text-sm text-slate-600 mb-4">
-                  Complete sector analysis with AI predictions, market insights, and strategic storylines
-                </p>
-                
-                <Tabs defaultValue="predictions" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="predictions">Predictions</TabsTrigger>
-                    <TabsTrigger value="market">Market Insights</TabsTrigger>
-                    <TabsTrigger value="storylines">Storylines</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="predictions" className="space-y-4">
-                    <AIAnalysisPredictions selectedSector={selectedSector} />
-                  </TabsContent>
-                  
-                  <TabsContent value="market" className="space-y-4">
-                    <div className="p-4 bg-white rounded-lg border">
-                      <h4 className="font-medium text-slate-900 mb-2">Understanding Analysis Confidence</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-600">Confidence Level: 50-85%</span>
-                          <Badge variant="secondary">High reliability based on current data</Badge>
-                        </div>
-                        <div className="text-slate-600">
-                          <span className="font-medium">Moderate certainty with evolving factors</span> | 30-49% = Lower confidence due to market volatility
-                        </div>
-                        <div className="text-slate-600">
-                          <span className="font-medium">Investment Implications:</span> Consider confidence levels alongside your risk tolerance. Higher confidence predictions may warrant larger position sizes, while lower confidence scenarios suggest smaller, diversified positions with close monitoring.
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="storylines" className="space-y-4">
-                    <AIAnalysisStorylines selectedSector={selectedSector} selectedConflictId={selectedConflictId} setSelectedConflictId={setSelectedConflictId} />
-                  </TabsContent>
-                </Tabs>
-                
-                <div className="mt-4 p-3 bg-slate-50 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Activity className="h-4 w-4 text-slate-500" />
-                    <span className="text-sm text-slate-600">AI Analysis Active</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* AI-Powered Analysis - Original 6:12 PM Implementation */}
+        <ModernLobbyingAnalysis />
 
         {/* Learning Hub */}
         <div className="mt-8">
