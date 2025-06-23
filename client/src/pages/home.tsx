@@ -64,6 +64,228 @@ interface ConflictStoryline {
   expertInsights: string;
 }
 
+// AI Analysis Components
+function AIAnalysisPredictions({ selectedSector }: { selectedSector: string }) {
+  const { data: predictions, isLoading } = useQuery({
+    queryKey: ["/api/analysis/predictions", selectedSector],
+    queryFn: async () => {
+      const response = await fetch(`/api/analysis/predictions?sector=${selectedSector}`);
+      if (!response.ok) throw new Error('Failed to fetch predictions');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!predictions || predictions.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Brain className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+        <p className="text-sm text-slate-500">No predictions available for {selectedSector} sector</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {predictions.slice(0, 2).map((prediction: ConflictPrediction, index: number) => (
+        <div key={index} className="border rounded-lg p-4 bg-white">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-semibold text-slate-900">{prediction.conflictName}</h4>
+            <Badge variant={prediction.scenario === 'escalation' ? 'destructive' : 'secondary'}>
+              {prediction.scenario}
+            </Badge>
+          </div>
+          <div className="flex items-center mb-2">
+            <Progress value={prediction.probability} className="flex-1 mr-2" />
+            <span className="text-sm font-medium">{prediction.probability}%</span>
+          </div>
+          <p className="text-sm text-slate-600 mb-2">{prediction.narrative}</p>
+          <div className="text-xs text-slate-500">
+            <Clock className="h-3 w-3 inline mr-1" />
+            {prediction.timeframe}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AIAnalysisMarket({ selectedSector }: { selectedSector: string }) {
+  const { data: marketAnalysis, isLoading } = useQuery({
+    queryKey: ["/api/analysis/market", selectedSector],
+    queryFn: async () => {
+      const response = await fetch(`/api/analysis/market?sector=${selectedSector}`);
+      if (!response.ok) throw new Error('Failed to fetch market analysis');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!marketAnalysis) {
+    return (
+      <div className="text-center py-8">
+        <BarChart3 className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+        <p className="text-sm text-slate-500">No market analysis available for {selectedSector} sector</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="text-center p-4 bg-white rounded-lg border">
+          <div className="text-lg font-bold text-slate-900 mb-1">
+            {marketAnalysis.overallSentiment === 'bullish' ? '📈' : 
+             marketAnalysis.overallSentiment === 'bearish' ? '📉' : '➡️'}
+          </div>
+          <div className="text-sm font-medium text-slate-900 capitalize">{marketAnalysis.overallSentiment}</div>
+          <div className="text-xs text-slate-600">Market Sentiment</div>
+        </div>
+        <div className="text-center p-4 bg-white rounded-lg border">
+          <div className="text-lg font-bold text-slate-900 mb-1">{marketAnalysis.keyDrivers?.length || 0}</div>
+          <div className="text-sm font-medium text-slate-900">Key Drivers</div>
+          <div className="text-xs text-slate-600">Identified</div>
+        </div>
+        <div className="text-center p-4 bg-white rounded-lg border">
+          <div className="text-lg font-bold text-slate-900 mb-1">{marketAnalysis.timeHorizon}</div>
+          <div className="text-sm font-medium text-slate-900">Time Horizon</div>
+          <div className="text-xs text-slate-600">Analysis Period</div>
+        </div>
+      </div>
+      
+      <div className="bg-white rounded-lg border p-4">
+        <h5 className="font-medium text-slate-900 mb-2">Sector Outlook</h5>
+        <p className="text-sm text-slate-600">{marketAnalysis.sectorOutlook}</p>
+      </div>
+      
+      {marketAnalysis.keyDrivers && marketAnalysis.keyDrivers.length > 0 && (
+        <div className="bg-white rounded-lg border p-4">
+          <h5 className="font-medium text-slate-900 mb-2">Key Market Drivers</h5>
+          <ul className="space-y-1">
+            {marketAnalysis.keyDrivers.map((driver: string, index: number) => (
+              <li key={index} className="text-sm text-slate-600 flex items-start">
+                <div className="w-1 h-1 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
+                {driver}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AIAnalysisStorylines({ selectedSector, selectedConflictId, setSelectedConflictId }: { 
+  selectedSector: string; 
+  selectedConflictId: number | null; 
+  setSelectedConflictId: (id: number | null) => void;
+}) {
+  const { data: storylines, isLoading: storylinesLoading } = useQuery({
+    queryKey: ["/api/analysis/storylines", selectedSector, selectedConflictId],
+    queryFn: async () => {
+      const response = await fetch(`/api/analysis/storylines?sector=${selectedSector}${selectedConflictId ? `&conflictId=${selectedConflictId}` : ''}`);
+      if (!response.ok) throw new Error('Failed to fetch storylines');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return (
+    <div className="space-y-4">
+      {selectedSector === 'defense' && (
+        <Select 
+          value={selectedConflictId?.toString() || "global"} 
+          onValueChange={(value) => {
+            const newId = value === "global" ? null : parseInt(value);
+            setSelectedConflictId(newId);
+          }}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue>
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4" />
+                <span>
+                  {selectedConflictId === null ? "Global Defense Analysis" : 
+                   `Conflict ID: ${selectedConflictId}`}
+                </span>
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="global">
+              <div className="flex items-center space-x-2">
+                <Globe className="w-4 h-4" />
+                <span>Global Defense Analysis</span>
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+
+      {storylinesLoading ? (
+        <div className="flex items-center justify-center h-32">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+        </div>
+      ) : storylines?.length > 0 ? (
+        storylines.map((storyline: any, index: number) => (
+          <div key={index} className="border rounded-lg p-4 bg-white">
+            <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
+            <p className="text-xs text-slate-700 mb-3">{storyline.currentSituation}</p>
+            
+            <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
+            <div className="space-y-2">
+              {storyline.possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
+                <div key={i} className="bg-slate-50 rounded-lg p-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
+                    <div className="flex items-center">
+                      <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
+                      <span className="text-xs text-slate-600">{outcome.probability}%</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600">{outcome.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {storyline.keyWatchPoints && storyline.keyWatchPoints.length > 0 && (
+              <div className="mt-3">
+                <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
+                <div className="flex flex-wrap gap-1">
+                  {storyline.keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))
+      ) : (
+        <div className="text-center py-8">
+          <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+          <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const queryClient = useQueryClient();
   const [selectedSector, setSelectedSector] = useState<string>('defense');
@@ -274,7 +496,7 @@ export default function Home() {
         </div>
 
 
-        {/* AI Analysis Section - Sector Selection */}
+        {/* AI Analysis Section - Full Interactive Widget */}
         <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
           <CardHeader>
             <div className="flex items-center justify-between mb-4">
@@ -289,28 +511,74 @@ export default function Home() {
                   </CardDescription>
                 </div>
               </div>
+              <div className="flex items-center space-x-4">
+                <Select value={selectedSector} onValueChange={setSelectedSector}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="defense">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="w-4 h-4" />
+                        <span>Defense</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="health">
+                      <div className="flex items-center space-x-2">
+                        <Pill className="w-4 h-4" />
+                        <span>Health</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="energy">
+                      <div className="flex items-center space-x-2">
+                        <Zap className="w-4 h-4" />
+                        <span>Energy</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Choose Your Intelligence Sector</h3>
-              <p className="text-sm text-slate-600">Select a sector to access specialized analytics and intelligence</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {sectors.map((sector) => {
-                const IconComponent = sector.icon;
-                return (
-                  <Link key={sector.key} href={`${sector.href}/dashboard`}>
-                    <Card className={`${sector.borderColor} border hover:shadow-md transition-shadow cursor-pointer`}>
-                      <CardContent className="p-4 text-center">
-                        <IconComponent className={`h-8 w-8 mx-auto mb-2 ${sector.textColor}`} />
-                        <h4 className="font-medium text-sm">{sector.name}</h4>
-                        <p className="text-xs text-slate-600 mt-1">AI-powered analytics</p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
+            <Tabs defaultValue="predictions" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="predictions">Predictions</TabsTrigger>
+                <TabsTrigger value="market">Market Analysis</TabsTrigger>
+                <TabsTrigger value="storylines">Storylines</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="predictions" className="space-y-4">
+                <AIAnalysisPredictions selectedSector={selectedSector} />
+              </TabsContent>
+              
+              <TabsContent value="market" className="space-y-4">
+                <AIAnalysisMarket selectedSector={selectedSector} />
+              </TabsContent>
+              
+              <TabsContent value="storylines" className="space-y-4">
+                <AIAnalysisStorylines selectedSector={selectedSector} selectedConflictId={selectedConflictId} setSelectedConflictId={setSelectedConflictId} />
+              </TabsContent>
+            </Tabs>
+
+            {/* Quick Access Links */}
+            <div className="mt-6 pt-4 border-t">
+              <div className="text-center mb-4">
+                <h4 className="text-sm font-semibold text-slate-900 mb-2">Quick Access to Full Analytics</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {sectors.map((sector) => {
+                    const IconComponent = sector.icon;
+                    return (
+                      <Link key={sector.key} href={`${sector.href}/dashboard`}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          <IconComponent className="h-4 w-4 mr-2" />
+                          {sector.name} Dashboard
+                        </Button>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
