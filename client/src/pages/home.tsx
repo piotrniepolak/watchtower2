@@ -1,27 +1,66 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Shield, 
-  Pill, 
-  Zap, 
-  Brain,
-  Globe,
-  TrendingUp,
-  BarChart3,
-  Users,
-  User,
-  LinkedinIcon as LinkedIn
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Shield, Pill, Zap, Globe, TrendingUp, BarChart3, Activity, Target, Users, AlertTriangle, Brain, DollarSign, User } from "lucide-react";
+import { getActiveSectors } from "@shared/sectors";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { Conflict, Stock } from "@shared/schema";
+import { CommunityChat } from "@/components/community-chat";
+import { LearningHub } from "../components/learning-hub";
+import { GlobalIntelligenceCenter } from "@/components/global-intelligence-center";
+
+import atlasPhotoPath from "@assets/atlas-beach-photo.jpg";
 
 interface SectorMetrics {
   totalStocks: number;
   avgChange: number;
   marketCap: string;
   volatility: number;
+}
+
+interface ConflictPrediction {
+  conflictId: number;
+  conflictName: string;
+  scenario: "escalation" | "de-escalation" | "stalemate" | "resolution";
+  probability: number;
+  timeframe: string;
+  narrative: string;
+  keyFactors: string[];
+  economicImpact: string;
+  defenseStockImpact: {
+    affected: string[];
+    direction: "positive" | "negative" | "neutral";
+    magnitude: "low" | "medium" | "high";
+  };
+  geopoliticalImplications: string[];
+  riskFactors: string[];
+  mitigationStrategies: string[];
+}
+
+interface MarketAnalysis {
+  overallSentiment: "bullish" | "bearish" | "neutral";
+  sectorOutlook: string;
+  keyDrivers: string[];
+  riskAssessment: string;
+  investmentImplications: string[];
+  timeHorizon: string;
+}
+
+interface ConflictStoryline {
+  currentSituation: string;
+  possibleOutcomes: Array<{
+    scenario: string;
+    probability: number;
+    description: string;
+    timeline: string;
+    implications: string[];
+  }>;
+  keyWatchPoints: string[];
+  expertInsights: string;
 }
 
 export default function Home() {
@@ -31,92 +70,138 @@ export default function Home() {
     queryKey: ["/api/metrics"],
   });
 
-  // Fetch data for sector metrics
-  const { data: conflicts = [] } = useQuery({
+  const { data: conflicts = [] } = useQuery<Conflict[]>({
     queryKey: ["/api/conflicts"],
   });
 
-  const { data: stocks = [] } = useQuery({
+  const { data: stocks = [] } = useQuery<Stock[]>({
     queryKey: ["/api/stocks"],
   });
 
-  // Sector configuration with updated paths
+
+
+  // Calculate authentic data sources count
+  const { data: dataSourcesCount = 25 } = useQuery({
+    queryKey: ["/api/data-sources/count"],
+    queryFn: async () => {
+      const response = await fetch('/api/data-sources/count');
+      if (!response.ok) throw new Error('Failed to fetch data sources count');
+      const data = await response.json();
+      return data.count;
+    }
+  });
+
   const sectors = [
     {
-      key: 'defense',
-      name: 'ConflictWatch',
-      description: 'Defense & Geopolitical Intelligence',
+      key: "defense",
+      name: "ConflictWatch",
+      description: "Defense & Conflict Analytics",
       icon: Shield,
-      color: 'from-blue-600 to-indigo-600',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-600',
-      href: '/defense'
+      color: "from-blue-600 to-purple-600",
+      borderColor: "border-blue-200",
+      textColor: "text-blue-700",
+      bgColor: "bg-blue-50",
+      href: "/defense"
     },
     {
-      key: 'health', 
-      name: 'PharmaWatch',
-      description: 'Global Health Intelligence',
+      key: "health",
+      name: "PharmaWatch", 
+      description: "Global Health Intelligence",
       icon: Pill,
-      color: 'from-green-600 to-emerald-600',
-      borderColor: 'border-green-200',
-      textColor: 'text-green-600',
-      href: '/health'
+      color: "from-green-600 to-teal-600",
+      borderColor: "border-green-200",
+      textColor: "text-green-700",
+      bgColor: "bg-green-50",
+      href: "/health"
     },
     {
-      key: 'energy',
-      name: 'EnergyWatch', 
-      description: 'Energy & Climate Intelligence',
+      key: "energy",
+      name: "EnergyWatch",
+      description: "Energy Market Intelligence", 
       icon: Zap,
-      color: 'from-orange-600 to-yellow-600',
-      borderColor: 'border-orange-200',
-      textColor: 'text-orange-600',
-      href: '/energy'
+      color: "from-orange-600 to-red-600",
+      borderColor: "border-orange-200",
+      textColor: "text-orange-700",
+      bgColor: "bg-orange-50",
+      features: [
+        "Energy regulation monitoring",
+        "Commodity price tracking",
+        "Market trend analysis",
+        "Environmental impact assessment"
+      ],
+      stats: {
+        commodities: 15,
+        stocks: stocks.filter(s => s.sector === 'Energy').length
+      }
+    }
+  ];
+
+  const globalStats = [
+    {
+      label: "Active Conflicts",
+      value: conflicts.length,
+      icon: AlertTriangle,
+      color: "text-red-600"
+    },
+    {
+      label: "Tracked Stocks",
+      value: stocks.length,
+      icon: TrendingUp,
+      color: "text-blue-600"
+    },
+    {
+      label: "Countries Monitored",
+      value: 195,
+      icon: Globe,
+      color: "text-green-600"
+    },
+    {
+      label: "Data Sources",
+      value: dataSourcesCount,
+      icon: BarChart3,
+      color: "text-purple-600"
     }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="container mx-auto px-4 py-12 max-w-7xl">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-900 to-blue-900 bg-clip-text text-transparent mb-6">
+      {/* Hero Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
+        <div className="text-center mb-12">
+          <div className="flex justify-center items-center mb-6">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-2xl">
+              <Activity className="h-12 w-12" />
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">
             Watchtower
           </h1>
-          <p className="text-xl text-slate-600 mb-8 max-w-3xl mx-auto">
-            Multi-Domain Intelligence Platform delivering comprehensive global insights through AI-powered predictive analytics across defense, health, and energy sectors.
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            Multi-Sector Intelligence Platform transforming complex global data into actionable insights through AI-driven analysis 
+            across defense, health, and energy sectors
           </p>
-          
-          {/* Global Metrics Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-white/70 backdrop-blur border-slate-200">
-              <CardContent className="p-6 text-center">
-                <Globe className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-slate-900">{conflicts.length}</div>
-                <div className="text-sm text-slate-600">Active Conflicts</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/70 backdrop-blur border-slate-200">
-              <CardContent className="p-6 text-center">
-                <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-slate-900">195</div>
-                <div className="text-sm text-slate-600">Countries Monitored</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/70 backdrop-blur border-slate-200">
-              <CardContent className="p-6 text-center">
-                <BarChart3 className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-slate-900">{stocks.length}</div>
-                <div className="text-sm text-slate-600">Tracked Stocks</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/70 backdrop-blur border-slate-200">
-              <CardContent className="p-6 text-center">
-                <Brain className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-slate-900">24/7</div>
-                <div className="text-sm text-slate-600">AI Analysis</div>
-              </CardContent>
-            </Card>
-          </div>
+        </div>
+
+        {/* Global Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          {globalStats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <Card key={index} className="text-center">
+                <CardContent className="pt-6">
+                  <div className="flex justify-center mb-2">
+                    <IconComponent className={`h-8 w-8 ${stat.color}`} />
+                  </div>
+                  <div className="text-3xl font-bold text-slate-900 mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    {stat.label}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Sector Selection Cards */}
@@ -184,6 +269,7 @@ export default function Home() {
           })}
         </div>
 
+
         {/* AI Analysis Section - Sector Selection */}
         <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
           <CardHeader>
@@ -224,52 +310,245 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
+                            <SelectContent>
+                              <SelectItem value="global">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>Global Health Trends</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="1">
+                                <div className="flex items-center space-x-2">
+                                  <Shield className="w-4 h-4" />
+                                  <span>Pandemic Preparedness</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="2">
+                                <div className="flex items-center space-x-2">
+                                  <Target className="w-4 h-4" />
+                                  <span>Healthcare Innovation</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="3">
+                                <div className="flex items-center space-x-2">
+                                  <Activity className="w-4 h-4" />
+                                  <span>Drug Development</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        
+                        {selectedSector === 'energy' && (
+                          <Select 
+                            value={selectedConflictId?.toString() || "global"} 
+                            onValueChange={(value) => {
+                              const newId = value === "global" ? null : parseInt(value);
+                              setSelectedConflictId(newId);
+                              queryClient.removeQueries({ queryKey: ["/api/analysis/storylines"] });
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                <div className="flex items-center space-x-2">
+                                  <Zap className="w-4 h-4" />
+                                  <span>
+                                    {selectedConflictId === null ? "Global Energy Markets" : 
+                                     selectedConflictId === 1 ? "Renewable Transition" :
+                                     selectedConflictId === 2 ? "Oil & Gas Markets" :
+                                     selectedConflictId === 3 ? "Energy Security" : "Select Focus Area"}
+                                  </span>
+                                </div>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="global">
+                                <div className="flex items-center space-x-2">
+                                  <Globe className="w-4 h-4" />
+                                  <span>Global Energy Markets</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="1">
+                                <div className="flex items-center space-x-2">
+                                  <Zap className="w-4 h-4" />
+                                  <span>Renewable Transition</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="2">
+                                <div className="flex items-center space-x-2">
+                                  <BarChart3 className="w-4 h-4" />
+                                  <span>Oil & Gas Markets</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="3">
+                                <div className="flex items-center space-x-2">
+                                  <Shield className="w-4 h-4" />
+                                  <span>Energy Security</span>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
 
-        {/* Team Section */}
-        <div className="mt-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Our Team</h2>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Meet the experts behind Watchtower's multi-domain intelligence platform
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* First Team Member */}
-            <div className="text-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto mb-4 flex items-center justify-center">
-                <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/attached_assets/L'INTENDANCE BEACH129_1749661292456.JPG"
-                    alt="Louis Magzoub"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = '<div class="flex items-center justify-center w-full h-full"><svg class="h-12 w-12 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>';
-                      }
-                    }}
-                  />
+                      {storylinesLoading ? (
+                        <div className="flex items-center justify-center h-32">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+                        </div>
+                      ) : storylines?.length > 0 ? (
+                        storylines.map((storyline: any, index: number) => (
+                          <div key={index} className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+                            <h4 className="font-semibold text-slate-900 mb-2 text-sm">Current Situation</h4>
+                            <p className="text-xs text-slate-700 mb-3">{storyline.currentSituation}</p>
+                            
+                            <h5 className="font-medium text-slate-900 mb-2 text-sm">Possible Outcomes</h5>
+                            <div className="space-y-2">
+                              {storyline.possibleOutcomes?.slice(0, 2).map((outcome: any, i: number) => (
+                                <div key={i} className="bg-white rounded-lg p-2 border">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="font-medium text-xs text-slate-900">{outcome.scenario}</span>
+                                    <div className="flex items-center">
+                                      <Progress value={outcome.probability} className="w-8 h-1.5 mr-1" />
+                                      <span className="text-xs text-slate-600">{outcome.probability}%</span>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-slate-600 mb-1">{outcome.description}</p>
+                                  <div className="flex items-center text-xs text-slate-500 mb-2">
+                                    <Clock className="h-2.5 w-2.5 mr-1" />
+                                    {outcome.timeline}
+                                  </div>
+                                  
+                                  {/* Display Actual Implications */}
+                                  {outcome.implications && outcome.implications.length > 0 && (
+                                    <div className="mt-2 p-2 bg-blue-50 rounded border-l-2 border-blue-200">
+                                      <h6 className="text-xs font-medium text-blue-800 mb-1">Key Implications:</h6>
+                                      <ul className="space-y-1">
+                                        {outcome.implications.map((implication: string, idx: number) => (
+                                          <li key={idx} className="text-xs text-blue-700 flex items-start">
+                                            <div className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+                                            {implication}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {storyline.keyWatchPoints && storyline.keyWatchPoints.length > 0 && (
+                              <div className="mt-3">
+                                <h5 className="font-medium text-slate-900 mb-1 text-sm">Key Watch Points</h5>
+                                <div className="flex flex-wrap gap-1">
+                                  {storyline.keyWatchPoints.slice(0, 3).map((point: string, i: number) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{point}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {storyline.expertInsights && (
+                              <div className="mt-3 p-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded border">
+                                <h5 className="font-medium text-slate-900 mb-1 text-sm flex items-center">
+                                  <Brain className="h-3 w-3 mr-1" />
+                                  Expert Insights
+                                </h5>
+                                <p className="text-xs text-slate-700">{storyline.expertInsights}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Lightbulb className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                          <p className="text-sm text-slate-500">No storylines available for {selectedSector} sector</p>
+                          {selectedSector === 'defense' && (
+                            <p className="text-xs text-slate-400 mt-1">Try selecting a specific conflict above</p>
+                          )}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Insights Bar */}
+            {marketAnalysis && (
+              <div className="mt-6 p-4 bg-white/70 backdrop-blur rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-slate-900">Risk Level</div>
+                      <div className="text-xs text-slate-600">{marketAnalysis.riskAssessment?.split(' ').slice(0, 2).join(' ')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-slate-900">Horizon</div>
+                      <div className="text-xs text-slate-600">{marketAnalysis.timeHorizon}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-slate-900">Implications</div>
+                      <div className="text-xs text-slate-600">{marketAnalysis.investmentImplications?.length || 0} factors</div>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" disabled className="opacity-50">
+                    <Brain className="h-4 w-4 mr-2" />
+                    AI Analysis Active
+                  </Button>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-1">Louis Magzoub</h3>
+            )}
+          </CardContent>
+          )}
+        </Card>
+
+        {/* Global Intelligence Center */}
+        <div className="mt-8">
+          <GlobalIntelligenceCenter />
+        </div>
+
+        {/* Community Chat Section */}
+        <div className="mt-6">
+          <CommunityChat />
+        </div>
+
+        {/* Learning Hub Section */}
+        <div className="mt-6">
+          <LearningHub />
+        </div>
+
+        {/* Meet the Team Section */}
+        <div className="mt-8 border-t border-slate-200 pt-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Meet the Team</h2>
+            <p className="text-slate-600">The experts behind Watchtower's intelligence platform</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Piotrek Polak */}
+            <div className="text-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center">
+                  <User className="h-12 w-12 text-slate-500" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-900 mb-1">Piotrek Polak</h3>
               <p className="text-blue-600 font-medium mb-3">Co-Founder and Director of ConflictWatch</p>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Louis brings extensive expertise in conflict analysis and geopolitical intelligence. His deep understanding of global security dynamics and strategic foresight drives ConflictWatch's comprehensive defense sector insights.
+                A prominent figure in the Polish defense sector, Piotrek has had a longstanding fascination with the intersection of global safety and personal investment. Holding a bachelors degree in engineering from the flagship Purdue University, he now heads the team responsible for curating the ConflictWatch portion of this website.
               </p>
             </div>
 
-            {/* Second Team Member */}
+            {/* Atlas Loutfi */}
             <div className="text-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 mx-auto mb-4 flex items-center justify-center">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-r from-green-600 to-teal-600 mx-auto mb-4 flex items-center justify-center">
                 <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                   <img 
-                    src="/attached_assets/atlas-beach-photo.jpg"
+                    src={atlasPhotoPath}
                     alt="Atlas Loutfi"
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                      // Fallback to icon if image fails to load
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
                       const parent = target.parentElement;
@@ -298,7 +577,7 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Third Team Member */}
+            {/* Third Team Member Placeholder */}
             <div className="text-center">
               <div className="w-32 h-32 rounded-full bg-gradient-to-r from-orange-600 to-red-600 mx-auto mb-4 flex items-center justify-center">
                 <div className="w-28 h-28 rounded-full bg-slate-200 flex items-center justify-center">
