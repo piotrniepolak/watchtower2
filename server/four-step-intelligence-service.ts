@@ -634,13 +634,33 @@ Use ONLY information from the extracted articles. Reference specific details, co
     }
 
     return {
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      sector: 'placeholder',
+      title: 'Placeholder Title',
       executiveSummary,
       keyDevelopments,
-      marketImpactAnalysis: marketImpact,
-      geopoliticalAnalysis: geopolitical
+      marketImpactAnalysis,
+      geopoliticalAnalysis
     };
   }
 
+  private createFinalBrief(parsedSections: any, sector: string): FourStepIntelligenceBrief {
+    return {
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
+      sector,
+      title: `${sector.charAt(0).toUpperCase() + sector.slice(1)} Intelligence Brief - ${new Date().toISOString().split('T')[0]} (4-Step Methodology)`,
+      executiveSummary: parsedSections.executiveSummary,
+      keyDevelopments: parsedSections.keyDevelopments,
+      marketImpactAnalysis: parsedSections.marketImpactAnalysis,
+      geopoliticalAnalysis: parsedSections.geopoliticalAnalysis,
+      extractedArticles: [],
+      sourceUrls: [],
+      methodologyUsed: '4-step-authentic-source-extraction',
+      generatedAt: new Date().toISOString()
+    };
+  }
 
 }
 
