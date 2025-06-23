@@ -615,9 +615,7 @@ Use ONLY information from the extracted articles. Reference specific details, co
       console.log(`📝 Sample: "${keyDevelopments[0].substring(0, 60)}..."`);
     }
 
-    const executiveSummary = executiveSummaryMatch?.[1]?.trim() || '';
-    const marketImpact = marketImpactMatch?.[1]?.trim() || '';
-    const geopolitical = geopoliticalMatch?.[1]?.trim() || '';
+    console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpactAnalysis.length} chars, Geopolitical: ${geopoliticalAnalysis.length} chars, Developments: ${keyDevelopments.length} items`);
 
     console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpact.length} chars, Geopolitical: ${geopolitical.length} chars, Developments: ${keyDevelopments.length} items`);
     
