@@ -379,43 +379,75 @@ Use ONLY information from the extracted articles. Reference specific details, co
     console.log(`📝 Generated sections content (${content.length} characters)`);
     console.log(`📝 Content preview: ${content.substring(0, 300)}`);
 
-    // Parse sections with precise boundary detection
-    let executiveSummaryMatch = content.match(/\*\*EXECUTIVE SUMMARY\*\*\s*([\s\S]*?)(?=\*\*KEY DEVELOPMENTS\*\*|\*\*MARKET IMPACT|\*\*GEOPOLITICAL|$)/i);
-    let keyDevelopmentsMatch = content.match(/\*\*KEY DEVELOPMENTS\*\*\s*([\s\S]*?)(?=\*\*MARKET IMPACT ANALYSIS\*\*|\*\*GEOPOLITICAL|$)/i);
-    let marketImpactMatch = content.match(/\*\*MARKET IMPACT ANALYSIS\*\*\s*([\s\S]*?)(?=\*\*GEOPOLITICAL ANALYSIS\*\*|$)/i);
-    let geopoliticalMatch = content.match(/\*\*GEOPOLITICAL ANALYSIS\*\*\s*([\s\S]*?)$/i);
+    // Split content into distinct sections using strict boundaries
+    const sectionMarkers = [
+      { name: 'executive', pattern: /\*\*EXECUTIVE SUMMARY\*\*/i },
+      { name: 'developments', pattern: /\*\*KEY DEVELOPMENTS\*\*/i },
+      { name: 'market', pattern: /\*\*MARKET IMPACT ANALYSIS\*\*/i },
+      { name: 'geopolitical', pattern: /\*\*GEOPOLITICAL ANALYSIS\*\*/i }
+    ];
 
-    // Force comprehensive content extraction regardless of structured parsing
-    if (content.length > 1000) {
-      console.log(`📝 Force extracting comprehensive sections from ${content.length} chars`);
+    let executiveSummary = '';
+    let marketImpactAnalysis = '';
+    let geopoliticalAnalysis = '';
+    let keyDevelopmentsText = '';
+
+    // Find section boundaries and extract clean content
+    for (let i = 0; i < sectionMarkers.length; i++) {
+      const currentMarker = sectionMarkers[i];
+      const nextMarker = sectionMarkers[i + 1];
       
-      // Clean content by removing headers and bullet points
+      const startMatch = content.match(currentMarker.pattern);
+      if (startMatch) {
+        const startIndex = startMatch.index + startMatch[0].length;
+        let endIndex = content.length;
+        
+        if (nextMarker) {
+          const endMatch = content.match(nextMarker.pattern);
+          if (endMatch) {
+            endIndex = endMatch.index;
+          }
+        }
+        
+        const sectionContent = content.substring(startIndex, endIndex)
+          .replace(/^\s*\n*/g, '')
+          .replace(/\s*$/, '')
+          .trim();
+        
+        if (currentMarker.name === 'executive') {
+          executiveSummary = sectionContent;
+        } else if (currentMarker.name === 'developments') {
+          keyDevelopmentsText = sectionContent;
+        } else if (currentMarker.name === 'market') {
+          marketImpactAnalysis = sectionContent;
+        } else if (currentMarker.name === 'geopolitical') {
+          geopoliticalAnalysis = sectionContent;
+        }
+      }
+    }
+
+    // If sections are empty or too short, extract proportionally from clean content
+    if (!executiveSummary || executiveSummary.length < 500) {
       const cleanContent = content
         .replace(/\*\*[A-Z\s]+\*\*/g, '')
         .replace(/##\s*[A-Z\s]+/g, '')
-        .replace(/^-\s+/gm, '')
-        .replace(/^\*\s+/gm, '')
         .trim();
       
-      const sentences = cleanContent.split(/[.!?]+/).filter(s => s.trim().length > 20);
+      const sentences = cleanContent.split(/[.!?]+/).filter(s => s.trim().length > 30);
       
-      if (sentences.length >= 12) {
-        // Executive Summary: First 40% of sentences
-        const execSentences = sentences.slice(0, Math.floor(sentences.length * 0.4));
-        executiveSummaryMatch = [null, execSentences.join('. ').trim() + '.'];
-        console.log(`📝 Force extracted executive summary: ${execSentences.length} sentences`);
+      if (sentences.length >= 15) {
+        const execSentences = sentences.slice(0, Math.ceil(sentences.length * 0.35));
+        executiveSummary = execSentences.join('. ').trim() + '.';
         
-        // Market Impact: Middle 30% of sentences  
-        const marketStart = Math.floor(sentences.length * 0.4);
-        const marketSentences = sentences.slice(marketStart, marketStart + Math.floor(sentences.length * 0.3));
-        marketImpactMatch = [null, marketSentences.join('. ').trim() + '.'];
-        console.log(`📝 Force extracted market analysis: ${marketSentences.length} sentences`);
+        const marketStart = Math.ceil(sentences.length * 0.35);
+        const marketSentences = sentences.slice(marketStart, marketStart + Math.ceil(sentences.length * 0.3));
+        marketImpactAnalysis = marketSentences.join('. ').trim() + '.';
         
-        // Geopolitical: Final 30% of sentences
-        const geoStart = Math.floor(sentences.length * 0.7);
+        const geoStart = Math.ceil(sentences.length * 0.65);
         const geoSentences = sentences.slice(geoStart);
-        geopoliticalMatch = [null, geoSentences.join('. ').trim() + '.'];
-        console.log(`📝 Force extracted geopolitical analysis: ${geoSentences.length} sentences`);
+        geopoliticalAnalysis = geoSentences.join('. ').trim() + '.';
+        
+        console.log(`📝 Extracted proportional sections: exec(${execSentences.length}), market(${marketSentences.length}), geo(${geoSentences.length}) sentences`);
       }
     }
 
@@ -424,7 +456,7 @@ Use ONLY information from the extracted articles. Reference specific details, co
     
     console.log(`🔍 Extracting key developments from content...`);
     
-    const keyDevelopmentsText = keyDevelopmentsMatch?.[1]?.trim() || '';
+    // Use the extracted keyDevelopmentsText from above
     
     if (keyDevelopmentsText && keyDevelopmentsText.length > 10) {
       console.log(`📝 Found KEY DEVELOPMENTS section with ${keyDevelopmentsText.length} characters`);
@@ -507,7 +539,7 @@ Use ONLY information from the extracted articles. Reference specific details, co
     if (keyDevelopments.length === 0) {
       console.log(`⚠️ Creating developments from all available content`);
       
-      const allContent = [executiveSummaryMatch?.[1], marketImpactMatch?.[1], geopoliticalMatch?.[1]]
+      const allContent = [executiveSummary, marketImpactAnalysis, geopoliticalAnalysis]
         .filter(content => content && content.length > 100)
         .join(' ');
       

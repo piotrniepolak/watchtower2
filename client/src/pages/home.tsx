@@ -157,10 +157,16 @@ export default function Home() {
     retry: false,
   });
 
-  const dataSourcesCount = getActiveSectors().reduce(
-    (total, sector) => total + Object.keys(sector.dataSources).length,
-    0
-  );
+  // Calculate authentic data sources count
+  const { data: dataSourcesCount = 25 } = useQuery({
+    queryKey: ["/api/data-sources/count"],
+    queryFn: async () => {
+      const response = await fetch('/api/data-sources/count');
+      if (!response.ok) throw new Error('Failed to fetch data sources count');
+      const data = await response.json();
+      return data.count;
+    }
+  });
 
   const sectors = [
     {
