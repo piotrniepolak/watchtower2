@@ -349,6 +349,7 @@ export default function Home() {
       borderColor: "border-orange-200",
       textColor: "text-orange-700",
       bgColor: "bg-orange-50",
+      href: "/energy",
       features: [
         "Energy regulation monitoring",
         "Commodity price tracking",
