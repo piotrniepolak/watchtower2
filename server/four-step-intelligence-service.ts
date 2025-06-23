@@ -617,18 +617,18 @@ Use ONLY information from the extracted articles. Reference specific details, co
 
     console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpactAnalysis.length} chars, Geopolitical: ${geopoliticalAnalysis.length} chars, Developments: ${keyDevelopments.length} items`);
 
-    console.log(`📝 Parsed sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpact.length} chars, Geopolitical: ${geopolitical.length} chars, Developments: ${keyDevelopments.length} items`);
+    // Remove duplicate logging line
     
     if (executiveSummary.length === 0) {
       console.log(`⚠️ Executive summary extraction failed, trying emergency extraction...`);
       console.log(`🔍 Content headers found: ${content.match(/\*\*[A-Z\s]+\*\*/g) || 'none'}`);
       console.log(`🔍 First 1000 chars: ${content.substring(0, 1000)}`);
     }
-    if (marketImpact.length === 0) {
+    if (marketImpactAnalysis.length === 0) {
       console.log(`⚠️ Market impact extraction failed`);
       console.log(`🔍 Content sample: ${content.substring(500, 1500)}`);
     }
-    if (geopolitical.length === 0) {
+    if (geopoliticalAnalysis.length === 0) {
       console.log(`⚠️ Geopolitical analysis extraction failed`);
       console.log(`🔍 Content sample: ${content.substring(1500, 2500)}`);
     }
