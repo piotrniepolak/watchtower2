@@ -621,13 +621,6 @@ Use ONLY information from the extracted articles. Reference specific details, co
     
     if (executiveSummary.length === 0) {
       console.log(`⚠️ Executive summary extraction failed, trying emergency extraction...`);
-      // Emergency extraction - look for any substantial paragraph
-      const emergencyMatch = content.match(/([^.!?]{100,}[.!?])/);
-      if (emergencyMatch) {
-        const emergencyContent = emergencyMatch[1].trim();
-        console.log(`🚨 Emergency extraction: "${emergencyContent.substring(0, 100)}..."`);
-        // Don't actually use emergency content - just log for debugging
-      }
       console.log(`🔍 Content headers found: ${content.match(/\*\*[A-Z\s]+\*\*/g) || 'none'}`);
       console.log(`🔍 First 1000 chars: ${content.substring(0, 1000)}`);
     }
