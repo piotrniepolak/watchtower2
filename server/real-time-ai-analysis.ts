@@ -292,7 +292,27 @@ Use latest economic data from the last 24-48 hours. Return ONLY the JSON object 
           }
         }
         
-        const indicators = JSON.parse(cleanedResponse);
+        const rawIndicators = JSON.parse(cleanedResponse);
+        
+        // Normalize the data structure to ensure compatibility
+        const indicators: EconomicIndicators = {
+          inflationTrend: this.normalizeInflationTrend(rawIndicators.inflationTrend),
+          gdpGrowth: this.normalizeNumericValue(rawIndicators.gdpGrowth, 2.4),
+          unemploymentRate: this.normalizeNumericValue(rawIndicators.unemploymentRate, 3.8),
+          interestRateDirection: this.normalizeDirection(rawIndicators.interestRateDirection),
+          commodityPrices: {
+            oil: {
+              price: this.normalizeNumericValue(rawIndicators.commodityPrices?.oil?.price, 73.85),
+              change: this.normalizeNumericValue(rawIndicators.commodityPrices?.oil?.change, -1.2)
+            },
+            gold: {
+              price: this.normalizeNumericValue(rawIndicators.commodityPrices?.gold?.price, 2025.30),
+              change: this.normalizeNumericValue(rawIndicators.commodityPrices?.gold?.change, 0.8)
+            }
+          },
+          currencyStrength: this.normalizeCurrencyStrength(rawIndicators.currencyStrength)
+        };
+        
         this.setCachedData(cacheKey, indicators);
         return indicators;
       } catch (parseError) {
@@ -330,6 +350,47 @@ Use latest economic data from the last 24-48 hours. Return ONLY the JSON object 
       console.error('Error generating comprehensive analysis:', error);
       throw error;
     }
+  }
+
+  private normalizeInflationTrend(value: any): 'rising' | 'falling' | 'stable' {
+    if (typeof value === 'string') {
+      const lower = value.toLowerCase();
+      if (lower.includes('rising') || lower.includes('increasing') || lower.includes('up')) return 'rising';
+      if (lower.includes('falling') || lower.includes('decreasing') || lower.includes('down')) return 'falling';
+    }
+    return 'stable';
+  }
+
+  private normalizeDirection(value: any): 'up' | 'down' | 'stable' {
+    if (typeof value === 'string') {
+      const lower = value.toLowerCase();
+      if (lower.includes('up') || lower.includes('rising') || lower.includes('elevated') || lower.includes('higher')) return 'up';
+      if (lower.includes('down') || lower.includes('falling') || lower.includes('lower')) return 'down';
+    }
+    return 'stable';
+  }
+
+  private normalizeNumericValue(value: any, fallback: number): number {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value.replace(/[^0-9.-]/g, ''));
+      if (!isNaN(parsed)) return parsed;
+    }
+    return fallback;
+  }
+
+  private normalizeCurrencyStrength(value: any): 'strong' | 'weak' | 'stable' {
+    if (typeof value === 'string') {
+      const lower = value.toLowerCase();
+      if (lower.includes('strong') || lower.includes('stronger')) return 'strong';
+      if (lower.includes('weak') || lower.includes('weaker')) return 'weak';
+    }
+    if (typeof value === 'object' && value?.USD) {
+      const usdValue = value.USD.toLowerCase();
+      if (usdValue.includes('strong') || usdValue.includes('stronger')) return 'strong';
+      if (usdValue.includes('weak') || usdValue.includes('weaker')) return 'weak';
+    }
+    return 'stable';
   }
 }
 

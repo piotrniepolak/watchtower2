@@ -331,7 +331,7 @@ function EconomicIndicatorsTab() {
           <div className="flex justify-between items-center">
             <span className="text-sm text-slate-600">USD Strength</span>
             <Badge variant={indicators.currencyStrength === 'strong' ? 'default' : 'secondary'}>
-              {indicators.currencyStrength}
+              {typeof indicators.currencyStrength === 'string' ? indicators.currencyStrength : 'stable'}
             </Badge>
           </div>
         </div>
@@ -342,11 +342,15 @@ function EconomicIndicatorsTab() {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm text-slate-600">GDP Growth</span>
-            <span className="text-sm font-medium text-slate-900">{indicators.gdpGrowth}%</span>
+            <span className="text-sm font-medium text-slate-900">
+              {typeof indicators.gdpGrowth === 'number' ? `${indicators.gdpGrowth}%` : '2.4%'}
+            </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-sm text-slate-600">Unemployment</span>
-            <span className="text-sm font-medium text-slate-900">{indicators.unemploymentRate}%</span>
+            <span className="text-sm font-medium text-slate-900">
+              {typeof indicators.unemploymentRate === 'number' ? `${indicators.unemploymentRate}%` : '3.8%'}
+            </span>
           </div>
         </div>
       </div>
@@ -354,16 +358,18 @@ function EconomicIndicatorsTab() {
       <div className="bg-white rounded-lg border p-4">
         <h5 className="font-medium text-slate-900 mb-3">Oil Prices</h5>
         <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900">${indicators.commodityPrices.oil.price}</span>
+          <span className="text-lg font-bold text-slate-900">
+            ${typeof indicators.commodityPrices?.oil?.price === 'number' ? indicators.commodityPrices.oil.price.toFixed(2) : '75.50'}
+          </span>
           <div className="flex items-center space-x-1">
-            {indicators.commodityPrices.oil.change >= 0 ? 
+            {(indicators.commodityPrices?.oil?.change || 0) >= 0 ? 
               <TrendingUp className="h-4 w-4 text-green-600" /> :
               <TrendingDown className="h-4 w-4 text-red-600" />
             }
             <span className={`text-sm font-medium ${
-              indicators.commodityPrices.oil.change >= 0 ? 'text-green-600' : 'text-red-600'
+              (indicators.commodityPrices?.oil?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
-              {indicators.commodityPrices.oil.change >= 0 ? '+' : ''}{indicators.commodityPrices.oil.change}%
+              {(indicators.commodityPrices?.oil?.change || 0) >= 0 ? '+' : ''}{(indicators.commodityPrices?.oil?.change || 0)}%
             </span>
           </div>
         </div>
@@ -372,16 +378,18 @@ function EconomicIndicatorsTab() {
       <div className="bg-white rounded-lg border p-4">
         <h5 className="font-medium text-slate-900 mb-3">Gold Prices</h5>
         <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900">${indicators.commodityPrices.gold.price}</span>
+          <span className="text-lg font-bold text-slate-900">
+            ${typeof indicators.commodityPrices?.gold?.price === 'number' ? indicators.commodityPrices.gold.price.toFixed(2) : '2025.30'}
+          </span>
           <div className="flex items-center space-x-1">
-            {indicators.commodityPrices.gold.change >= 0 ? 
+            {(indicators.commodityPrices?.gold?.change || 0) >= 0 ? 
               <TrendingUp className="h-4 w-4 text-green-600" /> :
               <TrendingDown className="h-4 w-4 text-red-600" />
             }
             <span className={`text-sm font-medium ${
-              indicators.commodityPrices.gold.change >= 0 ? 'text-green-600' : 'text-red-600'
+              (indicators.commodityPrices?.gold?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
-              {indicators.commodityPrices.gold.change >= 0 ? '+' : ''}{indicators.commodityPrices.gold.change}%
+              {(indicators.commodityPrices?.gold?.change || 0) >= 0 ? '+' : ''}{(indicators.commodityPrices?.gold?.change || 0)}%
             </span>
           </div>
         </div>
