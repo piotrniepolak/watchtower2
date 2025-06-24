@@ -652,62 +652,38 @@ Use ONLY information from the extracted articles. Reference specific details, co
       }
     }
 
-    // ENHANCED CONTENT REDISTRIBUTION - Always ensure all sections have content
-    if (!marketImpactAnalysis || marketImpactAnalysis.length < 200 || 
-        !geopoliticalAnalysis || geopoliticalAnalysis.length < 200) {
+    // CONTENT REDISTRIBUTION - Only when sections are completely missing
+    if (!marketImpactAnalysis || !geopoliticalAnalysis) {
       
-      console.log(`📝 REDISTRIBUTION NEEDED - Market: ${marketImpactAnalysis.length} chars, Geo: ${geopoliticalAnalysis.length} chars`);
+      console.log(`📝 REDISTRIBUTION NEEDED - Market: ${marketImpactAnalysis ? marketImpactAnalysis.length : 0} chars, Geo: ${geopoliticalAnalysis ? geopoliticalAnalysis.length : 0} chars`);
       
-      // Use all available content for redistribution
-      const allContent = content
-        .replace(/\*\*[A-Z\s]+\*\*/g, '')
-        .replace(/##\s*[A-Z\s]+/g, '')
-        .trim();
-      
-      const sentences = allContent.split(/[.!?]+/).filter(s => s.trim().length > 30);
-      console.log(`📝 Available sentences for redistribution: ${sentences.length}`);
-      
-      if (sentences.length >= 12) {
-        // Redistribute content ensuring each section gets substantial content
-        const execCount = Math.ceil(sentences.length * 0.4); // 40% for executive
-        const marketCount = Math.ceil(sentences.length * 0.3); // 30% for market
-        const geoCount = Math.ceil(sentences.length * 0.3); // 30% for geopolitical
-        
-        // Keep executive summary if substantial, otherwise recreate
-        if (!executiveSummary || executiveSummary.length < 300) {
-          const execSentences = sentences.slice(0, execCount);
-          executiveSummary = execSentences.join('. ').trim() + '.';
-        }
-        
-        // Create market impact analysis
-        const marketStart = execCount;
-        const marketSentences = sentences.slice(marketStart, marketStart + marketCount);
-        marketImpactAnalysis = marketSentences.join('. ').trim() + '.';
-        
-        // Create geopolitical analysis
-        const geoStart = marketStart + marketCount;
-        const geoSentences = sentences.slice(geoStart, geoStart + geoCount);
-        geopoliticalAnalysis = geoSentences.join('. ').trim() + '.';
-        
-        console.log(`📝 ENHANCED REDISTRIBUTION: exec(${executiveSummary.length}), market(${marketImpactAnalysis.length}), geo(${geopoliticalAnalysis.length}) chars`);
-      } else if (executiveSummary && executiveSummary.length > 800) {
-        // Split executive summary as fallback
+      // Only redistribute if we have substantial executive content to split
+      if (executiveSummary && executiveSummary.length > 600) {
         console.log(`📝 EMERGENCY SPLIT - Using executive summary (${executiveSummary.length} chars)`);
         const oneThird = Math.floor(executiveSummary.length / 3);
         const twoThirds = Math.floor(executiveSummary.length * 2 / 3);
         
         const originalExec = executiveSummary;
         executiveSummary = originalExec.substring(0, oneThird).trim() + '.';
-        marketImpactAnalysis = originalExec.substring(oneThird, twoThirds).trim() + '.';
-        geopoliticalAnalysis = originalExec.substring(twoThirds).trim() + '.';
+        
+        // Only assign if missing
+        if (!marketImpactAnalysis) {
+          marketImpactAnalysis = originalExec.substring(oneThird, twoThirds).trim() + '.';
+        }
+        if (!geopoliticalAnalysis) {
+          geopoliticalAnalysis = originalExec.substring(twoThirds).trim() + '.';
+        }
         
         console.log(`📝 EMERGENCY SPLIT COMPLETE: exec(${executiveSummary.length}), market(${marketImpactAnalysis.length}), geo(${geopoliticalAnalysis.length}) chars`);
       } else {
-        // Create minimal content from whatever is available
-        console.log(`📝 MINIMAL CONTENT CREATION from ${content.length} chars`);
-        const minimalContent = content.substring(0, 600);
-        marketImpactAnalysis = marketImpactAnalysis || "Market analysis based on current pharmaceutical developments.";
-        geopoliticalAnalysis = geopoliticalAnalysis || "Geopolitical implications of recent pharmaceutical sector events.";
+        // Create minimal content only for missing sections
+        console.log(`📝 MINIMAL CONTENT CREATION for missing sections`);
+        if (!marketImpactAnalysis) {
+          marketImpactAnalysis = "Market analysis based on current developments.";
+        }
+        if (!geopoliticalAnalysis) {
+          geopoliticalAnalysis = "Geopolitical implications of recent sector events.";
+        }
       }
     }
 
