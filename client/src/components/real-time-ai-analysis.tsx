@@ -351,19 +351,32 @@ function MarketAnalysisTab({ sector }: { sector: string }) {
 
       <div className="bg-white border rounded-lg p-4">
         <h4 className="font-semibold text-slate-900 mb-3">Top Stock Recommendations</h4>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {analysis.topStocks?.slice(0, 3).map((stock, index) => (
-            <div key={index} className="flex items-center justify-between p-2 bg-slate-50 rounded">
-              <div className="flex items-center space-x-2">
-                <span className="font-medium text-slate-900">{stock.symbol}</span>
-                <Badge variant={stock.prediction === 'buy' ? 'default' : 
-                               stock.prediction === 'sell' ? 'destructive' : 'secondary'}>
-                  {stock.prediction}
-                </Badge>
+            <div key={index} className="border rounded p-3 bg-slate-50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-slate-900">{stock.symbol}</span>
+                  <Badge variant={stock.prediction === 'buy' ? 'default' : 
+                                 stock.prediction === 'sell' ? 'destructive' : 'secondary'}>
+                    {stock.prediction.toUpperCase()}
+                  </Badge>
+                </div>
+                <Badge variant="outline">{stock.confidence}% Confidence</Badge>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium">{stock.confidence}% confidence</div>
-                <div className="text-xs text-slate-600">{stock.reasoning}</div>
+              <div className="bg-white p-2 rounded border-l-4 border-blue-400">
+                <h6 className="text-xs font-medium text-blue-800 mb-1">Investment Reasoning</h6>
+                <p className="text-xs text-blue-700">{stock.reasoning}</p>
+                {stock.confidence > 70 && (
+                  <p className="text-xs text-green-600 mt-1">
+                    <strong>High Confidence:</strong> Multiple positive indicators align with this recommendation
+                  </p>
+                )}
+                {stock.confidence < 60 && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    <strong>Moderate Confidence:</strong> Mixed signals require careful monitoring
+                  </p>
+                )}
               </div>
             </div>
           ))}
