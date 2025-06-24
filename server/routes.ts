@@ -22,6 +22,7 @@ import { chatCleanupService } from "./chat-cleanup-service";
 import { yahooFinanceService } from "./yahoo-finance-service";
 import { energyService } from './energy-service.js';
 import { quizStorage } from "./quiz-storage";
+import { realTimeAIAnalysis } from './real-time-ai-analysis';
 import session from "express-session";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -1177,6 +1178,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error refreshing lobbying data:", error);
       res.status(500).json({ error: "Failed to refresh lobbying data" });
+    }
+  });
+
+  // Real-time AI Analysis endpoints
+  app.get("/api/ai-analysis/conflicts", async (req, res) => {
+    try {
+      console.log("🎯 Generating real-time conflict predictions");
+      const predictions = await realTimeAIAnalysis.generateConflictPredictions();
+      res.json(predictions);
+    } catch (error) {
+      console.error("Error generating conflict predictions:", error);
+      res.status(500).json({ error: "Failed to generate conflict predictions" });
+    }
+  });
+
+  app.get("/api/ai-analysis/market/:sector", async (req, res) => {
+    try {
+      const sector = req.params.sector || 'defense';
+      console.log(`📈 Generating real-time market analysis for ${sector}`);
+      const analysis = await realTimeAIAnalysis.generateMarketAnalysis(sector);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error generating market analysis:", error);
+      res.status(500).json({ error: "Failed to generate market analysis" });
+    }
+  });
+
+  app.get("/api/ai-analysis/economics", async (req, res) => {
+    try {
+      console.log("📊 Generating real-time economic indicators");
+      const indicators = await realTimeAIAnalysis.generateEconomicIndicators();
+      res.json(indicators);
+    } catch (error) {
+      console.error("Error generating economic indicators:", error);
+      res.status(500).json({ error: "Failed to generate economic indicators" });
+    }
+  });
+
+  app.get("/api/ai-analysis/comprehensive", async (req, res) => {
+    try {
+      console.log("🔥 Generating comprehensive real-time AI analysis");
+      const analysis = await realTimeAIAnalysis.generateComprehensiveAnalysis();
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error generating comprehensive analysis:", error);
+      res.status(500).json({ error: "Failed to generate comprehensive analysis" });
     }
   });
 
