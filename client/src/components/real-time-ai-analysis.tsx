@@ -199,6 +199,13 @@ function SectorAnalysisTab({ sector }: { sector: string }) {
                     </div>
                   )}
 
+                  {conflict.recentDevelopments && (
+                    <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-400">
+                      <h6 className="text-sm font-medium text-purple-800 mb-1">Recent Developments Analysis</h6>
+                      <p className="text-sm text-purple-700">{conflict.recentDevelopments}</p>
+                    </div>
+                  )}
+
                   <div className="bg-amber-50 p-3 rounded border-l-4 border-amber-400">
                     <h6 className="text-sm font-medium text-amber-800 mb-1">Risk Assessment Explanation</h6>
                     <p className="text-sm text-amber-700">{conflict.riskExplanation}</p>
