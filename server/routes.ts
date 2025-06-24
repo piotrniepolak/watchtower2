@@ -1217,6 +1217,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sector Analysis endpoints
+  app.get("/api/ai-analysis/sector-analysis/:sector", async (req, res) => {
+    try {
+      const sector = req.params.sector;
+      console.log(`🔍 Generating sector analysis for ${sector}`);
+      const analysis = await realTimeAIAnalysis.generateSectorAnalysis(sector);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error generating sector analysis:", error);
+      res.status(500).json({ error: "Failed to generate sector analysis" });
+    }
+  });
+
+  app.get("/api/ai-analysis/sector-indicators/:sector", async (req, res) => {
+    try {
+      const sector = req.params.sector;
+      console.log(`📊 Generating sector indicators for ${sector}`);
+      const indicators = await realTimeAIAnalysis.generateSectorIndicators(sector);
+      res.json(indicators);
+    } catch (error) {
+      console.error("Error generating sector indicators:", error);
+      res.status(500).json({ error: "Failed to generate sector indicators" });
+    }
+  });
+
   // Backward compatibility for general economics endpoint
   app.get("/api/ai-analysis/economics", async (req, res) => {
     try {

@@ -246,6 +246,178 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
     }
   }
 
+  async generateSectorAnalysis(sector: string): Promise<any | null> {
+    const cacheKey = `sector_analysis_${sector}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const analysisPrompts = {
+        defense: `Analyze current global military conflicts and defense threats. Return ONLY valid JSON in this format:
+{
+  "conflicts": [
+    {
+      "name": "Ukraine-Russia War",
+      "region": "Eastern Europe",
+      "escalationRisk": 85,
+      "defenseImpact": "High - driving NATO defense spending increases",
+      "keyDevelopments": ["Recent missile strikes", "Western aid packages"]
+    }
+  ],
+  "emergingThreats": ["Cyber warfare escalation", "Space militarization"],
+  "defenseSpendingTrends": "Global defense budgets increasing 5-7% annually",
+  "criticalSupplyChains": ["Semiconductor shortage affecting military systems", "Rare earth minerals supply constraints"]
+}`,
+        health: `Analyze current global health threats and biodefense concerns. Return ONLY valid JSON in this format:
+{
+  "healthThreats": [
+    {
+      "name": "H5N1 Avian Influenza",
+      "severity": "High",
+      "regions": ["Asia", "Europe"],
+      "riskLevel": 75,
+      "preparedness": "Moderate - vaccine development ongoing"
+    }
+  ],
+  "pandemicRisk": "Medium - multiple respiratory viruses circulating",
+  "biodefenseAlerts": ["Lab security incidents", "Dual-use research concerns"],
+  "healthSystemStrain": "Regional capacity issues in developing nations"
+}`,
+        energy: `Analyze current energy supply disruptions and infrastructure threats. Return ONLY valid JSON in this format:
+{
+  "supplyDisruptions": [
+    {
+      "source": "Middle East Pipeline",
+      "impact": "Regional gas shortages",
+      "severity": 70,
+      "duration": "3-6 months estimated",
+      "affectedRegions": ["Europe", "Asia"]
+    }
+  ],
+  "infrastructureThreats": ["Cyber attacks on power grids", "Climate-related outages"],
+  "energySecurityAlerts": "Critical mineral supply chain vulnerabilities",
+  "transitionRisks": "Renewable energy intermittency challenges"
+}`
+      };
+
+      const prompt = analysisPrompts[sector as keyof typeof analysisPrompts];
+      if (!prompt) throw new Error(`Unknown sector: ${sector}`);
+
+      const response = await this.callPerplexityAPI(`${prompt}
+
+Use latest intelligence from the last 24-48 hours. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`);
+
+      let cleanedResponse = response.trim();
+      const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonBlockMatch) {
+        cleanedResponse = jsonBlockMatch[1].trim();
+      }
+      
+      cleanedResponse = this.cleanJsonResponse(cleanedResponse);
+      const analysisData = JSON.parse(cleanedResponse);
+      
+      this.setCachedData(cacheKey, analysisData);
+      return analysisData;
+    } catch (error) {
+      console.error(`Error generating sector analysis for ${sector}:`, error);
+      throw new Error(`Failed to generate sector analysis for ${sector}`);
+    }
+  }
+
+  async generateSectorIndicators(sector: string): Promise<any | null> {
+    const cacheKey = `sector_indicators_${sector}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const indicatorPrompts = {
+        defense: `Analyze defense sector metrics and spending indicators. Return ONLY valid JSON in this format:
+{
+  "globalDefenseSpending": {
+    "total": 2400,
+    "growth": 3.2,
+    "topSpenders": [
+      {"country": "United States", "amount": 816, "change": 2.8},
+      {"country": "China", "amount": 296, "change": 4.2}
+    ]
+  },
+  "contractActivity": {
+    "totalValue": 89.5,
+    "majorContracts": ["F-35 sustainment", "Navy shipbuilding"],
+    "trend": "increasing"
+  },
+  "threatLevel": "elevated",
+  "technologyFocus": ["AI integration", "Hypersonic weapons", "Cyber defense"],
+  "supplierHealth": "strained"
+}`,
+        health: `Analyze healthcare sector indicators and health system metrics. Return ONLY valid JSON in this format:
+{
+  "globalHealthSpending": {
+    "total": 9.8,
+    "gdpPercentage": 9.8,
+    "growth": 4.1,
+    "publicPrivateRatio": "70/30"
+  },
+  "pharmaceuticalPipeline": {
+    "newDrugs": 37,
+    "approvalRate": 85,
+    "majorAreas": ["Oncology", "Neurological disorders", "Rare diseases"]
+  },
+  "healthSystemCapacity": "moderate strain",
+  "emergingDiseases": 12,
+  "vaccineDevelopment": "accelerated timelines",
+  "regulatoryEnvironment": "increasingly stringent"
+}`,
+        energy: `Analyze energy sector indicators and market dynamics. Return ONLY valid JSON in this format:
+{
+  "globalEnergyDemand": {
+    "total": 580.8,
+    "growth": 2.1,
+    "renewableShare": 29.4,
+    "trend": "recovery post-pandemic"
+  },
+  "oilMarkets": {
+    "price": 82.4,
+    "volatility": "high",
+    "reserves": "strategic releases ongoing",
+    "production": "OPEC+ cuts in effect"
+  },
+  "renewableCapacity": {
+    "additions": 295,
+    "solar": 191,
+    "wind": 77,
+    "growth": "record year"
+  },
+  "gridStability": "regional concerns",
+  "energyTransition": "accelerating but uneven",
+  "carbonPricing": "expanding globally"
+}`
+      };
+
+      const prompt = indicatorPrompts[sector as keyof typeof indicatorPrompts];
+      if (!prompt) throw new Error(`Unknown sector: ${sector}`);
+
+      const response = await this.callPerplexityAPI(`${prompt}
+
+Use latest market data and reports from the last 24-48 hours. Include specific numerical values and percentages. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`);
+
+      let cleanedResponse = response.trim();
+      const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonBlockMatch) {
+        cleanedResponse = jsonBlockMatch[1].trim();
+      }
+      
+      cleanedResponse = this.cleanJsonResponse(cleanedResponse);
+      const indicatorData = JSON.parse(cleanedResponse);
+      
+      this.setCachedData(cacheKey, indicatorData);
+      return indicatorData;
+    } catch (error) {
+      console.error(`Error generating sector indicators for ${sector}:`, error);
+      throw new Error(`Failed to generate sector indicators for ${sector}`);
+    }
+  }
+
   async generateEconomicIndicators(sector: string = 'defense'): Promise<EconomicIndicators | null> {
     const cacheKey = `economic_indicators_${sector}`;
     const cached = this.getCachedData(cacheKey);
