@@ -150,12 +150,15 @@ Focus only on real, current conflicts with recent developments. Use today's date
       const response = await this.callPerplexityAPI(prompt, systemMessage);
       
       try {
-        const parsed = JSON.parse(response);
+        // Clean response by removing markdown code blocks if present
+        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanedResponse);
         const predictions = parsed.predictions || [];
         this.setCachedData(cacheKey, predictions);
         return predictions;
       } catch (parseError) {
         console.error('Error parsing conflict predictions response:', parseError);
+        console.log('Raw response:', response.substring(0, 500));
         return [];
       }
     } catch (error) {
@@ -213,11 +216,14 @@ Base recommendations on actual recent news and market movements. Today's date: $
       const response = await this.callPerplexityAPI(prompt, systemMessage);
       
       try {
-        const analysis = JSON.parse(response);
+        // Clean response by removing markdown code blocks if present
+        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        const analysis = JSON.parse(cleanedResponse);
         this.setCachedData(cacheKey, analysis);
         return analysis;
       } catch (parseError) {
         console.error('Error parsing market analysis response:', parseError);
+        console.log('Raw response:', response.substring(0, 500));
         return null;
       }
     } catch (error) {
@@ -261,11 +267,14 @@ Use only current, verified economic data from official sources. Today's date: ${
       const response = await this.callPerplexityAPI(prompt, systemMessage);
       
       try {
-        const indicators = JSON.parse(response);
+        // Clean response by removing markdown code blocks if present
+        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        const indicators = JSON.parse(cleanedResponse);
         this.setCachedData(cacheKey, indicators);
         return indicators;
       } catch (parseError) {
         console.error('Error parsing economic indicators response:', parseError);
+        console.log('Raw response:', response.substring(0, 500));
         return null;
       }
     } catch (error) {
