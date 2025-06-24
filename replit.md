@@ -13,19 +13,25 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 23, 2025 - Restored AI-Powered Analysis Widget and Fixed Team Section
+### June 24, 2025 - Real-Time AI Analysis System with Perplexity Integration
 
-**AI Analysis Widget Restoration:**
-- **Restored complete AI-powered analysis functionality** with interactive sector selection (Defense, Health, Energy)
-- **Added three analysis tabs:** Predictions, Market Analysis, and Storylines with real-time data
-- **Connected to existing API endpoints** for authentic predictions and market insights
-- **Implemented loading states and error handling** ensuring smooth user experience
-- **Maintained quick access links** to full sector dashboards
+**Complete Real-Time AI Analysis Overhaul:**
+- **Built comprehensive real-time AI analysis system** powered by Perplexity API with internet access for current events
+- **Created conflict prediction engine** analyzing global tensions (Ukraine-Russia, Middle East, Taiwan Strait) with probability assessments
+- **Developed market analysis for all sectors** (Defense, Health, Energy) with stock recommendations and sentiment analysis
+- **Added economic indicators tracking** with live commodity prices, inflation trends, and currency strength monitoring
+- **Fixed sector dropdown placement** to appear in widget header instead of only within market analysis tab
+- **Enhanced JSON parsing** to handle Perplexity API responses with comments and markdown formatting
+- **Implemented data normalization** for handling mixed text/numeric responses from AI API
+- **Added 5-minute caching** to prevent excessive API calls while maintaining real-time feel
 
-**Team Section Correction:**
-- **Restored original Meet the Team section** exactly as it was before modifications
-- **Preserved team member details:** Piotrek Polak (ConflictWatch), Atlas Loutfi (PharmaWatch), Szymon Kordyl (EnergyWatch)
-- **Maintained Atlas Loutfi's LinkedIn profile link** and proper styling
+**Technical Implementation:**
+- Enhanced JSON cleaning to remove comments and normalize whitespace from Perplexity responses
+- Added comprehensive data validation and type checking for economic indicators
+- Fixed React rendering issues with object data by adding proper fallbacks
+- Implemented robust error handling for API parsing failures
+
+### June 23, 2025 - Previous: Restored AI-Powered Analysis Widget and Fixed Team Section
 
 ### June 23, 2025 - Previous: Restructured Website Paths for Equal Sector Treatment
 

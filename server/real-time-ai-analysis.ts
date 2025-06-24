@@ -392,6 +392,40 @@ Use latest economic data from the last 24-48 hours. Return ONLY the JSON object 
     }
     return 'stable';
   }
+
+  private cleanJsonResponse(jsonString: string): string {
+    // Remove comments (both // and /* */)
+    jsonString = jsonString.replace(/\/\/.*$/gm, '');
+    jsonString = jsonString.replace(/\/\*[\s\S]*?\*\//g, '');
+    
+    // Remove trailing commas
+    jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');
+    
+    // Normalize whitespace
+    jsonString = jsonString.replace(/\s*[\r\n]+\s*/g, ' ');
+    
+    // Handle truncated JSON by ensuring proper closing
+    let openBraces = 0;
+    let lastValidIndex = jsonString.length;
+    
+    for (let i = 0; i < jsonString.length; i++) {
+      if (jsonString[i] === '{') openBraces++;
+      if (jsonString[i] === '}') openBraces--;
+      if (openBraces === 0 && jsonString[i] === '}') {
+        lastValidIndex = i + 1;
+        break;
+      }
+    }
+    
+    if (openBraces > 0) {
+      // JSON is truncated, close it properly
+      jsonString = jsonString.substring(0, lastValidIndex) + '}'.repeat(openBraces);
+    } else {
+      jsonString = jsonString.substring(0, lastValidIndex);
+    }
+    
+    return jsonString.trim();
+  }
 }
 
 export const realTimeAIAnalysis = new RealTimeAIAnalysisService();
