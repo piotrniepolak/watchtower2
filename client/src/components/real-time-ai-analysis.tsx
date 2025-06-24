@@ -138,6 +138,30 @@ function SectorAnalysisTab({ sector }: { sector: string }) {
   if (sector === 'defense' && analysis.conflicts) {
     return (
       <div className="space-y-4">
+        <div className="bg-white border rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold text-slate-900">Select Conflict for Analysis</h4>
+            <Badge variant="outline">{analysis.conflicts.length} Active Conflicts</Badge>
+          </div>
+          <Select defaultValue="0">
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose a conflict to analyze..." />
+            </SelectTrigger>
+            <SelectContent>
+              {analysis.conflicts.map((conflict: any, index: number) => (
+                <SelectItem key={index} value={index.toString()}>
+                  <div className="flex items-center justify-between w-full">
+                    <span>{conflict.name}</span>
+                    <Badge variant={conflict.escalationRisk > 75 ? 'destructive' : conflict.escalationRisk > 50 ? 'secondary' : 'default'} className="ml-2">
+                      {conflict.escalationRisk}%
+                    </Badge>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         {analysis.conflicts.map((conflict: any, index: number) => (
           <div key={index} className="border rounded-lg p-4 bg-white">
             <div className="flex items-center justify-between mb-3">
@@ -145,21 +169,45 @@ function SectorAnalysisTab({ sector }: { sector: string }) {
                 <Globe className="h-4 w-4 text-slate-500" />
                 <h4 className="font-semibold text-slate-900">{conflict.name}</h4>
               </div>
-              <Badge variant={conflict.escalationRisk > 75 ? 'destructive' : conflict.escalationRisk > 50 ? 'secondary' : 'default'}>
-                {conflict.escalationRisk}% Risk
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge variant={conflict.escalationRisk > 75 ? 'destructive' : conflict.escalationRisk > 50 ? 'secondary' : 'default'}>
+                  {conflict.escalationRisk}% Risk
+                </Badge>
+                <Badge variant="outline">
+                  {conflict.probability}% Probability
+                </Badge>
+              </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-sm text-slate-600">📍 {conflict.region}</p>
-              <p className="text-sm text-slate-700">{conflict.defenseImpact}</p>
-              <div className="flex flex-wrap gap-1">
-                {conflict.keyDevelopments?.map((dev: string, idx: number) => (
-                  <Badge key={idx} variant="outline" className="text-xs">{dev}</Badge>
-                ))}
+            
+            <div className="space-y-3">
+              <div className="bg-slate-50 p-3 rounded">
+                <p className="text-sm text-slate-600 mb-1"><strong>📍 Region:</strong> {conflict.region}</p>
+                <p className="text-sm text-slate-600 mb-1"><strong>⏱️ Timeframe:</strong> {conflict.timeframe}</p>
+                <p className="text-sm text-slate-700">{conflict.defenseImpact}</p>
+              </div>
+
+              <div className="bg-amber-50 p-3 rounded border-l-4 border-amber-400">
+                <h6 className="text-sm font-medium text-amber-800 mb-1">Risk Assessment Explanation</h6>
+                <p className="text-sm text-amber-700">{conflict.riskExplanation}</p>
+              </div>
+
+              <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                <h6 className="text-sm font-medium text-blue-800 mb-1">Probability Analysis</h6>
+                <p className="text-sm text-blue-700">{conflict.probabilityExplanation}</p>
+              </div>
+
+              <div>
+                <h6 className="text-sm font-medium text-slate-900 mb-2">Key Developments</h6>
+                <div className="flex flex-wrap gap-1">
+                  {conflict.keyDevelopments?.map((dev: string, idx: number) => (
+                    <Badge key={idx} variant="outline" className="text-xs">{dev}</Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         ))}
+        
         <div className="bg-slate-50 rounded-lg p-4">
           <h5 className="font-medium mb-2">Emerging Threats</h5>
           <div className="flex flex-wrap gap-2">
@@ -179,15 +227,32 @@ function SectorAnalysisTab({ sector }: { sector: string }) {
           <div key={index} className="border rounded-lg p-4 bg-white">
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-slate-900">{threat.name}</h4>
-              <Badge variant={threat.severity === 'High' ? 'destructive' : threat.severity === 'Medium' ? 'secondary' : 'default'}>
-                {threat.severity}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge variant={threat.severity === 'High' ? 'destructive' : threat.severity === 'Medium' ? 'secondary' : 'default'}>
+                  {threat.severity} Severity
+                </Badge>
+                <Badge variant="outline">
+                  {threat.riskLevel}% Risk
+                </Badge>
+              </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-sm text-slate-600">🌍 {threat.regions?.join(', ')}</p>
-              <p className="text-sm text-slate-700">{threat.preparedness}</p>
-              <div className="bg-red-50 p-2 rounded">
-                <span className="text-sm font-medium text-red-800">Risk Level: {threat.riskLevel}%</span>
+            
+            <div className="space-y-3">
+              <div className="bg-slate-50 p-3 rounded">
+                <p className="text-sm text-slate-600 mb-1"><strong>🌍 Affected Regions:</strong> {threat.regions?.join(', ')}</p>
+                <p className="text-sm text-slate-600 mb-1"><strong>⏱️ Timeframe:</strong> {threat.timeframe}</p>
+                <p className="text-sm text-slate-600"><strong>💥 Impact Potential:</strong> {threat.impactPotential}</p>
+              </div>
+
+              <div className="bg-red-50 p-3 rounded border-l-4 border-red-400">
+                <h6 className="text-sm font-medium text-red-800 mb-1">Risk Assessment Explanation</h6>
+                <p className="text-sm text-red-700">{threat.riskExplanation}</p>
+              </div>
+
+              <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                <h6 className="text-sm font-medium text-blue-800 mb-1">Preparedness Status</h6>
+                <p className="text-sm text-blue-700 mb-2">{threat.preparedness}</p>
+                <p className="text-sm text-blue-600">{threat.preparednessDetails}</p>
               </div>
             </div>
           </div>
@@ -361,20 +426,42 @@ function SectorIndicatorsTab({ sector }: { sector: string }) {
           </div>
         </div>
         <div className="bg-white border rounded-lg p-4">
-          <h4 className="font-semibold text-slate-900 mb-3">Contract Activity</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-slate-600">Total Value ($B)</span>
-              <span className="text-sm font-medium">{indicators.contractActivity?.totalValue}</span>
+          <h4 className="font-semibold text-slate-900 mb-3">Contract Activity Analysis</h4>
+          <div className="space-y-3">
+            <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-green-800">Total Contract Value</span>
+                <Badge variant="default">${indicators.contractActivity?.totalValue}B</Badge>
+              </div>
+              <p className="text-xs text-green-700">{indicators.contractActivity?.totalValueExplanation}</p>
             </div>
-            <Badge variant="default">{indicators.contractActivity?.trend}</Badge>
+            
+            <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-blue-800">Market Trend</span>
+                <Badge variant="outline">{indicators.contractActivity?.trend}</Badge>
+              </div>
+              <p className="text-xs text-blue-700">{indicators.contractActivity?.trendExplanation}</p>
+            </div>
           </div>
         </div>
         <div className="bg-white border rounded-lg p-4 md:col-span-2">
-          <h4 className="font-semibold text-slate-900 mb-3">Technology Focus</h4>
-          <div className="flex flex-wrap gap-2">
-            {indicators.technologyFocus?.map((tech: string, idx: number) => (
-              <Badge key={idx} variant="outline">{tech}</Badge>
+          <h4 className="font-semibold text-slate-900 mb-3">Major Defense Contracts</h4>
+          <div className="space-y-3">
+            {indicators.contractActivity?.majorContracts?.map((contract: any, idx: number) => (
+              <div key={idx} className="border rounded p-3 bg-slate-50">
+                <div className="flex items-center justify-between mb-2">
+                  <h6 className="font-medium text-slate-900">{contract.name}</h6>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="default">{contract.value}</Badge>
+                    <Badge variant="outline" className="text-xs">{contract.timeframe}</Badge>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-700 mb-2">{contract.explanation}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-600">Prime Contractor: {contract.contractor}</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -399,23 +486,36 @@ function SectorIndicatorsTab({ sector }: { sector: string }) {
           </div>
         </div>
         <div className="bg-white border rounded-lg p-4">
-          <h4 className="font-semibold text-slate-900 mb-3">Drug Pipeline</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-slate-600">New Drugs</span>
-              <span className="text-sm font-medium">{indicators.pharmaceuticalPipeline?.newDrugs}</span>
+          <h4 className="font-semibold text-slate-900 mb-3">Drug Pipeline Analysis</h4>
+          <div className="space-y-3">
+            <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-green-800">New Drug Approvals</span>
+                <Badge variant="default">{indicators.pharmaceuticalPipeline?.newDrugs} drugs</Badge>
+              </div>
+              <p className="text-xs text-green-700">{indicators.pharmaceuticalPipeline?.newDrugsExplanation}</p>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-slate-600">Approval Rate</span>
-              <span className="text-sm font-medium">{indicators.pharmaceuticalPipeline?.approvalRate}%</span>
+            
+            <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-blue-800">Approval Success Rate</span>
+                <Badge variant="outline">{indicators.pharmaceuticalPipeline?.approvalRate}%</Badge>
+              </div>
+              <p className="text-xs text-blue-700">{indicators.pharmaceuticalPipeline?.approvalRateExplanation}</p>
             </div>
           </div>
         </div>
         <div className="bg-white border rounded-lg p-4 md:col-span-2">
-          <h4 className="font-semibold text-slate-900 mb-3">Major Areas</h4>
-          <div className="flex flex-wrap gap-2">
-            {indicators.pharmaceuticalPipeline?.majorAreas?.map((area: string, idx: number) => (
-              <Badge key={idx} variant="outline">{area}</Badge>
+          <h4 className="font-semibold text-slate-900 mb-3">Therapeutic Areas Analysis</h4>
+          <div className="space-y-3">
+            {indicators.pharmaceuticalPipeline?.majorAreas?.map((areaData: any, idx: number) => (
+              <div key={idx} className="border rounded p-3 bg-slate-50">
+                <div className="flex items-center justify-between mb-2">
+                  <h6 className="font-medium text-slate-900">{areaData.area}</h6>
+                  <Badge variant="outline" className="text-xs">Active Development</Badge>
+                </div>
+                <p className="text-sm text-slate-700">{areaData.details}</p>
+              </div>
             ))}
           </div>
         </div>

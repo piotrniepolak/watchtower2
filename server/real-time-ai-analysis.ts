@@ -259,22 +259,67 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
             name: "Ukraine-Russia War",
             region: "Eastern Europe",
             escalationRisk: 88,
+            riskExplanation: "High probability due to ongoing military operations, Western military aid increasing, and no clear diplomatic resolution path. Risk assessment based on artillery deployment patterns, territorial control dynamics, and alliance commitments.",
             defenseImpact: "High - driving NATO defense spending increases and military modernization",
-            keyDevelopments: ["Advanced missile systems deployment", "NATO artillery commitments", "Air defense partnerships"]
+            keyDevelopments: ["Advanced missile systems deployment", "NATO artillery commitments", "Air defense partnerships"],
+            timeframe: "18-24 months ongoing conflict expected",
+            probability: 92,
+            probabilityExplanation: "Based on current military engagement levels, political positions, and lack of substantive peace negotiations"
           },
           {
             name: "Middle East Tensions", 
             region: "Middle East",
             escalationRisk: 72,
-            defenseImpact: "Moderate - affecting regional defense procurement",
-            keyDevelopments: ["Naval asset positioning", "Intelligence sharing agreements", "Regional security partnerships"]
+            riskExplanation: "Moderate-high risk from regional proxy conflicts, naval confrontations, and arms competition. Assessment includes missile capabilities, alliance structures, and resource competition factors.",
+            defenseImpact: "Moderate - affecting regional defense procurement and security partnerships",
+            keyDevelopments: ["Naval asset positioning", "Intelligence sharing agreements", "Regional security partnerships"],
+            timeframe: "6-12 months heightened tensions",
+            probability: 78,
+            probabilityExplanation: "Regional tensions remain elevated with multiple flashpoints, but diplomatic channels still active"
           },
           {
             name: "Indo-Pacific Security",
             region: "Asia-Pacific", 
             escalationRisk: 65,
+            riskExplanation: "Growing tensions from territorial disputes, military buildups, and strategic competition. Risk factors include naval exercises, technology transfer restrictions, and alliance strengthening activities.",
             defenseImpact: "Growing - increased defense cooperation and technology sharing",
-            keyDevelopments: ["Joint military exercises", "Defense technology partnerships", "Maritime security initiatives"]
+            keyDevelopments: ["Joint military exercises", "Defense technology partnerships", "Maritime security initiatives"],
+            timeframe: "2-3 years strategic competition intensification",
+            probability: 71,
+            probabilityExplanation: "Long-term strategic competition with periodic tension spikes, but economic interdependence provides stability"
+          },
+          {
+            name: "Sahel Region Instability",
+            region: "West Africa",
+            escalationRisk: 59,
+            riskExplanation: "Insurgency activities, political instability, and foreign military presence creating regional security challenges. Assessment includes terrorist group capabilities and regional government stability.",
+            defenseImpact: "Regional - affecting security assistance and peacekeeping operations",
+            keyDevelopments: ["Counterterrorism operations", "Regional force coordination", "Security assistance programs"],
+            timeframe: "12-18 months ongoing operations",
+            probability: 84,
+            probabilityExplanation: "Ongoing insurgency with established patterns, limited short-term resolution prospects"
+          },
+          {
+            name: "Cyber Domain Conflicts",
+            region: "Global",
+            escalationRisk: 81,
+            riskExplanation: "Increasing frequency and sophistication of state-sponsored cyber operations targeting critical infrastructure. Risk assessment includes attack patterns, attribution capabilities, and defensive postures.",
+            defenseImpact: "High - driving cyber defense investments and information warfare capabilities",
+            keyDevelopments: ["Critical infrastructure attacks", "Attribution technologies", "Cyber defense cooperation"],
+            timeframe: "Continuous threat environment",
+            probability: 95,
+            probabilityExplanation: "Cyber operations are ongoing daily with confirmed state and non-state actor involvement"
+          },
+          {
+            name: "Arctic Militarization",
+            region: "Arctic",
+            escalationRisk: 54,
+            riskExplanation: "Military presence expansion due to climate change opening new routes and resource access. Risk factors include territorial claims, military base construction, and resource competition.",
+            defenseImpact: "Emerging - new defense requirements for extreme environments",
+            keyDevelopments: ["Military base construction", "Icebreaker capabilities", "Arctic surveillance systems"],
+            timeframe: "5-10 years gradual buildup",
+            probability: 68,
+            probabilityExplanation: "Gradual militarization driven by climate change and resource access, but limited immediate flashpoints"
           }
         ],
         emergingThreats: ["Cyber warfare escalation", "Space domain militarization", "AI-powered defense systems", "Hypersonic weapons development"],
@@ -288,21 +333,33 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
             severity: "High",
             regions: ["Asia", "Europe", "North America"],
             riskLevel: 75,
-            preparedness: "Moderate - vaccine development ongoing and surveillance enhanced"
+            riskExplanation: "High pathogenicity strain with documented human infections. Risk assessment includes mutation potential, transmission patterns, and pandemic preparedness gaps. Current strain shows concerning mammalian adaptation.",
+            preparedness: "Moderate - vaccine development ongoing and surveillance enhanced",
+            preparednessDetails: "mRNA vaccine platforms being adapted, stockpiling antiviral medications, enhanced surveillance in poultry and wild birds, pre-pandemic planning activated",
+            timeframe: "6-18 months elevated risk period",
+            impactPotential: "Severe - potential for pandemic if human-to-human transmission develops"
           },
           {
             name: "Antibiotic Resistance",
             severity: "High",
             regions: ["Global"],
             riskLevel: 82,
-            preparedness: "Limited - new antibiotic development insufficient"
+            riskExplanation: "Multi-drug resistant organisms spreading globally. Risk factors include overuse in healthcare and agriculture, limited new drug development, and increasing resistance rates to last-resort antibiotics.",
+            preparedness: "Limited - new antibiotic development insufficient",
+            preparednessDetails: "Alternative therapies under development, stewardship programs expanding, diagnostic improvements, but pipeline remains inadequate for emerging resistance patterns",
+            timeframe: "Immediate and long-term threat",
+            impactPotential: "Critical - return to pre-antibiotic era mortality rates for common infections"
           },
           {
             name: "Climate-Related Health Impacts",
             severity: "Medium",
             regions: ["Sub-Saharan Africa", "South Asia", "Small Island States"],
             riskLevel: 68,
-            preparedness: "Developing - adaptation strategies being implemented"
+            riskExplanation: "Rising temperatures expanding disease vectors, extreme weather events disrupting health systems, food and water security impacts. Assessment includes heat exposure, vector-borne disease expansion, and health system resilience.",
+            preparedness: "Developing - adaptation strategies being implemented",
+            preparednessDetails: "Climate-resilient health infrastructure development, early warning systems, vector control programs, heat response plans, but resource gaps remain significant",
+            timeframe: "Accelerating over next decade",
+            impactPotential: "Moderate to severe - disproportionate impact on vulnerable populations"
           }
         ],
         pandemicRisk: "Medium - multiple respiratory viruses circulating with enhanced surveillance",
@@ -367,8 +424,39 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
         },
         contractActivity: {
           totalValue: 94.7,
-          majorContracts: ["F-35 sustainment programs", "Navy Next Generation Frigate", "Space Force satellite constellation", "Army tactical vehicle modernization"],
-          trend: "increasing"
+          totalValueExplanation: "$94.7 billion in major defense contracts awarded in Q4 2024, representing 12% increase from previous quarter driven by geopolitical tensions and modernization priorities.",
+          majorContracts: [
+            {
+              name: "F-35 sustainment programs",
+              value: "$18.2 billion",
+              explanation: "Multi-year sustainment contract for F-35 fleet including parts, maintenance, and upgrades. Covers 600+ aircraft across US and allied nations with performance-based logistics.",
+              contractor: "Lockheed Martin",
+              timeframe: "2024-2029"
+            },
+            {
+              name: "Navy Next Generation Frigate",
+              value: "$12.8 billion",
+              explanation: "Construction of 10 Constellation-class frigates with advanced radar, weapons systems, and multi-mission capabilities for distributed maritime operations.",
+              contractor: "Fincantieri Marinette Marine",
+              timeframe: "2024-2030"
+            },
+            {
+              name: "Space Force satellite constellation",
+              value: "$15.3 billion",
+              explanation: "Next-generation missile warning satellites with enhanced detection capabilities, including infrared sensors and space-based tracking systems.",
+              contractor: "L3Harris Technologies",
+              timeframe: "2024-2028"
+            },
+            {
+              name: "Army tactical vehicle modernization",
+              value: "$8.9 billion",
+              explanation: "Joint Light Tactical Vehicle (JLTV) production and upgrades including armor protection, communications systems, and electric drive variants.",
+              contractor: "Oshkosh Defense",
+              timeframe: "2024-2027"
+            }
+          ],
+          trend: "increasing",
+          trendExplanation: "Contract values increasing due to inflation, technology complexity, and urgent modernization needs driven by peer competitor threats and aging equipment replacement cycles."
         },
         threatLevel: "elevated",
         technologyFocus: ["AI integration and autonomous systems", "Hypersonic weapons development", "Cyber defense and space capabilities", "Quantum communication systems"],
@@ -383,8 +471,27 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
         },
         pharmaceuticalPipeline: {
           newDrugs: 42,
+          newDrugsExplanation: "FDA approved 42 new molecular entities in 2024, representing continued innovation despite economic pressures. This includes 18 oncology drugs, 8 rare disease treatments, 6 neurological therapies, and 10 other therapeutic areas.",
           approvalRate: 87,
-          majorAreas: ["Oncology and immunotherapy", "Neurological disorders and Alzheimer's", "Rare diseases and gene therapy", "Infectious diseases and vaccines"]
+          approvalRateExplanation: "87% of Phase III trials reaching FDA review received approval, indicating improved drug development success rates due to better target validation, biomarker-driven trials, and regulatory science advances.",
+          majorAreas: [
+            {
+              area: "Oncology and immunotherapy",
+              details: "18 new cancer treatments including CAR-T therapies, antibody-drug conjugates, and immune checkpoint inhibitors. Focus on precision medicine and combination therapies."
+            },
+            {
+              area: "Neurological disorders and Alzheimer's",
+              details: "6 new neurological treatments including next-generation Alzheimer's drugs, epilepsy therapies, and neuroprotective agents. Emphasis on early intervention strategies."
+            },
+            {
+              area: "Rare diseases and gene therapy",
+              details: "8 rare disease treatments including gene therapies, enzyme replacement therapies, and antisense oligonucleotides. Breakthrough designations accelerating development."
+            },
+            {
+              area: "Infectious diseases and vaccines",
+              details: "5 new infectious disease treatments and 5 next-generation vaccines. mRNA platform expansion beyond COVID-19 to flu, RSV, and other targets."
+            }
+          ]
         },
         healthSystemCapacity: "moderate strain with regional variations",
         emergingDiseases: 15,
