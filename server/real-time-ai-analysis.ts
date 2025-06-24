@@ -245,7 +245,7 @@ export class RealTimeAIAnalysis {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'llama-3.1-sonar-small-128k-online',
+            model: 'llama-3.1-sonar-large-128k-online',
             messages: [
               {
                 role: 'system',
@@ -287,10 +287,12 @@ export class RealTimeAIAnalysis {
                 }`
               }
             ],
-            temperature: 0.2,
+            temperature: 0.1,
             search_recency_filter: "day",
             return_related_questions: false,
-            return_images: false
+            return_images: false,
+            search_domain_filter: ["reuters.com", "bbc.com", "cnn.com", "ap.org", "bloomberg.com", "wsj.com", "ft.com", "aljazeera.com", "timesofisrael.com", "haaretz.com", "jpost.com", "defenseone.com", "defensenews.com"],
+            top_k: 10
           })
         });
 
