@@ -1205,10 +1205,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/ai-analysis/economics/:sector", async (req, res) => {
+    try {
+      const sector = req.params.sector || 'defense';
+      console.log(`📊 Generating real-time economic indicators for ${sector}`);
+      const indicators = await realTimeAIAnalysis.generateEconomicIndicators(sector);
+      res.json(indicators);
+    } catch (error) {
+      console.error("Error generating economic indicators:", error);
+      res.status(500).json({ error: "Failed to generate economic indicators" });
+    }
+  });
+
+  // Backward compatibility for general economics endpoint
   app.get("/api/ai-analysis/economics", async (req, res) => {
     try {
-      console.log("📊 Generating real-time economic indicators");
-      const indicators = await realTimeAIAnalysis.generateEconomicIndicators();
+      console.log("📊 Generating real-time economic indicators (general)");
+      const indicators = await realTimeAIAnalysis.generateEconomicIndicators('defense');
       res.json(indicators);
     } catch (error) {
       console.error("Error generating economic indicators:", error);

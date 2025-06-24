@@ -279,11 +279,11 @@ function MarketAnalysisTab({ sector }: { sector: string }) {
   );
 }
 
-function EconomicIndicatorsTab() {
+function EconomicIndicatorsTab({ sector }: { sector: string }) {
   const { data: indicators, isLoading, error } = useQuery<EconomicIndicators>({
-    queryKey: ['/api/ai-analysis/economics'],
+    queryKey: ['/api/ai-analysis/economics', sector],
     queryFn: async () => {
-      const response = await fetch('/api/ai-analysis/economics');
+      const response = await fetch(`/api/ai-analysis/economics/${sector}`);
       if (!response.ok) throw new Error('Failed to fetch economic indicators');
       return response.json();
     },
@@ -481,7 +481,7 @@ export default function RealTimeAIAnalysis() {
           </TabsContent>
           
           <TabsContent value="economics" className="space-y-4">
-            <EconomicIndicatorsTab />
+            <EconomicIndicatorsTab sector={selectedSector} />
           </TabsContent>
         </Tabs>
         

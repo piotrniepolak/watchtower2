@@ -248,15 +248,23 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
     }
   }
 
-  async generateEconomicIndicators(): Promise<EconomicIndicators | null> {
-    const cacheKey = 'economic_indicators';
+  async generateEconomicIndicators(sector: string = 'defense'): Promise<EconomicIndicators | null> {
+    const cacheKey = `economic_indicators_${sector}`;
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
     // Skip sample data - use real API
 
     try {
-      const prompt = `Return ONLY valid JSON with no explanatory text. Analyze current economic indicators and provide data in this exact JSON format:
+      const sectorFocus = {
+        defense: 'defense spending, military contracts, and geopolitical impact on economy',
+        health: 'healthcare costs, pharmaceutical pricing, and medical sector economic impact',
+        energy: 'energy prices, oil/gas markets, and renewable energy economic trends'
+      };
+
+      const focus = sectorFocus[sector as keyof typeof sectorFocus] || sectorFocus.defense;
+
+      const prompt = `Return ONLY valid JSON with no explanatory text. Analyze current economic indicators with focus on ${focus} and provide data in this exact JSON format:
 
 {
   "inflationTrend": "stable",
@@ -270,7 +278,7 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
   "currencyStrength": "strong"
 }
 
-Use latest economic data from the last 24-48 hours. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`;
+Focus on how ${sector} sector economic factors influence broader indicators. Use latest data from the last 24-48 hours. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`;
 
       const systemMessage = `You are a senior economist with access to real-time economic data from official government and financial institutions. Provide accurate, current economic indicators based on the latest available data from credible sources like the Federal Reserve, Bureau of Labor Statistics, and major financial data providers.`;
 
