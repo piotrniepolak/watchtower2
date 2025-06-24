@@ -192,6 +192,13 @@ function SectorAnalysisTab({ sector }: { sector: string }) {
                     <p className="text-sm text-slate-700">{conflict.defenseImpact}</p>
                   </div>
 
+                  {conflict.lastUpdate && (
+                    <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
+                      <h6 className="text-sm font-medium text-green-800 mb-1">Latest Developments (48 Hours)</h6>
+                      <p className="text-sm text-green-700">{conflict.lastUpdate}</p>
+                    </div>
+                  )}
+
                   <div className="bg-amber-50 p-3 rounded border-l-4 border-amber-400">
                     <h6 className="text-sm font-medium text-amber-800 mb-1">Risk Assessment Explanation</h6>
                     <p className="text-sm text-amber-700">{conflict.riskExplanation}</p>
@@ -215,62 +222,33 @@ function SectorAnalysisTab({ sector }: { sector: string }) {
             );
           })()
         ) : (
-          // Show all conflicts when none selected
-          analysis.conflicts.map((conflict: any, index: number) => (
-            <div key={index} className="border rounded-lg p-4 bg-white">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4 text-slate-500" />
-                  <h4 className="font-semibold text-slate-900">{conflict.name}</h4>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant={conflict.escalationRisk > 75 ? 'destructive' : conflict.escalationRisk > 50 ? 'secondary' : 'default'}>
-                    {conflict.escalationRisk}% Risk
-                  </Badge>
-                  <Badge variant="outline">
-                    {conflict.probability}% Probability
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="bg-slate-50 p-3 rounded">
-                  <p className="text-sm text-slate-600 mb-1"><strong>📍 Region:</strong> {conflict.region}</p>
-                  <p className="text-sm text-slate-600 mb-1"><strong>⏱️ Timeframe:</strong> {conflict.timeframe}</p>
-                  <p className="text-sm text-slate-700">{conflict.defenseImpact}</p>
-                </div>
-
-                <div className="bg-amber-50 p-3 rounded border-l-4 border-amber-400">
-                  <h6 className="text-sm font-medium text-amber-800 mb-1">Risk Assessment Explanation</h6>
-                  <p className="text-sm text-amber-700">{conflict.riskExplanation}</p>
-                </div>
-
-                <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
-                  <h6 className="text-sm font-medium text-blue-800 mb-1">Probability Analysis</h6>
-                  <p className="text-sm text-blue-700">{conflict.probabilityExplanation}</p>
-                </div>
-
-                <div>
-                  <h6 className="text-sm font-medium text-slate-900 mb-2">Key Developments</h6>
-                  <div className="flex flex-wrap gap-1">
-                    {conflict.keyDevelopments?.map((dev: string, idx: number) => (
-                      <Badge key={idx} variant="outline" className="text-xs">{dev}</Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
+          // Show message when no conflict selected
+          <div className="bg-slate-50 border rounded-lg p-8 text-center">
+            <Globe className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+            <h4 className="font-medium text-slate-900 mb-2">Select a Conflict for Detailed Analysis</h4>
+            <p className="text-sm text-slate-600">
+              Choose a conflict from the dropdown above to view real-time intelligence, risk assessments, and latest developments.
+            </p>
+          </div>
         )}
         
-        <div className="bg-slate-50 rounded-lg p-4">
-          <h5 className="font-medium mb-2">Emerging Threats</h5>
-          <div className="flex flex-wrap gap-2">
-            {analysis.emergingThreats?.map((threat: string, idx: number) => (
-              <Badge key={idx} variant="secondary">{threat}</Badge>
-            ))}
+        {analysis.emergingThreats && (
+          <div className="bg-slate-50 rounded-lg p-4">
+            <h5 className="font-medium mb-2">Emerging Threats</h5>
+            <div className="flex flex-wrap gap-2">
+              {analysis.emergingThreats?.map((threat: string, idx: number) => (
+                <Badge key={idx} variant="secondary">{threat}</Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {analysis.globalTensions && (
+          <div className="bg-blue-50 border rounded-lg p-4 border-l-4 border-blue-400">
+            <h5 className="font-medium text-blue-900 mb-2">Global Security Assessment</h5>
+            <p className="text-sm text-blue-800">{analysis.globalTensions}</p>
+          </div>
+        )}
       </div>
     );
   }
