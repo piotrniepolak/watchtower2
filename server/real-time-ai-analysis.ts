@@ -181,8 +181,6 @@ Focus on Ukraine-Russia, Middle East tensions, and Taiwan Strait. Return ONLY th
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
-    // Skip sample data - use real API
-
     try {
       const sectorMap = {
         defense: 'defense and aerospace companies (LMT, RTX, NOC, GD, BA)',
@@ -312,47 +310,8 @@ Focus on how ${sector} sector economic factors influence broader indicators. Use
         try {
           rawIndicators = JSON.parse(cleanedResponse);
         } catch (parseError) {
-          console.log(`JSON parse failed for ${sector}, using sector-specific fallback data`);
-          // If parsing fails, return sector-specific normalized data
-          const sectorFallbacks = {
-            defense: {
-              inflationTrend: "rising" as const,
-              gdpGrowth: 2.8,
-              unemploymentRate: 3.6,
-              interestRateDirection: "up" as const,
-              commodityPrices: {
-                oil: { price: 75.20, change: 1.5 },
-                gold: { price: 2040.50, change: 1.2 }
-              },
-              currencyStrength: "strong" as const
-            },
-            health: {
-              inflationTrend: "stable" as const,
-              gdpGrowth: 2.1,
-              unemploymentRate: 3.9,
-              interestRateDirection: "stable" as const,
-              commodityPrices: {
-                oil: { price: 72.80, change: -0.8 },
-                gold: { price: 2018.30, change: 0.3 }
-              },
-              currencyStrength: "stable" as const
-            },
-            energy: {
-              inflationTrend: "falling" as const,
-              gdpGrowth: 3.2,
-              unemploymentRate: 3.7,
-              interestRateDirection: "down" as const,
-              commodityPrices: {
-                oil: { price: 78.50, change: 2.1 },
-                gold: { price: 2010.80, change: -0.5 }
-              },
-              currencyStrength: "weak" as const
-            }
-          };
-          
-          const fallbackIndicators = sectorFallbacks[sector as keyof typeof sectorFallbacks] || sectorFallbacks.defense;
-          this.setCachedData(cacheKey, fallbackIndicators);
-          return fallbackIndicators;
+          console.error(`Failed to parse economic indicators for ${sector}:`, parseError);
+          throw new Error(`Failed to generate economic indicators for ${sector}`);
         }
         
         // Normalize the data structure to ensure compatibility
