@@ -283,12 +283,15 @@ function EconomicIndicatorsTab({ sector }: { sector: string }) {
   const { data: indicators, isLoading, error } = useQuery<EconomicIndicators>({
     queryKey: ['/api/ai-analysis/economics', sector],
     queryFn: async () => {
+      console.log(`Fetching economic indicators for sector: ${sector}`);
       const response = await fetch(`/api/ai-analysis/economics/${sector}`);
       if (!response.ok) throw new Error('Failed to fetch economic indicators');
-      return response.json();
+      const data = await response.json();
+      console.log(`Economic indicators for ${sector}:`, data);
+      return data;
     },
     refetchInterval: 10 * 60 * 1000, // Refresh every 10 minutes
-    staleTime: 8 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // Reduce stale time to see changes faster
   });
 
   if (isLoading) {
