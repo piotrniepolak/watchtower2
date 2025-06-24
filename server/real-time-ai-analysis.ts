@@ -253,7 +253,7 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
 
     try {
       const analysisPrompts = {
-        defense: `Analyze current global military conflicts and defense threats. Return ONLY valid JSON in this format:
+        defense: `Analyze current global military conflicts and defense threats. Based on recent intelligence from the last 24-48 hours, provide a comprehensive analysis of active conflicts and their impact on defense markets. Return ONLY valid JSON in this exact format:
 {
   "conflicts": [
     {
@@ -303,14 +303,17 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
       const prompt = analysisPrompts[sector as keyof typeof analysisPrompts];
       if (!prompt) throw new Error(`Unknown sector: ${sector}`);
 
-      const response = await this.callPerplexityAPI(`${prompt}
-
-Use latest intelligence from the last 24-48 hours. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`);
+      const response = await this.callPerplexityAPI(prompt);
 
       let cleanedResponse = response.trim();
       const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonBlockMatch) {
         cleanedResponse = jsonBlockMatch[1].trim();
+      } else {
+        const jsonMatch = cleanedResponse.match(/(\{[\s\S]*\})/);
+        if (jsonMatch) {
+          cleanedResponse = jsonMatch[0];
+        }
       }
       
       cleanedResponse = this.cleanJsonResponse(cleanedResponse);
@@ -397,14 +400,17 @@ Use latest intelligence from the last 24-48 hours. Return ONLY the JSON object w
       const prompt = indicatorPrompts[sector as keyof typeof indicatorPrompts];
       if (!prompt) throw new Error(`Unknown sector: ${sector}`);
 
-      const response = await this.callPerplexityAPI(`${prompt}
-
-Use latest market data and reports from the last 24-48 hours. Include specific numerical values and percentages. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`);
+      const response = await this.callPerplexityAPI(prompt);
 
       let cleanedResponse = response.trim();
       const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonBlockMatch) {
         cleanedResponse = jsonBlockMatch[1].trim();
+      } else {
+        const jsonMatch = cleanedResponse.match(/(\{[\s\S]*\})/);
+        if (jsonMatch) {
+          cleanedResponse = jsonMatch[0];
+        }
       }
       
       cleanedResponse = this.cleanJsonResponse(cleanedResponse);

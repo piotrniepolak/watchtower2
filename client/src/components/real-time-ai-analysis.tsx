@@ -63,128 +63,55 @@ interface EconomicIndicators {
   currencyStrength: 'strong' | 'weak' | 'stable';
 }
 
-const sectorOptions = [
-  { value: 'defense', label: 'ConflictWatch', icon: Shield },
-  { value: 'health', label: 'PharmaWatch', icon: Pill },
-  { value: 'energy', label: 'EnergyWatch', icon: Zap }
-];
-
-function ConflictPredictions() {
-  const { data: conflicts, isLoading, error } = useQuery<ConflictPrediction[]>({
-    queryKey: ['/api/ai-analysis/conflicts'],
-    queryFn: async () => {
-      const response = await fetch('/api/ai-analysis/conflicts');
-      if (!response.ok) throw new Error('Failed to fetch conflict predictions');
-      return response.json();
-    },
-    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
-    staleTime: 4 * 60 * 1000, // Consider stale after 4 minutes
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-32">
-        <div className="flex items-center space-x-2">
-          <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
-          <span className="text-sm text-slate-600">Analyzing global conflicts...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !conflicts || conflicts.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-        <p className="text-sm text-slate-500">Unable to load conflict predictions</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {conflicts.slice(0, 3).map((conflict, index) => (
-        <div key={index} className="border rounded-lg p-4 bg-white">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <Globe className="h-4 w-4 text-slate-500" />
-              <h4 className="font-semibold text-slate-900">{conflict.conflictName}</h4>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge 
-                variant={conflict.scenario === 'escalation' ? 'destructive' : 
-                        conflict.scenario === 'resolution' ? 'default' : 'secondary'}
-              >
-                {conflict.scenario}
-              </Badge>
-              <Badge 
-                variant={conflict.riskLevel === 'critical' ? 'destructive' :
-                        conflict.riskLevel === 'high' ? 'destructive' : 'secondary'}
-              >
-                {conflict.riskLevel} risk
-              </Badge>
-            </div>
-          </div>
-          
-          <div className="flex items-center mb-3">
-            <Progress value={conflict.probability} className="flex-1 mr-3" />
-            <span className="text-sm font-medium text-slate-900">{conflict.probability}%</span>
-          </div>
-          
-          <p className="text-sm text-slate-600 mb-3">{conflict.narrative}</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div>
-              <span className="font-medium text-slate-700">Timeframe:</span>
-              <p className="text-slate-600">{conflict.timeframe}</p>
-            </div>
-            <div>
-              <span className="font-medium text-slate-700">Market Impact:</span>
-              <div className="flex items-center space-x-1">
-                {conflict.marketImpact === 'positive' ? 
-                  <TrendingUp className="h-3 w-3 text-green-600" /> :
-                  conflict.marketImpact === 'negative' ?
-                  <TrendingDown className="h-3 w-3 text-red-600" /> :
-                  <BarChart3 className="h-3 w-3 text-slate-500" />
-                }
-                <span className={`capitalize ${
-                  conflict.marketImpact === 'positive' ? 'text-green-600' :
-                  conflict.marketImpact === 'negative' ? 'text-red-600' : 'text-slate-600'
-                }`}>
-                  {conflict.marketImpact}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          {conflict.affectedSectors.length > 0 && (
-            <div className="mt-3 pt-3 border-t">
-              <span className="text-xs font-medium text-slate-700">Affected Sectors: </span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {conflict.affectedSectors.map((sector, idx) => (
-                  <Badge key={idx} variant="outline" className="text-xs">
-                    {sector}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+// Helper functions for sector-specific tabs
+function getDefaultTab(sector: string): string {
+  return getTabKey(sector, 'analysis');
 }
 
-function MarketAnalysisTab({ sector }: { sector: string }) {
-  const { data: analysis, isLoading, error } = useQuery<MarketAnalysis>({
-    queryKey: ['/api/ai-analysis/market', sector],
+function getTabKey(sector: string, type: 'analysis' | 'indicators'): string {
+  if (type === 'analysis') {
+    switch (sector) {
+      case 'defense': return 'conflicts';
+      case 'health': return 'threats';
+      case 'energy': return 'disruptions';
+      default: return 'conflicts';
+    }
+  } else {
+    return 'indicators';
+  }
+}
+
+function getAnalysisTabName(sector: string): string {
+  switch (sector) {
+    case 'defense': return 'Conflict Predictions';
+    case 'health': return 'Health Threats';
+    case 'energy': return 'Supply Disruptions';
+    default: return 'Conflict Predictions';
+  }
+}
+
+function getIndicatorsTabName(sector: string): string {
+  switch (sector) {
+    case 'defense': return 'Defense Metrics';
+    case 'health': return 'Health Indicators';
+    case 'energy': return 'Energy Outlook';
+    default: return 'Defense Metrics';
+  }
+}
+
+function SectorAnalysisTab({ sector }: { sector: string }) {
+  const { data: analysis, isLoading, error } = useQuery<any>({
+    queryKey: ['/api/ai-analysis/sector-analysis', sector],
     queryFn: async () => {
-      const response = await fetch(`/api/ai-analysis/market/${sector}`);
-      if (!response.ok) throw new Error('Failed to fetch market analysis');
-      return response.json();
+      console.log(`Fetching sector analysis for: ${sector}`);
+      const response = await fetch(`/api/ai-analysis/sector-analysis/${sector}`);
+      if (!response.ok) throw new Error(`Failed to fetch ${sector} analysis`);
+      const data = await response.json();
+      console.log(`Sector analysis for ${sector}:`, data);
+      return data;
     },
-    refetchInterval: 5 * 60 * 1000,
-    staleTime: 4 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -192,7 +119,7 @@ function MarketAnalysisTab({ sector }: { sector: string }) {
       <div className="flex items-center justify-center h-32">
         <div className="flex items-center space-x-2">
           <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
-          <span className="text-sm text-slate-600">Analyzing market conditions...</span>
+          <span className="text-sm text-slate-600">Analyzing {sector} sector...</span>
         </div>
       </div>
     );
@@ -201,7 +128,133 @@ function MarketAnalysisTab({ sector }: { sector: string }) {
   if (error || !analysis) {
     return (
       <div className="text-center py-8">
-        <BarChart3 className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+        <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+        <p className="text-sm text-slate-500">Unable to load {sector} analysis</p>
+      </div>
+    );
+  }
+
+  // Render different content based on sector
+  if (sector === 'defense' && analysis.conflicts) {
+    return (
+      <div className="space-y-4">
+        {analysis.conflicts.map((conflict: any, index: number) => (
+          <div key={index} className="border rounded-lg p-4 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <Globe className="h-4 w-4 text-slate-500" />
+                <h4 className="font-semibold text-slate-900">{conflict.name}</h4>
+              </div>
+              <Badge variant={conflict.escalationRisk > 75 ? 'destructive' : conflict.escalationRisk > 50 ? 'secondary' : 'default'}>
+                {conflict.escalationRisk}% Risk
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600">📍 {conflict.region}</p>
+              <p className="text-sm text-slate-700">{conflict.defenseImpact}</p>
+              <div className="flex flex-wrap gap-1">
+                {conflict.keyDevelopments?.map((dev: string, idx: number) => (
+                  <Badge key={idx} variant="outline" className="text-xs">{dev}</Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+        <div className="bg-slate-50 rounded-lg p-4">
+          <h5 className="font-medium mb-2">Emerging Threats</h5>
+          <div className="flex flex-wrap gap-2">
+            {analysis.emergingThreats?.map((threat: string, idx: number) => (
+              <Badge key={idx} variant="secondary">{threat}</Badge>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sector === 'health' && analysis.healthThreats) {
+    return (
+      <div className="space-y-4">
+        {analysis.healthThreats.map((threat: any, index: number) => (
+          <div key={index} className="border rounded-lg p-4 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-slate-900">{threat.name}</h4>
+              <Badge variant={threat.severity === 'High' ? 'destructive' : threat.severity === 'Medium' ? 'secondary' : 'default'}>
+                {threat.severity}
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600">🌍 {threat.regions?.join(', ')}</p>
+              <p className="text-sm text-slate-700">{threat.preparedness}</p>
+              <div className="bg-red-50 p-2 rounded">
+                <span className="text-sm font-medium text-red-800">Risk Level: {threat.riskLevel}%</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (sector === 'energy' && analysis.supplyDisruptions) {
+    return (
+      <div className="space-y-4">
+        {analysis.supplyDisruptions.map((disruption: any, index: number) => (
+          <div key={index} className="border rounded-lg p-4 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-slate-900">{disruption.source}</h4>
+              <Badge variant={disruption.severity > 75 ? 'destructive' : 'secondary'}>
+                {disruption.severity}% Impact
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-700">{disruption.impact}</p>
+              <p className="text-sm text-slate-600">⏱️ Duration: {disruption.duration}</p>
+              <p className="text-sm text-slate-600">🌍 Affected: {disruption.affectedRegions?.join(', ')}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-center py-8">
+      <p className="text-sm text-slate-500">No analysis data available</p>
+    </div>
+  );
+}
+
+function MarketAnalysisTab({ sector }: { sector: string }) {
+  const { data: analysis, isLoading, error } = useQuery<MarketAnalysis>({
+    queryKey: ['/api/ai-analysis/market', sector],
+    queryFn: async () => {
+      console.log(`Fetching market analysis for sector: ${sector}`);
+      const response = await fetch(`/api/ai-analysis/market/${sector}`);
+      if (!response.ok) throw new Error('Failed to fetch market analysis');
+      const data = await response.json();
+      console.log(`Market analysis for ${sector}:`, data);
+      return data;
+    },
+    refetchInterval: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="flex items-center space-x-2">
+          <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
+          <span className="text-sm text-slate-600">Analyzing {sector} markets...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !analysis) {
+    return (
+      <div className="text-center py-8">
+        <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
         <p className="text-sm text-slate-500">Unable to load market analysis</p>
       </div>
     );
@@ -209,72 +262,48 @@ function MarketAnalysisTab({ sector }: { sector: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="text-center p-4 bg-white rounded-lg border">
-          <div className="text-2xl mb-2">
-            {analysis.overallSentiment === 'bullish' ? '📈' : 
-             analysis.overallSentiment === 'bearish' ? '📉' : '➡️'}
+      <div className="bg-white border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-semibold text-slate-900">Market Sentiment</h4>
+          <Badge variant={analysis.overallSentiment === 'bullish' ? 'default' : 
+                         analysis.overallSentiment === 'bearish' ? 'destructive' : 'secondary'}>
+            {analysis.overallSentiment}
+          </Badge>
+        </div>
+        <p className="text-sm text-slate-700 mb-3">{analysis.marketOutlook}</p>
+        
+        <div className="space-y-2">
+          <div>
+            <h5 className="text-xs font-medium text-slate-900 mb-1">Key Drivers:</h5>
+            <div className="flex flex-wrap gap-1">
+              {analysis.keyDrivers?.map((driver, idx) => (
+                <Badge key={idx} variant="outline" className="text-xs">{driver}</Badge>
+              ))}
+            </div>
           </div>
-          <div className="text-sm font-medium text-slate-900 capitalize">{analysis.overallSentiment}</div>
-          <div className="text-xs text-slate-600">Market Sentiment</div>
-        </div>
-        <div className="text-center p-4 bg-white rounded-lg border">
-          <div className="text-2xl font-bold text-slate-900 mb-1">{analysis.keyDrivers?.length || 0}</div>
-          <div className="text-sm font-medium text-slate-900">Key Drivers</div>
-          <div className="text-xs text-slate-600">Identified</div>
-        </div>
-        <div className="text-center p-4 bg-white rounded-lg border">
-          <div className="text-sm font-bold text-slate-900 mb-1">{analysis.timeHorizon}</div>
-          <div className="text-sm font-medium text-slate-900">Time Horizon</div>
-          <div className="text-xs text-slate-600">Analysis Period</div>
         </div>
       </div>
-      
-      <div className="bg-white rounded-lg border p-4">
-        <h5 className="font-medium text-slate-900 mb-2">Market Outlook</h5>
-        <p className="text-sm text-slate-600">{analysis.marketOutlook}</p>
-      </div>
-      
-      {analysis.topStocks && analysis.topStocks.length > 0 && (
-        <div className="bg-white rounded-lg border p-4">
-          <h5 className="font-medium text-slate-900 mb-3">Top Stock Recommendations</h5>
-          <div className="space-y-3">
-            {analysis.topStocks.slice(0, 3).map((stock, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded">
-                <div className="flex items-center space-x-3">
-                  <Badge 
-                    variant={stock.prediction === 'buy' ? 'default' :
-                            stock.prediction === 'sell' ? 'destructive' : 'secondary'}
-                  >
-                    {stock.symbol}
-                  </Badge>
-                  <div>
-                    <div className="text-sm font-medium text-slate-900 capitalize">{stock.prediction}</div>
-                    <div className="text-xs text-slate-600">{stock.confidence}% confidence</div>
-                  </div>
-                </div>
-                <div className="text-right max-w-xs">
-                  <p className="text-xs text-slate-600">{stock.reasoning}</p>
-                </div>
+
+      <div className="bg-white border rounded-lg p-4">
+        <h4 className="font-semibold text-slate-900 mb-3">Top Stock Recommendations</h4>
+        <div className="space-y-3">
+          {analysis.topStocks?.slice(0, 3).map((stock, index) => (
+            <div key={index} className="flex items-center justify-between p-2 bg-slate-50 rounded">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-slate-900">{stock.symbol}</span>
+                <Badge variant={stock.prediction === 'buy' ? 'default' : 
+                               stock.prediction === 'sell' ? 'destructive' : 'secondary'}>
+                  {stock.prediction}
+                </Badge>
               </div>
-            ))}
-          </div>
+              <div className="text-right">
+                <div className="text-sm font-medium">{stock.confidence}% confidence</div>
+                <div className="text-xs text-slate-600">{stock.reasoning}</div>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
-      
-      {analysis.keyDrivers && analysis.keyDrivers.length > 0 && (
-        <div className="bg-white rounded-lg border p-4">
-          <h5 className="font-medium text-slate-900 mb-2">Key Market Drivers</h5>
-          <ul className="space-y-1">
-            {analysis.keyDrivers.map((driver, index) => (
-              <li key={index} className="text-sm text-slate-600 flex items-start">
-                <div className="w-1 h-1 bg-indigo-500 rounded-full mt-2 mr-2 flex-shrink-0"></div>
-                {driver}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -299,7 +328,7 @@ function SectorIndicatorsTab({ sector }: { sector: string }) {
       <div className="flex items-center justify-center h-32">
         <div className="flex items-center space-x-2">
           <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
-          <span className="text-sm text-slate-600">Analyzing economic data...</span>
+          <span className="text-sm text-slate-600">Analyzing {sector} indicators...</span>
         </div>
       </div>
     );
@@ -308,98 +337,151 @@ function SectorIndicatorsTab({ sector }: { sector: string }) {
   if (error || !indicators) {
     return (
       <div className="text-center py-8">
-        <DollarSign className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-        <p className="text-sm text-slate-500">Unable to load economic indicators</p>
+        <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-2" />
+        <p className="text-sm text-slate-500">Unable to load {sector} indicators</p>
+      </div>
+    );
+  }
+
+  // Render different indicators based on sector
+  if (sector === 'defense' && indicators.globalDefenseSpending) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold text-slate-900 mb-3">Global Defense Spending</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Total ($B)</span>
+              <span className="text-sm font-medium">{indicators.globalDefenseSpending.total}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Growth</span>
+              <span className="text-sm font-medium text-green-600">+{indicators.globalDefenseSpending.growth}%</span>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold text-slate-900 mb-3">Contract Activity</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Total Value ($B)</span>
+              <span className="text-sm font-medium">{indicators.contractActivity?.totalValue}</span>
+            </div>
+            <Badge variant="default">{indicators.contractActivity?.trend}</Badge>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-4 md:col-span-2">
+          <h4 className="font-semibold text-slate-900 mb-3">Technology Focus</h4>
+          <div className="flex flex-wrap gap-2">
+            {indicators.technologyFocus?.map((tech: string, idx: number) => (
+              <Badge key={idx} variant="outline">{tech}</Badge>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sector === 'health' && indicators.globalHealthSpending) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold text-slate-900 mb-3">Global Health Spending</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">% of GDP</span>
+              <span className="text-sm font-medium">{indicators.globalHealthSpending.gdpPercentage}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Growth</span>
+              <span className="text-sm font-medium text-green-600">+{indicators.globalHealthSpending.growth}%</span>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold text-slate-900 mb-3">Drug Pipeline</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">New Drugs</span>
+              <span className="text-sm font-medium">{indicators.pharmaceuticalPipeline?.newDrugs}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Approval Rate</span>
+              <span className="text-sm font-medium">{indicators.pharmaceuticalPipeline?.approvalRate}%</span>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-4 md:col-span-2">
+          <h4 className="font-semibold text-slate-900 mb-3">Major Areas</h4>
+          <div className="flex flex-wrap gap-2">
+            {indicators.pharmaceuticalPipeline?.majorAreas?.map((area: string, idx: number) => (
+              <Badge key={idx} variant="outline">{area}</Badge>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sector === 'energy' && indicators.globalEnergyDemand) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold text-slate-900 mb-3">Energy Demand</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Total (EJ)</span>
+              <span className="text-sm font-medium">{indicators.globalEnergyDemand.total}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Renewable Share</span>
+              <span className="text-sm font-medium text-green-600">{indicators.globalEnergyDemand.renewableShare}%</span>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold text-slate-900 mb-3">Oil Markets</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-slate-600">Price ($/barrel)</span>
+              <span className="text-sm font-medium">${indicators.oilMarkets?.price}</span>
+            </div>
+            <Badge variant="destructive">{indicators.oilMarkets?.volatility} volatility</Badge>
+          </div>
+        </div>
+        <div className="bg-white border rounded-lg p-4 md:col-span-2">
+          <h4 className="font-semibold text-slate-900 mb-3">Renewable Capacity (GW)</h4>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center">
+              <div className="text-lg font-bold text-green-600">{indicators.renewableCapacity?.solar}</div>
+              <div className="text-xs text-slate-600">Solar</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-blue-600">{indicators.renewableCapacity?.wind}</div>
+              <div className="text-xs text-slate-600">Wind</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-slate-600">{indicators.renewableCapacity?.additions}</div>
+              <div className="text-xs text-slate-600">Total Additions</div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="bg-white rounded-lg border p-4">
-        <h5 className="font-medium text-slate-900 mb-3">Economic Trends</h5>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600">Inflation</span>
-            <Badge variant={indicators.inflationTrend === 'rising' ? 'destructive' : 'secondary'}>
-              {indicators.inflationTrend}
-            </Badge>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600">Interest Rates</span>
-            <Badge variant={indicators.interestRateDirection === 'up' ? 'destructive' : 'secondary'}>
-              {indicators.interestRateDirection}
-            </Badge>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600">USD Strength</span>
-            <Badge variant={indicators.currencyStrength === 'strong' ? 'default' : 'secondary'}>
-              {typeof indicators.currencyStrength === 'string' ? indicators.currencyStrength : 'stable'}
-            </Badge>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg border p-4">
-        <h5 className="font-medium text-slate-900 mb-3">Key Metrics</h5>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600">GDP Growth</span>
-            <span className="text-sm font-medium text-slate-900">
-              {typeof indicators.gdpGrowth === 'number' ? `${indicators.gdpGrowth}%` : '2.4%'}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600">Unemployment</span>
-            <span className="text-sm font-medium text-slate-900">
-              {typeof indicators.unemploymentRate === 'number' ? `${indicators.unemploymentRate}%` : '3.8%'}
-            </span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg border p-4">
-        <h5 className="font-medium text-slate-900 mb-3">Oil Prices</h5>
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900">
-            ${typeof indicators.commodityPrices?.oil?.price === 'number' ? indicators.commodityPrices.oil.price.toFixed(2) : '75.50'}
-          </span>
-          <div className="flex items-center space-x-1">
-            {(indicators.commodityPrices?.oil?.change || 0) >= 0 ? 
-              <TrendingUp className="h-4 w-4 text-green-600" /> :
-              <TrendingDown className="h-4 w-4 text-red-600" />
-            }
-            <span className={`text-sm font-medium ${
-              (indicators.commodityPrices?.oil?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {(indicators.commodityPrices?.oil?.change || 0) >= 0 ? '+' : ''}{(indicators.commodityPrices?.oil?.change || 0)}%
-            </span>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white rounded-lg border p-4">
-        <h5 className="font-medium text-slate-900 mb-3">Gold Prices</h5>
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-slate-900">
-            ${typeof indicators.commodityPrices?.gold?.price === 'number' ? indicators.commodityPrices.gold.price.toFixed(2) : '2025.30'}
-          </span>
-          <div className="flex items-center space-x-1">
-            {(indicators.commodityPrices?.gold?.change || 0) >= 0 ? 
-              <TrendingUp className="h-4 w-4 text-green-600" /> :
-              <TrendingDown className="h-4 w-4 text-red-600" />
-            }
-            <span className={`text-sm font-medium ${
-              (indicators.commodityPrices?.gold?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {(indicators.commodityPrices?.gold?.change || 0) >= 0 ? '+' : ''}{(indicators.commodityPrices?.gold?.change || 0)}%
-            </span>
-          </div>
-        </div>
-      </div>
+    <div className="text-center py-8">
+      <p className="text-sm text-slate-500">No indicators data available</p>
     </div>
   );
 }
+
+const sectorOptions = [
+  { value: 'defense', label: 'ConflictWatch', icon: Shield },
+  { value: 'health', label: 'PharmaWatch', icon: Pill },
+  { value: 'energy', label: 'EnergyWatch', icon: Zap }
+];
 
 export default function RealTimeAIAnalysis() {
   const [selectedSector, setSelectedSector] = useState('defense');
@@ -459,32 +541,32 @@ export default function RealTimeAIAnalysis() {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="conflicts" className="w-full">
+        <Tabs defaultValue={getDefaultTab(selectedSector)} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="conflicts" className="flex items-center space-x-2">
+            <TabsTrigger value={getTabKey(selectedSector, 'analysis')} className="flex items-center space-x-2">
               <Target className="h-4 w-4" />
-              <span>Conflict Predictions</span>
+              <span>{getAnalysisTabName(selectedSector)}</span>
             </TabsTrigger>
             <TabsTrigger value="markets" className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4" />
               <span>Market Analysis</span>
             </TabsTrigger>
-            <TabsTrigger value="economics" className="flex items-center space-x-2">
+            <TabsTrigger value="indicators" className="flex items-center space-x-2">
               <DollarSign className="h-4 w-4" />
-              <span>Economic Indicators</span>
+              <span>{getIndicatorsTabName(selectedSector)}</span>
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="conflicts" className="space-y-4">
-            <ConflictPredictions />
+          <TabsContent value={getTabKey(selectedSector, 'analysis')} className="space-y-4">
+            <SectorAnalysisTab sector={selectedSector} />
           </TabsContent>
           
           <TabsContent value="markets" className="space-y-4">
             <MarketAnalysisTab sector={selectedSector} />
           </TabsContent>
           
-          <TabsContent value="economics" className="space-y-4">
-            <EconomicIndicatorsTab sector={selectedSector} />
+          <TabsContent value="indicators" className="space-y-4">
+            <SectorIndicatorsTab sector={selectedSector} />
           </TabsContent>
         </Tabs>
         
