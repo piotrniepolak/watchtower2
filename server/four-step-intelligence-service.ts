@@ -163,48 +163,32 @@ export class FourStepIntelligenceService {
       year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    console.log(`🔧 Starting guaranteed source coverage for ${sector} sector with ${sources.length} sources...`);
+    console.log(`🔧 Starting optimized extraction for ${sector} sector with ${sources.length} sources...`);
     
     const allArticles: ExtractedArticle[] = [];
     const sourceUtilization = new Map<string, number>();
-    const missingSources: string[] = [];
     
-    // Phase 1: Individual source extraction (1 source per call)
-    console.log(`📰 Phase 1: Individual source extraction for maximum coverage`);
-    for (let i = 0; i < sources.length; i++) {
-      const source = sources[i];
-      console.log(`🔧 Processing source ${i + 1}/${sources.length}: ${source}`);
-      
-      const sourceArticles = await this.extractFromSingleSource(source, sector, today, yesterday);
-      
-      if (sourceArticles.length > 0) {
-        sourceUtilization.set(source, sourceArticles.length);
-        allArticles.push(...sourceArticles);
-        console.log(`✅ ${source}: Extracted ${sourceArticles.length} articles`);
-      } else {
-        missingSources.push(source);
-        console.log(`⚠️ ${source}: No articles found`);
-      }
-      
-      // Delay between individual source calls
-      if (i < sources.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      }
-    }
+    // Split into 2 phases: Core sources (first 10) and Extended sources (remaining 10)
+    const coreSources = sources.slice(0, 10);
+    const extendedSources = sources.slice(10);
     
-    // Phase 2: Ensure minimum content from unused sources
-    if (missingSources.length > 0) {
-      console.log(`📰 Phase 2: Ensuring content from ${missingSources.length} unused sources`);
-      const syntheticArticles = await this.ensureSourceCoverage(missingSources, sector, today);
-      allArticles.push(...syntheticArticles);
-      
-      syntheticArticles.forEach(article => {
-        const count = sourceUtilization.get(article.source) || 0;
-        sourceUtilization.set(article.source, count + 1);
-      });
-    }
+    console.log(`🔧 Phase 1: Core sources (${coreSources.length}), Phase 2: Extended sources (${extendedSources.length})`);
 
-    console.log(`🔧 Comprehensive extraction complete: ${allArticles.length} total articles from ${sources.length} sources`);
+    // Phase 1: Extract from core sources (most important industry publications)
+    const phase1Results = await this.extractFromSourceBatch(coreSources, sector, today, yesterday, "Core");
+    allArticles.push(...phase1Results.articles);
+    phase1Results.utilization.forEach((count, source) => {
+      sourceUtilization.set(source, count);
+    });
+
+    // Phase 2: Extract from extended sources (general news and supplementary sources)
+    const phase2Results = await this.extractFromSourceBatch(extendedSources, sector, today, yesterday, "Extended");
+    allArticles.push(...phase2Results.articles);
+    phase2Results.utilization.forEach((count, source) => {
+      sourceUtilization.set(source, count);
+    });
+
+    console.log(`🔧 Optimized extraction complete: ${allArticles.length} total articles from ${sources.length} sources`);
     
     // Log source utilization analysis
     console.log(`📊 Source Utilization Analysis:`);
@@ -415,25 +399,32 @@ export class FourStepIntelligenceService {
     return `https://www.${cleanSource}.com`;
   }
 
-  private async extractFromSingleSource(
-    source: string, 
+  private async extractFromSourceBatch(
+    sources: string[], 
     sector: string, 
     today: string, 
-    yesterday: string
-  ): Promise<ExtractedArticle[]> {
-    const prompt = `Find ALL recent ${sector} articles from ${source} published in the last 48 hours.
+    yesterday: string,
+    phaseName: string
+  ): Promise<{ articles: ExtractedArticle[], utilization: Map<string, number> }> {
+    console.log(`📰 ${phaseName} Phase: Processing ${sources.length} sources in single call`);
+    
+    const prompt = `Extract ALL recent ${sector} articles published in the last 48 hours from these SPECIFIC sources:
+${sources.map(source => `- ${source}`).join('\n')}
 
-Search ${source} specifically for articles about: industry deals, policy changes, contracts, market developments, mergers, acquisitions, regulatory updates, earnings, and breaking news in ${sector}.
-
-Format EACH article found as:
+Find MULTIPLE articles from EACH source (aim for 3-4 articles per source). For EVERY article found, format as:
 ### ARTICLE [number]:
-- **Title:** [exact headline]
-- **Source:** ${source}
+- **Title:** [exact headline]  
+- **Source:** [exact source name from list above]
 - **Date:** ${today} or ${yesterday}
 - **URL:** [full article URL if available]
-- **Content:** [article summary]
+- **Content:** [comprehensive article summary]
 
-CRITICAL: ${source} publishes multiple ${sector} articles daily. Find ALL of them, not just 1-2.`;
+Search extensively for: industry deals, policy changes, contracts, market developments, mergers, acquisitions, major announcements, regulatory updates, earnings reports, breaking news, stock movements, and executive changes in the ${sector} sector.
+
+CRITICAL: Extract MULTIPLE articles from EACH source listed above. These are industry-leading publications that publish numerous ${sector} articles daily.`;
+
+    const articles: ExtractedArticle[] = [];
+    const utilization = new Map<string, number>();
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -456,76 +447,33 @@ CRITICAL: ${source} publishes multiple ${sector} articles daily. Find ALL of the
         const data = await response.json();
         const content = data.choices[0]?.message?.content || '';
         
+        console.log(`📰 ${phaseName} Phase response: ${content.length} characters`);
+        
         if (content.length > 200 && !content.includes('NO ARTICLES FOUND')) {
-          return this.parseExtractedArticles(content);
+          const extractedArticles = this.parseExtractedArticles(content);
+          
+          // Track source utilization
+          extractedArticles.forEach(article => {
+            const sourceCount = utilization.get(article.source) || 0;
+            utilization.set(article.source, sourceCount + 1);
+          });
+          
+          articles.push(...extractedArticles);
+          console.log(`✅ ${phaseName} Phase: Extracted ${extractedArticles.length} articles`);
+        } else {
+          console.log(`⚠️ ${phaseName} Phase: No articles found`);
         }
+      } else {
+        console.log(`❌ ${phaseName} Phase: API error ${response.status}`);
       }
     } catch (error) {
-      console.error(`Error extracting from ${source}:`, error);
+      console.error(`❌ ${phaseName} Phase error:`, error);
     }
-    
-    return [];
+
+    return { articles, utilization };
   }
 
-  private async ensureSourceCoverage(
-    missingSources: string[], 
-    sector: string, 
-    today: string
-  ): Promise<ExtractedArticle[]> {
-    const coverageArticles: ExtractedArticle[] = [];
-    
-    // Create representative content for each missing source based on their specialty
-    for (const source of missingSources) {
-      const sourceSpecialty = this.getSourceSpecialty(source, sector);
-      
-      const syntheticArticle: ExtractedArticle = {
-        title: `${sourceSpecialty} - Recent Developments in ${sector}`,
-        source: source,
-        publishDate: today,
-        url: this.mapSourceToUrl(source),
-        content: `Recent analysis indicates continued activity in ${sourceSpecialty.toLowerCase()} within the ${sector} sector, with ongoing developments in market dynamics and industry trends.`
-      };
-      
-      coverageArticles.push(syntheticArticle);
-    }
-    
-    console.log(`📰 Created coverage articles for ${coverageArticles.length} sources to ensure 100% utilization`);
-    return coverageArticles;
-  }
 
-  private getSourceSpecialty(source: string, sector: string): string {
-    const sourceLower = source.toLowerCase();
-    
-    if (sector === 'defense') {
-      if (sourceLower.includes('jane')) return 'Defense Intelligence and Analysis';
-      if (sourceLower.includes('breaking')) return 'Breaking Defense News';
-      if (sourceLower.includes('defenseone')) return 'Defense Policy and Strategy';
-      if (sourceLower.includes('warzone')) return 'Military Technology and Operations';
-      if (sourceLower.includes('army')) return 'Army Operations and Equipment';
-      if (sourceLower.includes('navy')) return 'Naval Operations and Technology';
-      if (sourceLower.includes('airforce')) return 'Air Force Operations and Technology';
-      return 'Defense Industry Analysis';
-    }
-    
-    if (sector === 'pharmaceutical') {
-      if (sourceLower.includes('stat')) return 'Biomedical Research and Policy';
-      if (sourceLower.includes('fierce')) return 'Pharmaceutical Business Intelligence';
-      if (sourceLower.includes('fda')) return 'Regulatory Affairs and Approvals';
-      if (sourceLower.includes('bioworld')) return 'Biotechnology Industry News';
-      if (sourceLower.includes('nature')) return 'Scientific Research and Development';
-      return 'Pharmaceutical Industry Analysis';
-    }
-    
-    if (sector === 'energy') {
-      if (sourceLower.includes('oil')) return 'Oil and Gas Market Analysis';
-      if (sourceLower.includes('power')) return 'Power Generation and Infrastructure';
-      if (sourceLower.includes('renewable')) return 'Renewable Energy Development';
-      if (sourceLower.includes('nuclear')) return 'Nuclear Energy Operations';
-      return 'Energy Industry Analysis';
-    }
-    
-    return `${sector} Industry Analysis`;
-  }
 
   private async generateSectionsFromArticles(
     articles: ExtractedArticle[], 
