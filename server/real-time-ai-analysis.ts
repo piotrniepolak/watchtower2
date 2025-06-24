@@ -251,7 +251,90 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
-    // Generate live data using same approach as market analysis
+    // For defense sector, use Perplexity for real-time conflict analysis
+    if (sector === 'defense') {
+      try {
+        console.log('🔍 Fetching real-time conflict analysis from Perplexity...');
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3.1-sonar-small-128k-online',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a geopolitical analyst providing current conflict analysis. Focus only on active conflicts and tensions from the last 48 hours. Be precise and factual.'
+              },
+              {
+                role: 'user',
+                content: `Analyze current active global conflicts and military tensions from the last 48 hours. For each major conflict, provide:
+                - Current escalation risk (0-100)
+                - Latest developments from today/yesterday
+                - Defense industry impact assessment
+                - Probability of continued conflict (0-100)
+                - Timeline expectations
+                - Comprehensive paragraph explaining recent military, diplomatic, and strategic developments
+                
+                Focus on: Ukraine-Russia War, Gaza/Israel conflict, Red Sea shipping attacks, Taiwan Strait tensions, Armenia-Azerbaijan border, Myanmar civil war, Sahel region instability, cyber warfare incidents, and any other active military conflicts from the last 2 days.
+                
+                Format as JSON with this structure:
+                {
+                  "conflicts": [
+                    {
+                      "name": "conflict name",
+                      "region": "geographic region",
+                      "escalationRisk": number,
+                      "riskExplanation": "detailed current risk assessment",
+                      "defenseImpact": "impact on defense industry",
+                      "keyDevelopments": ["latest development 1", "latest development 2"],
+                      "timeframe": "expected duration",
+                      "probability": number,
+                      "probabilityExplanation": "reasoning for probability",
+                      "lastUpdate": "specific recent events from last 48 hours",
+                      "recentDevelopments": "comprehensive 3-4 sentence paragraph explaining the latest military, diplomatic, and strategic developments in this conflict from the past week, including defense industry implications"
+                    }
+                  ],
+                  "emergingThreats": ["threat 1", "threat 2"],
+                  "globalTensions": "overall assessment"
+                }`
+              }
+            ],
+            temperature: 0.2,
+            search_recency_filter: "day"
+          })
+        });
+
+        if (response.ok) {
+          const perplexityData = await response.json();
+          const content = perplexityData.choices[0]?.message?.content;
+          
+          if (content) {
+            try {
+              // Clean and parse JSON from Perplexity response
+              const cleanedContent = content.replace(/```json\n?|\n?```/g, '').trim();
+              const conflictData = JSON.parse(cleanedContent);
+              
+              console.log('✅ Successfully fetched real-time conflict data from Perplexity');
+              this.setCachedData(cacheKey, conflictData);
+              return conflictData;
+            } catch (parseError) {
+              console.error('Failed to parse Perplexity conflict data:', parseError);
+            }
+          }
+        } else {
+          console.error('Perplexity API request failed:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching Perplexity conflict data:', error);
+      }
+      
+      console.log('⚠️ Falling back to static conflict data');
+    }
+
+    // Fallback to static data for other sectors or if Perplexity fails
     const sectorData = {
       defense: {
         conflicts: [
