@@ -23,6 +23,7 @@ import { yahooFinanceService } from "./yahoo-finance-service";
 import { energyService } from './energy-service.js';
 import { quizStorage } from "./quiz-storage";
 import { realTimeAIAnalysis } from './real-time-ai-analysis';
+import { dailyBriefScheduler } from "./daily-brief-scheduler";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -1934,12 +1935,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Check if 4-step intelligence already exists
+      // First, try to get cached brief from daily scheduler
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('energy');
+      if (cachedBrief) {
+        console.log('✅ Serving cached energy intelligence brief');
+        return res.json(cachedBrief);
+      }
+      
+      // Check if 4-step intelligence already exists in storage
       let intelligence = await storage.getFourStepIntelligence(today, 'energy');
       
-      // If no existing data, generate using 4-step methodology
+      // If no existing data, generate fresh brief if missing
       if (!intelligence) {
-        console.log('🔋 Generating 4-step energy intelligence with authentic article extraction...');
+        console.log('🔋 Generating fresh energy intelligence brief...');
+        intelligence = await dailyBriefScheduler.generateBriefIfMissing('energy');
+      }
+      
+      // Legacy fallback for immediate generation if needed
+      if (!intelligence) {
+        const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
         const fourStepBrief = await fourStepIntelligenceService.generateEnergyIntelligence();
         
         const insertData = {
@@ -1982,12 +1996,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Check if 4-step intelligence already exists
+      // First, try to get cached brief from daily scheduler
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('defense');
+      if (cachedBrief) {
+        console.log('✅ Serving cached defense intelligence brief');
+        return res.json(cachedBrief);
+      }
+      
+      // Check if 4-step intelligence already exists in storage
       let intelligence = await storage.getFourStepIntelligence(today, 'defense');
       
-      // If no existing data, generate using 4-step methodology
+      // If no existing data, generate fresh brief if missing
       if (!intelligence) {
-        console.log('🔬 Generating 4-step defense intelligence with authentic article extraction...');
+        console.log('🔬 Generating fresh defense intelligence brief...');
+        intelligence = await dailyBriefScheduler.generateBriefIfMissing('defense');
+      }
+      
+      // Legacy fallback for immediate generation if needed
+      if (!intelligence) {
+        const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
         const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
         
         const insertData = {
@@ -2029,12 +2056,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Check if 4-step intelligence already exists
+      // First, try to get cached brief from daily scheduler
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('pharmaceutical');
+      if (cachedBrief) {
+        console.log('✅ Serving cached pharmaceutical intelligence brief');
+        return res.json(cachedBrief);
+      }
+      
+      // Check if 4-step intelligence already exists in storage
       let intelligence = await storage.getFourStepIntelligence(today, 'pharmaceutical');
       
-      // If no existing data, generate using 4-step methodology
+      // If no existing data, generate fresh brief if missing
       if (!intelligence) {
-        console.log('🔬 Generating 4-step pharmaceutical intelligence with authentic article extraction...');
+        console.log('💊 Generating fresh pharmaceutical intelligence brief...');
+        intelligence = await dailyBriefScheduler.generateBriefIfMissing('pharmaceutical');
+      }
+      
+      // Legacy fallback for immediate generation if needed
+      if (!intelligence) {
+        const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
         const fourStepBrief = await fourStepIntelligenceService.generatePharmaceuticalIntelligence();
         
         const insertData = {

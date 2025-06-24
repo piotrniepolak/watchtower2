@@ -74,7 +74,7 @@ app.use((req, res, next) => {
     port,
     host: "0.0.0.0",
     reusePort: true,
-  }, () => {
+  }, async () => {
     log(`serving on port ${port}`);
     // Start daily news scheduler
     newsService.startDailyNewsScheduler();
@@ -84,5 +84,8 @@ app.use((req, res, next) => {
     conflictTimelineService.startRealTimeUpdates();
     // Start automated daily questions
     dailyQuestionService.scheduleNextGeneration();
+    // Initialize daily brief scheduler
+    const { dailyBriefScheduler } = await import('./daily-brief-scheduler.js');
+    console.log('Daily intelligence brief scheduler started');
   });
 })();

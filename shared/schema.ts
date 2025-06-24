@@ -347,6 +347,34 @@ export const insertFourStepIntelligenceSchema = createInsertSchema(fourStepIntel
 export type InsertFourStepIntelligence = z.infer<typeof insertFourStepIntelligenceSchema>;
 export type FourStepIntelligence = typeof fourStepIntelligence.$inferSelect;
 
+// Daily Intelligence Briefs table for caching
+export const dailyIntelligenceBriefs = pgTable('daily_intelligence_briefs', {
+  sector: varchar('sector', { length: 50 }).notNull(),
+  date: date('date').notNull(),
+  executiveSummary: text('executive_summary').notNull(),
+  keyDevelopments: jsonb('key_developments').notNull(), // Array of strings
+  marketImpactAnalysis: text('market_impact_analysis').notNull(),
+  geopoliticalAnalysis: text('geopolitical_analysis').notNull(),
+  sources: jsonb('sources').notNull(), // Array of source objects
+  sourceUtilization: jsonb('source_utilization').notNull(), // Map of source to article count
+  articlesExtracted: integer('articles_extracted').notNull(),
+  generatedAt: timestamp('generated_at').defaultNow().notNull(),
+  isValid: boolean('is_valid').default(true).notNull()
+}, (table) => {
+  return {
+    pk: unique().on(table.sector, table.date)
+  };
+});
+
+export const insertDailyIntelligenceBriefSchema = createInsertSchema(dailyIntelligenceBriefs, {
+  keyDevelopments: z.array(z.string()),
+  sources: z.array(z.any()),
+  sourceUtilization: z.record(z.number())
+});
+
+export type InsertDailyIntelligenceBrief = z.infer<typeof insertDailyIntelligenceBriefSchema>;
+export type DailyIntelligenceBrief = typeof dailyIntelligenceBriefs.$inferSelect;
+
 export interface NewsConflictUpdate {
   conflict: string;
   update: string;
