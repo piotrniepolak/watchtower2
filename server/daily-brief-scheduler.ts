@@ -1,7 +1,4 @@
-import { db } from './db';
-import { dailyIntelligenceBriefs } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
-import { FourStepIntelligenceService } from './four-step-intelligence-service';
+import { FourStepIntelligenceService } from "./four-step-intelligence-service";
 
 export class DailyBriefScheduler {
   private fourStepService: FourStepIntelligenceService;
@@ -43,157 +40,57 @@ export class DailyBriefScheduler {
       try {
         console.log(`🔄 Generating ${sector} brief for ${today}...`);
         
-        // Generate fresh intelligence brief
-        const intelligenceBrief = await this.fourStepService.generateIntelligenceBrief(sector);
+        // Generate fresh intelligence brief using correct methods
+        let intelligenceBrief;
+        if (sector === 'defense') {
+          intelligenceBrief = await this.fourStepService.generateDefenseIntelligence();
+        } else if (sector === 'pharmaceutical') {
+          intelligenceBrief = await this.fourStepService.generatePharmaceuticalIntelligence();
+        } else if (sector === 'energy') {
+          intelligenceBrief = await this.fourStepService.generateEnergyIntelligence();
+        }
         
-        // Store in database (upsert - replace if exists)
-        await db.insert(dailyIntelligenceBriefs)
-          .values({
-            sector,
-            date: today,
-            executiveSummary: intelligenceBrief.executiveSummary,
-            keyDevelopments: intelligenceBrief.keyDevelopments,
-            marketImpactAnalysis: intelligenceBrief.marketImpactAnalysis,
-            geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-            sources: intelligenceBrief.sources,
-            sourceUtilization: intelligenceBrief.sourceUtilization || {},
-            articlesExtracted: intelligenceBrief.articlesExtracted || 0,
-            generatedAt: new Date(),
-            isValid: true
-          })
-          .onConflictDoUpdate({
-            target: [dailyIntelligenceBriefs.sector, dailyIntelligenceBriefs.date],
-            set: {
-              executiveSummary: intelligenceBrief.executiveSummary,
-              keyDevelopments: intelligenceBrief.keyDevelopments,
-              marketImpactAnalysis: intelligenceBrief.marketImpactAnalysis,
-              geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-              sources: intelligenceBrief.sources,
-              sourceUtilization: intelligenceBrief.sourceUtilization || {},
-              articlesExtracted: intelligenceBrief.articlesExtracted || 0,
-              generatedAt: new Date(),
-              isValid: true
-            }
-          });
-        
-        console.log(`✅ ${sector} brief generated and stored successfully`);
-        
-        // Add delay between sectors to avoid API rate limits
-        await new Promise(resolve => setTimeout(resolve, 60000)); // 1 minute delay
+        console.log(`✅ Successfully generated ${sector} brief with ${intelligenceBrief?.keyDevelopments?.length || 0} developments`);
         
       } catch (error) {
         console.error(`❌ Failed to generate ${sector} brief:`, error);
-        
-        // Mark as invalid if generation fails
-        await db.insert(dailyIntelligenceBriefs)
-          .values({
-            sector,
-            date: today,
-            executiveSummary: '',
-            keyDevelopments: [],
-            marketImpactAnalysis: '',
-            geopoliticalAnalysis: '',
-            sources: [],
-            sourceUtilization: {},
-            articlesExtracted: 0,
-            generatedAt: new Date(),
-            isValid: false
-          })
-          .onConflictDoUpdate({
-            target: [dailyIntelligenceBriefs.sector, dailyIntelligenceBriefs.date],
-            set: {
-              isValid: false,
-              generatedAt: new Date()
-            }
-          });
       }
     }
-    
-    console.log(`🎯 Daily brief generation completed at ${new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })} ET`);
     
     // Schedule next generation
     this.scheduleNextGeneration();
   }
 
   public async getCachedBrief(sector: string): Promise<any | null> {
-    const today = new Date().toISOString().split('T')[0];
-    
-    try {
-      const [cachedBrief] = await db
-        .select()
-        .from(dailyIntelligenceBriefs)
-        .where(
-          and(
-            eq(dailyIntelligenceBriefs.sector, sector),
-            eq(dailyIntelligenceBriefs.date, today),
-            eq(dailyIntelligenceBriefs.isValid, true)
-          )
-        )
-        .limit(1);
-      
-      if (cachedBrief) {
-        console.log(`📋 Serving cached ${sector} brief for ${today}`);
-        return {
-          executiveSummary: cachedBrief.executiveSummary,
-          keyDevelopments: cachedBrief.keyDevelopments,
-          marketImpactAnalysis: cachedBrief.marketImpactAnalysis,
-          geopoliticalAnalysis: cachedBrief.geopoliticalAnalysis,
-          sources: cachedBrief.sources,
-          sourceUtilization: cachedBrief.sourceUtilization,
-          articlesExtracted: cachedBrief.articlesExtracted,
-          generatedAt: cachedBrief.generatedAt.toISOString()
-        };
-      }
-      
-      return null;
-    } catch (error) {
-      console.error(`❌ Error fetching cached brief for ${sector}:`, error);
-      return null;
-    }
+    // For now, return null to force fresh generation
+    // TODO: Implement proper database caching after schema is stable
+    console.log(`🔄 No cached brief available for ${sector}, will generate fresh`);
+    return null;
   }
 
   public async generateBriefIfMissing(sector: string): Promise<any> {
-    // Check if we have a cached brief first
-    const cached = await this.getCachedBrief(sector);
-    if (cached) {
-      return cached;
+    const cachedBrief = await this.getCachedBrief(sector);
+    
+    if (cachedBrief) {
+      console.log(`✅ Using cached ${sector} brief`);
+      return cachedBrief;
     }
     
     console.log(`🔄 No cached brief found for ${sector}, generating fresh brief...`);
     
-    // Generate fresh brief and cache it
-    const intelligenceBrief = await this.fourStepService.generateIntelligenceBrief(sector);
-    const today = new Date().toISOString().split('T')[0];
+    // Generate fresh brief using correct method
+    let intelligenceBrief;
+    if (sector === 'defense') {
+      intelligenceBrief = await this.fourStepService.generateDefenseIntelligence();
+    } else if (sector === 'pharmaceutical') {
+      intelligenceBrief = await this.fourStepService.generatePharmaceuticalIntelligence();
+    } else if (sector === 'energy') {
+      intelligenceBrief = await this.fourStepService.generateEnergyIntelligence();
+    } else {
+      throw new Error(`Unsupported sector: ${sector}`);
+    }
     
-    // Store in database
-    await db.insert(dailyIntelligenceBriefs)
-      .values({
-        sector,
-        date: today,
-        executiveSummary: intelligenceBrief.executiveSummary,
-        keyDevelopments: intelligenceBrief.keyDevelopments,
-        marketImpactAnalysis: intelligenceBrief.marketImpactAnalysis,
-        geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-        sources: intelligenceBrief.sources,
-        sourceUtilization: intelligenceBrief.sourceUtilization || {},
-        articlesExtracted: intelligenceBrief.articlesExtracted || 0,
-        generatedAt: new Date(),
-        isValid: true
-      })
-      .onConflictDoUpdate({
-        target: [dailyIntelligenceBriefs.sector, dailyIntelligenceBriefs.date],
-        set: {
-          executiveSummary: intelligenceBrief.executiveSummary,
-          keyDevelopments: intelligenceBrief.keyDevelopments,
-          marketImpactAnalysis: intelligenceBrief.marketImpactAnalysis,
-          geopoliticalAnalysis: intelligenceBrief.geopoliticalAnalysis,
-          sources: intelligenceBrief.sources,
-          sourceUtilization: intelligenceBrief.sourceUtilization || {},
-          articlesExtracted: intelligenceBrief.articlesExtracted || 0,
-          generatedAt: new Date(),
-          isValid: true
-        }
-      });
+    console.log(`✅ Generated fresh ${sector} intelligence brief`);
     
     return intelligenceBrief;
   }
@@ -206,5 +103,4 @@ export class DailyBriefScheduler {
   }
 }
 
-// Singleton instance
 export const dailyBriefScheduler = new DailyBriefScheduler();
