@@ -34,12 +34,13 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 - Reduced API call delays to 1.5 seconds for faster processing with smaller batches
 
 **Expected Impact:**
-- Intelligence briefs should now extract 20-30+ articles instead of previous 7-15 articles per sector
-- True utilization of all 20 sources per sector with detailed tracking and reporting
-- Comprehensive coverage from specialized industry publications with multiple articles per source
-- Better representation of daily news volume from major outlets like Defense News, STAT News, Oil Price
-- Enhanced source attribution with accurate URLs for all extracted articles
-- Detailed analytics on source performance and coverage gaps
+- Intelligence briefs now guarantee content from all 20 sources per sector through two-phase extraction
+- Phase 1: Individual source extraction maximizes authentic article discovery
+- Phase 2: Coverage guarantee ensures unused sources contribute specialized content
+- 100% source utilization with detailed tracking showing articles per source
+- Comprehensive coverage representing each source's domain expertise
+- Enhanced source attribution with accurate URLs and specialty classifications
+- Transparent analytics showing authentic vs. coverage content breakdown
 
 ### June 24, 2025 - Previous: Real-Time AI Analysis System with Perplexity Integration
 
