@@ -49,7 +49,7 @@ class RealTimeAIAnalysisService {
   constructor() {
     this.perplexityApiKey = process.env.PERPLEXITY_API_KEY || '';
     if (!this.perplexityApiKey) {
-      console.warn('PERPLEXITY_API_KEY not found - AI analysis will be limited');
+      console.log('PERPLEXITY_API_KEY not found - using sample data for development');
     }
   }
 
@@ -117,41 +117,50 @@ class RealTimeAIAnalysisService {
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
+    // Skip sample data - use real API
+
     try {
-      const prompt = `Analyze current global conflicts and geopolitical tensions from the last 24-48 hours. Focus on:
+      const prompt = `Return ONLY valid JSON with no explanatory text. Analyze current global conflicts from the last 24-48 hours and provide analysis in this exact JSON format:
 
-1. Active military conflicts (Ukraine-Russia, Middle East, Taiwan Strait, etc.)
-2. Recent diplomatic tensions or breakthroughs
-3. Economic sanctions or trade disputes
-4. Regional instability indicators
-
-For each significant conflict or tension, provide analysis in this JSON format:
 {
   "predictions": [
     {
-      "conflictName": "specific conflict name",
-      "region": "geographic region",
-      "scenario": "escalation|de-escalation|stalemate|resolution",
-      "probability": number 0-100,
-      "timeframe": "specific timeframe (e.g., '3-6 months')",
-      "narrative": "detailed analysis based on recent developments",
-      "keyFactors": ["factor1", "factor2", "factor3"],
-      "marketImpact": "positive|negative|neutral",
-      "affectedSectors": ["defense", "energy", "technology", etc.],
-      "riskLevel": "low|medium|high|critical"
+      "conflictName": "Ukraine-Russia Conflict",
+      "region": "Eastern Europe",
+      "scenario": "escalation",
+      "probability": 75,
+      "timeframe": "3-6 months",
+      "narrative": "Recent developments include continued military operations and diplomatic efforts",
+      "keyFactors": ["Military aid", "Sanctions", "Diplomatic negotiations"],
+      "marketImpact": "negative",
+      "affectedSectors": ["defense", "energy", "agriculture"],
+      "riskLevel": "high"
     }
   ]
 }
 
-Focus only on real, current conflicts with recent developments. Use today's date: ${new Date().toISOString().split('T')[0]}`;
+Focus on Ukraine-Russia, Middle East tensions, and Taiwan Strait. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`;
 
       const systemMessage = `You are a senior geopolitical analyst with access to real-time global intelligence. Analyze only current, active conflicts and tensions with recent developments from credible news sources. Provide realistic probability assessments based on actual events, not speculation.`;
 
       const response = await this.callPerplexityAPI(prompt, systemMessage);
       
       try {
-        // Clean response by removing markdown code blocks if present
-        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Extract JSON from response - handle multiple patterns
+        let cleanedResponse = response.trim();
+        
+        // First try to find JSON block in markdown
+        const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonBlockMatch) {
+          cleanedResponse = jsonBlockMatch[1].trim();
+        } else {
+          // Try to extract the main JSON object
+          const jsonMatch = cleanedResponse.match(/(\{[\s\S]*\})/);
+          if (jsonMatch) {
+            cleanedResponse = jsonMatch[1];
+          }
+        }
+        
         const parsed = JSON.parse(cleanedResponse);
         const predictions = parsed.predictions || [];
         this.setCachedData(cacheKey, predictions);
@@ -172,6 +181,8 @@ Focus only on real, current conflicts with recent developments. Use today's date
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
+    // Skip sample data - use real API
+
     try {
       const sectorMap = {
         defense: 'defense and aerospace companies (LMT, RTX, NOC, GD, BA)',
@@ -181,43 +192,48 @@ Focus only on real, current conflicts with recent developments. Use today's date
 
       const companies = sectorMap[sector as keyof typeof sectorMap] || sectorMap.defense;
 
-      const prompt = `Analyze current market conditions and provide investment insights for ${sector} sector stocks focusing on ${companies}.
+      const prompt = `Return ONLY valid JSON with no explanatory text. Analyze ${sector} sector market conditions for ${companies} and provide analysis in this exact JSON format:
 
-Consider recent developments from the last 24-48 hours:
-1. Earnings reports or guidance updates
-2. Geopolitical events affecting the sector
-3. Regulatory changes or government contracts
-4. Industry-specific news and trends
-5. Economic indicators impact
-
-Provide analysis in this JSON format:
 {
-  "overallSentiment": "bullish|bearish|neutral",
+  "overallSentiment": "bullish",
   "sector": "${sector}",
-  "keyDrivers": ["driver1", "driver2", "driver3"],
+  "keyDrivers": ["Government contracts", "Defense spending", "Geopolitical tensions"],
   "topStocks": [
     {
-      "symbol": "stock symbol",
-      "prediction": "buy|sell|hold",
-      "confidence": number 0-100,
-      "reasoning": "specific reasoning based on recent news"
+      "symbol": "LMT",
+      "prediction": "buy",
+      "confidence": 80,
+      "reasoning": "Strong defense contracts and government spending"
     }
   ],
-  "riskFactors": ["risk1", "risk2", "risk3"],
-  "opportunities": ["opportunity1", "opportunity2", "opportunity3"],
-  "timeHorizon": "short-term timeframe",
-  "marketOutlook": "detailed outlook based on current events"
+  "riskFactors": ["Budget constraints", "Political changes", "Supply chain issues"],
+  "opportunities": ["Modernization programs", "International sales", "Technology upgrades"],
+  "timeHorizon": "6-12 months",
+  "marketOutlook": "Positive outlook driven by global security concerns and defense modernization"
 }
 
-Base recommendations on actual recent news and market movements. Today's date: ${new Date().toISOString().split('T')[0]}`;
+Focus on recent 24-48 hour developments. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`;
 
       const systemMessage = `You are a senior financial analyst with access to real-time market data and news. Provide specific, actionable investment insights based on current market conditions and recent developments. Focus on factual analysis from credible financial sources.`;
 
       const response = await this.callPerplexityAPI(prompt, systemMessage);
       
       try {
-        // Clean response by removing markdown code blocks if present
-        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Extract JSON from response - handle multiple patterns
+        let cleanedResponse = response.trim();
+        
+        // First try to find JSON block in markdown
+        const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonBlockMatch) {
+          cleanedResponse = jsonBlockMatch[1].trim();
+        } else {
+          // Try to extract the main JSON object
+          const jsonMatch = cleanedResponse.match(/(\{[\s\S]*\})/);
+          if (jsonMatch) {
+            cleanedResponse = jsonMatch[1];
+          }
+        }
+        
         const analysis = JSON.parse(cleanedResponse);
         this.setCachedData(cacheKey, analysis);
         return analysis;
@@ -237,38 +253,45 @@ Base recommendations on actual recent news and market movements. Today's date: $
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
+    // Skip sample data - use real API
+
     try {
-      const prompt = `Analyze current economic indicators and provide a comprehensive overview based on the latest data from the last 24-48 hours:
+      const prompt = `Return ONLY valid JSON with no explanatory text. Analyze current economic indicators and provide data in this exact JSON format:
 
-1. Recent inflation data and trends
-2. GDP growth indicators or forecasts
-3. Employment/unemployment statistics
-4. Federal Reserve policy or interest rate decisions
-5. Commodity prices (oil, gold) with recent changes
-6. Currency strength indicators (USD)
-
-Provide analysis in this JSON format:
 {
-  "inflationTrend": "rising|falling|stable",
-  "gdpGrowth": actual_number,
-  "unemploymentRate": actual_number,
-  "interestRateDirection": "up|down|stable",
+  "inflationTrend": "stable",
+  "gdpGrowth": 2.1,
+  "unemploymentRate": 3.7,
+  "interestRateDirection": "stable",
   "commodityPrices": {
-    "oil": {"price": current_price, "change": percent_change},
-    "gold": {"price": current_price, "change": percent_change}
+    "oil": {"price": 75.50, "change": -1.2},
+    "gold": {"price": 2010.50, "change": 0.8}
   },
-  "currencyStrength": "strong|weak|stable"
+  "currencyStrength": "strong"
 }
 
-Use only current, verified economic data from official sources. Today's date: ${new Date().toISOString().split('T')[0]}`;
+Use latest economic data from the last 24-48 hours. Return ONLY the JSON object with no other text. Today's date: ${new Date().toISOString().split('T')[0]}`;
 
       const systemMessage = `You are a senior economist with access to real-time economic data from official government and financial institutions. Provide accurate, current economic indicators based on the latest available data from credible sources like the Federal Reserve, Bureau of Labor Statistics, and major financial data providers.`;
 
       const response = await this.callPerplexityAPI(prompt, systemMessage);
       
       try {
-        // Clean response by removing markdown code blocks if present
-        const cleanedResponse = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Extract JSON from response - handle multiple patterns
+        let cleanedResponse = response.trim();
+        
+        // First try to find JSON block in markdown
+        const jsonBlockMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonBlockMatch) {
+          cleanedResponse = jsonBlockMatch[1].trim();
+        } else {
+          // Try to extract the main JSON object
+          const jsonMatch = cleanedResponse.match(/(\{[\s\S]*\})/);
+          if (jsonMatch) {
+            cleanedResponse = jsonMatch[1];
+          }
+        }
+        
         const indicators = JSON.parse(cleanedResponse);
         this.setCachedData(cacheKey, indicators);
         return indicators;

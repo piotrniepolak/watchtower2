@@ -408,9 +408,42 @@ export default function RealTimeAIAnalysis() {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Activity className="h-4 w-4 text-green-500" />
-            <span className="text-sm text-green-600 font-medium">Live Data</span>
+          <div className="flex items-center space-x-4">
+            <Select value={selectedSector} onValueChange={setSelectedSector}>
+              <SelectTrigger className="w-48">
+                <SelectValue>
+                  <div className="flex items-center space-x-2">
+                    {(() => {
+                      const option = sectorOptions.find(opt => opt.value === selectedSector);
+                      const IconComponent = option?.icon || Shield;
+                      return (
+                        <>
+                          <IconComponent className="w-4 h-4" />
+                          <span>{option?.label}</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {sectorOptions.map((option) => {
+                  const IconComponent = option.icon;
+                  return (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center space-x-2">
+                        <IconComponent className="w-4 h-4" />
+                        <span>{option.label}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center space-x-2">
+              <Activity className="h-4 w-4 text-green-500" />
+              <span className="text-sm text-green-600 font-medium">Live Data</span>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -436,40 +469,6 @@ export default function RealTimeAIAnalysis() {
           </TabsContent>
           
           <TabsContent value="markets" className="space-y-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900">Sector Analysis</h3>
-              <Select value={selectedSector} onValueChange={setSelectedSector}>
-                <SelectTrigger className="w-48">
-                  <SelectValue>
-                    <div className="flex items-center space-x-2">
-                      {(() => {
-                        const option = sectorOptions.find(opt => opt.value === selectedSector);
-                        const IconComponent = option?.icon || Shield;
-                        return (
-                          <>
-                            <IconComponent className="w-4 h-4" />
-                            <span>{option?.label}</span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {sectorOptions.map((option) => {
-                    const IconComponent = option.icon;
-                    return (
-                      <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center space-x-2">
-                          <IconComponent className="w-4 h-4" />
-                          <span>{option.label}</span>
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
             <MarketAnalysisTab sector={selectedSector} />
           </TabsContent>
           
