@@ -1,12 +1,9 @@
-import { PerplexityService } from './perplexity-service.js';
-
 export class RealTimeAIAnalysis {
-  private perplexityService: PerplexityService;
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   constructor() {
-    this.perplexityService = new PerplexityService();
+    // Direct Perplexity API integration
   }
 
   private getCachedData(key: string): any | null {
@@ -264,7 +261,9 @@ export class RealTimeAIAnalysis {
                 - Timeline expectations
                 - Comprehensive paragraph explaining recent military, diplomatic, and strategic developments
                 
-                Focus on: Ukraine-Russia War, Gaza/Israel conflict, Iran-Israel tensions, Red Sea shipping attacks, Taiwan Strait tensions, Armenia-Azerbaijan border, Myanmar civil war, Sahel region instability, cyber warfare incidents, and any other active military conflicts from the last 2 days.
+                Focus specifically on: Ukraine-Russia War, Gaza/Israel conflict, Iran-Israel tensions and recent military actions, Red Sea shipping attacks, Taiwan Strait tensions, Armenia-Azerbaijan border, Myanmar civil war, Sahel region instability, cyber warfare incidents, and any other active military conflicts from the last 2 days.
+                
+                For Iran-Israel tensions, include recent missile exchanges, proxy conflicts, nuclear facilities, sanctions impacts, and regional military posturing.
                 
                 Format as JSON with this structure:
                 {
@@ -564,4 +563,4 @@ export class RealTimeAIAnalysis {
       volatilityIndex: toNumber(data.volatilityIndex, 18)
     };
   }
-}
+}export const realTimeAIAnalysis = new RealTimeAIAnalysis();
