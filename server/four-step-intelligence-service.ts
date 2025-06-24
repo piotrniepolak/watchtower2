@@ -163,65 +163,108 @@ export class FourStepIntelligenceService {
       year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    const prompt = `Find recent ${sector} news from major outlets. Extract articles published in the last 48 hours.
-
-Format each article as:
-### ARTICLE [number]:
-- **Title:** [headline]
-- **Source:** [news outlet name]
-- **Date:** June 22, 2025
-- **URL:** [article link or source homepage]
-- **Content:** [brief summary]
-
-Search for: industry deals, policy changes, military contracts, market developments, mergers, and major announcements in the ${sector} sector.`;
-
-    try {
-      console.log(`🔧 Making Perplexity API request for ${sector} sector...`);
-      console.log(`🔧 API Key present: ${!!this.perplexityApiKey}`);
-      console.log(`🔧 API Key length: ${this.perplexityApiKey?.length || 0}`);
-      
-      const response = await fetch('https://api.perplexity.ai/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.perplexityApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-sonar-large-128k-online',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 4000,
-          temperature: 0.1,
-          search_recency_filter: "day",
-          return_citations: true
-        })
-      });
-
-      console.log(`🔧 Perplexity API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`❌ Perplexity API error response:`, errorText);
-        throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices[0]?.message?.content || '';
-      
-      console.log(`🔍 Perplexity API Response Length: ${content.length} characters`);
-      console.log(`🔍 Full API response content:`, content);
-      
-      if (content.includes('NO ARTICLES FOUND') || 
-          content.includes('NO AUTHENTIC ARTICLES FOUND') ||
-          content.length < 200) {
-        console.log(`❌ STEP 2 FAILED: No articles found for ${sector} sector`);
-        return [];
-      }
-
-      return this.parseExtractedArticles(content);
-    } catch (error) {
-      console.error(`❌ STEP 2 ERROR: Article extraction failed:`, error);
-      throw error;
+    console.log(`🔧 Starting multi-call extraction for ${sector} sector with ${sources.length} sources...`);
+    
+    const allArticles: ExtractedArticle[] = [];
+    const batchSize = 5; // Process 5 sources per API call
+    const batches = [];
+    
+    // Split sources into batches for targeted extraction
+    for (let i = 0; i < sources.length; i += batchSize) {
+      batches.push(sources.slice(i, i + batchSize));
     }
+    
+    console.log(`🔧 Created ${batches.length} batches of ${batchSize} sources each`);
+
+    // Process each batch with targeted extraction
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batch = batches[batchIndex];
+      console.log(`🔧 Processing batch ${batchIndex + 1}/${batches.length}: ${batch.join(', ')}`);
+      
+      const prompt = `Extract recent ${sector} articles published in the last 48 hours from these SPECIFIC sources:
+${batch.map(source => `- ${source}`).join('\n')}
+
+For EACH source that has recent articles, format as:
+### ARTICLE [number]:
+- **Title:** [exact headline]
+- **Source:** [source name]
+- **Date:** ${today} or ${yesterday}
+- **URL:** [full article URL if available]
+- **Content:** [article summary]
+
+Focus on: industry deals, policy changes, contracts, market developments, mergers, acquisitions, and major announcements in the ${sector} sector.
+
+If a source has no recent ${sector} articles, skip it entirely. Only include sources with actual recent content.`;
+
+      try {
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.perplexityApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'llama-3.1-sonar-large-128k-online',
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 4000,
+            temperature: 0.1,
+            search_recency_filter: "day",
+            return_citations: true
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data.choices[0]?.message?.content || '';
+          
+          console.log(`🔧 Batch ${batchIndex + 1} response: ${content.length} characters`);
+          
+          if (content.length > 200 && !content.includes('NO ARTICLES FOUND')) {
+            const batchArticles = this.parseExtractedArticles(content);
+            allArticles.push(...batchArticles);
+            console.log(`✅ Batch ${batchIndex + 1}: Extracted ${batchArticles.length} articles`);
+          } else {
+            console.log(`⚠️ Batch ${batchIndex + 1}: No articles found`);
+          }
+        } else {
+          console.log(`❌ Batch ${batchIndex + 1}: API error ${response.status}`);
+        }
+
+        // Add delay between API calls to respect rate limits
+        if (batchIndex < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+      } catch (error) {
+        console.error(`❌ Batch ${batchIndex + 1} error:`, error);
+        continue; // Continue with next batch even if one fails
+      }
+    }
+
+    console.log(`🔧 Multi-call extraction complete: ${allArticles.length} total articles from ${batches.length} batches`);
+    
+    // Remove duplicates based on title similarity
+    const uniqueArticles = this.removeDuplicateArticles(allArticles);
+    console.log(`🔧 After deduplication: ${uniqueArticles.length} unique articles`);
+
+    if (uniqueArticles.length === 0) {
+      console.log(`❌ STEP 2 FAILED: No articles found across all batches for ${sector} sector`);
+      return [];
+    }
+
+    return uniqueArticles;
+  }
+
+  private removeDuplicateArticles(articles: ExtractedArticle[]): ExtractedArticle[] {
+    const seen = new Set();
+    return articles.filter(article => {
+      const key = article.title.toLowerCase().slice(0, 50); // Use first 50 chars for similarity
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
   }
 
   private parseExtractedArticles(content: string): ExtractedArticle[] {
@@ -234,62 +277,92 @@ Search for: industry deals, policy changes, military contracts, market developme
       return [];
     }
     
-    // Parse real ARTICLE sections only
-    const articleSections = content.split(/###\s*ARTICLE\s*\d+:/i);
+    // Enhanced parsing with multiple formats
+    // Format 1: ### ARTICLE [number]: style
+    let articleSections = content.split(/###\s*ARTICLE\s*\d+:/i);
+    
+    // Format 2: ## Article [number] style (fallback)
+    if (articleSections.length <= 1) {
+      articleSections = content.split(/##\s*Article\s*\d+/i);
+    }
+    
+    // Format 3: **Article [number]** style (second fallback)
+    if (articleSections.length <= 1) {
+      articleSections = content.split(/\*\*Article\s*\d+\*\*/i);
+    }
     
     for (let i = 1; i < articleSections.length; i++) {
       const section = articleSections[i].trim();
       
       if (section.length > 50) {
-        const titleMatch = section.match(/[-•]\s*\*\*Title:\*\*\s*(.+?)(?:\n|$)/i);
-        const sourceMatch = section.match(/[-•]\s*\*\*Source:\*\*\s*(.+?)(?:\n|$)/i);
-        const dateMatch = section.match(/[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i);
-        const urlMatch = section.match(/[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i);
-        const contentMatch = section.match(/[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|$)/i);
+        // Enhanced regex patterns for more flexible parsing
+        const titlePatterns = [
+          /[-•]\s*\*\*Title:\*\*\s*(.+?)(?:\n|$)/i,
+          /[-•]\s*Title:\s*(.+?)(?:\n|$)/i,
+          /\*\*Title:\*\*\s*(.+?)(?:\n|$)/i,
+          /Title:\s*(.+?)(?:\n|$)/i
+        ];
         
-        const title = titleMatch?.[1]?.trim();
-        const source = sourceMatch?.[1]?.trim();
-        let url = urlMatch?.[1]?.trim();
-        const articleContent = contentMatch?.[1]?.trim();
-        const date = dateMatch?.[1]?.trim();
+        const sourcePatterns = [
+          /[-•]\s*\*\*Source:\*\*\s*(.+?)(?:\n|$)/i,
+          /[-•]\s*Source:\s*(.+?)(?:\n|$)/i,
+          /\*\*Source:\*\*\s*(.+?)(?:\n|$)/i,
+          /Source:\s*(.+?)(?:\n|$)/i
+        ];
+        
+        const datePatterns = [
+          /[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i,
+          /[-•]\s*Date:\s*(.+?)(?:\n|$)/i,
+          /\*\*Date:\*\*\s*(.+?)(?:\n|$)/i,
+          /Date:\s*(.+?)(?:\n|$)/i
+        ];
+        
+        const urlPatterns = [
+          /[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,
+          /[-•]\s*URL:\s*(https?:\/\/[^\s\]]+)/i,
+          /\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,
+          /URL:\s*(https?:\/\/[^\s\]]+)/i,
+          /(https?:\/\/[^\s\]]+)/i  // Any URL in the section
+        ];
+        
+        const contentPatterns = [
+          /[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|\n##|$)/is,
+          /[-•]\s*Content:\s*(.+?)(?:\n###|\n##|$)/is,
+          /\*\*Content:\*\*\s*(.+?)(?:\n###|\n##|$)/is,
+          /Content:\s*(.+?)(?:\n###|\n##|$)/is
+        ];
+        
+        // Try each pattern until we find a match
+        const title = this.findFirstMatch(section, titlePatterns);
+        const source = this.findFirstMatch(section, sourcePatterns);
+        const date = this.findFirstMatch(section, datePatterns);
+        let url = this.findFirstMatch(section, urlPatterns);
+        const articleContent = this.findFirstMatch(section, contentPatterns);
         
         // Accept articles with reasonable titles and sources
         if (title && source && title.length > 10 &&
             !title.toLowerCase().includes('requires direct search') &&
-            !title.toLowerCase().includes('not directly provided')) {
+            !title.toLowerCase().includes('not directly provided') &&
+            !title.toLowerCase().includes('no recent') &&
+            !title.toLowerCase().includes('not available')) {
           
-          // Use provided URL or create source homepage URL
+          // Enhanced URL mapping for more sources
           if (!url || !url.startsWith('http')) {
-            const sourceDomain = source.toLowerCase()
-              .replace(/\s+/g, '')
-              .replace('times', '')
-              .replace('news', '');
-            
-            if (sourceDomain.includes('reuters')) url = 'https://www.reuters.com';
-            else if (sourceDomain.includes('bloomberg')) url = 'https://www.bloomberg.com';
-            else if (sourceDomain.includes('defense')) url = 'https://www.defensenews.com';
-            else if (sourceDomain.includes('military')) url = 'https://www.militarytimes.com';
-            else if (sourceDomain.includes('jane')) url = 'https://www.janes.com';
-            else if (sourceDomain.includes('politico')) url = 'https://www.politico.com';
-            else if (sourceDomain.includes('financial')) url = 'https://www.ft.com';
-            else if (sourceDomain.includes('wall')) url = 'https://www.wsj.com';
-            else if (sourceDomain.includes('cnn')) url = 'https://www.cnn.com';
-            else if (sourceDomain.includes('associated')) url = 'https://apnews.com';
-            else url = `https://www.${sourceDomain.replace(/[^a-z]/g, '')}.com`;
+            url = this.mapSourceToUrl(source);
           }
           
           articles.push({
-            title: title.replace(/^\*\*|\*\*$/g, ''),
-            source: source.replace(/^\*\*|\*\*$/g, ''),
-            publishDate: date || 'June 22, 2025',
-            url: url || 'https://defensenews.com',
+            title: title.replace(/^\*\*|\*\*$/g, '').trim(),
+            source: source.replace(/^\*\*|\*\*$/g, '').trim(),
+            publishDate: date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+            url: url || 'https://www.reuters.com',
             content: articleContent || title
           });
         }
       }
     }
 
-    console.log(`📰 Parsed ${articles.length} articles from response`);
+    console.log(`📰 Enhanced parsing: ${articles.length} articles extracted`);
     if (articles.length > 0) {
       console.log(`📰 Sample article:`, { 
         title: articles[0].title, 
@@ -299,6 +372,63 @@ Search for: industry deals, policy changes, military contracts, market developme
     }
     
     return articles;
+  }
+
+  private findFirstMatch(text: string, patterns: RegExp[]): string | null {
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+    return null;
+  }
+
+  private mapSourceToUrl(source: string): string {
+    const sourceLower = source.toLowerCase().replace(/\s+/g, '');
+    
+    // Defense sources
+    if (sourceLower.includes('defense') && sourceLower.includes('news')) return 'https://www.defensenews.com';
+    if (sourceLower.includes('jane')) return 'https://www.janes.com';
+    if (sourceLower.includes('breaking') && sourceLower.includes('defense')) return 'https://breakingdefense.com';
+    if (sourceLower.includes('defenseone') || sourceLower.includes('defense-one')) return 'https://www.defenseone.com';
+    if (sourceLower.includes('warzone') || sourceLower.includes('war-zone')) return 'https://www.thedrive.com/the-war-zone';
+    if (sourceLower.includes('military') && sourceLower.includes('com')) return 'https://www.military.com';
+    if (sourceLower.includes('c4isrnet') || sourceLower.includes('c4isr')) return 'https://www.c4isrnet.com';
+    if (sourceLower.includes('army') && sourceLower.includes('times')) return 'https://www.armytimes.com';
+    if (sourceLower.includes('navy') && sourceLower.includes('times')) return 'https://www.navytimes.com';
+    if (sourceLower.includes('airforce') && sourceLower.includes('times')) return 'https://www.airforcetimes.com';
+    
+    // Pharmaceutical sources
+    if (sourceLower.includes('stat') && sourceLower.includes('news')) return 'https://www.statnews.com';
+    if (sourceLower.includes('biopharma') && sourceLower.includes('dive')) return 'https://www.biopharmadive.com';
+    if (sourceLower.includes('fierce') && sourceLower.includes('pharma')) return 'https://www.fiercepharma.com';
+    if (sourceLower.includes('pharmalive') || sourceLower.includes('pharma-live')) return 'https://www.pharmalive.com';
+    if (sourceLower.includes('pharmaceutical') && sourceLower.includes('technology')) return 'https://www.pharmaceutical-technology.com';
+    if (sourceLower.includes('fda') && sourceLower.includes('gov')) return 'https://www.fda.gov';
+    if (sourceLower.includes('bioworld')) return 'https://www.bioworld.com';
+    if (sourceLower.includes('nature') && sourceLower.includes('biotech')) return 'https://www.nature.com/nbt';
+    
+    // Energy sources
+    if (sourceLower.includes('oil') && sourceLower.includes('price')) return 'https://www.oilprice.com';
+    if (sourceLower.includes('energy') && sourceLower.includes('news')) return 'https://www.energynews.us';
+    if (sourceLower.includes('power') && sourceLower.includes('mag')) return 'https://www.powermag.com';
+    if (sourceLower.includes('utility') && sourceLower.includes('dive')) return 'https://www.utilitydive.com';
+    if (sourceLower.includes('energy') && sourceLower.includes('central')) return 'https://www.energycentral.com';
+    if (sourceLower.includes('world') && sourceLower.includes('oil')) return 'https://www.worldoil.com';
+    
+    // General sources
+    if (sourceLower.includes('reuters')) return 'https://www.reuters.com';
+    if (sourceLower.includes('bloomberg')) return 'https://www.bloomberg.com';
+    if (sourceLower.includes('wall') && sourceLower.includes('street')) return 'https://www.wsj.com';
+    if (sourceLower.includes('financial') && sourceLower.includes('times')) return 'https://www.ft.com';
+    if (sourceLower.includes('associated') && sourceLower.includes('press')) return 'https://apnews.com';
+    if (sourceLower.includes('cnn')) return 'https://www.cnn.com';
+    if (sourceLower.includes('politico')) return 'https://www.politico.com';
+    
+    // Fallback: try to construct URL from source name
+    const cleanSource = sourceLower.replace(/[^a-z]/g, '');
+    return `https://www.${cleanSource}.com`;
   }
 
   private async generateSectionsFromArticles(

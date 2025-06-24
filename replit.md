@@ -13,7 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 24, 2025 - Real-Time AI Analysis System with Perplexity Integration
+### June 24, 2025 - Enhanced Multi-Call Article Extraction System
+
+**Major Intelligence Extraction Enhancement:**
+- **Implemented multi-call API system** replacing single broad API requests with targeted 5-source batches for dramatically increased article extraction
+- **Enhanced parsing logic** with multiple format fallbacks to handle varied Perplexity response structures (### ARTICLE, ## Article, **Article** formats)
+- **Added comprehensive source URL mapping** for all 20 defense, pharmaceutical, and energy sources with accurate domain attribution
+- **Implemented deduplication system** to remove similar articles across multiple API calls while preserving unique content
+- **Added 2-second delays between API calls** to respect rate limits while maximizing extraction throughput
+- **Enhanced error handling** allowing system to continue with remaining batches even if individual calls fail
+
+**Technical Implementation:**
+- Split 20 sources into 4 batches of 5 sources each, making targeted extraction requests per batch
+- Enhanced regex patterns with multiple fallback formats for title, source, date, URL, and content extraction
+- Added intelligent source-to-URL mapping covering all major defense, pharmaceutical, and energy publications
+- Implemented article deduplication based on title similarity to prevent redundant content
+- Added comprehensive logging to track batch processing success and article extraction metrics
+
+**Expected Impact:**
+- Intelligence briefs should now extract 15-25+ articles instead of previous 2-6 articles per sector
+- More comprehensive coverage from specialized industry publications
+- Better representation of daily news volume from major outlets like Defense News, STAT News, Oil Price
+- Enhanced source attribution with accurate URLs for all extracted articles
+
+### June 24, 2025 - Previous: Real-Time AI Analysis System with Perplexity Integration
 
 **Complete Real-Time AI Analysis Overhaul:**
 - **Built comprehensive real-time AI analysis system** powered by Perplexity API with internet access for current events
