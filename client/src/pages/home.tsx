@@ -324,6 +324,56 @@ export default function Home() {
 
   const activeSectors = getActiveSectors();
 
+  // Create theme mappings for each sector
+  const getSectorTheme = (sectorKey: string) => {
+    switch (sectorKey) {
+      case 'defense':
+        return {
+          border: 'border-red-200',
+          background: 'bg-gradient-to-br from-red-50 to-red-100',
+          iconBg: 'bg-gradient-to-r from-red-600 to-red-700',
+          button: 'bg-red-600 hover:bg-red-700 text-white',
+          icon: Shield,
+          name: 'ConflictWatch',
+          description: 'Global defense intelligence & conflict monitoring',
+          href: '/defense'
+        };
+      case 'health':
+        return {
+          border: 'border-green-200',
+          background: 'bg-gradient-to-br from-green-50 to-green-100',
+          iconBg: 'bg-gradient-to-r from-green-600 to-green-700',
+          button: 'bg-green-600 hover:bg-green-700 text-white',
+          icon: Pill,
+          name: 'PharmaWatch',
+          description: 'Pharmaceutical intelligence & health monitoring',
+          href: '/health'
+        };
+      case 'energy':
+        return {
+          border: 'border-orange-200',
+          background: 'bg-gradient-to-br from-orange-50 to-orange-100',
+          iconBg: 'bg-gradient-to-r from-orange-600 to-orange-700',
+          button: 'bg-orange-600 hover:bg-orange-700 text-white',
+          icon: Zap,
+          name: 'EnergyWatch',
+          description: 'Energy intelligence & policy monitoring',
+          href: '/energy'
+        };
+      default:
+        return {
+          border: 'border-slate-200',
+          background: 'bg-gradient-to-br from-slate-50 to-slate-100',
+          iconBg: 'bg-gradient-to-r from-slate-600 to-slate-700',
+          button: 'bg-slate-600 hover:bg-slate-700 text-white',
+          icon: Shield,
+          name: 'Unknown',
+          description: 'Unknown sector',
+          href: '/'
+        };
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -358,7 +408,9 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-600 text-sm font-medium">Defense Index</p>
-                  <p className="text-2xl font-bold text-green-900">{globalMetrics?.defenseIndex || "150.69"}</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {globalMetrics?.defenseIndex?.value?.toFixed(2) || "150.69"}
+                  </p>
                 </div>
                 <Shield className="h-8 w-8 text-green-600" />
               </div>
@@ -393,18 +445,19 @@ export default function Home() {
         {/* Sector Access Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {activeSectors.map((sector) => {
-            const Icon = sector.icon;
+            const theme = getSectorTheme(sector.key);
+            const Icon = theme.icon;
             return (
-              <Card key={sector.id} className={`border-2 ${sector.theme.border} ${sector.theme.background} hover:shadow-lg transition-shadow`}>
+              <Card key={sector.key} className={`border-2 ${theme.border} ${theme.background} hover:shadow-lg transition-shadow`}>
                 <CardHeader>
                   <div className="flex items-center">
-                    <div className={`${sector.theme.iconBg} text-white p-3 rounded-lg mr-4`}>
+                    <div className={`${theme.iconBg} text-white p-3 rounded-lg mr-4`}>
                       <Icon className="h-8 w-8" />
                     </div>
                     <div>
-                      <CardTitle className="text-slate-900">{sector.name}</CardTitle>
+                      <CardTitle className="text-slate-900">{theme.name}</CardTitle>
                       <CardDescription className="text-slate-600">
-                        {sector.description}
+                        {theme.description}
                       </CardDescription>
                     </div>
                   </div>
@@ -414,28 +467,28 @@ export default function Home() {
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="text-center p-3 bg-white rounded-lg">
                         <div className="text-lg font-bold text-slate-900">
-                          {sector.id === 'defense' ? globalMetrics?.activeConflicts || 0 : 
-                           sector.id === 'health' ? '12' : '8'}
+                          {sector.key === 'defense' ? globalMetrics?.activeConflicts || 0 : 
+                           sector.key === 'health' ? '12' : '8'}
                         </div>
                         <div className="text-slate-600">
-                          {sector.id === 'defense' ? 'Active Conflicts' : 
-                           sector.id === 'health' ? 'Pharma Companies' : 'Energy Sources'}
+                          {sector.key === 'defense' ? 'Active Conflicts' : 
+                           sector.key === 'health' ? 'Pharma Companies' : 'Energy Sources'}
                         </div>
                       </div>
                       <div className="text-center p-3 bg-white rounded-lg">
                         <div className="text-lg font-bold text-slate-900">
-                          {sector.id === 'defense' ? globalMetrics?.defenseIndex || "150.69" : 
-                           sector.id === 'health' ? '94.2' : '87.5'}
+                          {sector.key === 'defense' ? globalMetrics?.defenseIndex?.value?.toFixed(2) || "150.69" : 
+                           sector.key === 'health' ? '94.2' : '87.5'}
                         </div>
                         <div className="text-slate-600">
-                          {sector.id === 'defense' ? 'Defense Index' : 
-                           sector.id === 'health' ? 'Health Index' : 'Energy Index'}
+                          {sector.key === 'defense' ? 'Defense Index' : 
+                           sector.key === 'health' ? 'Health Index' : 'Energy Index'}
                         </div>
                       </div>
                     </div>
-                    <Link href={sector.href}>
-                      <Button className={`w-full ${sector.theme.button} hover:opacity-90`}>
-                        Access {sector.name}
+                    <Link href={theme.href}>
+                      <Button className={`w-full ${theme.button} hover:opacity-90`}>
+                        Access {theme.name}
                       </Button>
                     </Link>
                   </div>
