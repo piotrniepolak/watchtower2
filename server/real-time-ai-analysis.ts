@@ -282,48 +282,46 @@ export class RealTimeAIAnalysis {
         } else {
           const errorText = await response.text();
           console.error('Perplexity API request failed:', response.status, response.statusText, errorText);
+          
+          // Try simple fallback query directly
+          console.log('🔄 Attempting simplified conflict query...');
+          try {
+            const simpleResponse = await fetch('https://api.perplexity.ai/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                model: 'llama-3.1-sonar-small-128k-online',
+                messages: [
+                  {
+                    role: 'user',
+                    content: 'Iran Israel ceasefire June 2025'
+                  }
+                ]
+              })
+            });
+
+            if (simpleResponse.ok) {
+              const simpleData = await simpleResponse.json();
+              const simpleContent = simpleData.choices[0]?.message?.content;
+              
+              if (simpleContent) {
+                console.log('✅ Successfully fetched Iran-Israel data via simplified query');
+                const conflictData = this.parsePerplexityConflictResponse(simpleContent);
+                this.setCachedData(cacheKey, conflictData);
+                return conflictData;
+              }
+            } else {
+              console.error('Simplified query also failed:', simpleResponse.status);
+            }
+          } catch (simpleError) {
+            console.error('Simplified query error:', simpleError);
+          }
         }
       } catch (error) {
         console.error('Error fetching Perplexity conflict data:', error);
-      }
-      
-      // Try alternative approach with simple Iran-Israel ceasefire query
-      try {
-        console.log('🔄 Attempting alternative Iran-Israel ceasefire query...');
-        const altResponse = await fetch('https://api.perplexity.ai/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'llama-3.1-sonar-small-128k-online',
-            messages: [
-              {
-                role: 'user',
-                content: 'Search for Iran-Israel ceasefire agreement developments from June 24, 2025. Include recent diplomatic breakthroughs and current conflict status.'
-              }
-            ],
-            temperature: 0.2,
-            search_recency_filter: "day"
-          })
-        });
-
-        if (altResponse.ok) {
-          const altData = await altResponse.json();
-          const altContent = altData.choices[0]?.message?.content;
-          
-          if (altContent) {
-            const conflictData = this.parsePerplexityConflictResponse(altContent);
-            if (conflictData && conflictData.conflicts && conflictData.conflicts.length > 0) {
-              console.log('✅ Successfully fetched Iran-Israel ceasefire data via alternative query');
-              this.setCachedData(cacheKey, conflictData);
-              return conflictData;
-            }
-          }
-        }
-      } catch (altError) {
-        console.error('Alternative query also failed:', altError);
       }
       
       // Return null instead of fallback data to ensure only authentic data is used
@@ -564,7 +562,8 @@ export class RealTimeAIAnalysis {
       volatilityIndex: toNumber(data.volatilityIndex, 18)
     };
   }
-}  private parsePerplexityConflictResponse(content: string): any {
+
+  private parsePerplexityConflictResponse(content: string): any {
     const conflicts = [];
     
     // Look for Iran-Israel ceasefire information
