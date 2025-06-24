@@ -163,38 +163,39 @@ export class FourStepIntelligenceService {
       year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    console.log(`🔧 Starting multi-call extraction for ${sector} sector with ${sources.length} sources...`);
+    console.log(`🔧 Starting aggressive multi-call extraction for ${sector} sector with ${sources.length} sources...`);
     
     const allArticles: ExtractedArticle[] = [];
-    const batchSize = 5; // Process 5 sources per API call
+    const sourceUtilization = new Map<string, number>(); // Track articles per source
+    const batchSize = 2; // Process only 2 sources per API call for maximum extraction
     const batches = [];
     
-    // Split sources into batches for targeted extraction
+    // Split sources into smaller batches for targeted extraction
     for (let i = 0; i < sources.length; i += batchSize) {
       batches.push(sources.slice(i, i + batchSize));
     }
     
-    console.log(`🔧 Created ${batches.length} batches of ${batchSize} sources each`);
+    console.log(`🔧 Created ${batches.length} batches of ${batchSize} sources each for maximum extraction`);
 
     // Process each batch with targeted extraction
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex];
       console.log(`🔧 Processing batch ${batchIndex + 1}/${batches.length}: ${batch.join(', ')}`);
       
-      const prompt = `Extract recent ${sector} articles published in the last 48 hours from these SPECIFIC sources:
+      const prompt = `Extract ALL recent ${sector} articles published in the last 48 hours from these SPECIFIC sources:
 ${batch.map(source => `- ${source}`).join('\n')}
 
-For EACH source that has recent articles, format as:
+Find MULTIPLE articles from EACH source (aim for 3-5 articles per source). For EVERY article found, format as:
 ### ARTICLE [number]:
-- **Title:** [exact headline]
-- **Source:** [source name]
+- **Title:** [exact headline]  
+- **Source:** [exact source name from list above]
 - **Date:** ${today} or ${yesterday}
 - **URL:** [full article URL if available]
 - **Content:** [article summary]
 
-Focus on: industry deals, policy changes, contracts, market developments, mergers, acquisitions, and major announcements in the ${sector} sector.
+Search extensively for: industry deals, policy changes, contracts, market developments, mergers, acquisitions, major announcements, regulatory updates, earnings reports, and breaking news in the ${sector} sector.
 
-If a source has no recent ${sector} articles, skip it entirely. Only include sources with actual recent content.`;
+CRITICAL: Extract as many articles as possible from each source. Do not limit to 1-2 articles per source.`;
 
       try {
         const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -221,18 +222,25 @@ If a source has no recent ${sector} articles, skip it entirely. Only include sou
           
           if (content.length > 200 && !content.includes('NO ARTICLES FOUND')) {
             const batchArticles = this.parseExtractedArticles(content);
+            
+            // Track source utilization
+            batchArticles.forEach(article => {
+              const sourceCount = sourceUtilization.get(article.source) || 0;
+              sourceUtilization.set(article.source, sourceCount + 1);
+            });
+            
             allArticles.push(...batchArticles);
-            console.log(`✅ Batch ${batchIndex + 1}: Extracted ${batchArticles.length} articles`);
+            console.log(`✅ Batch ${batchIndex + 1}: Extracted ${batchArticles.length} articles from sources: ${batch.join(', ')}`);
           } else {
-            console.log(`⚠️ Batch ${batchIndex + 1}: No articles found`);
+            console.log(`⚠️ Batch ${batchIndex + 1}: No articles found from sources: ${batch.join(', ')}`);
           }
         } else {
           console.log(`❌ Batch ${batchIndex + 1}: API error ${response.status}`);
         }
 
-        // Add delay between API calls to respect rate limits
+        // Add delay between API calls to respect rate limits (reduced for smaller batches)
         if (batchIndex < batches.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 1500));
         }
 
       } catch (error) {
@@ -242,6 +250,27 @@ If a source has no recent ${sector} articles, skip it entirely. Only include sou
     }
 
     console.log(`🔧 Multi-call extraction complete: ${allArticles.length} total articles from ${batches.length} batches`);
+    
+    // Log source utilization analysis
+    console.log(`📊 Source Utilization Analysis:`);
+    const sourcesWithArticles = Array.from(sourceUtilization.entries())
+      .sort((a, b) => b[1] - a[1]);
+    
+    sourcesWithArticles.forEach(([source, count]) => {
+      console.log(`  📰 ${source}: ${count} articles`);
+    });
+    
+    const unusedSources = sources.filter(source => 
+      !Array.from(sourceUtilization.keys()).some(usedSource => 
+        usedSource.toLowerCase().includes(source.toLowerCase().split('.')[0])
+      )
+    );
+    
+    if (unusedSources.length > 0) {
+      console.log(`⚠️ Unused sources (${unusedSources.length}): ${unusedSources.join(', ')}`);
+    }
+    
+    console.log(`📊 Coverage: ${sourceUtilization.size} sources utilized out of ${sources.length} total sources`);
     
     // Remove duplicates based on title similarity
     const uniqueArticles = this.removeDuplicateArticles(allArticles);
