@@ -1,4 +1,5 @@
 import { FourStepIntelligenceService } from "./four-step-intelligence-service";
+import { pool } from "./db";
 
 export class DailyBriefScheduler {
   private fourStepService: FourStepIntelligenceService;
@@ -50,6 +51,11 @@ export class DailyBriefScheduler {
           intelligenceBrief = await this.fourStepService.generateEnergyIntelligence();
         }
         
+        // Cache the generated brief
+        if (intelligenceBrief) {
+          await this.cacheBrief(sector, intelligenceBrief);
+        }
+        
         console.log(`✅ Successfully generated ${sector} brief with ${intelligenceBrief?.keyDevelopments?.length || 0} developments`);
         
       } catch (error) {
@@ -62,10 +68,39 @@ export class DailyBriefScheduler {
   }
 
   public async getCachedBrief(sector: string): Promise<any | null> {
-    // For now, return null to force fresh generation
-    // TODO: Implement proper database caching after schema is stable
-    console.log(`🔄 No cached brief available for ${sector}, will generate fresh`);
-    return null;
+    try {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      const result = await pool.query(
+        `SELECT * FROM daily_intelligence_briefs 
+         WHERE sector = $1 AND date = $2 
+         ORDER BY createdat DESC 
+         LIMIT 1`,
+        [sector, today]
+      );
+      
+      if (result.rows && result.rows.length > 0) {
+        const brief = result.rows[0];
+        console.log(`✅ Found cached ${sector} brief from ${brief.date}`);
+        
+        return {
+          id: brief.id,
+          date: brief.date,
+          title: brief.title,
+          executiveSummary: brief.executivesummary,
+          keyDevelopments: brief.keydevelopments,
+          marketImpactAnalysis: brief.marketimpact,
+          geopoliticalAnalysis: brief.geopoliticalanalysis,
+          sourcesSection: brief.sourcessection
+        };
+      }
+      
+      console.log(`🔄 No cached brief available for ${sector}, will generate fresh`);
+      return null;
+    } catch (error) {
+      console.error(`❌ Error fetching cached brief for ${sector}:`, error);
+      return null;
+    }
   }
 
   public async generateBriefIfMissing(sector: string): Promise<any> {
@@ -92,7 +127,47 @@ export class DailyBriefScheduler {
     
     console.log(`✅ Generated fresh ${sector} intelligence brief`);
     
+    // Cache the newly generated brief
+    if (intelligenceBrief) {
+      await this.cacheBrief(sector, intelligenceBrief);
+    }
+    
     return intelligenceBrief;
+  }
+
+  private async cacheBrief(sector: string, brief: any): Promise<void> {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      await pool.query(
+        `INSERT INTO daily_intelligence_briefs 
+         (sector, date, title, executivesummary, keydevelopments, marketimpact, geopoliticalanalysis, sourcessection)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (sector, date) 
+         DO UPDATE SET 
+           title = EXCLUDED.title,
+           executivesummary = EXCLUDED.executivesummary,
+           keydevelopments = EXCLUDED.keydevelopments,
+           marketimpact = EXCLUDED.marketimpact,
+           geopoliticalanalysis = EXCLUDED.geopoliticalanalysis,
+           sourcessection = EXCLUDED.sourcessection,
+           createdat = CURRENT_TIMESTAMP`,
+        [
+          sector,
+          today,
+          brief.title || `${sector} Intelligence Brief - ${today}`,
+          brief.executiveSummary || '',
+          JSON.stringify(brief.keyDevelopments || []),
+          brief.marketImpactAnalysis || brief.marketImpact || '',
+          brief.geopoliticalAnalysis || '',
+          brief.sourcesSection || ''
+        ]
+      );
+      
+      console.log(`💾 Cached ${sector} brief for ${today}`);
+    } catch (error) {
+      console.error(`❌ Error caching brief for ${sector}:`, error);
+    }
   }
 
   public cleanup() {
