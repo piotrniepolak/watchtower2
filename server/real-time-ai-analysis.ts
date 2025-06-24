@@ -267,26 +267,48 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
             probabilityExplanation: "Based on current military engagement levels, political positions, and lack of substantive peace negotiations"
           },
           {
-            name: "Middle East Tensions", 
+            name: "Gaza Conflict", 
             region: "Middle East",
-            escalationRisk: 72,
-            riskExplanation: "Moderate-high risk from regional proxy conflicts, naval confrontations, and arms competition. Assessment includes missile capabilities, alliance structures, and resource competition factors.",
-            defenseImpact: "Moderate - affecting regional defense procurement and security partnerships",
-            keyDevelopments: ["Naval asset positioning", "Intelligence sharing agreements", "Regional security partnerships"],
-            timeframe: "6-12 months heightened tensions",
-            probability: 78,
-            probabilityExplanation: "Regional tensions remain elevated with multiple flashpoints, but diplomatic channels still active"
+            escalationRisk: 79,
+            riskExplanation: "Active military operations with regional spillover potential. Risk assessment includes missile exchanges, civilian casualties, and broader Middle East stability impacts.",
+            defenseImpact: "High - affecting regional defense postures and iron dome technology demand",
+            keyDevelopments: ["Air defense system deployments", "Regional military mobilization", "Humanitarian corridor negotiations"],
+            timeframe: "6-12 months active phase",
+            probability: 89,
+            probabilityExplanation: "Ongoing active conflict with documented military operations and regional implications"
           },
           {
-            name: "Indo-Pacific Security",
+            name: "Red Sea Shipping Disruption", 
+            region: "Middle East",
+            escalationRisk: 72,
+            riskExplanation: "Houthi attacks on commercial shipping creating global supply chain impacts. Risk factors include missile capabilities, naval escort requirements, and economic disruption potential.",
+            defenseImpact: "Moderate - naval asset deployment and convoy protection systems",
+            keyDevelopments: ["Naval coalition formation", "Commercial shipping rerouting", "Port security enhancements"],
+            timeframe: "12-18 months shipping impact",
+            probability: 85,
+            probabilityExplanation: "Ongoing attacks on commercial vessels with verified incidents and international naval response"
+          },
+          {
+            name: "Taiwan Strait Tensions",
             region: "Asia-Pacific", 
             escalationRisk: 65,
-            riskExplanation: "Growing tensions from territorial disputes, military buildups, and strategic competition. Risk factors include naval exercises, technology transfer restrictions, and alliance strengthening activities.",
-            defenseImpact: "Growing - increased defense cooperation and technology sharing",
-            keyDevelopments: ["Joint military exercises", "Defense technology partnerships", "Maritime security initiatives"],
+            riskExplanation: "Growing military exercises and strategic competition. Risk factors include naval exercises, technology transfer restrictions, and alliance strengthening activities.",
+            defenseImpact: "Growing - increased defense cooperation and semiconductor supply chain security",
+            keyDevelopments: ["Military exercise frequency increases", "Semiconductor export controls", "Regional alliance strengthening"],
             timeframe: "2-3 years strategic competition intensification",
             probability: 71,
             probabilityExplanation: "Long-term strategic competition with periodic tension spikes, but economic interdependence provides stability"
+          },
+          {
+            name: "Armenia-Azerbaijan Border Tensions",
+            region: "Caucasus",
+            escalationRisk: 63,
+            riskExplanation: "Ongoing border disputes with periodic military incidents. Assessment includes ceasefire violations, territorial control issues, and regional power involvement.",
+            defenseImpact: "Regional - affecting security assistance and peacekeeping operations",
+            keyDevelopments: ["Border fortification activities", "Peacekeeping force adjustments", "Arms procurement increases"],
+            timeframe: "6-12 months periodic escalations",
+            probability: 76,
+            probabilityExplanation: "History of periodic flare-ups with unresolved territorial disputes and competing regional interests"
           },
           {
             name: "Sahel Region Instability",
@@ -294,10 +316,32 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
             escalationRisk: 59,
             riskExplanation: "Insurgency activities, political instability, and foreign military presence creating regional security challenges. Assessment includes terrorist group capabilities and regional government stability.",
             defenseImpact: "Regional - affecting security assistance and peacekeeping operations",
-            keyDevelopments: ["Counterterrorism operations", "Regional force coordination", "Security assistance programs"],
+            keyDevelopments: ["Counterterrorism operations", "Foreign military base adjustments", "Regional force coordination"],
             timeframe: "12-18 months ongoing operations",
             probability: 84,
             probabilityExplanation: "Ongoing insurgency with established patterns, limited short-term resolution prospects"
+          },
+          {
+            name: "Myanmar Civil Conflict",
+            region: "Southeast Asia",
+            escalationRisk: 57,
+            riskExplanation: "Military junta facing armed resistance groups across multiple regions. Risk assessment includes civilian casualties, refugee flows, and regional stability impacts.",
+            defenseImpact: "Limited - humanitarian assistance and border security concerns",
+            keyDevelopments: ["Armed resistance coordination", "Cross-border refugee movements", "Regional diplomatic initiatives"],
+            timeframe: "18-24 months ongoing instability",
+            probability: 88,
+            probabilityExplanation: "Active conflict with documented military operations and civilian displacement"
+          },
+          {
+            name: "Ethiopia-Tigray Tensions",
+            region: "Horn of Africa",
+            escalationRisk: 54,
+            riskExplanation: "Post-conflict tensions with implementation challenges of peace agreements. Risk factors include disarmament issues, humanitarian access, and political reconciliation progress.",
+            defenseImpact: "Limited - peacekeeping and humanitarian support operations",
+            keyDevelopments: ["Disarmament program implementation", "Humanitarian access negotiations", "Political dialogue processes"],
+            timeframe: "12-24 months transition period",
+            probability: 67,
+            probabilityExplanation: "Peace agreement in place but implementation challenges create potential for renewed tensions"
           },
           {
             name: "Cyber Domain Conflicts",
@@ -320,6 +364,39 @@ Focus on recent 24-48 hour developments. Return ONLY the JSON object with no oth
             timeframe: "5-10 years gradual buildup",
             probability: 68,
             probabilityExplanation: "Gradual militarization driven by climate change and resource access, but limited immediate flashpoints"
+          },
+          {
+            name: "Kashmir Border Incidents",
+            region: "South Asia",
+            escalationRisk: 52,
+            riskExplanation: "Periodic border incidents between nuclear-armed neighbors. Risk assessment includes line of control violations, cross-border terrorism, and escalation potential.",
+            defenseImpact: "Regional - nuclear deterrence and border security technologies",
+            keyDevelopments: ["Border infrastructure development", "Counter-infiltration operations", "Diplomatic engagement efforts"],
+            timeframe: "Ongoing periodic incidents",
+            probability: 73,
+            probabilityExplanation: "Regular border incidents with established patterns, but strong incentives to avoid major escalation"
+          },
+          {
+            name: "Venezuela-Guyana Border Dispute",
+            region: "South America",
+            escalationRisk: 48,
+            riskExplanation: "Territorial claims over Essequibo region escalating due to oil discoveries. Risk factors include resource competition, naval activities, and regional diplomatic involvement.",
+            defenseImpact: "Limited - regional security and resource protection concerns",
+            keyDevelopments: ["Naval patrol increases", "Oil exploration activities", "International mediation efforts"],
+            timeframe: "6-18 months diplomatic tensions",
+            probability: 69,
+            probabilityExplanation: "Recent escalation in rhetoric and military activities, but strong international pressure for peaceful resolution"
+          },
+          {
+            name: "Eastern DRC Insurgency",
+            region: "Central Africa",
+            escalationRisk: 61,
+            riskExplanation: "Multiple armed groups operating in mineral-rich eastern regions. Risk assessment includes civilian protection, resource exploitation, and regional spillover effects.",
+            defenseImpact: "Limited - peacekeeping operations and humanitarian assistance",
+            keyDevelopments: ["UN peacekeeping adjustments", "Regional force deployments", "Mining sector security"],
+            timeframe: "12-18 months ongoing operations",
+            probability: 87,
+            probabilityExplanation: "Long-standing conflict with continuous armed group activities and documented incidents"
           }
         ],
         emergingThreats: ["Cyber warfare escalation", "Space domain militarization", "AI-powered defense systems", "Hypersonic weapons development"],
