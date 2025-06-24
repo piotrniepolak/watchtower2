@@ -249,50 +249,17 @@ export class RealTimeAIAnalysis {
             messages: [
               {
                 role: 'system',
-                content: 'You are a geopolitical analyst providing current conflict analysis. Focus only on active conflicts and tensions from the last 48 hours. Be precise and factual.'
+                content: 'You are a real-time geopolitical analyst with internet access. Search for breaking news from the last 24-48 hours about global conflicts. Include specific dates and recent developments.'
               },
               {
                 role: 'user',
-                content: `Analyze current active global conflicts and military tensions from the last 48 hours. For each major conflict, provide:
-                - Current escalation risk (0-100)
-                - Latest developments from today/yesterday
-                - Defense industry impact assessment
-                - Probability of continued conflict (0-100)
-                - Timeline expectations
-                - Comprehensive paragraph explaining recent military, diplomatic, and strategic developments
-                
-                Focus specifically on: Ukraine-Russia War, Gaza/Israel conflict, Iran-Israel tensions and recent military actions, Red Sea shipping attacks, Taiwan Strait tensions, Armenia-Azerbaijan border, Myanmar civil war, Sahel region instability, cyber warfare incidents, and any other active military conflicts from the last 2 days.
-                
-                For Iran-Israel tensions, include recent missile exchanges, proxy conflicts, nuclear facilities, sanctions impacts, and regional military posturing.
-                
-                Format as JSON with this structure:
-                {
-                  "conflicts": [
-                    {
-                      "name": "conflict name",
-                      "region": "geographic region",
-                      "escalationRisk": number,
-                      "riskExplanation": "detailed current risk assessment",
-                      "defenseImpact": "impact on defense industry",
-                      "keyDevelopments": ["latest development 1", "latest development 2"],
-                      "timeframe": "expected duration",
-                      "probability": number,
-                      "probabilityExplanation": "reasoning for probability",
-                      "lastUpdate": "specific recent events from last 48 hours",
-                      "recentDevelopments": "comprehensive 3-4 sentence paragraph explaining the latest military, diplomatic, and strategic developments in this conflict from the past week, including defense industry implications"
-                    }
-                  ],
-                  "emergingThreats": ["threat 1", "threat 2"],
-                  "globalTensions": "overall assessment"
-                }`
+                content: `Search for recent global conflicts from the last 24-48 hours. Focus especially on Iran-Israel tensions including any ceasefire agreements, Gaza conflict updates, Ukraine-Russia developments, and Red Sea shipping disruptions. Provide current escalation risks, recent developments, and defense industry impacts for each conflict.`
               }
             ],
-            temperature: 0.1,
+            temperature: 0.2,
             search_recency_filter: "day",
             return_related_questions: false,
-            return_images: false,
-            search_domain_filter: ["reuters.com", "bbc.com", "cnn.com", "ap.org", "bloomberg.com", "wsj.com", "ft.com", "aljazeera.com", "timesofisrael.com", "haaretz.com", "jpost.com", "defenseone.com", "defensenews.com"],
-            top_k: 10
+            return_images: false
           })
         });
 
@@ -301,27 +268,20 @@ export class RealTimeAIAnalysis {
           const content = perplexityData.choices[0]?.message?.content;
           
           if (content) {
-            try {
-              // Clean and parse JSON from Perplexity response
-              const cleanedContent = content.replace(/```json\n?|\n?```/g, '').trim();
-              const conflictData = JSON.parse(cleanedContent);
-              
-              // Validate that we have real data, not placeholders
-              if (conflictData.conflicts && Array.isArray(conflictData.conflicts) && conflictData.conflicts.length > 0) {
-                console.log('✅ Successfully fetched real-time conflict data from Perplexity');
-                this.setCachedData(cacheKey, conflictData);
-                return conflictData;
-              } else {
-                console.error('Perplexity returned empty or invalid conflict data');
-                return null;
-              }
-            } catch (parseError) {
-              console.error('Failed to parse Perplexity conflict data:', parseError);
+            // Parse the Perplexity response and structure it for our analysis
+            const conflictData = this.parsePerplexityConflictResponse(content);
+            if (conflictData && conflictData.conflicts && conflictData.conflicts.length > 0) {
+              console.log('✅ Successfully fetched real-time conflict data from Perplexity');
+              this.setCachedData(cacheKey, conflictData);
+              return conflictData;
+            } else {
+              console.error('Unable to extract conflict data from Perplexity response');
               return null;
             }
           }
         } else {
-          console.error('Perplexity API request failed:', response.status, response.statusText);
+          const errorText = await response.text();
+          console.error('Perplexity API request failed:', response.status, response.statusText, errorText);
         }
       } catch (error) {
         console.error('Error fetching Perplexity conflict data:', error);
