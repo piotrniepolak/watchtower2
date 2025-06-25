@@ -602,17 +602,21 @@ Use ONLY information from the extracted articles. Reference specific details, co
   }
 
   private cleanAndFormatText(text: string): string {
+    // Skip cleaning if text contains source URLs or references sections
+    if (text.includes('http') || text.includes('Sources:') || text.includes('References:') || text.includes('Intelligence Sources')) {
+      return text;
+    }
+    
     return text
       // Remove markdown formatting
       .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
       .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
       .replace(/#{1,6}\s+/g, '')        // Remove # headers
-      .replace(/\-\s+/g, '')            // Remove bullet points
       .replace(/\[.*?\]/g, '')          // Remove reference numbers [1]
       // Clean up whitespace and punctuation
       .replace(/\s+/g, ' ')             // Multiple spaces to single
       .replace(/\.\s*\./g, '.')         // Remove double periods
-      .replace(/^\s*[\-\*\•]\s*/, '')   // Remove leading bullets
+      .replace(/^\s*[\-\*\•]\s*/, '')   // Remove leading bullets only from start
       .replace(/^\s+|\s+$/g, '')        // Trim whitespace
       // Ensure proper capitalization
       .replace(/^./, char => char.toUpperCase())
@@ -721,8 +725,8 @@ Use ONLY information from the extracted articles. Reference specific details, co
         /^-\s+(.+)$/gm,           // Lines starting with "- "
         /^\*\s+(.+)$/gm,          // Lines starting with "* "
         /^•\s+(.+)$/gm,           // Lines starting with "• "
-        /-\s+([^\n]{20,})/g,      // Any "- " followed by substantial text
-        /\*\s+([^\n]{20,})/g      // Any "* " followed by substantial text
+        /-\s+([^\n]+)/g,          // Any "- " followed by text
+        /\*\s+([^\n]+)/g          // Any "* " followed by text
       ];
       
       for (const pattern of bulletPatterns) {
