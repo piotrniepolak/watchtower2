@@ -13,15 +13,17 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 24, 2025 - Enhanced Multi-Call Article Extraction System
+### June 25, 2025 - Implemented User-Specified Perplexity Prompt Format
 
-**Major Intelligence Extraction Enhancement:**
-- **Implemented multi-call API system** replacing single broad API requests with targeted 5-source batches for dramatically increased article extraction
-- **Enhanced parsing logic** with multiple format fallbacks to handle varied Perplexity response structures (### ARTICLE, ## Article, **Article** formats)
-- **Added comprehensive source URL mapping** for all 20 defense, pharmaceutical, and energy sources with accurate domain attribution
-- **Implemented deduplication system** to remove similar articles across multiple API calls while preserving unique content
-- **Added 2-second delays between API calls** to respect rate limits while maximizing extraction throughput
-- **Enhanced error handling** allowing system to continue with remaining batches even if individual calls fail
+**Complete Intelligence Brief Format Overhaul:**
+- **Implemented exact user-specified Perplexity prompt structure** with precise word counts and formatting requirements for all three sectors
+- **Applied consistent formatting across Conflicts, Pharma, and Energy sections** with Executive Summary (300-500 words), Key Developments (4-10 bullet points), Geopolitical Analysis (200-300 words), Market Impact Analysis (200-300 words)
+- **Enhanced section parsing to handle user-specified format** including proper bullet point extraction and References section integration
+- **Updated all regeneration endpoints** to use exact prompt structure provided by user for dynamic, streamlined content
+- **Preserved source link functionality** while implementing smart text cleaning that skips URLs and reference sections
+- **Eliminated asterisks, hashtags, and incomplete sentences** per user requirements with proper grammar and punctuation validation
+
+### June 24, 2025 - Previous: Enhanced Multi-Call Article Extraction System
 
 **Technical Implementation:**
 - Split 20 sources into 10 batches of 2 sources each for maximum focused extraction per source

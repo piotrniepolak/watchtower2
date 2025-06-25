@@ -560,7 +560,9 @@ Do not use inline citations.
 Do not use asterisks, hashtags, or incomplete sentences.
 Always double-check for proper spelling, grammar, and punctuation.
 
-Generate only authentic, recent content from the past 24 hours. Make everything dynamic, streamlined, and properly formatted.`;
+Generate only authentic, recent content from the past 24 hours. Make everything dynamic, streamlined, and properly formatted.
+
+Include a References section at the end with all source URLs listed one per line without numbering.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -628,12 +630,12 @@ Generate only authentic, recent content from the past 24 hours. Make everything 
     console.log(`📝 Generated sections content (${content.length} characters)`);
     console.log(`📝 Content preview: ${content.substring(0, 300)}`);
 
-    // Split content into distinct sections using strict boundaries
+    // Parse sections using user-specified format patterns
     const sectionMarkers = [
-      { name: 'executive', pattern: /\*\*EXECUTIVE SUMMARY\*\*/i },
-      { name: 'developments', pattern: /\*\*KEY DEVELOPMENTS\*\*/i },
-      { name: 'market', pattern: /\*\*MARKET IMPACT ANALYSIS\*\*/i },
-      { name: 'geopolitical', pattern: /\*\*GEOPOLITICAL ANALYSIS\*\*/i }
+      { name: 'executive', pattern: /Executive Summary.*?(?:300-500 words)?\s*/i },
+      { name: 'developments', pattern: /Key Developments.*?(?:4-10.*bullet points)?\s*/i },
+      { name: 'geopolitical', pattern: /Geopolitical Analysis.*?(?:200-300 words)?\s*/i },
+      { name: 'market', pattern: /Market Impact Analysis.*?(?:200-300 words)?\s*/i }
     ];
 
     let executiveSummary = '';
@@ -725,8 +727,8 @@ Generate only authentic, recent content from the past 24 hours. Make everything 
         /^-\s+(.+)$/gm,           // Lines starting with "- "
         /^\*\s+(.+)$/gm,          // Lines starting with "* "
         /^•\s+(.+)$/gm,           // Lines starting with "• "
-        /-\s+([^\n]+)/g,          // Any "- " followed by text
-        /\*\s+([^\n]+)/g          // Any "* " followed by text
+        /-\s+([^]+?)\n/g,         // Any "- " followed by text until newline
+        /\*\s+([^]+?)\n/g         // Any "* " followed by text until newline
       ];
       
       for (const pattern of bulletPatterns) {
