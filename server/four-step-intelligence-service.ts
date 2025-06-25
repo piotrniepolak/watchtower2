@@ -601,6 +601,25 @@ Use ONLY information from the extracted articles. Reference specific details, co
     }
   }
 
+  private cleanAndFormatText(text: string): string {
+    return text
+      // Remove markdown formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+      .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
+      .replace(/#{1,6}\s+/g, '')        // Remove # headers
+      .replace(/\-\s+/g, '')            // Remove bullet points
+      .replace(/\[.*?\]/g, '')          // Remove reference numbers [1]
+      // Clean up whitespace and punctuation
+      .replace(/\s+/g, ' ')             // Multiple spaces to single
+      .replace(/\.\s*\./g, '.')         // Remove double periods
+      .replace(/^\s*[\-\*\•]\s*/, '')   // Remove leading bullets
+      .replace(/^\s+|\s+$/g, '')        // Trim whitespace
+      // Ensure proper capitalization
+      .replace(/^./, char => char.toUpperCase())
+      // Ensure proper sentence ending
+      .replace(/[^.!?]$/, match => match + '.');
+  }
+
   private parseFourStepSections(content: string): {executiveSummary: string, keyDevelopments: string[], marketImpactAnalysis: string, geopoliticalAnalysis: string} {
     console.log(`📝 Generated sections content (${content.length} characters)`);
     console.log(`📝 Content preview: ${content.substring(0, 300)}`);
@@ -624,13 +643,13 @@ Use ONLY information from the extracted articles. Reference specific details, co
       const nextMarker = sectionMarkers[i + 1];
       
       const startMatch = content.match(currentMarker.pattern);
-      if (startMatch) {
+      if (startMatch && startMatch.index !== undefined) {
         const startIndex = startMatch.index + startMatch[0].length;
         let endIndex = content.length;
         
         if (nextMarker) {
           const endMatch = content.match(nextMarker.pattern);
-          if (endMatch) {
+          if (endMatch && endMatch.index !== undefined) {
             endIndex = endMatch.index;
           }
         }

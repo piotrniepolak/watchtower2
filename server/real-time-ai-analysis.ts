@@ -845,25 +845,6 @@ For each active conflict, provide:
     return relevantSentences.join(' ').toLowerCase();
   }
 
-  private cleanAndFormatText(text: string): string {
-    return text
-      // Remove markdown formatting
-      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
-      .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
-      .replace(/#{1,6}\s+/g, '')        // Remove # headers
-      .replace(/\-\s+/g, '')            // Remove bullet points
-      .replace(/\[.*?\]/g, '')          // Remove reference numbers [1]
-      // Clean up whitespace and punctuation
-      .replace(/\s+/g, ' ')             // Multiple spaces to single
-      .replace(/\.\s*\./g, '.')         // Remove double periods
-      .replace(/^\s*[\-\*\•]\s*/, '')   // Remove leading bullets
-      .replace(/^\s+|\s+$/g, '')        // Trim whitespace
-      // Ensure proper capitalization
-      .replace(/^./, char => char.toUpperCase())
-      // Ensure proper sentence ending
-      .replace(/[^.!?]$/, match => match + '.');
-  }
-
   private extractRiskExplanation(content: string, keywords: string[]): string | null {
     const sentences = content.split(/[.!?]+/);
     const relevantSentences = sentences
