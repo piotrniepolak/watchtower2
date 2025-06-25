@@ -535,32 +535,32 @@ CRITICAL: ${source} publishes multiple ${sector} articles daily. Find ALL of the
       `ARTICLE: ${article.title}\nSOURCE: ${article.source}\nDATE: ${article.publishDate}\nCONTENT: ${article.content}\n---`
     ).join('\n\n');
 
-    const prompt = `Create a professional intelligence brief using ONLY these ${articles.length} authentic articles from ${sector} sector sources:
+    // Use the exact prompt structure provided by the user
+    const sectorName = sector === 'defense' ? 'Conflicts' : sector === 'pharmaceutical' ? 'Pharma' : 'Energy';
+    
+    const prompt = `Task: Using only reputable open-web sources published within the past 24 hours, create a ${sectorName} section formatted exactly as described below.
+Search broadly and pull in as many reliable primary and Tier-1 sources as you can find (government or multilateral releases, leading industry reports, top-tier media, etc.).
+Respect the exact word-count ranges and bullet limits.
 
-${articlesText}
+Section – ${sectorName}
+Executive Summary – 300-500 words
 
-Write exactly these 4 sections with this exact formatting:
+Key Developments – 4-10 single-sentence bullet points
 
-**EXECUTIVE SUMMARY**
-Write a comprehensive 500-600 word executive summary covering the key developments, companies, and strategic implications from the articles. Include specific details, financial figures, and concrete developments mentioned in the source material.
+Geopolitical Analysis – 200-300 words
 
-**KEY DEVELOPMENTS**
-- [First development from articles with specific details]
-- [Second development from articles with specific details]
-- [Third development from articles with specific details]
-- [Fourth development from articles with specific details]
-- [Fifth development from articles with specific details]
-- [Sixth development from articles with specific details]
+Market Impact Analysis – 200-300 words
 
-IMPORTANT: Write exactly 6 bullet points, each starting with "- " and containing specific information from the source articles.
+Formatting rules (must-follow):
+Keep each subsection as its own block, separated by one blank line.
+Maintain the exact order shown above; label each subsection precisely as specified.
+Bullet points should be concise, fact-packed, and avoid duplication with the narrative paragraphs.
+Where possible, quantify impacts (e.g., "Brent crude rose X % day-on-day") and include dates.
+Do not use inline citations.
+Do not use asterisks, hashtags, or incomplete sentences.
+Always double-check for proper spelling, grammar, and punctuation.
 
-**MARKET IMPACT ANALYSIS**
-Write a comprehensive 500-600 word analysis of market and financial impacts based on information in the articles. Include specific financial figures, market implications, and detailed analysis from the source material.
-
-**GEOPOLITICAL ANALYSIS**
-Write a 300-400 word analysis of strategic and policy implications from the articles.
-
-Use ONLY information from the extracted articles. Reference specific details, companies, and figures mentioned in the source material.`;
+Generate only authentic, recent content from the past 24 hours. Make everything dynamic, streamlined, and properly formatted.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {

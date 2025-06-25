@@ -2119,13 +2119,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Delete existing 4-step intelligence
       await storage.deleteFourStepIntelligence(today, 'defense');
       
-      console.log('🔬 Regenerating 4-step defense intelligence with fresh article extraction...');
+      console.log('🔬 Regenerating defense intelligence using exact user-specified Perplexity prompt format...');
       const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
       
       const insertData = {
         date: today,
         sector: 'defense',
-        title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
+        title: `Conflicts Intelligence Brief - ${today} (User-Specified Format)`,
         executiveSummary: fourStepBrief.executiveSummary,
         keyDevelopments: fourStepBrief.keyDevelopments,
         marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
@@ -2138,12 +2138,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const intelligence = await storage.createFourStepIntelligence(insertData);
-      console.log(`✅ 4-step defense intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      console.log(`✅ Conflicts intelligence regenerated using exact user format with dynamic content`);
       
       res.json(intelligence);
     } catch (error) {
-      console.error("❌ Error regenerating 4-step defense intelligence:", error);
-      res.status(500).json({ error: "Failed to regenerate 4-step defense intelligence" });
+      console.error("❌ Error regenerating conflicts intelligence:", error);
+      res.status(500).json({ error: "Failed to regenerate conflicts intelligence" });
     }
   });
 

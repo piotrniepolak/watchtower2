@@ -1,0 +1,84 @@
+Guidelines: Do exactly as told and do not stop until you are done, do not randomize, do not use fallback data, and make sure everything is dynamic, streamlined, properly formatted, and recent. Do not use asterisks, hashtags, or incomplete sentences. Always double-check for proper spelling, grammar, and punctuation. If it is not correct or does not make sense, fix it before marking it as done.
+
+Task: Use exactly  this prompt for Perplexity AI to get recent news on conflicts, pharma, and energy, as well as the markets related to all of those things in 3 different sectors (mentioned earlier):
+
+Section 1: Conflicts (executive summary (300 - 500 words), key developments (4 - 10 bullet points, each one sentence), geopolitical analysis (200 - 300 words), market impact analysis (200 - 300 words), references) 
+
+Section 2: Pharma (executive summary (300 - 500 words), key developments (4 - 10 bullet points, each one sentence), geopolitical analysis (200 - 300 words), market impact analysis (200 - 300 words), references) 
+
+Section 3: Energy  (executive summary (300 - 500 words), key developments (4 - 10 bullet points, each one sentence), geopolitical analysis (200 - 300 words), market impact analysis (200 - 300 words, references)) 
+
+Each section in each sector is a separate paragraph, make sure to separate them and do not mix them up. 
+
+(Prompt to use: Task: Using only reputable open-web sources published within the past 24 hours, create three completely separate sections—Conflicts, Pharma, and Energy—formatted exactly as described below.
+ Search broadly and pull in as many reliable primary and Tier-1 sources as you can find (government or multilateral releases, leading industry reports, top-tier media, etc.).
+ Respect the exact word-count ranges and bullet limits.
+
+Section 1 – Conflicts
+Executive Summary – 300-500 words
+
+
+Key Developments – 4-10 single-sentence bullet points
+
+
+Geopolitical Analysis – 200-300 words
+
+
+Market Impact Analysis – 200-300 words
+
+
+
+Section 2 – Pharma
+Executive Summary – 300-500 words
+
+
+Key Developments – 4-10 single-sentence bullet points
+
+
+Geopolitical Analysis – 200-300 words
+
+
+Market Impact Analysis – 200-300 words
+
+
+
+Section 3 – Energy
+Executive Summary – 300-500 words
+
+
+Key Developments – 4-10 single-sentence bullet points
+
+
+Geopolitical Analysis – 200-300 words
+
+
+Market Impact Analysis – 200-300 words
+
+
+
+Formatting rules (must-follow):
+Keep each of the three major sections as its own block, separated by one blank line.
+
+
+Within a section, maintain the exact order shown above; label each subsection precisely as specified.
+
+
+Do not mix content across sections.
+
+
+Bullet points should be concise, fact-packed, and avoid duplication with the narrative paragraphs.
+
+
+Where possible, quantify impacts (e.g., “Brent crude rose X % day-on-day”) and include dates.
+
+
+Do not use inline citations.
+
+
+After the main text, add a standalone “References” section that lists every source URL on its own line (no numbering needed).
+
+
+
+References
+ (Populate this list with all URLs used, one per line.)
+)
