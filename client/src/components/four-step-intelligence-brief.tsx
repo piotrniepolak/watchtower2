@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { ExternalLink, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { FourStepIntelligence } from '@shared/schema';
 
 interface ExtractedArticle {
   title: string;
@@ -14,23 +15,6 @@ interface ExtractedArticle {
   source: string;
   publishDate: string;
   content: string;
-}
-
-interface FourStepIntelligence {
-  id: number;
-  date: string;
-  sector: string;
-  title: string;
-  executiveSummary: string;
-  keyDevelopments: string[];
-  marketImpactAnalysis: string;
-  geopoliticalAnalysis: string;
-  extractedArticles: ExtractedArticle[];
-  sourceUrls: string[];
-  methodologyUsed: string;
-  articleCount: number;
-  sourcesVerified: boolean;
-  createdAt: string;
 }
 
 interface FourStepIntelligenceBriefProps {
@@ -45,7 +29,6 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
   const { data: intelligence, isLoading, error } = useQuery<FourStepIntelligence>({
     queryKey: [`/api/intelligence/${sector}/four-step`],
     staleTime: 0,
-    cacheTime: 0,
     refetchOnWindowFocus: false,
     retry: false, // Don't retry when no articles found
   });
@@ -254,7 +237,7 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
         </CardHeader>
         <CardContent>
           <ul className="space-y-3">
-            {intelligence.keyDevelopments.map((development, index) => (
+            {Array.isArray(intelligence.keyDevelopments) && intelligence.keyDevelopments.map((development: string, index: number) => (
               <li key={index} className="flex items-start gap-3">
                 <div className="h-2 w-2 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
                 <p className="text-gray-700 leading-relaxed">{development}</p>
@@ -293,12 +276,12 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
         <CardHeader>
           <CardTitle className="text-xl">Source Articles Used in Analysis</CardTitle>
           <p className="text-sm text-gray-600">
-            {intelligence.articleCount} authentic articles extracted from verified news sources
+            {intelligence.articleCount || 0} authentic articles extracted from verified news sources
           </p>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {intelligence.extractedArticles.map((article, index) => (
+            {Array.isArray(intelligence.extractedArticles) && intelligence.extractedArticles.map((article: ExtractedArticle, index: number) => (
               <div key={index} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 space-y-2">
@@ -335,6 +318,11 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
                 </div>
               </div>
             ))}
+            {!Array.isArray(intelligence.extractedArticles) && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No extracted articles available</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
