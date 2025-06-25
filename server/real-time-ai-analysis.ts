@@ -4,6 +4,8 @@ export class RealTimeAIAnalysis {
 
   constructor() {
     // Direct Perplexity API integration
+    // Clear cache on startup to ensure fresh data
+    this.cache.clear();
   }
 
   private getCachedData(key: string): any | null {
@@ -253,7 +255,21 @@ export class RealTimeAIAnalysis {
               },
               {
                 role: 'user',
-                content: `Search for recent global conflicts from the last 24-48 hours. Focus especially on Iran-Israel tensions including any ceasefire agreements, Gaza conflict updates, Ukraine-Russia developments, and Red Sea shipping disruptions. Provide current escalation risks, recent developments, and defense industry impacts for each conflict.`
+                content: `Search for ALL active global conflicts and geopolitical tensions from the last 24-48 hours worldwide. Include:
+
+1. MIDDLE EAST: Iran-Israel tensions, Gaza conflict, Syria situation, Lebanon tensions, Yemen civil war, Red Sea shipping disruptions
+2. EUROPE: Ukraine-Russia war, Belarus tensions, Kosovo-Serbia disputes, Armenia-Azerbaijan conflicts
+3. ASIA-PACIFIC: Taiwan Strait tensions, South China Sea disputes, North Korea developments, India-Pakistan tensions, India-China border disputes
+4. AFRICA: Sudan civil war, Ethiopia conflicts, Mali tensions, Somalia security situation, Democratic Republic of Congo conflicts
+5. AMERICAS: Venezuela-Guyana border dispute, Haiti security crisis, Mexico cartel conflicts
+6. GLOBAL: Cyber warfare incidents, space domain conflicts, maritime security threats
+
+For each active conflict, provide:
+- Current escalation risk level (0-100)
+- Recent developments from last 48 hours
+- Defense industry impact
+- Regional implications
+- Timeline of tensions`
               }
             ],
             temperature: 0.2,
@@ -565,69 +581,243 @@ export class RealTimeAIAnalysis {
 
   private parsePerplexityConflictResponse(content: string): any {
     const conflicts = [];
+    const contentLower = content.toLowerCase();
     
-    // Look for Iran-Israel ceasefire information
-    if (content.toLowerCase().includes('iran') && content.toLowerCase().includes('israel')) {
-      const hasCeasefire = content.toLowerCase().includes('ceasefire') || content.toLowerCase().includes('truce');
-      const iranIsraelConflict = {
+    // Define comprehensive conflict detection patterns
+    const conflictPatterns = [
+      // Middle East
+      {
+        keywords: ['iran', 'israel'],
         name: "Iran-Israel Tensions",
         region: "Middle East",
-        escalationRisk: hasCeasefire ? 25 : 75,
-        riskExplanation: hasCeasefire 
-          ? "Recent ceasefire agreement announced by Trump administration significantly reduces immediate escalation risk. However, both sides have reported violations and compliance monitoring remains critical."
-          : "Ongoing tensions with potential for escalation based on recent developments.",
-        defenseImpact: hasCeasefire 
-          ? "Reduced immediate demand but continued focus on missile defense systems and regional security arrangements"
-          : "High - affecting regional defense postures and missile defense systems demand",
-        keyDevelopments: this.extractKeyDevelopments(content, 'iran'),
-        timeframe: hasCeasefire ? "Ceasefire implementation and monitoring phase" : "Ongoing tensions",
-        probability: hasCeasefire ? 30 : 80,
-        probabilityExplanation: hasCeasefire 
-          ? "Ceasefire announced but both sides reporting violations. Success depends on compliance and international monitoring."
-          : "High probability based on recent escalations and military activities",
-        lastUpdate: `Recent Iran-Israel developments from June 24, 2025${hasCeasefire ? ' - Ceasefire announced' : ''}`,
-        recentDevelopments: this.extractRecentDevelopments(content, 'iran')
-      };
-      conflicts.push(iranIsraelConflict);
-    }
-
-    // Add other conflicts based on content
-    if (content.toLowerCase().includes('ukraine') && content.toLowerCase().includes('russia')) {
-      conflicts.push({
-        name: "Ukraine-Russia War",
-        region: "Eastern Europe", 
-        escalationRisk: 80,
-        riskExplanation: "Ongoing military operations with continued international support and aid packages",
-        defenseImpact: "High - driving NATO defense spending and military equipment demand",
-        keyDevelopments: this.extractKeyDevelopments(content, 'ukraine'),
-        timeframe: "Long-term conflict expected",
-        probability: 90,
-        probabilityExplanation: "Ongoing active conflict with no clear resolution path",
-        lastUpdate: "Recent military operations and aid developments",
-        recentDevelopments: this.extractRecentDevelopments(content, 'ukraine')
-      });
-    }
-
-    if (content.toLowerCase().includes('gaza')) {
-      conflicts.push({
+        baseRisk: 75,
+        ceasefireKeywords: ['ceasefire', 'truce', 'agreement']
+      },
+      {
+        keywords: ['gaza', 'hamas'],
         name: "Gaza Conflict",
         region: "Middle East",
-        escalationRisk: 70,
-        riskExplanation: "Active military operations with humanitarian concerns and regional implications",
-        defenseImpact: "High - affecting regional defense systems and humanitarian aid logistics",
-        keyDevelopments: this.extractKeyDevelopments(content, 'gaza'),
-        timeframe: "Ongoing conflict with ceasefire negotiations",
-        probability: 85,
-        probabilityExplanation: "Active conflict with documented military operations",
-        lastUpdate: "Recent military and humanitarian developments",
-        recentDevelopments: this.extractRecentDevelopments(content, 'gaza')
+        baseRisk: 70
+      },
+      {
+        keywords: ['syria', 'assad'],
+        name: "Syria Crisis",
+        region: "Middle East",
+        baseRisk: 60
+      },
+      {
+        keywords: ['lebanon', 'hezbollah'],
+        name: "Lebanon Tensions",
+        region: "Middle East",
+        baseRisk: 55
+      },
+      {
+        keywords: ['yemen', 'houthi'],
+        name: "Yemen Civil War",
+        region: "Middle East",
+        baseRisk: 65
+      },
+      {
+        keywords: ['red sea', 'shipping'],
+        name: "Red Sea Shipping Crisis",
+        region: "Middle East",
+        baseRisk: 50
+      },
+      // Europe
+      {
+        keywords: ['ukraine', 'russia'],
+        name: "Ukraine-Russia War",
+        region: "Eastern Europe",
+        baseRisk: 85
+      },
+      {
+        keywords: ['belarus', 'lukashenko'],
+        name: "Belarus Political Crisis",
+        region: "Eastern Europe",
+        baseRisk: 45
+      },
+      {
+        keywords: ['kosovo', 'serbia'],
+        name: "Kosovo-Serbia Tensions",
+        region: "Balkans",
+        baseRisk: 40
+      },
+      {
+        keywords: ['armenia', 'azerbaijan'],
+        name: "Armenia-Azerbaijan Conflict",
+        region: "Caucasus",
+        baseRisk: 55
+      },
+      // Asia-Pacific
+      {
+        keywords: ['taiwan', 'strait'],
+        name: "Taiwan Strait Tensions",
+        region: "Asia-Pacific",
+        baseRisk: 70
+      },
+      {
+        keywords: ['south china sea', 'spratly'],
+        name: "South China Sea Disputes",
+        region: "Asia-Pacific",
+        baseRisk: 60
+      },
+      {
+        keywords: ['north korea', 'pyongyang'],
+        name: "North Korea Tensions",
+        region: "Asia-Pacific",
+        baseRisk: 65
+      },
+      {
+        keywords: ['india', 'pakistan', 'kashmir'],
+        name: "India-Pakistan Tensions",
+        region: "South Asia",
+        baseRisk: 55
+      },
+      {
+        keywords: ['india', 'china', 'border'],
+        name: "India-China Border Dispute",
+        region: "South Asia",
+        baseRisk: 50
+      },
+      // Africa
+      {
+        keywords: ['sudan', 'khartoum'],
+        name: "Sudan Civil War",
+        region: "Africa",
+        baseRisk: 80
+      },
+      {
+        keywords: ['ethiopia', 'tigray'],
+        name: "Ethiopia Conflicts",
+        region: "Africa",
+        baseRisk: 70
+      },
+      {
+        keywords: ['mali', 'sahel'],
+        name: "Mali Security Crisis",
+        region: "Africa",
+        baseRisk: 65
+      },
+      {
+        keywords: ['somalia', 'al-shabaab'],
+        name: "Somalia Security Situation",
+        region: "Africa",
+        baseRisk: 75
+      },
+      {
+        keywords: ['congo', 'drc', 'kinshasa'],
+        name: "DRC Conflicts",
+        region: "Africa",
+        baseRisk: 70
+      },
+      // Americas
+      {
+        keywords: ['venezuela', 'guyana'],
+        name: "Venezuela-Guyana Border Dispute",
+        region: "South America",
+        baseRisk: 45
+      },
+      {
+        keywords: ['haiti', 'gang'],
+        name: "Haiti Security Crisis",
+        region: "Caribbean",
+        baseRisk: 60
+      },
+      {
+        keywords: ['mexico', 'cartel'],
+        name: "Mexico Cartel Violence",
+        region: "North America",
+        baseRisk: 55
+      },
+      // Global/Cyber
+      {
+        keywords: ['cyber', 'warfare', 'attack'],
+        name: "Cyber Warfare Threats",
+        region: "Global",
+        baseRisk: 65
+      },
+      {
+        keywords: ['space', 'satellite'],
+        name: "Space Domain Conflicts",
+        region: "Global",
+        baseRisk: 40
+      }
+    ];
+
+    // Process each conflict pattern
+    for (const pattern of conflictPatterns) {
+      const hasAllKeywords = pattern.keywords.every(keyword => 
+        contentLower.includes(keyword.toLowerCase())
+      );
+      
+      if (hasAllKeywords) {
+        let escalationRisk = pattern.baseRisk;
+        let riskExplanation = "Ongoing tensions with potential for escalation based on recent developments.";
+        let defenseImpact = "Moderate - affecting regional defense postures and security arrangements";
+        let timeframe = "Ongoing situation requiring monitoring";
+        let probability = pattern.baseRisk;
+        let probabilityExplanation = "Risk assessment based on current intelligence and regional dynamics";
+        
+        // Special handling for ceasefire situations
+        if (pattern.ceasefireKeywords) {
+          const hasCeasefire = pattern.ceasefireKeywords.some(keyword => 
+            contentLower.includes(keyword)
+          );
+          if (hasCeasefire) {
+            escalationRisk = Math.max(25, pattern.baseRisk - 50);
+            riskExplanation = "Recent ceasefire or diplomatic agreement reduces immediate escalation risk, but monitoring remains critical for compliance and violations.";
+            timeframe = "Ceasefire implementation and monitoring phase";
+            probability = Math.max(30, pattern.baseRisk - 40);
+            probabilityExplanation = "Ceasefire announced but compliance monitoring required. Success depends on adherence by all parties.";
+          }
+        }
+        
+        // Adjust defense impact based on conflict type
+        if (pattern.region === "Middle East" || pattern.name.includes("Taiwan") || pattern.name.includes("Ukraine")) {
+          defenseImpact = "High - driving significant defense spending and military equipment demand";
+        } else if (pattern.region === "Global") {
+          defenseImpact = "Strategic - affecting defense technologies and cyber security investments";
+        }
+
+        const conflict = {
+          name: pattern.name,
+          region: pattern.region,
+          escalationRisk,
+          riskExplanation,
+          defenseImpact,
+          keyDevelopments: this.extractKeyDevelopments(content, pattern.keywords[0]),
+          timeframe,
+          probability,
+          probabilityExplanation,
+          lastUpdate: `Recent developments monitored as of June 25, 2025`,
+          recentDevelopments: this.extractRecentDevelopments(content, pattern.keywords[0])
+        };
+        
+        conflicts.push(conflict);
+      }
+    }
+
+    // If no conflicts detected, add a default monitoring message
+    if (conflicts.length === 0) {
+      conflicts.push({
+        name: "Global Monitoring",
+        region: "Worldwide",
+        escalationRisk: 35,
+        riskExplanation: "Continuous monitoring of global geopolitical developments and emerging tensions",
+        defenseImpact: "Baseline - maintaining global defense readiness and intelligence gathering",
+        keyDevelopments: ["Active intelligence monitoring", "Diplomatic engagement ongoing", "Regional stability assessments updated"],
+        timeframe: "Ongoing monitoring",
+        probability: 40,
+        probabilityExplanation: "Standard geopolitical risk assessment with focus on emerging threats",
+        lastUpdate: "Global security assessment updated June 25, 2025",
+        recentDevelopments: "Intelligence agencies continue monitoring global developments with focus on emerging threats and regional stability."
       });
     }
 
     return {
       conflicts,
-      emergingThreats: ["Cyber warfare escalation", "Regional proxy conflicts", "Supply chain disruptions"],
-      globalTensions: "Elevated tensions across multiple regions with active conflicts requiring international attention"
+      emergingThreats: ["Cyber warfare escalation", "Regional proxy conflicts", "Supply chain disruptions", "Space domain competition", "Maritime security threats"],
+      globalTensions: `Currently monitoring ${conflicts.length} active conflicts and tensions across multiple regions requiring international attention and defense readiness`
     };
   }
 
