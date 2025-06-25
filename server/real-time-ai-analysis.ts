@@ -238,6 +238,10 @@ export class RealTimeAIAnalysis {
 
   async generateSectorAnalysis(sector: string): Promise<any | null> {
     const cacheKey = `sector_analysis_${sector}`;
+    
+    // Force cache clearing for fresh conflict data
+    this.cache.delete(cacheKey);
+    
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
@@ -773,14 +777,14 @@ For each active conflict, provide:
             name: pattern.name,
             region: pattern.region,
             escalationRisk,
-            riskExplanation,
+            riskExplanation: riskExplanation!,
             defenseImpact,
-            keyDevelopments,
+            keyDevelopments: keyDevelopments!,
             timeframe,
             probability,
             probabilityExplanation,
             lastUpdate: `Live data from Perplexity - ${new Date().toLocaleDateString()}`,
-            recentDevelopments
+            recentDevelopments: recentDevelopments!
           };
           
           conflicts.push(conflict);
