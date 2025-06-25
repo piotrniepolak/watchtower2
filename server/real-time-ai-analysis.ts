@@ -845,18 +845,37 @@ For each active conflict, provide:
     return relevantSentences.join(' ').toLowerCase();
   }
 
+  private cleanAndFormatText(text: string): string {
+    return text
+      // Remove markdown formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+      .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
+      .replace(/#{1,6}\s+/g, '')        // Remove # headers
+      .replace(/\-\s+/g, '')            // Remove bullet points
+      .replace(/\[.*?\]/g, '')          // Remove reference numbers [1]
+      // Clean up whitespace and punctuation
+      .replace(/\s+/g, ' ')             // Multiple spaces to single
+      .replace(/\.\s*\./g, '.')         // Remove double periods
+      .replace(/^\s*[\-\*\•]\s*/, '')   // Remove leading bullets
+      .replace(/^\s+|\s+$/g, '')        // Trim whitespace
+      // Ensure proper capitalization
+      .replace(/^./, char => char.toUpperCase())
+      // Ensure proper sentence ending
+      .replace(/[^.!?]$/, match => match + '.');
+  }
+
   private extractRiskExplanation(content: string, keywords: string[]): string | null {
     const sentences = content.split(/[.!?]+/);
     const relevantSentences = sentences
       .filter(s => keywords.some(k => s.toLowerCase().includes(k.toLowerCase())))
       .filter(s => s.length > 30)
-      .slice(0, 2);
+      .slice(0, 2)
+      .map(s => this.cleanAndFormatText(s));
     
     if (relevantSentences.length > 0) {
       return relevantSentences.join('. ').trim() + '.';
     }
     
-    // If no specific content found, return null to skip this conflict
     return null;
   }
 
@@ -907,7 +926,7 @@ For each active conflict, provide:
     const relevantSentences = sentences
       .filter(s => s.toLowerCase().includes(conflictKeyword))
       .slice(0, 3)
-      .map(s => s.trim())
+      .map(s => this.cleanAndFormatText(s))
       .filter(s => s.length > 20);
     
     return relevantSentences.length > 0 ? relevantSentences : null;
@@ -918,10 +937,29 @@ For each active conflict, provide:
     const relevantSentences = sentences
       .filter(s => s.toLowerCase().includes(conflictKeyword))
       .slice(0, 4)
-      .map(s => s.trim())
+      .map(s => this.cleanAndFormatText(s))
       .filter(s => s.length > 15);
     
     return relevantSentences.length > 0 ? relevantSentences.join('. ') + '.' : null;
+  }
+
+  private cleanAndFormatText(text: string): string {
+    return text
+      // Remove markdown formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold**
+      .replace(/\*(.*?)\*/g, '$1')      // Remove *italic*
+      .replace(/#{1,6}\s+/g, '')        // Remove # headers
+      .replace(/\-\s+/g, '')            // Remove bullet points
+      .replace(/\[.*?\]/g, '')          // Remove reference numbers [1]
+      // Clean up whitespace and punctuation
+      .replace(/\s+/g, ' ')             // Multiple spaces to single
+      .replace(/\.\s*\./g, '.')         // Remove double periods
+      .replace(/^\s*[\-\*\•]\s*/, '')   // Remove leading bullets
+      .replace(/^\s+|\s+$/g, '')        // Trim whitespace
+      // Ensure proper capitalization
+      .replace(/^./, char => char.toUpperCase())
+      // Ensure proper sentence ending
+      .replace(/[^.!?]$/, match => match + '.');
   }
 }
 

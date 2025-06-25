@@ -641,13 +641,13 @@ Use ONLY information from the extracted articles. Reference specific details, co
           .trim();
         
         if (currentMarker.name === 'executive') {
-          executiveSummary = sectionContent;
+          executiveSummary = this.cleanAndFormatText(sectionContent);
         } else if (currentMarker.name === 'developments') {
-          keyDevelopmentsText = sectionContent;
+          keyDevelopmentsText = sectionContent; // Keep raw for bullet point parsing
         } else if (currentMarker.name === 'market') {
-          marketImpactAnalysis = sectionContent;
+          marketImpactAnalysis = this.cleanAndFormatText(sectionContent);
         } else if (currentMarker.name === 'geopolitical') {
-          geopoliticalAnalysis = sectionContent;
+          geopoliticalAnalysis = this.cleanAndFormatText(sectionContent);
         }
       }
     }
