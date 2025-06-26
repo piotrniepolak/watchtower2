@@ -1,0 +1,33 @@
+MISSION
+Repair and enrich three targeted subsections in the pharma brief located at the pharma brief  • Executive Summary  ← ellipsis fix only
+  • Market Impact Analysis  ← ellipsis fix + deep expansion
+  • Geopolitical Analysis   ← ellipsis fix + deep expansion
+
+PROBLEMS TO FIX
+1. All three subsections contain sentences that trail off with “…” or embed mid-sentence ellipses.
+2. “Market Impact Analysis” and “Geopolitical Analysis” also stitch together article titles instead of offering real analysis.
+
+WHAT TO DELIVER
+● **Ellipsis fix (all three subsections):**  
+  – Replace every sentence or bullet containing “…” with a complete, fact-based statement drawn **only** from the article already cited on that line.  
+● **Depth upgrade (Market Impact & Geopolitical only):**  
+  – Expand each subsection into **2–4 cohesive paragraphs** (and keep any existing bullets in place) that provide rigorous, data-rich insight.  
+    • *Market Impact Analysis* should cover drug-pricing moves, FDA/EMA decisions, trial results, M&A, equity/credit reactions, and supply-chain effects—quote hard numbers, dates, analyst commentary.  
+    • *Geopolitical Analysis* should examine regulatory or trade shifts, IP disputes, pandemic-preparedness policy, access-to-medicines debates, and cross-border R&D or licensing alliances—include timelines and official statements.  
+  – If needed, source additional full-text articles from the last 24 h (regulators, multilateral bodies, Tier-1 media, respected industry reports; **no** videos, podcasts, or social posts).  
+    ▸ Add **no more than three** new sources per upgraded subsection and append each URL to the bottom of **References – Pharma** (one per line, no numbering).
+
+HARD CONSTRAINTS
+Apply those fixes only in the pharma brief as the other sectors work properly
+■ Touch **only** Executive Summary, Market Impact Analysis, and Geopolitical Analysis; every other heading, paragraph, bullet, and URL must remain exactly as is.  
+■ Keep bullets (if any) in the same order; you may rewrite wording or add up to two new bullets, but never delete or reorder existing ones.  
+■ No placeholder or speculative statements—every claim must trace back to a listed source.  
+■ Preserve overall formatting, spacing, and correct grammar throughout.
+
+OUTPUT
+Return the pharma brief with:  
+• Executive Summary — ellipses removed and sentences completed.  
+• Market Impact Analysis — ellipses removed, content expanded and detailed.  
+• Geopolitical Analysis — ellipses removed, content expanded and detailed.  
+
+All other content must remain verbatim.
