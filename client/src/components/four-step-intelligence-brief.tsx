@@ -47,14 +47,30 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
+      
+      if (response.status === 202) {
+        // Regeneration in progress
+        const data = await response.json();
+        return data;
+      }
+      
       if (!response.ok) {
         throw new Error('Failed to regenerate intelligence');
       }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
-      setIsRegenerating(false);
+    onSuccess: (data) => {
+      if (data.status === 'regenerating') {
+        // Show timeout message, keep regenerating state
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
+          setIsRegenerating(false);
+        }, 180000); // 3 minutes
+      } else {
+        // Success - refresh immediately
+        queryClient.invalidateQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
+        setIsRegenerating(false);
+      }
     },
     onError: () => {
       setIsRegenerating(false);

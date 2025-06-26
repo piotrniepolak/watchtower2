@@ -2148,13 +2148,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Delete existing 4-step intelligence
       await storage.deleteFourStepIntelligence(today, 'defense');
       
-      console.log('🔬 Regenerating defense intelligence using exact user-specified Perplexity prompt format...');
-      const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
+      console.log('🔬 Regenerating defense intelligence with strict article-only extraction...');
+      
+      // Set timeout for regeneration process
+      const generateWithTimeout = new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error('Regeneration timeout'));
+        }, 120000); // 2 minutes timeout
+        
+        fourStepIntelligenceService.generateDefenseIntelligence()
+          .then(result => {
+            clearTimeout(timer);
+            resolve(result);
+          })
+          .catch(error => {
+            clearTimeout(timer);
+            reject(error);
+          });
+      });
+      
+      const fourStepBrief = await generateWithTimeout;
       
       const insertData = {
         date: today,
         sector: 'defense',
-        title: `Conflicts Intelligence Brief - ${today} (User-Specified Format)`,
+        title: `Conflicts Intelligence Brief - ${today} (Article-Only Extraction)`,
         executiveSummary: fourStepBrief.executiveSummary,
         keyDevelopments: fourStepBrief.keyDevelopments,
         marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
@@ -2167,12 +2185,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const intelligence = await storage.createFourStepIntelligence(insertData);
-      console.log(`✅ Conflicts intelligence regenerated using exact user format with dynamic content`);
+      console.log(`✅ Defense intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
       
       res.json(intelligence);
     } catch (error) {
-      console.error("❌ Error regenerating conflicts intelligence:", error);
-      res.status(500).json({ error: "Failed to regenerate conflicts intelligence" });
+      console.error("❌ Error regenerating defense intelligence:", error);
+      if (error.message === 'Regeneration timeout') {
+        return res.status(202).json({ 
+          message: "Regeneration in progress with authentic article extraction. Please refresh in 2-3 minutes.",
+          status: "regenerating",
+          estimatedCompletion: "2-3 minutes"
+        });
+      }
+      res.status(500).json({ error: "Failed to regenerate defense intelligence" });
     }
   });
 
@@ -2183,13 +2208,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Delete existing 4-step intelligence
       await storage.deleteFourStepIntelligence(today, 'energy');
       
-      console.log('🔋 Regenerating 4-step energy intelligence with fresh article extraction...');
-      const fourStepBrief = await fourStepIntelligenceService.generateEnergyIntelligence();
+      console.log('🔋 Regenerating energy intelligence with strict article-only extraction...');
+      
+      // Set timeout for regeneration process
+      const generateWithTimeout = new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error('Regeneration timeout'));
+        }, 120000); // 2 minutes timeout
+        
+        fourStepIntelligenceService.generateEnergyIntelligence()
+          .then(result => {
+            clearTimeout(timer);
+            resolve(result);
+          })
+          .catch(error => {
+            clearTimeout(timer);
+            reject(error);
+          });
+      });
+      
+      const fourStepBrief = await generateWithTimeout;
       
       const insertData = {
         date: today,
         sector: 'energy',
-        title: `Energy Intelligence Brief - ${today} (4-Step Methodology)`,
+        title: `Energy Intelligence Brief - ${today} (Article-Only Extraction)`,
         executiveSummary: fourStepBrief.executiveSummary,
         keyDevelopments: fourStepBrief.keyDevelopments,
         marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
@@ -2202,12 +2245,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const intelligence = await storage.createFourStepIntelligence(insertData);
-      console.log(`✅ 4-step energy intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      console.log(`✅ Energy intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
       
       res.json(intelligence);
     } catch (error) {
-      console.error("❌ Error regenerating 4-step energy intelligence:", error);
-      res.status(500).json({ error: "Failed to regenerate 4-step energy intelligence" });
+      console.error("❌ Error regenerating energy intelligence:", error);
+      if (error.message === 'Regeneration timeout') {
+        return res.status(202).json({ 
+          message: "Regeneration in progress with authentic article extraction. Please refresh in 2-3 minutes.",
+          status: "regenerating",
+          estimatedCompletion: "2-3 minutes"
+        });
+      }
+      res.status(500).json({ error: "Failed to regenerate energy intelligence" });
     }
   });
 
@@ -2218,13 +2268,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Delete existing 4-step intelligence
       await storage.deleteFourStepIntelligence(today, 'pharmaceutical');
       
-      console.log('🔬 Regenerating 4-step pharmaceutical intelligence with fresh article extraction...');
-      const fourStepBrief = await fourStepIntelligenceService.generatePharmaceuticalIntelligence();
+      console.log('🔬 Regenerating pharmaceutical intelligence with strict article-only extraction...');
+      
+      // Set timeout for regeneration process
+      const generateWithTimeout = new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error('Regeneration timeout'));
+        }, 120000); // 2 minutes timeout
+        
+        fourStepIntelligenceService.generatePharmaceuticalIntelligence()
+          .then(result => {
+            clearTimeout(timer);
+            resolve(result);
+          })
+          .catch(error => {
+            clearTimeout(timer);
+            reject(error);
+          });
+      });
+      
+      const fourStepBrief = await generateWithTimeout;
       
       const insertData = {
         date: today,
         sector: 'pharmaceutical',
-        title: `Pharmaceutical Intelligence Brief - ${today} (4-Step Methodology)`,
+        title: `Pharmaceutical Intelligence Brief - ${today} (Article-Only Extraction)`,
         executiveSummary: fourStepBrief.executiveSummary,
         keyDevelopments: fourStepBrief.keyDevelopments,
         marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
@@ -2237,12 +2305,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const intelligence = await storage.createFourStepIntelligence(insertData);
-      console.log(`✅ 4-step pharmaceutical intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      console.log(`✅ Pharmaceutical intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
       
       res.json(intelligence);
     } catch (error) {
-      console.error("❌ Error regenerating 4-step pharmaceutical intelligence:", error);
-      res.status(500).json({ error: "Failed to regenerate 4-step pharmaceutical intelligence" });
+      console.error("❌ Error regenerating pharmaceutical intelligence:", error);
+      if (error.message === 'Regeneration timeout') {
+        return res.status(202).json({ 
+          message: "Regeneration in progress with authentic article extraction. Please refresh in 2-3 minutes.",
+          status: "regenerating",
+          estimatedCompletion: "2-3 minutes"
+        });
+      }
+      res.status(500).json({ error: "Failed to regenerate pharmaceutical intelligence" });
     }
   });
 

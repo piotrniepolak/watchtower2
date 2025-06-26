@@ -616,13 +616,20 @@ Include a References section at the end with all source URLs listed one per line
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama-3.1-sonar-large-128k-online',
+          model: 'llama-3.1-sonar-small-128k-chat',
           messages: [{
             role: 'user',
             content: prompt
           }],
           temperature: 0.2,
-          max_tokens: 4000
+          max_tokens: 4000,
+          search_domain_filter: [],
+          return_images: false,
+          return_related_questions: false,
+          top_k: 0,
+          stream: false,
+          presence_penalty: 0,
+          frequency_penalty: 1
         })
       });
 
