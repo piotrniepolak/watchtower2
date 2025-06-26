@@ -29,7 +29,8 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
   const { data: intelligence, isLoading, error } = useQuery<FourStepIntelligence | { status: string; message: string; estimatedCompletion: string }>({
     queryKey: [`/api/intelligence/${sector}/four-step`],
     staleTime: 0,
-    refetchOnWindowFocus: false,
+    gcTime: 0,
+    refetchOnWindowFocus: true,
     retry: false,
     refetchInterval: (data) => {
       // If intelligence is being generated, refetch every 30 seconds
@@ -79,7 +80,14 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
 
   const handleRegenerate = () => {
     setIsRegenerating(true);
+    // Invalidate cache first
+    queryClient.invalidateQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
     regenerateMutation.mutate();
+  };
+
+  const handleForceRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
+    queryClient.refetchQueries({ queryKey: [`/api/intelligence/${sector}/four-step`] });
   };
 
   // Check if intelligence is being generated

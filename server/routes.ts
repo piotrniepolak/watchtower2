@@ -2184,8 +2184,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sourcesVerified: true
       };
       
-      const intelligence = await storage.createFourStepIntelligence(insertData);
-      console.log(`✅ Defense intelligence regenerated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      // Try to update existing record first, create new if doesn't exist
+      let intelligence;
+      try {
+        const existing = await storage.getFourStepIntelligenceByDateAndSector(today, 'defense');
+        if (existing) {
+          intelligence = await storage.updateFourStepIntelligence(existing.id, insertData);
+          console.log(`✅ Defense intelligence updated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        } else {
+          intelligence = await storage.createFourStepIntelligence(insertData);
+          console.log(`✅ Defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        }
+      } catch (constraintError) {
+        // If we hit a constraint error, try to get the existing record and update it
+        const existing = await storage.getFourStepIntelligenceByDateAndSector(today, 'defense');
+        if (existing) {
+          intelligence = await storage.updateFourStepIntelligence(existing.id, insertData);
+          console.log(`✅ Defense intelligence updated with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        } else {
+          throw constraintError;
+        }
+      }
       
       res.json(intelligence);
     } catch (error) {

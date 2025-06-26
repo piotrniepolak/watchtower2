@@ -316,8 +316,19 @@ export class DatabaseStorage implements IStorage {
     return intelligence || undefined;
   }
 
+  async getFourStepIntelligenceByDateAndSector(date: string, sector: string): Promise<FourStepIntelligence | undefined> {
+    const [intelligence] = await db.select().from(fourStepIntelligence)
+      .where(and(eq(fourStepIntelligence.date, date), eq(fourStepIntelligence.sector, sector)));
+    return intelligence || undefined;
+  }
+
   async createFourStepIntelligence(insertIntelligence: InsertFourStepIntelligence): Promise<FourStepIntelligence> {
     const [intelligence] = await db.insert(fourStepIntelligence).values(insertIntelligence).returning();
+    return intelligence;
+  }
+
+  async updateFourStepIntelligence(id: number, updateData: Partial<InsertFourStepIntelligence>): Promise<FourStepIntelligence> {
+    const [intelligence] = await db.update(fourStepIntelligence).set(updateData).where(eq(fourStepIntelligence.id, id)).returning();
     return intelligence;
   }
 
