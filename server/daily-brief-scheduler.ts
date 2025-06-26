@@ -83,18 +83,37 @@ export class DailyBriefScheduler {
         const brief = result.rows[0];
         console.log(`✅ Found cached ${sector} brief from ${brief.date}`);
         
+        // Parse JSON fields properly
+        const extractedArticles = Array.isArray(brief.extractedarticles) 
+          ? brief.extractedarticles 
+          : (typeof brief.extractedarticles === 'string' 
+              ? JSON.parse(brief.extractedarticles || '[]') 
+              : []);
+        
+        const sourceUrls = Array.isArray(brief.sourceurls) 
+          ? brief.sourceurls 
+          : (typeof brief.sourceurls === 'string' 
+              ? JSON.parse(brief.sourceurls || '[]') 
+              : []);
+        
+        const keyDevelopments = Array.isArray(brief.keydevelopments) 
+          ? brief.keydevelopments 
+          : (typeof brief.keydevelopments === 'string' 
+              ? JSON.parse(brief.keydevelopments || '[]') 
+              : []);
+
         return {
           id: brief.id,
           date: brief.date,
           title: brief.title,
           executiveSummary: brief.executivesummary,
-          keyDevelopments: brief.keydevelopments,
+          keyDevelopments: keyDevelopments,
           marketImpactAnalysis: brief.marketimpact,
           geopoliticalAnalysis: brief.geopoliticalanalysis,
           sourcesSection: brief.sourcessection,
-          extractedArticles: brief.extractedarticles || [],
-          sourceUrls: brief.sourceurls || [],
-          articleCount: brief.articlecount || 0,
+          extractedArticles: extractedArticles,
+          sourceUrls: sourceUrls,
+          articleCount: extractedArticles.length, // Calculate from actual array
           methodologyUsed: brief.methodologyused || 'four-step-authentic-extraction'
         };
       }

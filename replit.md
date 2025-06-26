@@ -13,7 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 25, 2025 - Implemented User-Specified Perplexity Prompt Format
+### June 26, 2025 - Fixed URL Issue with Citation-Based Authentic URLs
+
+**URL Fix Implementation Complete:**
+- **Identified root cause:** System was generating homepage fallback URLs instead of using specific article URLs from Perplexity citations
+- **Implemented citation-based URL extraction** in four-step-intelligence-service.ts to prioritize authentic URLs from Perplexity's citations array
+- **Modified parseExtractedArticles function** to accept and use citations parameter for authentic URL matching
+- **Enhanced URL matching logic** with keyword-based citation filtering to link sources with their corresponding article URLs
+- **Verified successful operation** with authentic article URLs like "https://www.indiandefensenews.in/2025/06/rajnath-singh-meets-tajikistan-defence.html"
+- **Maintained fallback mechanism** to homepage URLs only when no matching citations are available
+- **Eliminated fabricated URLs** ensuring all article links point to either authentic citations or legitimate homepage fallbacks
+
+**Technical Implementation:**
+- Updated extractFromSingleSource method to pass Perplexity citations to parseExtractedArticles function
+- Added citation URL matching using source domain keywords for accurate URL assignment
+- Enhanced logging to track authentic citation usage vs homepage fallbacks
+- Preserved existing article extraction logic while fixing URL assignment issues
+
+**User Impact:**
+- Intelligence Sources & References now contain working links to specific articles when available
+- Eliminated 404 errors from fabricated URLs by using only authentic Perplexity citations
+- Professional source attribution with real article URLs leading to content referenced in analysis
+- Enhanced credibility with verifiable links to exact source material used in intelligence generation
+
+### June 25, 2025 - Previous: Implemented User-Specified Perplexity Prompt Format
 
 **Complete Intelligence Brief Format Overhaul:**
 - **Implemented exact user-specified Perplexity prompt structure** with precise word counts and formatting requirements for all three sectors

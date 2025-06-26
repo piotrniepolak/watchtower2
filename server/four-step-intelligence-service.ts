@@ -251,7 +251,7 @@ export class FourStepIntelligenceService {
     });
   }
 
-  private parseExtractedArticles(content: string): ExtractedArticle[] {
+  private parseExtractedArticles(content: string, citations: string[] = [], sourceName: string = ''): ExtractedArticle[] {
     const articles: ExtractedArticle[] = [];
     
     // Only reject content that explicitly states no articles found
@@ -330,16 +330,33 @@ export class FourStepIntelligenceService {
             !title.toLowerCase().includes('no recent') &&
             !title.toLowerCase().includes('not available')) {
           
-          // Enhanced URL mapping for more sources
-          if (!url || !url.startsWith('http')) {
-            url = this.mapSourceToUrl(source);
+          // Use authentic citations from Perplexity instead of fallback URLs
+          let authenticUrl = url;
+          if (!authenticUrl || !authenticUrl.startsWith('http')) {
+            // Find citation URL that matches this source
+            const matchingCitation = citations.find(citation => {
+              const citationDomain = citation.toLowerCase();
+              const sourceKeywords = sourceName.toLowerCase().split(/[.\s-]+/);
+              return sourceKeywords.some(keyword => 
+                keyword.length > 3 && citationDomain.includes(keyword)
+              );
+            });
+            
+            if (matchingCitation) {
+              authenticUrl = matchingCitation;
+              console.log(`🔗 Using authentic citation URL: ${authenticUrl} for ${sourceName}`);
+            } else {
+              // Only use homepage as last resort
+              authenticUrl = this.mapSourceToUrl(source);
+              console.log(`⚠️ Using homepage fallback for ${sourceName}: ${authenticUrl}`);
+            }
           }
           
           articles.push({
             title: title.replace(/^\*\*|\*\*$/g, '').trim(),
             source: source.replace(/^\*\*|\*\*$/g, '').trim(),
             publishDate: date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-            url: url || 'https://www.reuters.com',
+            url: authenticUrl,
             content: articleContent || title
           });
         }
@@ -455,9 +472,10 @@ CRITICAL: ${source} publishes multiple ${sector} articles daily. Find ALL of the
       if (response.ok) {
         const data = await response.json();
         const content = data.choices[0]?.message?.content || '';
+        const citations = data.citations || [];
         
         if (content.length > 200 && !content.includes('NO ARTICLES FOUND')) {
-          return this.parseExtractedArticles(content);
+          return this.parseExtractedArticles(content, citations, source);
         }
       }
     } catch (error) {
