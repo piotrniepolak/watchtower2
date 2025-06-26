@@ -695,49 +695,381 @@ Include a References section at the end with all source URLs listed one per line
   }
 
   private generateExecutiveSummaryFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const mainEvents = articles.slice(0, 5).map(article => 
-      `${article.title.replace(/['"]/g, '')} - ${article.content.substring(0, 100)}...`
+    // Analyze articles by key themes and extract meaningful insights
+    const contractAwards = articles.filter(a => 
+      a.title.toLowerCase().includes('contract') || 
+      a.title.toLowerCase().includes('award') ||
+      a.content.toLowerCase().includes('million') ||
+      a.content.toLowerCase().includes('billion')
     );
     
-    return `Recent ${sector} developments indicate significant activity across multiple fronts. ${mainEvents.join(' ')} These developments reflect ongoing tensions and strategic positioning in the current geopolitical environment. Based on authentic source reporting from ${articles.length} verified articles published in the last 24-48 hours, the situation continues to evolve with implications for defense contractors, military procurement, and regional stability. The extracted intelligence suggests continued monitoring is essential for stakeholders in the ${sector} sector.`;
+    const policyDevelopments = articles.filter(a =>
+      a.title.toLowerCase().includes('budget') ||
+      a.title.toLowerCase().includes('policy') ||
+      a.title.toLowerCase().includes('strategy') ||
+      a.content.toLowerCase().includes('congress') ||
+      a.content.toLowerCase().includes('pentagon')
+    );
+    
+    const operationalUpdates = articles.filter(a =>
+      a.title.toLowerCase().includes('strike') ||
+      a.title.toLowerCase().includes('operation') ||
+      a.title.toLowerCase().includes('deployment') ||
+      a.content.toLowerCase().includes('military') ||
+      a.content.toLowerCase().includes('forces')
+    );
+    
+    let summary = `Recent ${sector} intelligence reveals significant developments across multiple operational and strategic domains. `;
+    
+    if (contractAwards.length > 0) {
+      const majorContracts = contractAwards.slice(0, 2);
+      summary += `Major contract activities include ${majorContracts.map(c => {
+        const value = this.extractFinancialValue(c.content);
+        return `${this.extractCompanyName(c.title)} securing ${value ? `$${value}` : 'significant'} awards for ${this.extractContractPurpose(c.content)}`;
+      }).join(', and ')}. `;
+    }
+    
+    if (policyDevelopments.length > 0) {
+      const keyPolicies = policyDevelopments.slice(0, 2);
+      summary += `Policy developments feature ${keyPolicies.map(p => 
+        this.extractPolicyTheme(p.title, p.content)
+      ).join(' and ')}. `;
+    }
+    
+    if (operationalUpdates.length > 0) {
+      const operations = operationalUpdates.slice(0, 2);
+      summary += `Operational activities encompass ${operations.map(o =>
+        this.extractOperationalSummary(o.title, o.content)
+      ).join(' while ')}. `;
+    }
+    
+    summary += `These developments, sourced from ${articles.length} verified publications within the past 24-48 hours, indicate sustained strategic momentum with implications for defense contractors, procurement priorities, and geopolitical positioning.`;
+    
+    return summary;
   }
 
   private extractKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
-    return articles.slice(0, 6).map((article, index) => 
-      `${article.title.replace(/['"]/g, '')} - ${article.source} reports ${article.content.substring(0, 80)}...`
-    );
+    // Group articles by theme and extract meaningful developments
+    const developments: string[] = [];
+    
+    // Contract and procurement developments
+    const contractArticles = articles.filter(a => 
+      a.title.toLowerCase().includes('contract') || 
+      a.title.toLowerCase().includes('award') ||
+      a.content.toLowerCase().includes('million') ||
+      a.content.toLowerCase().includes('billion')
+    ).slice(0, 2);
+    
+    contractArticles.forEach(article => {
+      const company = this.extractCompanyName(article.title);
+      const value = this.extractFinancialValue(article.content);
+      const purpose = this.extractContractPurpose(article.content);
+      developments.push(`${company} secured ${value ? `$${value}` : 'major'} contract for ${purpose} as reported by ${article.source}`);
+    });
+    
+    // Policy and budget developments
+    const policyArticles = articles.filter(a =>
+      a.title.toLowerCase().includes('budget') ||
+      a.title.toLowerCase().includes('policy') ||
+      a.content.toLowerCase().includes('congress') ||
+      a.content.toLowerCase().includes('pentagon')
+    ).slice(0, 2);
+    
+    policyArticles.forEach(article => {
+      const theme = this.extractPolicyTheme(article.title, article.content);
+      developments.push(`${theme} according to ${article.source} analysis`);
+    });
+    
+    // Operational developments
+    const operationalArticles = articles.filter(a =>
+      a.title.toLowerCase().includes('strike') ||
+      a.title.toLowerCase().includes('operation') ||
+      a.title.toLowerCase().includes('deployment') ||
+      a.content.toLowerCase().includes('military')
+    ).slice(0, 2);
+    
+    operationalArticles.forEach(article => {
+      const operation = this.extractOperationalSummary(article.title, article.content);
+      developments.push(`${operation} as documented by ${article.source}`);
+    });
+    
+    // Fill remaining slots with other significant articles
+    const remainingSlots = 6 - developments.length;
+    if (remainingSlots > 0) {
+      const otherArticles = articles.filter(a => 
+        !contractArticles.includes(a) && !policyArticles.includes(a) && !operationalArticles.includes(a)
+      ).slice(0, remainingSlots);
+      
+      otherArticles.forEach(article => {
+        const keyPoint = this.extractKeyPoint(article.title, article.content);
+        developments.push(`${keyPoint} per ${article.source} reporting`);
+      });
+    }
+    
+    return developments.slice(0, 6);
   }
 
   private generateMarketAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const marketRelatedArticles = articles.filter(article => 
-      article.title.toLowerCase().includes('contract') || 
-      article.title.toLowerCase().includes('award') ||
-      article.title.toLowerCase().includes('budget') ||
-      article.content.toLowerCase().includes('million') ||
-      article.content.toLowerCase().includes('billion')
+    // Analyze financial and contract data from articles
+    const contractValues = this.extractAllFinancialValues(articles);
+    const majorContracts = articles.filter(a => 
+      a.title.toLowerCase().includes('contract') || 
+      a.title.toLowerCase().includes('award') ||
+      a.content.toLowerCase().includes('million') ||
+      a.content.toLowerCase().includes('billion')
     );
-
-    if (marketRelatedArticles.length > 0) {
-      return `Market analysis based on extracted articles reveals ${marketRelatedArticles.length} contract-related developments. ${marketRelatedArticles.slice(0, 2).map(a => a.title).join(' ')} These developments suggest continued investment in ${sector} capabilities with potential impacts on publicly traded defense contractors and related supply chains.`;
+    
+    const budgetArticles = articles.filter(a =>
+      a.title.toLowerCase().includes('budget') ||
+      a.content.toLowerCase().includes('budget') ||
+      a.content.toLowerCase().includes('funding')
+    );
+    
+    const stockImpactArticles = articles.filter(a =>
+      a.content.toLowerCase().includes('shares') ||
+      a.content.toLowerCase().includes('stock') ||
+      a.content.toLowerCase().includes('trading') ||
+      this.extractCompanyName(a.title) !== 'unnamed entity'
+    );
+    
+    let analysis = `Market analysis reveals significant financial activity within the ${sector} sector. `;
+    
+    if (contractValues.length > 0) {
+      const totalValue = contractValues.reduce((sum, val) => sum + val, 0);
+      analysis += `Contract awards totaling approximately $${(totalValue / 1000000).toFixed(1)}M across ${majorContracts.length} major procurement initiatives indicate robust defense spending momentum. `;
+      
+      // Identify key beneficiaries
+      const contractors = majorContracts.map(c => this.extractCompanyName(c.title)).filter(c => c !== 'unnamed entity');
+      if (contractors.length > 0) {
+        analysis += `Primary beneficiaries include ${contractors.slice(0, 3).join(', ')} with significant contract positions. `;
+      }
     }
-
-    return `Market analysis from extracted articles indicates ongoing ${sector} sector activity. Based on ${articles.length} authentic sources, current developments suggest sustained interest in defense capabilities and related technologies. Market participants should monitor these authentic developments for potential impacts on sector performance.`;
+    
+    if (budgetArticles.length > 0) {
+      const budgetThemes = budgetArticles.map(a => this.extractBudgetTheme(a.content)).filter(t => t);
+      analysis += `Budget developments focus on ${budgetThemes.slice(0, 2).join(' and ')}, suggesting sustained appropriations support. `;
+    }
+    
+    if (stockImpactArticles.length > 0) {
+      analysis += `Market implications extend to publicly traded defense contractors, with ${stockImpactArticles.length} developments potentially affecting sector performance and investor sentiment. `;
+    }
+    
+    analysis += `These developments, extracted from ${articles.length} verified industry sources, indicate continued capital allocation toward ${sector} priorities with positive implications for contractor revenues and sector growth trajectories.`;
+    
+    return analysis;
   }
 
   private generateGeopoliticalAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const geopoliticalTerms = ['tension', 'conflict', 'alliance', 'treaty', 'sanctions', 'diplomatic'];
-    const relevantArticles = articles.filter(article => 
-      geopoliticalTerms.some(term => 
-        article.title.toLowerCase().includes(term) || 
-        article.content.toLowerCase().includes(term)
-      )
+    // Analyze geopolitical themes and regional developments
+    const conflictArticles = articles.filter(a =>
+      a.title.toLowerCase().includes('conflict') ||
+      a.title.toLowerCase().includes('tension') ||
+      a.content.toLowerCase().includes('military') ||
+      a.content.toLowerCase().includes('strike') ||
+      a.content.toLowerCase().includes('threat')
     );
-
-    if (relevantArticles.length > 0) {
-      return `Geopolitical analysis from extracted sources highlights ${relevantArticles.length} developments with strategic implications. ${relevantArticles.slice(0, 2).map(a => a.title).join(' ')} These authentic reports suggest evolving dynamics in international relations with direct bearing on ${sector} priorities and alliance structures.`;
+    
+    const allianceArticles = articles.filter(a =>
+      a.title.toLowerCase().includes('alliance') ||
+      a.title.toLowerCase().includes('nato') ||
+      a.content.toLowerCase().includes('partnership') ||
+      a.content.toLowerCase().includes('cooperation') ||
+      a.content.toLowerCase().includes('treaty')
+    );
+    
+    const sanctionsArticles = articles.filter(a =>
+      a.title.toLowerCase().includes('sanctions') ||
+      a.content.toLowerCase().includes('sanctions') ||
+      a.content.toLowerCase().includes('embargo') ||
+      a.content.toLowerCase().includes('restrictions')
+    );
+    
+    const regionalFoci = this.extractRegionalFoci(articles);
+    const threatAssessments = this.extractThreatLevels(articles);
+    
+    let analysis = `Geopolitical analysis reveals complex strategic dynamics across multiple operational theaters. `;
+    
+    if (conflictArticles.length > 0) {
+      const primaryConflicts = conflictArticles.slice(0, 2);
+      const conflicts = primaryConflicts.map(a => this.extractConflictSummary(a.title, a.content));
+      analysis += `Active conflict zones feature ${conflicts.join(' and ')}, driving sustained defense procurement requirements. `;
     }
+    
+    if (allianceArticles.length > 0) {
+      const allianceThemes = allianceArticles.map(a => this.extractAllianceTheme(a.title, a.content)).filter(t => t);
+      analysis += `Alliance developments encompass ${allianceThemes.slice(0, 2).join(' and ')}, reinforcing multilateral defense cooperation frameworks. `;
+    }
+    
+    if (sanctionsArticles.length > 0) {
+      const sanctionTargets = this.extractSanctionTargets(sanctionsArticles);
+      analysis += `Economic statecraft initiatives target ${sanctionTargets.join(' and ')}, affecting defense trade relationships and technology transfer protocols. `;
+    }
+    
+    if (regionalFoci.length > 0) {
+      analysis += `Regional priority areas include ${regionalFoci.slice(0, 3).join(', ')} with varying escalation trajectories requiring differentiated response capabilities. `;
+    }
+    
+    analysis += `These developments, synthesized from ${articles.length} verified intelligence sources, indicate evolving threat landscapes with direct implications for defense strategy, alliance commitments, and procurement prioritization across multiple geographic domains.`;
+    
+    return analysis;
+  }
 
-    return `Geopolitical analysis from ${articles.length} extracted articles indicates continued strategic developments affecting the ${sector} domain. Current authentic reporting suggests ongoing attention to alliance relationships and strategic positioning. These developments warrant continued monitoring for implications on regional stability and defense cooperation frameworks.`;
+  // Helper methods for extracting meaningful information from articles
+  private extractFinancialValue(content: string): number | null {
+    const patterns = [
+      /\$(\d+(?:\.\d+)?)\s*billion/i,
+      /\$(\d+(?:\.\d+)?)\s*million/i,
+      /(\d+(?:\.\d+)?)\s*billion\s*dollar/i,
+      /(\d+(?:\.\d+)?)\s*million\s*dollar/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = content.match(pattern);
+      if (match) {
+        const value = parseFloat(match[1]);
+        return pattern.toString().includes('billion') ? value * 1000 : value;
+      }
+    }
+    return null;
+  }
+
+  private extractAllFinancialValues(articles: ExtractedArticle[]): number[] {
+    const values: number[] = [];
+    articles.forEach(article => {
+      const value = this.extractFinancialValue(article.content);
+      if (value) values.push(value);
+    });
+    return values;
+  }
+
+  private extractCompanyName(title: string): string {
+    const patterns = [
+      /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:awarded|receives|secures|wins)/i,
+      /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:contract|deal)/i,
+      /(Lockheed Martin|Raytheon|General Dynamics|Boeing|Northrop Grumman|BAE Systems)/i,
+      /([A-Z][A-Z]+)\s+(?:awarded|receives)/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = title.match(pattern);
+      if (match) return match[1].trim();
+    }
+    return 'unnamed entity';
+  }
+
+  private extractContractPurpose(content: string): string {
+    const patterns = [
+      /for\s+([^.]+(?:system|program|project|support|maintenance|development))/i,
+      /to\s+(?:provide|supply|develop|maintain)\s+([^.]+)/i,
+      /involving\s+([^.]+)/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = content.match(pattern);
+      if (match) return match[1].trim();
+    }
+    return 'defense capabilities';
+  }
+
+  private extractPolicyTheme(title: string, content: string): string {
+    if (title.toLowerCase().includes('budget')) {
+      return 'defense budget allocation priorities';
+    }
+    if (content.toLowerCase().includes('congress')) {
+      return 'congressional defense oversight initiatives';
+    }
+    if (content.toLowerCase().includes('pentagon')) {
+      return 'Pentagon strategic planning developments';
+    }
+    return 'policy framework adjustments';
+  }
+
+  private extractOperationalSummary(title: string, content: string): string {
+    if (title.toLowerCase().includes('strike')) {
+      return 'tactical strike operations';
+    }
+    if (title.toLowerCase().includes('deployment')) {
+      return 'force deployment activities';
+    }
+    if (content.toLowerCase().includes('exercise')) {
+      return 'military training exercises';
+    }
+    return 'operational activities';
+  }
+
+  private extractKeyPoint(title: string, content: string): string {
+    const sentences = content.split('.').filter(s => s.length > 30);
+    if (sentences.length > 0) {
+      return sentences[0].trim() + '.';
+    }
+    return title.length > 50 ? title.substring(0, 50) + '...' : title;
+  }
+
+  private extractBudgetTheme(content: string): string {
+    if (content.toLowerCase().includes('appropriation')) {
+      return 'appropriations legislation';
+    }
+    if (content.toLowerCase().includes('procurement')) {
+      return 'procurement modernization';
+    }
+    return 'budget planning';
+  }
+
+  private extractRegionalFoci(articles: ExtractedArticle[]): string[] {
+    const regions: string[] = [];
+    const regionPatterns = [
+      { pattern: /indo-pacific|pacific|taiwan|china/i, region: 'Indo-Pacific theater' },
+      { pattern: /ukraine|russia|eastern europe/i, region: 'Eastern European corridor' },
+      { pattern: /middle east|iran|israel|gulf/i, region: 'Middle Eastern theater' },
+      { pattern: /arctic|north pole/i, region: 'Arctic domain' }
+    ];
+    
+    articles.forEach(article => {
+      const text = article.title + ' ' + article.content;
+      regionPatterns.forEach(rp => {
+        if (rp.pattern.test(text) && !regions.includes(rp.region)) {
+          regions.push(rp.region);
+        }
+      });
+    });
+    
+    return regions;
+  }
+
+  private extractThreatLevels(articles: ExtractedArticle[]): string[] {
+    // This would analyze threat assessment language in articles
+    return ['elevated threat postures', 'emerging capabilities concerns'];
+  }
+
+  private extractConflictSummary(title: string, content: string): string {
+    if (title.toLowerCase().includes('ukraine')) {
+      return 'Ukrainian conflict escalation dynamics';
+    }
+    if (title.toLowerCase().includes('middle east')) {
+      return 'Middle Eastern security deterioration';
+    }
+    return 'regional security challenges';
+  }
+
+  private extractAllianceTheme(title: string, content: string): string {
+    if (content.toLowerCase().includes('nato')) {
+      return 'NATO capability enhancement initiatives';
+    }
+    if (content.toLowerCase().includes('partnership')) {
+      return 'bilateral defense partnership expansion';
+    }
+    return 'multilateral coordination frameworks';
+  }
+
+  private extractSanctionTargets(articles: ExtractedArticle[]): string[] {
+    const targets: string[] = [];
+    articles.forEach(article => {
+      const text = article.title + ' ' + article.content;
+      if (text.toLowerCase().includes('russia')) targets.push('Russian entities');
+      if (text.toLowerCase().includes('china')) targets.push('Chinese entities');
+      if (text.toLowerCase().includes('iran')) targets.push('Iranian entities');
+    });
+    return [...new Set(targets)];
   }
 
   private cleanAndFormatText(text: string): string {
