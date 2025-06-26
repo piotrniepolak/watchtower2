@@ -125,7 +125,8 @@ export class FourStepIntelligenceService {
     const extractedArticles = await this.extractArticlesFromSources(sector, sources);
     
     if (extractedArticles.length === 0) {
-      throw new Error(`STEP 2 FAILED: No authentic sources found with recent articles - only mock/hypothetical content available`);
+      console.log(`❌ INSUFFICIENT AUTHENTIC ARTICLES: Cannot generate brief without complete article sources`);
+      throw new Error('INSUFFICIENT AUTHENTIC ARTICLES - Cannot generate brief without complete article sources');
     }
     
     console.log(`✅ STEP 2 SUCCESS: Extracted ${extractedArticles.length} authentic articles from discovered sources`);
@@ -192,16 +193,9 @@ export class FourStepIntelligenceService {
       }
     }
     
-    // Phase 2: Ensure minimum content from unused sources
+    // Phase 2: Skip synthetic content generation - authentic articles only
     if (missingSources.length > 0) {
-      console.log(`📰 Phase 2: Ensuring content from ${missingSources.length} unused sources`);
-      const syntheticArticles = await this.ensureSourceCoverage(missingSources, sector, today);
-      allArticles.push(...syntheticArticles);
-      
-      syntheticArticles.forEach(article => {
-        const count = sourceUtilization.get(article.source) || 0;
-        sourceUtilization.set(article.source, count + 1);
-      });
+      console.log(`📰 Skipping synthetic content for ${missingSources.length} sources - authentic articles only`);
     }
 
     console.log(`🔧 Comprehensive extraction complete: ${allArticles.length} total articles from ${sources.length} sources`);
@@ -461,10 +455,43 @@ ABSOLUTE REQUIREMENTS:
 
 CRITICAL: Extract only from real articles with verifiable URLs. No contextual generation allowed.`;
 
-    // Directly return empty array since we're using synthetic coverage articles
-    // This removes the Perplexity API call that was causing 400 errors
-    
-    return [];
+    try {
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.perplexityApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 2000,
+          temperature: 0.1,
+          search_recency_filter: "day",
+          return_citations: true
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.choices[0]?.message?.content || '';
+        const citations = data.citations || [];
+        
+        if (content.includes('NO AUTHENTIC ARTICLES FOUND') || content.length < 100) {
+          console.log(`❌ No authentic articles found for ${source}`);
+          return [];
+        }
+        
+        console.log(`✅ ${source}: Found content with ${content.length} characters`);
+        return this.parseExtractedArticles(content, citations, source);
+      } else {
+        console.log(`❌ API error ${response.status} for ${source}`);
+        return [];
+      }
+    } catch (error) {
+      console.error(`❌ Error extracting from ${source}:`, error);
+      return [];
+    }
   }
 
   private async ensureSourceCoverage(
@@ -472,25 +499,9 @@ CRITICAL: Extract only from real articles with verifiable URLs. No contextual ge
     sector: string, 
     today: string
   ): Promise<ExtractedArticle[]> {
-    const coverageArticles: ExtractedArticle[] = [];
-    
-    // Create representative content for each missing source based on their specialty
-    for (const source of missingSources) {
-      const sourceSpecialty = this.getSourceSpecialty(source, sector);
-      
-      const syntheticArticle: ExtractedArticle = {
-        title: `${sourceSpecialty} - Recent Developments in ${sector}`,
-        source: source,
-        publishDate: today,
-        url: this.mapSourceToUrl(source),
-        content: `Recent analysis indicates continued activity in ${sourceSpecialty.toLowerCase()} within the ${sector} sector, with ongoing developments in market dynamics and industry trends.`
-      };
-      
-      coverageArticles.push(syntheticArticle);
-    }
-    
-    console.log(`📰 Created coverage articles for ${coverageArticles.length} sources to ensure 100% utilization`);
-    return coverageArticles;
+    // Return empty array - no synthetic content generation allowed
+    console.log(`📰 Skipping synthetic content generation for ${missingSources.length} sources - authentic articles only`);
+    return [];
   }
 
   private getSourceSpecialty(source: string, sector: string): string {
