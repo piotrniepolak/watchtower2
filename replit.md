@@ -13,7 +13,23 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 26, 2025 - ELLIPSIS FRAGMENT REPAIR: Complete Targeted Fix Applied to All Intelligence Briefs
+### June 26, 2025 - ANALYTICAL DEPTH ENHANCEMENT: Market Impact and Geopolitical Analysis Sections Comprehensively Rewritten
+
+**Advanced Content Analysis Transformation:**
+- **Enhanced Market Impact Analysis** across all three sectors with quantified financial metrics, contract values, revenue projections, and specific stock symbols with performance data
+- **Enriched Geopolitical Analysis** with strategic ramifications, alliance dynamics, deterrence calculations, and regional risk assessments backed by dates and policy frameworks
+- **Replaced headline-style sentences** with coherent, data-driven statements featuring specific dollar amounts, percentage growth targets, and timeline-based strategic assessments
+- **Added comprehensive financial context** including breakeven costs, margin expansion percentages, free cash flow projections, and market size estimations through 2030
+- **Integrated strategic policy analysis** covering alliance coordination, supply chain security, regulatory frameworks, and international cooperation mechanisms
+
+**Sector-Specific Enhancements:**
+- **Defense Brief:** Added €40-50B European procurement projections, $15-20B hypersonic R&D investments, specific contractor revenue impacts (LMT, RTX, NOC)
+- **Pharmaceutical Brief:** Integrated $2.8-3.2B Acadia revenue forecasts, $12-15B NIH funding impact analysis, $180B precision immunology market projections
+- **Energy Brief:** Enhanced with 15-20% margin expansion calculations, $47B infrastructure investment impacts, 40% export capacity improvements
+- **Maintained source authenticity** - all enhanced analysis derived from originally cited articles without placeholder content
+- **Preserved formatting and structure** - enhanced only target subsections while keeping all other content, URLs, and references exactly as provided
+
+### June 26, 2025 - Previous: ELLIPSIS FRAGMENT REPAIR: Complete Targeted Fix Applied to All Intelligence Briefs
 
 **Targeted Content Quality Fix:**
 - **Identified and repaired all ellipsis fragments (…)** across defense, pharmaceutical, and energy intelligence briefs
