@@ -1996,15 +1996,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // First, try to get cached brief from daily scheduler
+      // Check if enhanced 4-step intelligence already exists in storage first
+      let intelligence = await storage.getFourStepIntelligence(today, 'defense');
+      
+      // Prioritize enhanced briefs with NATO/defense specific content
+      if (intelligence && intelligence.executiveSummary && intelligence.executiveSummary.includes('NATO')) {
+        console.log('✅ Serving enhanced defense intelligence brief');
+        return res.json(intelligence);
+      }
+      
+      // Check for cached brief as fallback
       const cachedBrief = await dailyBriefScheduler.getCachedBrief('defense');
       if (cachedBrief && cachedBrief.extractedArticles && cachedBrief.extractedArticles.length > 0) {
         console.log('✅ Serving cached defense intelligence brief');
         return res.json(cachedBrief);
       }
-      
-      // Check if 4-step intelligence already exists in storage
-      let intelligence = await storage.getFourStepIntelligence(today, 'defense');
       
       // If no existing data with articles, generate fresh brief
       if (!intelligence || !intelligence.extractedArticles || intelligence.extractedArticles.length === 0) {
