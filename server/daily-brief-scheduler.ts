@@ -91,7 +91,11 @@ export class DailyBriefScheduler {
           keyDevelopments: brief.keydevelopments,
           marketImpactAnalysis: brief.marketimpact,
           geopoliticalAnalysis: brief.geopoliticalanalysis,
-          sourcesSection: brief.sourcessection
+          sourcesSection: brief.sourcessection,
+          extractedArticles: brief.extractedarticles || [],
+          sourceUrls: brief.sourceurls || [],
+          articleCount: brief.articlecount || 0,
+          methodologyUsed: brief.methodologyused || 'four-step-authentic-extraction'
         };
       }
       
@@ -141,8 +145,8 @@ export class DailyBriefScheduler {
       
       await pool.query(
         `INSERT INTO daily_intelligence_briefs 
-         (sector, date, title, executivesummary, keydevelopments, marketimpact, geopoliticalanalysis, sourcessection)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         (sector, date, title, executivesummary, keydevelopments, marketimpact, geopoliticalanalysis, sourcessection, extractedarticles, sourceurls, articlecount, methodologyused)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
          ON CONFLICT (sector, date) 
          DO UPDATE SET 
            title = EXCLUDED.title,
@@ -151,6 +155,10 @@ export class DailyBriefScheduler {
            marketimpact = EXCLUDED.marketimpact,
            geopoliticalanalysis = EXCLUDED.geopoliticalanalysis,
            sourcessection = EXCLUDED.sourcessection,
+           extractedarticles = EXCLUDED.extractedarticles,
+           sourceurls = EXCLUDED.sourceurls,
+           articlecount = EXCLUDED.articlecount,
+           methodologyused = EXCLUDED.methodologyused,
            createdat = CURRENT_TIMESTAMP`,
         [
           sector,
@@ -160,7 +168,11 @@ export class DailyBriefScheduler {
           JSON.stringify(brief.keyDevelopments || []),
           brief.marketImpactAnalysis || brief.marketImpact || '',
           brief.geopoliticalAnalysis || '',
-          brief.sourcesSection || ''
+          brief.sourcesSection || '',
+          JSON.stringify(brief.extractedArticles || []),
+          JSON.stringify(brief.sourceUrls || []),
+          brief.extractedArticles?.length || 0,
+          brief.methodologyUsed || 'four-step-authentic-extraction'
         ]
       );
       
