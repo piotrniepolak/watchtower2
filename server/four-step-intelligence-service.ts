@@ -258,75 +258,130 @@ export class FourStepIntelligenceService {
       return [];
     }
     
-    // Enhanced parsing with multiple formats - matching Perplexity's actual response
-    // Format 1: **ARTICLE 1:** style (actual Perplexity format)
-    let articleSections = content.split(/\*\*ARTICLE\s+\d+:\*\*/i);
+    // Enhanced parsing with multiple formats - matching all Perplexity response variations
+    let articleSections = [];
     
-    // Format 2: ### ARTICLE [number]: style (fallback)
-    if (articleSections.length <= 1) {
-      articleSections = content.split(/###\s*ARTICLE\s*\d+:/i);
+    // Try multiple splitting patterns in order of preference
+    const splitPatterns = [
+      /\*\*ARTICLE\s+\d+:\*\*/i,     // **ARTICLE 1:**
+      /ARTICLE\s+\d+:/i,             // ARTICLE 1:
+      /###\s*ARTICLE\s*\d+:/i,       // ### ARTICLE 1:
+      /##\s*Article\s*\d+/i,         // ## Article 1
+      /\*\*Article\s*\d+\*\*/i,      // **Article 1**
+      /Article\s*\d+:/i,             // Article 1:
+      /\d+\.\s*\*\*[^*]+\*\*/i       // 1. **Title**
+    ];
+    
+    for (const pattern of splitPatterns) {
+      articleSections = content.split(pattern);
+      if (articleSections.length > 1) {
+        console.log(`📰 Split into ${articleSections.length - 1} sections using pattern: ${pattern}`);
+        break;
+      }
     }
     
-    // Format 3: ## Article [number] style (second fallback)
+    // If no patterns worked, try to find articles by looking for title patterns
     if (articleSections.length <= 1) {
-      articleSections = content.split(/##\s*Article\s*\d+/i);
-    }
-    
-    // Format 4: **Article [number]** style (third fallback)
-    if (articleSections.length <= 1) {
-      articleSections = content.split(/\*\*Article\s*\d+\*\*/i);
+      const titlePatterns = [
+        /\*\*Title:\*\*[^*]+/gi,
+        /Title:[^*\n]+/gi,
+        /\*\*[^*]{20,100}\*\*/gi  // Bold text that could be titles
+      ];
+      
+      for (const pattern of titlePatterns) {
+        const matches = content.match(pattern);
+        if (matches && matches.length > 0) {
+          // Create pseudo-sections based on title positions
+          const sections = [''];
+          let lastIndex = 0;
+          
+          for (const match of matches) {
+            const index = content.indexOf(match, lastIndex);
+            if (index > lastIndex) {
+              sections.push(content.substring(index, index + 500)); // Take next 500 chars
+              lastIndex = index + match.length;
+            }
+          }
+          
+          if (sections.length > 1) {
+            articleSections = sections;
+            console.log(`📰 Created ${sections.length - 1} sections from title extraction`);
+            break;
+          }
+        }
+      }
     }
     
     for (let i = 1; i < articleSections.length; i++) {
       const section = articleSections[i].trim();
       
       if (section.length > 50) {
-        // Enhanced regex patterns matching Perplexity's actual response format
-        const titlePatterns = [
-          /\*\*Title:\*\*\s*"?(.+?)"?\s*(?:\n|$)/i,  // **Title:** "Article Title"
-          /[-•]\s*\*\*Title:\*\*\s*(.+?)(?:\n|$)/i,
-          /[-•]\s*Title:\s*(.+?)(?:\n|$)/i,
-          /Title:\s*(.+?)(?:\n|$)/i
-        ];
+        // Comprehensive parsing - try direct field extraction first
+        let title = null, source = null, date = null, url = null, articleContent = null;
         
-        const sourcePatterns = [
-          /\*\*Source:\*\*\s*(.+?)\s*(?:\n|$)/i,  // **Source:** STAT News
-          /[-•]\s*\*\*Source:\*\*\s*(.+?)(?:\n|$)/i,
-          /[-•]\s*Source:\s*(.+?)(?:\n|$)/i,
-          /Source:\s*(.+?)(?:\n|$)/i
-        ];
+        // Method 1: Direct field extraction with **Field:** format
+        const titleMatch = section.match(/\*\*Title:\*\*\s*"?(.+?)"?\s*(?:\n|$)/i);
+        const sourceMatch = section.match(/\*\*Source:\*\*\s*(.+?)\s*(?:\n|$)/i);
+        const dateMatch = section.match(/\*\*Date:\*\*\s*(.+?)\s*(?:\n|$)/i);
+        const urlMatch = section.match(/\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i);
+        const contentMatch = section.match(/\*\*Content:\*\*\s*(.+?)(?=\n\n\*\*ARTICLE|\n\n(?!\*\*)|$)/is);
         
-        const datePatterns = [
-          /\*\*Date:\*\*\s*(.+?)\s*(?:\n|$)/i,  // **Date:** June 25, 2025
-          /[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i,
-          /[-•]\s*Date:\s*(.+?)(?:\n|$)/i,
-          /Date:\s*(.+?)(?:\n|$)/i
-        ];
+        if (titleMatch) title = titleMatch[1].trim();
+        if (sourceMatch) source = sourceMatch[1].trim();
+        if (dateMatch) date = dateMatch[1].trim();
+        if (urlMatch) url = urlMatch[1].trim();
+        if (contentMatch) articleContent = contentMatch[1].trim();
         
-        const urlPatterns = [
-          /\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,  // **URL:** https://...
-          /[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,
-          /[-•]\s*URL:\s*(https?:\/\/[^\s\]]+)/i,
-          /URL:\s*(https?:\/\/[^\s\]]+)/i,
-          /(https?:\/\/[^\s\]]+)/i  // Any URL in the section
-        ];
+        // Method 2: Fallback parsing for different formats
+        if (!title) {
+          const fallbackTitlePatterns = [
+            /Title:\s*"?(.+?)"?\s*(?:\n|$)/i,
+            /^(.+?)(?:\n|Source:|Date:|URL:|Content:)/i  // First line as title
+          ];
+          title = this.findFirstMatch(section, fallbackTitlePatterns);
+        }
         
-        const contentPatterns = [
-          /\*\*Content:\*\*\s*(.+?)(?=\n\n\*\*ARTICLE|\n\n(?!\*\*)|$)/is,  // **Content:** followed by article text
-          /[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|\n##|$)/is,
-          /[-•]\s*Content:\s*(.+?)(?:\n###|\n##|$)/is,
-          /Content:\s*(.+?)(?:\n###|\n##|$)/is
-        ];
+        if (!source) {
+          const fallbackSourcePatterns = [
+            /Source:\s*(.+?)\s*(?:\n|$)/i,
+            /from\s+([a-zA-Z][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i  // Extract from "from domain.com"
+          ];
+          source = this.findFirstMatch(section, fallbackSourcePatterns) || sourceName;
+        }
         
-        // Try each pattern until we find a match
-        const title = this.findFirstMatch(section, titlePatterns);
-        const source = this.findFirstMatch(section, sourcePatterns);
-        const date = this.findFirstMatch(section, datePatterns);
-        let url = this.findFirstMatch(section, urlPatterns);
-        const articleContent = this.findFirstMatch(section, contentPatterns);
+        if (!date) {
+          const fallbackDatePatterns = [
+            /Date:\s*(.+?)\s*(?:\n|$)/i,
+            /(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2}/i,
+            /\d{1,2}\/\d{1,2}\/20\d{2}/i,
+            /20\d{2}-\d{2}-\d{2}/i
+          ];
+          date = this.findFirstMatch(section, fallbackDatePatterns);
+        }
+        
+        if (!url) {
+          const fallbackUrlPatterns = [
+            /URL:\s*(https?:\/\/[^\s\]]+)/i,
+            /(https?:\/\/[^\s\]]+)/i  // Any URL in the section
+          ];
+          url = this.findFirstMatch(section, fallbackUrlPatterns);
+        }
+        
+        if (!articleContent) {
+          const fallbackContentPatterns = [
+            /Content:\s*(.+?)(?=\n\n|$)/is,
+            /\n\n(.+)$/is  // Everything after double newline
+          ];
+          articleContent = this.findFirstMatch(section, fallbackContentPatterns);
+          
+          // If still no content, use the section itself (cleaned)
+          if (!articleContent && section.length > 100) {
+            articleContent = section.replace(/\*\*[^*]+\*\*/g, '').replace(/\n+/g, ' ').trim();
+          }
+        }
         
         // Accept articles with reasonable titles and sources
-        if (title && source && title.length > 10 &&
+        if (title && title.length > 10 &&
             !title.toLowerCase().includes('requires direct search') &&
             !title.toLowerCase().includes('not directly provided') &&
             !title.toLowerCase().includes('no recent') &&
