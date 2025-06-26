@@ -435,25 +435,22 @@ export class FourStepIntelligenceService {
     today: string, 
     yesterday: string
   ): Promise<ExtractedArticle[]> {
-    const prompt = `STRICT REQUIREMENT: Only extract from complete articles published on ${source} in the last 48 hours. Do NOT generate any synthetic content.
+    const prompt = `Search for recent news articles from ${source} related to ${sector}. 
 
-Search ${source} exclusively for actual published articles about ${sector} from ${today} or ${yesterday}.
+Find articles published in the last 3-7 days covering:
+${this.getSectorTopics(sector)}
 
-If ${source} has published articles, format EACH one as:
+For EACH article found, format as:
 ### ARTICLE [number]:
-- **Title:** [exact headline from published article]
+- **Title:** [complete headline]
 - **Source:** ${source}
-- **Date:** [actual publication date]
-- **URL:** [complete article URL - REQUIRED]
-- **Content:** [direct extract from article text]
+- **Date:** [publication date]
+- **URL:** [full article link]
+- **Content:** [key points from article]
 
-ABSOLUTE REQUIREMENTS:
-1. Only include articles that actually exist on ${source}
-2. Every article MUST have a complete URL
-3. Do NOT synthesize or generate content
-4. If no actual articles found, respond: "NO AUTHENTIC ARTICLES FOUND"
+Search broadly for ${sector} sector news. Include earnings, regulatory updates, M&A activity, product launches, clinical data, and market analysis.
 
-CRITICAL: Extract only from real articles with verifiable URLs. No contextual generation allowed.`;
+Target: Find 2-5 articles if available from recent coverage.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -467,7 +464,7 @@ CRITICAL: Extract only from real articles with verifiable URLs. No contextual ge
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 2000,
           temperature: 0.1,
-          search_recency_filter: "day",
+          search_recency_filter: "week",
           return_citations: true
         })
       });
@@ -477,12 +474,14 @@ CRITICAL: Extract only from real articles with verifiable URLs. No contextual ge
         const content = data.choices[0]?.message?.content || '';
         const citations = data.citations || [];
         
-        if (content.includes('NO AUTHENTIC ARTICLES FOUND') || content.length < 100) {
+        if (content.includes('NO RECENT ARTICLES FOUND') || content.length < 100) {
           console.log(`❌ No authentic articles found for ${source}`);
           return [];
         }
         
         console.log(`✅ ${source}: Found content with ${content.length} characters`);
+        console.log(`📝 Sample content from ${source}: ${content.substring(0, 300)}...`);
+        console.log(`🔗 Citations from ${source}: ${citations.slice(0, 3).join(', ')}`);
         return this.parseExtractedArticles(content, citations, source);
       } else {
         console.log(`❌ API error ${response.status} for ${source}`);
@@ -491,6 +490,19 @@ CRITICAL: Extract only from real articles with verifiable URLs. No contextual ge
     } catch (error) {
       console.error(`❌ Error extracting from ${source}:`, error);
       return [];
+    }
+  }
+
+  private getSectorTopics(sector: string): string {
+    switch (sector.toLowerCase()) {
+      case 'defense':
+        return `defense contracts, military procurement, weapons systems, defense spending, military technology, arms deals, defense industry mergers, missile defense, cybersecurity, space defense, naval vessels, aircraft programs, defense budgets, military exercises, arms exports`;
+      case 'pharmaceutical':
+        return `drug approvals, FDA decisions, clinical trials, pharmaceutical mergers, drug pricing, biotech developments, vaccine updates, pharmaceutical regulations, drug launches, patent disputes, pharmaceutical earnings, drug safety, medical devices, pharmaceutical research`;
+      case 'energy':
+        return `oil prices, natural gas, renewable energy, energy infrastructure, pipeline projects, energy policy, electricity markets, energy companies earnings, energy transition, carbon markets, LNG exports, energy storage, grid modernization, energy regulations`;
+      default:
+        return `business news, market developments, industry updates, regulatory changes, corporate earnings, mergers and acquisitions`;
     }
   }
 
