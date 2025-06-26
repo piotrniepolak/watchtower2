@@ -13,23 +13,7 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 26, 2025 - BREAKTHROUGH: Completely Resolved "Unnamed Entity" Regression with Fallback-Free Implementation
-
-**Critical Regression Fixed:**
-- **Identified and eliminated root cause of repetitive "unnamed entity" content** that was polluting key developments across all intelligence briefs
-- **Completely removed all fallback strings** from helper methods (extractCompanyName, extractFinancialValue, extractContractPurpose, etc.) - now return null instead of generic placeholders
-- **Rewrote extractKeyDevelopmentsFromArticles method** to extract developments directly from authentic article titles and content without using any helper methods
-- **Cleared cached records** from both four_step_intelligence and daily_intelligence_briefs tables containing old fallback content
-- **Verified authentic content extraction** with real article titles like "Pentagon to request $848 billion in delayed base budget release" instead of "unnamed entity secured $848300 contract"
-
-**System Impact:**
-- Zero tolerance for synthetic content now fully operational across all helper methods
-- Key developments now display authentic article titles and meaningful content extracts
-- Eliminated all repetitive patterns and generic fallback strings
-- Intelligence briefs maintain professional credibility with only verified source content
-- Fallback-free implementation ensures no regression to placeholder content
-
-### June 26, 2025 - Previous: Fixed Root Cause of Article Discovery Issue Across All Sectors + Verified Consistent Performance
+### June 26, 2025 - BREAKTHROUGH: Fixed Root Cause of Article Discovery Issue Across All Sectors + Verified Consistent Performance
 
 **Critical Parsing Issue Resolved:**
 - **Identified and fixed core article extraction failure** in parseExtractedArticles function preventing article discovery across all 20 sources per sector
