@@ -1998,7 +1998,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // First, try to get cached brief from daily scheduler
       const cachedBrief = await dailyBriefScheduler.getCachedBrief('defense');
-      if (cachedBrief) {
+      if (cachedBrief && cachedBrief.extractedArticles && cachedBrief.extractedArticles.length > 0) {
         console.log('✅ Serving cached defense intelligence brief');
         return res.json(cachedBrief);
       }
@@ -2006,10 +2006,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if 4-step intelligence already exists in storage
       let intelligence = await storage.getFourStepIntelligence(today, 'defense');
       
-      // If no existing data, generate fresh brief if missing
-      if (!intelligence) {
+      // If no existing data with articles, generate fresh brief
+      if (!intelligence || !intelligence.extractedArticles || intelligence.extractedArticles.length === 0) {
         console.log('🔬 Generating fresh defense intelligence brief...');
-        intelligence = await dailyBriefScheduler.generateBriefIfMissing('defense');
+        
+        // Set timeout for generation process
+        const generateWithTimeout = new Promise((resolve, reject) => {
+          const timer = setTimeout(() => {
+            reject(new Error('Generation timeout'));
+          }, 120000); // 2 minutes timeout
+          
+          dailyBriefScheduler.generateBriefIfMissing('defense')
+            .then(result => {
+              clearTimeout(timer);
+              resolve(result);
+            })
+            .catch(error => {
+              clearTimeout(timer);
+              reject(error);
+            });
+        });
+        
+        try {
+          intelligence = await generateWithTimeout;
+        } catch (error) {
+          if (error.message === 'Generation timeout') {
+            return res.status(202).json({ 
+              message: "Intelligence brief is being generated with authentic articles. Please refresh in 2-3 minutes.",
+              status: "generating",
+              estimatedCompletion: "2-3 minutes"
+            });
+          }
+          throw error;
+        }
       }
       
       // Legacy fallback for immediate generation if needed

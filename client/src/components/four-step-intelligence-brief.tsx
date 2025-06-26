@@ -26,11 +26,18 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
   const queryClient = useQueryClient();
 
   // Fetch 4-step intelligence
-  const { data: intelligence, isLoading, error } = useQuery<FourStepIntelligence>({
+  const { data: intelligence, isLoading, error } = useQuery<FourStepIntelligence | { status: string; message: string; estimatedCompletion: string }>({
     queryKey: [`/api/intelligence/${sector}/four-step`],
     staleTime: 0,
     refetchOnWindowFocus: false,
-    retry: false, // Don't retry when no articles found
+    retry: false,
+    refetchInterval: (data) => {
+      // If intelligence is being generated, refetch every 30 seconds
+      if (data && 'status' in data && data.status === 'generating') {
+        return 30000;
+      }
+      return false;
+    },
   });
 
   // Regenerate intelligence mutation
@@ -59,6 +66,9 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
     regenerateMutation.mutate();
   };
 
+  // Check if intelligence is being generated
+  const isGenerating = intelligence && 'status' in intelligence && intelligence.status === 'generating';
+
   if (isLoading) {
     return (
       <Card className="w-full">
@@ -68,6 +78,31 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
             Loading 4-Step Intelligence Analysis...
           </CardTitle>
         </CardHeader>
+      </Card>
+    );
+  }
+
+  if (isGenerating) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RefreshCw className="h-5 w-5 animate-spin" />
+            Generating {sector.charAt(0).toUpperCase() + sector.slice(1)} Intelligence Brief
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {intelligence.message}
+              <br />
+              <strong>Estimated completion:</strong> {intelligence.estimatedCompletion}
+              <br />
+              <em>This page will refresh automatically when ready.</em>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
       </Card>
     );
   }
