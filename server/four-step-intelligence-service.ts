@@ -258,16 +258,21 @@ export class FourStepIntelligenceService {
       return [];
     }
     
-    // Enhanced parsing with multiple formats
-    // Format 1: ### ARTICLE [number]: style
-    let articleSections = content.split(/###\s*ARTICLE\s*\d+:/i);
+    // Enhanced parsing with multiple formats - matching Perplexity's actual response
+    // Format 1: **ARTICLE 1:** style (actual Perplexity format)
+    let articleSections = content.split(/\*\*ARTICLE\s+\d+:\*\*/i);
     
-    // Format 2: ## Article [number] style (fallback)
+    // Format 2: ### ARTICLE [number]: style (fallback)
+    if (articleSections.length <= 1) {
+      articleSections = content.split(/###\s*ARTICLE\s*\d+:/i);
+    }
+    
+    // Format 3: ## Article [number] style (second fallback)
     if (articleSections.length <= 1) {
       articleSections = content.split(/##\s*Article\s*\d+/i);
     }
     
-    // Format 3: **Article [number]** style (second fallback)
+    // Format 4: **Article [number]** style (third fallback)
     if (articleSections.length <= 1) {
       articleSections = content.split(/\*\*Article\s*\d+\*\*/i);
     }
@@ -276,40 +281,40 @@ export class FourStepIntelligenceService {
       const section = articleSections[i].trim();
       
       if (section.length > 50) {
-        // Enhanced regex patterns for more flexible parsing
+        // Enhanced regex patterns matching Perplexity's actual response format
         const titlePatterns = [
+          /\*\*Title:\*\*\s*"?(.+?)"?\s*(?:\n|$)/i,  // **Title:** "Article Title"
           /[-•]\s*\*\*Title:\*\*\s*(.+?)(?:\n|$)/i,
           /[-•]\s*Title:\s*(.+?)(?:\n|$)/i,
-          /\*\*Title:\*\*\s*(.+?)(?:\n|$)/i,
           /Title:\s*(.+?)(?:\n|$)/i
         ];
         
         const sourcePatterns = [
+          /\*\*Source:\*\*\s*(.+?)\s*(?:\n|$)/i,  // **Source:** STAT News
           /[-•]\s*\*\*Source:\*\*\s*(.+?)(?:\n|$)/i,
           /[-•]\s*Source:\s*(.+?)(?:\n|$)/i,
-          /\*\*Source:\*\*\s*(.+?)(?:\n|$)/i,
           /Source:\s*(.+?)(?:\n|$)/i
         ];
         
         const datePatterns = [
+          /\*\*Date:\*\*\s*(.+?)\s*(?:\n|$)/i,  // **Date:** June 25, 2025
           /[-•]\s*\*\*Date:\*\*\s*(.+?)(?:\n|$)/i,
           /[-•]\s*Date:\s*(.+?)(?:\n|$)/i,
-          /\*\*Date:\*\*\s*(.+?)(?:\n|$)/i,
           /Date:\s*(.+?)(?:\n|$)/i
         ];
         
         const urlPatterns = [
+          /\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,  // **URL:** https://...
           /[-•]\s*\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,
           /[-•]\s*URL:\s*(https?:\/\/[^\s\]]+)/i,
-          /\*\*URL:\*\*\s*(https?:\/\/[^\s\]]+)/i,
           /URL:\s*(https?:\/\/[^\s\]]+)/i,
           /(https?:\/\/[^\s\]]+)/i  // Any URL in the section
         ];
         
         const contentPatterns = [
+          /\*\*Content:\*\*\s*(.+?)(?=\n\n\*\*ARTICLE|\n\n(?!\*\*)|$)/is,  // **Content:** followed by article text
           /[-•]\s*\*\*Content:\*\*\s*(.+?)(?:\n###|\n##|$)/is,
           /[-•]\s*Content:\s*(.+?)(?:\n###|\n##|$)/is,
-          /\*\*Content:\*\*\s*(.+?)(?:\n###|\n##|$)/is,
           /Content:\s*(.+?)(?:\n###|\n##|$)/is
         ];
         
@@ -435,22 +440,27 @@ export class FourStepIntelligenceService {
     today: string, 
     yesterday: string
   ): Promise<ExtractedArticle[]> {
-    const prompt = `Search for recent news articles from ${source} related to ${sector}. 
+    const prompt = `Find recent articles from ${source} about ${sector} sector news published in the last 24-48 hours.
 
-Find articles published in the last 3-7 days covering:
+Search ${source} for articles covering:
 ${this.getSectorTopics(sector)}
 
-For EACH article found, format as:
-### ARTICLE [number]:
-- **Title:** [complete headline]
-- **Source:** ${source}
-- **Date:** [publication date]
-- **URL:** [full article link]
-- **Content:** [key points from article]
+Format each article found as:
+ARTICLE 1:
+Title: [exact headline]
+Source: ${source}
+Date: [publication date]
+URL: [direct article link]
+Content: [brief summary]
 
-Search broadly for ${sector} sector news. Include earnings, regulatory updates, M&A activity, product launches, clinical data, and market analysis.
+ARTICLE 2:
+Title: [exact headline]
+Source: ${source}
+Date: [publication date]
+URL: [direct article link]
+Content: [brief summary]
 
-Target: Find 2-5 articles if available from recent coverage.`;
+Find 2-4 recent articles from ${source} if available. Only return articles that actually exist with working URLs.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -464,7 +474,7 @@ Target: Find 2-5 articles if available from recent coverage.`;
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 2000,
           temperature: 0.1,
-          search_recency_filter: "week",
+          search_recency_filter: "day",
           return_citations: true
         })
       });
@@ -480,9 +490,11 @@ Target: Find 2-5 articles if available from recent coverage.`;
         }
         
         console.log(`✅ ${source}: Found content with ${content.length} characters`);
-        console.log(`📝 Sample content from ${source}: ${content.substring(0, 300)}...`);
-        console.log(`🔗 Citations from ${source}: ${citations.slice(0, 3).join(', ')}`);
-        return this.parseExtractedArticles(content, citations, source);
+        console.log(`📝 Full Perplexity response from ${source}:`, content);
+        console.log(`🔗 All citations from ${source}:`, citations);
+        const parsedArticles = this.parseExtractedArticles(content, citations, source);
+        console.log(`📰 Parsed ${parsedArticles.length} articles from ${source}:`, parsedArticles.map(a => a.title));
+        return parsedArticles;
       } else {
         console.log(`❌ API error ${response.status} for ${source}`);
         return [];
