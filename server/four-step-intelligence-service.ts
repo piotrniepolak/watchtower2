@@ -254,10 +254,13 @@ export class FourStepIntelligenceService {
   private parseExtractedArticles(content: string, citations: string[] = [], sourceName: string = ''): ExtractedArticle[] {
     const articles: ExtractedArticle[] = [];
     
-    // Only reject content that explicitly states no articles found
+    // Reject synthetic content or responses without authentic articles
     if (content.includes('NO AUTHENTIC ARTICLES FOUND') ||
-        content.includes('NO ARTICLES FOUND FOR')) {
-      console.log(`❌ No articles available for this sector`);
+        content.includes('NO ARTICLES FOUND') ||
+        content.includes('no articles') ||
+        content.includes('unable to find') ||
+        !content.includes('ARTICLE')) {
+      console.log(`❌ No authentic articles found for ${sourceName}`);
       return [];
     }
     
@@ -438,19 +441,25 @@ export class FourStepIntelligenceService {
     today: string, 
     yesterday: string
   ): Promise<ExtractedArticle[]> {
-    const prompt = `Find ALL recent ${sector} articles from ${source} published in the last 48 hours.
+    const prompt = `STRICT REQUIREMENT: Only extract from complete articles published on ${source} in the last 48 hours. Do NOT generate any synthetic content.
 
-Search ${source} specifically for articles about: industry deals, policy changes, contracts, market developments, mergers, acquisitions, regulatory updates, earnings, and breaking news in ${sector}.
+Search ${source} exclusively for actual published articles about ${sector} from ${today} or ${yesterday}.
 
-Format EACH article found as:
+If ${source} has published articles, format EACH one as:
 ### ARTICLE [number]:
-- **Title:** [exact headline]
+- **Title:** [exact headline from published article]
 - **Source:** ${source}
-- **Date:** ${today} or ${yesterday}
-- **URL:** [full article URL if available]
-- **Content:** [article summary]
+- **Date:** [actual publication date]
+- **URL:** [complete article URL - REQUIRED]
+- **Content:** [direct extract from article text]
 
-CRITICAL: ${source} publishes multiple ${sector} articles daily. Find ALL of them, not just 1-2.`;
+ABSOLUTE REQUIREMENTS:
+1. Only include articles that actually exist on ${source}
+2. Every article MUST have a complete URL
+3. Do NOT synthesize or generate content
+4. If no actual articles found, respond: "NO AUTHENTIC ARTICLES FOUND"
+
+CRITICAL: Extract only from real articles with verifiable URLs. No contextual generation allowed.`;
 
     try {
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -556,18 +565,35 @@ CRITICAL: ${source} publishes multiple ${sector} articles daily. Find ALL of the
     // Use the exact prompt structure provided by the user
     const sectorName = sector === 'defense' ? 'Conflicts' : sector === 'pharmaceutical' ? 'Pharma' : 'Energy';
     
-    const prompt = `Task: Using only reputable open-web sources published within the past 24 hours, create a ${sectorName} section formatted exactly as described below.
-Search broadly and pull in as many reliable primary and Tier-1 sources as you can find (government or multilateral releases, leading industry reports, top-tier media, etc.).
-Respect the exact word-count ranges and bullet limits.
+    const prompt = `CRITICAL REQUIREMENT: You must ONLY use information from the following extracted articles. Do NOT generate any contextual information or synthesize content from general knowledge.
 
-Section – ${sectorName}
-Executive Summary – 300-500 words
+Extracted Articles:
+${articlesText}
 
-Key Developments – 4-10 single-sentence bullet points
+If the extracted articles do not contain sufficient information for a complete intelligence brief, respond with: "INSUFFICIENT AUTHENTIC ARTICLES - Cannot generate brief without complete article sources"
 
-Geopolitical Analysis – 200-300 words
+Only if sufficient authentic article content exists, write exactly 4 sections:
 
-Market Impact Analysis – 200-300 words
+### Executive Summary (300-500 words)
+[Analysis using ONLY information from the extracted articles above]
+
+### Key Developments (4-10 bullet points)
+- [Development directly from extracted articles]
+- [Another development from extracted articles]
+- [Continue only with article-sourced developments]
+
+### Market Impact Analysis (200-300 words)
+[Market analysis using ONLY data from the extracted articles]
+
+### Geopolitical Analysis (200-300 words)
+[Geopolitical analysis using ONLY information from the extracted articles]
+
+ABSOLUTE REQUIREMENTS:
+- Extract information exclusively from the provided articles
+- Do NOT add contextual information from general knowledge
+- Do NOT synthesize or generate content beyond what's in the articles
+- Every statement must be traceable to the extracted articles
+- If articles lack sufficient detail, state "INSUFFICIENT AUTHENTIC ARTICLES"
 
 Formatting rules (must-follow):
 Keep each subsection as its own block, separated by one blank line.
@@ -610,8 +636,11 @@ Include a References section at the end with all source URLs listed one per line
       console.log(`📝 Generated sections content (${content.length} characters)`);
       console.log(`📝 Content preview:`, content.substring(0, 300));
       
-      if (content.length < 100) {
-        throw new Error('Generated content too short - section generation failed');
+      // Reject content that indicates insufficient authentic articles
+      if (content.includes('INSUFFICIENT AUTHENTIC ARTICLES') ||
+          content.includes('Cannot generate brief without complete article sources') ||
+          content.length < 100) {
+        throw new Error('Insufficient authentic articles - cannot generate brief without complete article sources');
       }
 
       return this.parseFourStepSections(content);

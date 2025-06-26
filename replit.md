@@ -13,28 +13,30 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 26, 2025 - Fixed URL Issue with Citation-Based Authentic URLs
+### June 26, 2025 - Implemented Strict Article-Only Extraction Requirements
 
-**URL Fix Implementation Complete:**
-- **Identified root cause:** System was generating homepage fallback URLs instead of using specific article URLs from Perplexity citations
-- **Implemented citation-based URL extraction** in four-step-intelligence-service.ts to prioritize authentic URLs from Perplexity's citations array
-- **Modified parseExtractedArticles function** to accept and use citations parameter for authentic URL matching
-- **Enhanced URL matching logic** with keyword-based citation filtering to link sources with their corresponding article URLs
-- **Verified successful operation** with authentic article URLs like "https://www.indiandefensenews.in/2025/06/rajnath-singh-meets-tajikistan-defence.html"
-- **Maintained fallback mechanism** to homepage URLs only when no matching citations are available
-- **Eliminated fabricated URLs** ensuring all article links point to either authentic citations or legitimate homepage fallbacks
+**Complete Elimination of Synthetic Content Generation:**
+- **Enforced strict Perplexity prompt requirements** mandating exclusive extraction from complete articles with specific URLs
+- **Updated all prompts with absolute requirements:** "Only extract from complete articles published on [source] in the last 48 hours. Do NOT generate any synthetic content"
+- **Enhanced validation logic** to reject any response containing "no articles", "unable to find", or missing article markers
+- **Implemented zero-tolerance policy** for contextual information generation without specific article URLs
+- **Added comprehensive content validation** requiring all intelligence brief content to be traceable to extracted articles with complete URLs
 
 **Technical Implementation:**
-- Updated extractFromSingleSource method to pass Perplexity citations to parseExtractedArticles function
-- Added citation URL matching using source domain keywords for accurate URL assignment
-- Enhanced logging to track authentic citation usage vs homepage fallbacks
-- Preserved existing article extraction logic while fixing URL assignment issues
+- Modified extractFromSingleSource prompts to explicitly prohibit synthetic content generation
+- Enhanced parseExtractedArticles to reject responses without authentic article indicators  
+- Updated generateSectionsFromArticles with strict requirements for article-only content extraction
+- Added validation to terminate brief generation when insufficient authentic articles available
+- Implemented "INSUFFICIENT AUTHENTIC ARTICLES" response requirement when complete articles unavailable
 
 **User Impact:**
-- Intelligence Sources & References now contain working links to specific articles when available
-- Eliminated 404 errors from fabricated URLs by using only authentic Perplexity citations
-- Professional source attribution with real article URLs leading to content referenced in analysis
-- Enhanced credibility with verifiable links to exact source material used in intelligence generation
+- System now fails completely rather than generating content without specific article URLs
+- Intelligence briefs contain only information directly extracted from complete, accessible articles
+- Eliminated all contextual information generation based on general knowledge without URLs
+- Professional adherence to strict authenticity requirements with verifiable source attribution
+- Enhanced credibility through exclusive use of complete article sources with working URLs
+
+### June 26, 2025 - Previous: Fixed URL Issue with Citation-Based Authentic URLs
 
 ### June 25, 2025 - Previous: Implemented User-Specified Perplexity Prompt Format
 
