@@ -1,0 +1,33 @@
+MISSION  ─── DEFENSE BRIEF EXCLUSIVE
+Edit the Defense brief and **no other sector brief**.  
+Do two things:
+
+A.  Ellipsis repair (entire Defense brief)  
+    • Find every sentence or bullet that ends with “…” (or contains a mid-sentence ellipsis).  
+    • Rewrite it into a complete, fact-based statement using ONLY the article already cited on that line.  
+    • Do not introduce new information when fixing ellipses—simply complete the thought.
+
+B.  Deepen TWO Defense subsections  
+    • **Market Impact Analysis**  
+      – Expand to 2 – 4 coherent paragraphs (plus keep any existing bullets).  
+      – Quantify contract values, stock or bond moves, analyst rating changes, supply-chain impacts, or M&A flows—cite hard numbers, dates, quotations.  
+    • **Geopolitical Analysis**  
+      – Expand to 2 – 4 coherent paragraphs (plus keep bullets).  
+      – Analyse alliance shifts, deterrence posture, sanctions, regional risk calculus, timelines, official statements.  
+    • For extra depth, you may draw on up to **three** additional full-text articles per subsection published within the last 24 h (government releases, multilateral bodies, Tier-1 media, respected industry reports; **no** videos, podcasts, social posts).  
+      → Append each new URL to the end of **References – Defense** (one per line, no numbering).
+
+HARD CONSTRAINTS
+• Touch **only** the Defense brief. Do **not** alter Pharma, Energy, or any other sector text if they appear on the same page.  
+• Within Defense, modify only ellipsis fragments (anywhere) plus the two target subsections. All other headings, paragraphs, bullets, and URLs must remain exactly as is.  
+• Keep bullets in their original order; you may rewrite wording or add up to two new bullets per upgraded subsection, but never delete or reorder existing ones.  
+• No placeholder or speculative statements—every claim must trace back to a listed source.  
+• Preserve overall formatting, spacing, grammar, and spelling.  
+• Leave all existing URLs intact; add only the new ones required for the upgrade.
+
+OUTPUT
+Return the Defense brief with:  
+1. All ellipsis fragments repaired.  
+2. “Market Impact Analysis” and “Geopolitical Analysis” lengthened and enriched as specified.  
+
+Everything else—other sections and other sector briefs—must remain verbatim.
