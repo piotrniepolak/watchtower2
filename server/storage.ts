@@ -62,7 +62,9 @@ export interface IStorage {
   
   // Four-Step Intelligence
   getFourStepIntelligence(date: string, sector: string): Promise<FourStepIntelligence | undefined>;
+  getFourStepIntelligenceByDateAndSector(date: string, sector: string): Promise<FourStepIntelligence | undefined>;
   createFourStepIntelligence(intelligence: InsertFourStepIntelligence): Promise<FourStepIntelligence>;
+  updateFourStepIntelligence(id: number, updateData: Partial<InsertFourStepIntelligence>): Promise<FourStepIntelligence>;
   deleteFourStepIntelligence(date: string, sector: string): Promise<void>;
   
   // Quiz Leaderboard
