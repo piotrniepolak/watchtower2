@@ -138,15 +138,15 @@ export class FourStepIntelligenceService {
     
     // No fallback - only use authentic source-generated key developments
     
-    // STEP 4: Validate and fix URLs before including them
-    console.log(`🔗 STEP 4: Validating and fixing ${extractedArticles.length} URLs from discovered sources`);
+    // STEP 4: Filter out broken URLs - only keep working ones
+    console.log(`🔗 STEP 4: Filtering ${extractedArticles.length} URLs to keep only working sources`);
     const initialUrls = extractedArticles.map(article => article.url);
     
     // Import URL validation service
     const { urlValidationService } = await import('./url-validation-service');
     
-    // Validate and fix URLs in real-time
-    const validatedUrls = await urlValidationService.validateAndFixBriefUrls(initialUrls, sector);
+    // Filter to only working URLs - reject all broken ones
+    const workingUrls = await urlValidationService.validateAndFilterWorkingUrls(initialUrls);
     
     return {
       executiveSummary: sections.executiveSummary,
@@ -154,7 +154,7 @@ export class FourStepIntelligenceService {
       marketImpactAnalysis: sections.marketImpactAnalysis,
       geopoliticalAnalysis: sections.geopoliticalAnalysis,
       extractedArticles,
-      sourceUrls: validatedUrls, // Use validated/fixed URLs
+      sourceUrls: workingUrls, // Use only working URLs
       methodologyUsed: 'four-step-authentic-extraction',
       generatedAt: new Date().toISOString()
     };
