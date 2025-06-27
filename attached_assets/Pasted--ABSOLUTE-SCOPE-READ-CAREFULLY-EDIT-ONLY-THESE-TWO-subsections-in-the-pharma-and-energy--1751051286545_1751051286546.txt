@@ -1,0 +1,34 @@
+🚨  ABSOLUTE SCOPE — READ CAREFULLY
+• EDIT **ONLY** THESE TWO subsections in the pharma and energy briefs:
+    ① Market Impact Analysis
+    ② Geopolitical Analysis
+• DO NOT change anything else—no headings, no bullets outside these subsections, no other sections, no Defense brief.
+
+──────────────────────────────────────
+TASKS (apply solely inside the two target subsections in the two target sectors)
+
+STEP 1 — CHECK DEPTH
+If a subsection is <175 words OR mentions <3 concrete data points (prices, contract values, official quotes, dates), mark it “thin” and proceed to Step 2.  
+If it already meets both thresholds, leave its content intact except for minor grammar fixes in that subsection.
+
+STEP 2 — UPGRADE (“thin” subsections only)
+a. Expand to **2–4 coherent paragraphs** (keep any existing bullets in their original order).  
+   – *Market Impact:* include pricing moves, supply-chain effects, regulatory filings, equity/credit reactions, deal flow, commodities/FX—quote hard numbers & dates.  
+   – *Geopolitical:* cover policy shifts, trade/IP disputes, alliances (e.g., OPEC+), sanctions, regional risk calculus—cite timelines & official statements.  
+b. Draw on up to **3** new full-text sources from the last 24 h (regulators, multilateral bodies, Tier-1 media, respected industry reports; NO videos/podcasts/social).  
+c. Append each new URL to **References – {{sector}}** (one per line, no numbering).
+
+STEP 3 — ELLIPSIS FIX (inside these subsections only)
+Replace every sentence or bullet containing “…” with a complete, fact-based statement using **only** its already-cited article.
+
+──────────────────────────────────────
+NON-NEGOTIABLE RULES
+■ Touch NOTHING outside Market Impact Analysis and Geopolitical Analysis for energy and pharma sectors.  
+■ Keep bullet order; may rewrite wording or add max **2** new bullets per upgraded subsection—never delete or reorder existing ones.  
+■ No placeholder or speculative text—every claim must be traceable to a listed URL.  
+■ Leave all other sections, headings, and existing URLs exactly as they are (except for the new references you add).  
+■ Maintain pristine formatting, spacing, grammar, and spelling.
+
+OUTPUT
+Return the energy and pharma briefs with ONLY its Market Impact Analysis and Geopolitical Analysis subsections strengthened per above.  
+Everything else remains verbatim.
