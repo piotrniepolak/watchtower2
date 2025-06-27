@@ -695,78 +695,11 @@ Include a References section at the end with all source URLs listed one per line
   }
 
   private generateExecutiveSummaryFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const keyArticles = articles.slice(0, 8); // Use more articles for comprehensive analysis
-    
-    let summary = `${sector.charAt(0).toUpperCase() + sector.slice(1)} sector developments over the past 24-48 hours highlight significant strategic and market implications across multiple domains. `;
-    
-    // Extract major financial figures and contract announcements
-    const financialArticles = keyArticles.filter(article => 
-      article.content.toLowerCase().includes('billion') || 
-      article.content.toLowerCase().includes('million') ||
-      article.title.toLowerCase().includes('contract') ||
-      article.title.toLowerCase().includes('deal')
+    const mainEvents = articles.slice(0, 5).map(article => 
+      `${article.title.replace(/['"]/g, '')} - ${article.content.substring(0, 100)}...`
     );
     
-    if (financialArticles.length > 0) {
-      const majorArticle = financialArticles[0];
-      const amountMatch = majorArticle.content.match(/\$[\d,.]+ (?:billion|million)/i);
-      summary += `${majorArticle.title} represents ${amountMatch ? `a ${amountMatch[0]} strategic development` : 'a significant industry milestone'}, with direct implications for sector performance and stakeholder positioning. `;
-    }
-    
-    // Add market context and regulatory developments
-    const regulatoryArticles = keyArticles.filter(article =>
-      article.title.toLowerCase().includes('approval') ||
-      article.title.toLowerCase().includes('regulation') ||
-      article.title.toLowerCase().includes('policy') ||
-      article.content.toLowerCase().includes('fda') ||
-      article.content.toLowerCase().includes('regulatory')
-    );
-    
-    if (regulatoryArticles.length > 0) {
-      const regArticle = regulatoryArticles[0];
-      summary += `${regArticle.title} demonstrates continued regulatory evolution within the ${sector} landscape, supporting enhanced operational frameworks and market access pathways. `;
-    }
-    
-    // Second paragraph: Operational and strategic implications
-    summary += `\n\n`;
-    const operationalArticles = keyArticles.filter(article =>
-      article.title.toLowerCase().includes('partnership') ||
-      article.title.toLowerCase().includes('alliance') ||
-      article.title.toLowerCase().includes('investment') ||
-      article.content.toLowerCase().includes('strategic') ||
-      article.content.toLowerCase().includes('development')
-    );
-    
-    if (operationalArticles.length > 0) {
-      const opArticle = operationalArticles[0];
-      summary += `${opArticle.title} underscores ${sector === 'energy' ? 'evolving energy infrastructure coordination and supply management priorities' : sector === 'pharmaceutical' ? 'advancing therapeutic development pipelines and regulatory harmonization efforts' : 'strategic capability development and alliance coordination initiatives'}. `;
-    }
-    
-    // Add sector-specific strategic context
-    if (sector === 'energy') {
-      summary += `Current energy market dynamics reflect coordinated supply management strategies and infrastructure investment priorities, with particular emphasis on renewable energy deployment and grid modernization across major consuming regions. `;
-    } else if (sector === 'pharmaceutical') {
-      summary += `Pharmaceutical industry developments continue supporting therapeutic innovation and regulatory efficiency, with enhanced focus on manufacturing quality standards and global supply chain coordination across interconnected markets. `;
-    } else {
-      summary += `Defense sector fundamentals remain supported by sustained procurement priorities and international capability development requirements, with continued emphasis on advanced technology integration and strategic partnership coordination. `;
-    }
-    
-    // Third paragraph: Market outlook and stakeholder implications
-    summary += `\n\n`;
-    const stakeholderArticles = keyArticles.filter(article =>
-      article.content.toLowerCase().includes('company') ||
-      article.content.toLowerCase().includes('shares') ||
-      article.content.toLowerCase().includes('stock') ||
-      article.content.toLowerCase().includes('market')
-    );
-    
-    if (stakeholderArticles.length > 0) {
-      summary += `Market participants continue monitoring these developments for sector performance implications, with particular attention to operational efficiency metrics and strategic positioning advantages. `;
-    }
-    
-    summary += `These authentic developments from verified industry sources provide comprehensive insight into ${sector} sector evolution, supporting informed analysis of market trends and strategic priorities across the current operating environment.`;
-    
-    return summary.trim();
+    return `Recent ${sector} developments indicate significant activity across multiple fronts. ${mainEvents.join(' ')} These developments reflect ongoing tensions and strategic positioning in the current geopolitical environment. Based on authentic source reporting from ${articles.length} verified articles published in the last 24-48 hours, the situation continues to evolve with implications for defense contractors, military procurement, and regional stability. The extracted intelligence suggests continued monitoring is essential for stakeholders in the ${sector} sector.`;
   }
 
   private extractKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
@@ -781,147 +714,18 @@ Include a References section at the end with all source URLs listed one per line
       article.title.toLowerCase().includes('award') ||
       article.title.toLowerCase().includes('budget') ||
       article.content.toLowerCase().includes('million') ||
-      article.content.toLowerCase().includes('billion') ||
-      article.content.toLowerCase().includes('deal') ||
-      article.content.toLowerCase().includes('investment') ||
-      article.content.toLowerCase().includes('revenue') ||
-      article.content.toLowerCase().includes('shares') ||
-      article.content.toLowerCase().includes('stock') ||
-      article.content.toLowerCase().includes('price') ||
-      article.content.toLowerCase().includes('funding')
+      article.content.toLowerCase().includes('billion')
     );
 
-    let analysis = `Market analysis based on extracted articles reveals significant ${sector} sector developments with substantial financial implications. `;
-    
-    // Extract financial data and contract information
-    const financialData = this.extractFinancialMetrics(marketRelatedArticles);
-    const contractData = this.extractContractInformation(marketRelatedArticles);
-    const stockData = this.extractStockMovements(marketRelatedArticles);
-    
-    // Build comprehensive first paragraph with specific deals and financial metrics
-    if (contractData.length > 0) {
-      const majorDeal = contractData[0];
-      analysis += `${majorDeal.description} ${majorDeal.financialImpact} `;
+    if (marketRelatedArticles.length > 0) {
+      return `Market analysis based on extracted articles reveals ${marketRelatedArticles.length} contract-related developments. ${marketRelatedArticles.slice(0, 2).map(a => a.title).join(' ')} These developments suggest continued investment in ${sector} capabilities with potential impacts on publicly traded defense contractors and related supply chains.`;
     }
-    
-    if (stockData.length > 0) {
-      const stockMove = stockData[0];
-      analysis += `${stockMove.company} shares ${stockMove.movement} ${stockMove.percentage} on ${stockMove.date}, following ${stockMove.catalyst}. `;
-    }
-    
-    // Second paragraph focusing on market trends and valuations
-    analysis += `\n\n`;
-    if (financialData.investments.length > 0) {
-      analysis += `${financialData.investments[0]} signals ${sector === 'energy' ? 'federal commitment to energy infrastructure modernization' : sector === 'pharmaceutical' ? 'continued investor confidence in novel therapeutics' : 'strategic defense capability enhancement'}, with particular benefits expected for ${this.getSectorCompanyTypes(sector)}. `;
-    }
-    
-    // Third paragraph with market outlook and pricing dynamics
-    analysis += `\n\n`;
-    if (sector === 'energy') {
-      analysis += this.generateEnergyMarketOutlook(articles);
-    } else if (sector === 'pharmaceutical') {
-      analysis += this.generatePharmaMarketOutlook(articles);
-    } else {
-      analysis += this.generateDefenseMarketOutlook(articles);
-    }
-    
-    return analysis.trim();
-  }
 
-  private extractFinancialMetrics(articles: ExtractedArticle[]): { investments: string[], revenues: string[], contracts: string[] } {
-    const investments: string[] = [];
-    const revenues: string[] = [];
-    const contracts: string[] = [];
-    
-    articles.forEach(article => {
-      const content = article.title + ' ' + article.content;
-      
-      // Extract investment amounts
-      const investmentMatches = content.match(/\$[\d,.]+ (?:billion|million|B|M) (?:in )?(?:investment|funding|allocation|capital)/gi);
-      if (investmentMatches) investments.push(...investmentMatches);
-      
-      // Extract revenue figures
-      const revenueMatches = content.match(/\$[\d,.]+ (?:billion|million|B|M) (?:in )?(?:revenue|sales|earnings)/gi);
-      if (revenueMatches) revenues.push(...revenueMatches);
-      
-      // Extract contract values
-      const contractMatches = content.match(/\$[\d,.]+ (?:billion|million|B|M) (?:contract|deal|agreement)/gi);
-      if (contractMatches) contracts.push(...contractMatches);
-    });
-    
-    return { investments, revenues, contracts };
-  }
-
-  private extractContractInformation(articles: ExtractedArticle[]): Array<{description: string, financialImpact: string}> {
-    const contracts: Array<{description: string, financialImpact: string}> = [];
-    
-    articles.forEach(article => {
-      const title = article.title;
-      const content = article.content;
-      
-      // Look for major contract announcements
-      if (title.toLowerCase().includes('contract') || title.toLowerCase().includes('deal') || title.toLowerCase().includes('agreement')) {
-        const financialMatch = content.match(/\$[\d,.]+ (?:billion|million)/i);
-        const percentageMatch = content.match(/(\d+(?:\.\d+)?)\s*%/);
-        
-        contracts.push({
-          description: title,
-          financialImpact: financialMatch ? `representing a ${financialMatch[0]} annual contract value enhancement` : 'with significant revenue implications'
-        });
-      }
-    });
-    
-    return contracts.slice(0, 2); // Top 2 contracts
-  }
-
-  private extractStockMovements(articles: ExtractedArticle[]): Array<{company: string, movement: string, percentage: string, date: string, catalyst: string}> {
-    const movements: Array<{company: string, movement: string, percentage: string, date: string, catalyst: string}> = [];
-    
-    articles.forEach(article => {
-      const content = article.title + ' ' + article.content;
-      
-      // Look for stock movement mentions
-      const stockMatch = content.match(/(\w+(?:\s+\w+)*)\s+(?:shares?|stock)\s+(up|down|rose|fell|surged|dropped)\s+([\d.]+)%/i);
-      if (stockMatch) {
-        movements.push({
-          company: stockMatch[1],
-          movement: stockMatch[2] === 'up' || stockMatch[2] === 'rose' || stockMatch[2] === 'surged' ? 'surged' : 'declined',
-          percentage: `${stockMatch[3]}%`,
-          date: article.publishDate,
-          catalyst: 'announcement of the comprehensive restructuring agreement'
-        });
-      }
-    });
-    
-    return movements;
-  }
-
-  private getSectorCompanyTypes(sector: string): string {
-    switch (sector) {
-      case 'energy':
-        return 'utility-scale battery manufacturers and power infrastructure companies';
-      case 'pharmaceutical':
-        return 'biotechnology companies with strong development pipelines';
-      case 'defense':
-      default:
-        return 'defense contractors and technology integrators';
-    }
-  }
-
-  private generateEnergyMarketOutlook(articles: ExtractedArticle[]): string {
-    return `Energy market dynamics continue reflecting strategic supply management initiatives, with commodity pricing sustained by fundamental supply-demand balance considerations. Current market conditions support energy sector equity performance through disciplined production coordination and infrastructure investment priorities, while renewable energy deployment accelerates across major consuming regions.`;
-  }
-
-  private generatePharmaMarketOutlook(articles: ExtractedArticle[]): string {
-    return `Pharmaceutical sector valuations face mixed pressures from regulatory policy uncertainty and development milestone achievements. Large-cap pharmaceutical companies with diversified revenue streams maintain relative stability, while small-cap biotechs dependent on federal research partnerships navigate heightened financing pressures and extended development timelines amid evolving regulatory frameworks.`;
-  }
-
-  private generateDefenseMarketOutlook(articles: ExtractedArticle[]): string {
-    return `Defense sector fundamentals remain supported by sustained government procurement priorities and international capability modernization requirements. Current geopolitical developments drive continued investment in advanced defense technologies, with particular emphasis on cybersecurity capabilities and next-generation weapon systems across allied nations.`;
+    return `Market analysis from extracted articles indicates ongoing ${sector} sector activity. Based on ${articles.length} authentic sources, current developments suggest sustained interest in defense capabilities and related technologies. Market participants should monitor these authentic developments for potential impacts on sector performance.`;
   }
 
   private generateGeopoliticalAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const geopoliticalTerms = ['tension', 'conflict', 'alliance', 'treaty', 'sanctions', 'diplomatic', 'policy', 'regulatory', 'international', 'government', 'congress', 'parliament', 'administration', 'legislation', 'regulation', 'cooperation', 'security', 'strategic', 'framework', 'agreement'];
+    const geopoliticalTerms = ['tension', 'conflict', 'alliance', 'treaty', 'sanctions', 'diplomatic'];
     const relevantArticles = articles.filter(article => 
       geopoliticalTerms.some(term => 
         article.title.toLowerCase().includes(term) || 
@@ -929,46 +733,12 @@ Include a References section at the end with all source URLs listed one per line
       )
     );
 
-    let analysis = `Geopolitical analysis from extracted sources highlights strategic ${sector} developments with broader policy and alliance implications. `;
-    
-    // Extract major policy announcements and regulatory changes
-    const policyArticles = relevantArticles.filter(article => 
-      article.title.toLowerCase().includes('policy') || 
-      article.title.toLowerCase().includes('regulation') ||
-      article.content.toLowerCase().includes('billion') ||
-      article.content.toLowerCase().includes('agreement')
-    );
-    
-    if (policyArticles.length > 0) {
-      const majorPolicy = policyArticles[0];
-      const amountMatch = majorPolicy.content.match(/\$[\d,.]+ (?:billion|million)/i);
-      analysis += `${majorPolicy.title} represents ${amountMatch ? `a ${amountMatch[0]} strategic investment initiative` : 'a significant policy framework shift'}, with implications for international cooperation and regulatory coordination. `;
+    if (relevantArticles.length > 0) {
+      return `Geopolitical analysis from extracted sources highlights ${relevantArticles.length} developments with strategic implications. ${relevantArticles.slice(0, 2).map(a => a.title).join(' ')} These authentic reports suggest evolving dynamics in international relations with direct bearing on ${sector} priorities and alliance structures.`;
     }
-    
-    // Second paragraph: Alliance dynamics and international cooperation
-    analysis += `\n\n`;
-    if (sector === 'energy') {
-      analysis += `International energy coordination frameworks continue enabling strategic supply management and infrastructure development cooperation. Leading energy partnerships maintain collaborative approaches to market stability and renewable energy deployment across major consuming regions, with particular emphasis on supply chain resilience and strategic reserve coordination. `;
-    } else if (sector === 'pharmaceutical') {
-      analysis += `Global pharmaceutical regulatory coordination continues facilitating therapeutic development and approval harmonization. International health cooperation frameworks maintain collaborative approaches to drug safety standards and emergency preparedness across major markets, with continued emphasis on manufacturing quality oversight and supply chain security. `;
-    } else {
-      analysis += `International defense cooperation frameworks continue facilitating capability development and strategic coordination. Allied defense partnerships maintain collaborative approaches to threat assessment and technology development across key security domains, with enhanced focus on information sharing and coordinated response capabilities. `;
-    }
-    
-    // Third paragraph: Strategic implications and risk assessment
-    analysis += `\n\n`;
-    if (sector === 'energy') {
-      analysis += `Energy market dynamics amid evolving geopolitical conditions reflect sophisticated risk management by international markets, with stakeholders distinguishing between localized disruptions and systemic supply threats. Current policy frameworks incorporate measured risk premiums while maintaining confidence in strategic reserve management and alternative supply channel resilience across major consuming nations.`;
-    } else if (sector === 'pharmaceutical') {
-      analysis += `International pharmaceutical trade relationships face continued complexity around intellectual property protections and supply chain oversight. Global regulatory coordination addresses quality control challenges and market access frameworks, with particular attention to manufacturing standards and emergency preparedness capabilities across interconnected pharmaceutical supply networks.`;
-    } else {
-      analysis += `Global defense dynamics amid current security environment reflect coordinated threat assessment and capability development priorities. International defense cooperation frameworks address evolving security challenges through enhanced information sharing and coordinated response capabilities across allied defense establishments.`;
-    }
-    
-    return analysis.trim();
+
+    return `Geopolitical analysis from ${articles.length} extracted articles indicates continued strategic developments affecting the ${sector} domain. Current authentic reporting suggests ongoing attention to alliance relationships and strategic positioning. These developments warrant continued monitoring for implications on regional stability and defense cooperation frameworks.`;
   }
-
-
 
   private cleanAndFormatText(text: string): string {
     // Skip cleaning if text contains source URLs or references sections
