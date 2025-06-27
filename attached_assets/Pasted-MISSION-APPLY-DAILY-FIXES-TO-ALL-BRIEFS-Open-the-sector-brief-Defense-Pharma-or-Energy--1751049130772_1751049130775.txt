@@ -1,0 +1,35 @@
+MISSION  ───  APPLY DAILY FIXES TO *ALL* BRIEFS
+Open the sector brief (Defense, Pharma, or Energy) and apply the three repairs below **every single day** so that each brief—the Defense, Pharma, and Energy versions—remains accurate, readable, and well-formatted.
+
+──────────────────────────────────────────
+1 ELLIPSIS REPAIR  (entire brief)
+   • Find every sentence or bullet that contains “…” (or any mid-sentence ellipsis).  
+   • Rewrite it into a complete, fact-based statement drawn ONLY from the article already cited on that line.  
+   • Do not add new topics when fixing ellipses—just finish the thought.
+
+2 DEPTH UPGRADE  (two subsections)
+   • **Market Impact Analysis** and **Geopolitical Analysis**  
+     – Expand each to 2–4 coherent paragraphs (plus keep any existing bullets).  
+     – *Market Impact →* quantify contract values, price or yield moves, analyst actions, supply-chain effects, M&A, etc.  
+     – *Geopolitical →* examine alliance shifts, deterrence posture, sanctions, regional risk calculus, timelines, and official statements.  
+     – For extra depth, consult up to THREE additional full-text articles per subsection published within the last 24 h  
+       (government releases, multilateral bodies, Tier-1 media, respected industry reports; **no** videos, podcasts, or social posts).  
+       ↳ Append each new URL to the bottom of **References – [sector]** (one per line, no numbering).
+
+3 KEY DEVELOPMENTS BULLET CLEANUP
+   • Remove inline source names/links 
+   • Keep bullets in their original order; do NOT add, delete, or reorder them.
+
+──────────────────────────────────────────
+HARD CONSTRAINTS
+■ No placeholder or speculative text—every claim must trace back to a listed article.  
+■ Preserve overall headings, formatting, spacing, grammar, and spelling.  
+
+OUTPUT
+Return the updated brief (Defense, Pharma, or Energy) with:  
+   • Every ellipsis fragment repaired.  
+   • “Market Impact Analysis” and “Geopolitical Analysis” lengthened and enriched.  
+   • Key Developments list cleaned (no inline sources/links).  
+
+All other content must remain verbatim.
+
