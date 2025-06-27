@@ -1,0 +1,42 @@
+MISSION
+1) Verify that TODAY’S {{sector}} brief is genuinely new and data-rich, not yesterday’s text with a changed date.  
+2) If stale or incomplete, rebuild the brief using your current methodology with fresh sources from the past 24 h.  
+3) Apply all formatting and content fixes (ellipsis, duplicate bullets, inline links) so every sector brief—Defense/Conflicts, Pharma, Energy—is always up-to-date and clean.
+
+────────────────────────────────────────────
+STEP-BY-STEP TASKS
+
+STEP 0 CHECK FRESHNESS  
+• Compare material in today’s brief to content published in the past 24 h.  
+   – If fewer than **5 unique articles dated ≤24 h** are cited **or** more than **20 %** of sentences are identical to yesterday’s version, treat the brief as “stale” and regenerate it from scratch (see STEP 1).  
+   – Otherwise keep the existing body and jump to STEP 2 (cleanup).
+
+STEP 1 (ONLY IF BRIEF IS STALE) REBUILD  
+• Gather at least **8 reliable full-text sources from the last 24 h** (gov’t releases, multilateral bodies, Tier-1 media, respected industry reports; no videos/podcasts/social posts).  
+• Create fresh sections in standard order:  
+   1. Executive Summary  
+   2. Key Developments (4-10 bullets)  
+   3. Geopolitical Analysis (2-4 paragraphs)  
+   4. Market Impact Analysis (2-4 paragraphs)  
+• Remove inline source names/links from Key Developments bullets.  
+• Append every URL to **References – {{sector}}** (one per line, no numbering).
+
+STEP 2 CLEANUP (Always run)  
+A Ellipsis Fix – Convert any sentence or bullet containing “…” into a complete, fact-based statement using ONLY its already-cited article.  
+B Key Developments Link Removal – Strip domain names, “reports”, URLs from inside bullets (they remain in References).  
+C Format Pass – Each bullet on its own line, single full stop at end; preserve heading hierarchy and spacing.
+
+────────────────────────────────────────────
+HARD CONSTRAINTS
+■ Touch only the current {{sector}} brief; never alter other sector files during this run.  
+■ Keep original bullet order; you may rewrite wording or add bullets only when rebuilding in STEP 1.  
+■ No placeholder or speculative statements—every claim must trace back to a listed article.  
+■ Apart from adding new URLs in STEP 1, leave existing References unchanged.  
+■ Preserve overall formatting, grammar, and spelling in sections you keep.
+
+OUTPUT
+Return TODAY’S {{sector}} brief with:
+• Fresh, 24-hour data (if rebuilt)  
+• All ellipses fixed  
+• Key Developments bullets cleaned (single bullet symbol, no inline links)  
+• “Geopolitical Analysis” and “Market Impact Analysis” comprehensive and current  
