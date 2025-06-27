@@ -1935,14 +1935,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Always get the latest intelligence from four_step_intelligence table
-      let intelligence = await storage.getFourStepIntelligence(today, 'energy');
-      
-      // If found, serve the latest intelligence (with fixed URLs)
-      if (intelligence && intelligence.extractedArticles && intelligence.extractedArticles.length > 0) {
-        console.log('✅ Serving latest energy intelligence brief from four_step_intelligence table');
-        return res.json(intelligence);
+      // First, try to get cached brief from daily scheduler
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('energy');
+      if (cachedBrief) {
+        console.log('✅ Serving cached energy intelligence brief');
+        return res.json(cachedBrief);
       }
+      
+      // Check if 4-step intelligence already exists in storage
+      let intelligence = await storage.getFourStepIntelligence(today, 'energy');
       
       // If no existing data, generate fresh brief if missing
       if (!intelligence) {
@@ -1995,13 +1996,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Always get the latest intelligence from four_step_intelligence table
+      // Check if enhanced 4-step intelligence already exists in storage first
       let intelligence = await storage.getFourStepIntelligence(today, 'defense');
       
-      // If found, serve the latest intelligence (with fixed URLs)
-      if (intelligence && intelligence.extractedArticles && intelligence.extractedArticles.length > 0) {
-        console.log('✅ Serving latest defense intelligence brief from four_step_intelligence table');
+      // Prioritize enhanced briefs with NATO/defense specific content
+      if (intelligence && intelligence.executiveSummary && intelligence.executiveSummary.includes('NATO')) {
+        console.log('✅ Serving enhanced defense intelligence brief');
         return res.json(intelligence);
+      }
+      
+      // Check for cached brief as fallback
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('defense');
+      if (cachedBrief && cachedBrief.extractedArticles && cachedBrief.extractedArticles.length > 0) {
+        console.log('✅ Serving cached defense intelligence brief');
+        return res.json(cachedBrief);
       }
       
       // If no existing data with articles, generate fresh brief
@@ -2083,14 +2091,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Always get the latest intelligence from four_step_intelligence table
-      let intelligence = await storage.getFourStepIntelligence(today, 'pharmaceutical');
-      
-      // If found, serve the latest intelligence (with fixed URLs)
-      if (intelligence && intelligence.extractedArticles && intelligence.extractedArticles.length > 0) {
-        console.log('✅ Serving latest pharmaceutical intelligence brief from four_step_intelligence table');
-        return res.json(intelligence);
+      // First, try to get cached brief from daily scheduler
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('pharmaceutical');
+      if (cachedBrief) {
+        console.log('✅ Serving cached pharmaceutical intelligence brief');
+        return res.json(cachedBrief);
       }
+      
+      // Check if 4-step intelligence already exists in storage
+      let intelligence = await storage.getFourStepIntelligence(today, 'pharmaceutical');
       
       // If no existing data, generate fresh brief if missing
       if (!intelligence) {

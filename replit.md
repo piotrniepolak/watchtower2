@@ -13,30 +13,7 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 27, 2025 - BREAKTHROUGH: Strict URL Filtering System Eliminates All Broken Links at Generation Time
-
-**Revolutionary Architecture Change:**
-- **Created strict URL filtering service** that validates URLs and rejects all broken ones during intelligence brief generation
-- **Eliminated all fallback logic** as specifically required - no URL replacements or synthetic alternatives ever used
-- **Integrated real-time validation into four-step intelligence process** ensuring only working URLs reach the database
-- **Implemented 100% working URL guarantee** - system only includes URLs returning 200 status codes
-- **Tested and verified strict filtering** with 2/5 URLs kept as working, 3/5 properly rejected as broken
-
-**Technical Implementation:**
-- Built URLValidationService with strict filtering methodology rejecting all non-200 status URLs
-- Modified four-step-intelligence-service.ts to filter URLs in Step 4 before brief storage
-- Added real-time URL status checking with 10-second timeout and batch processing
-- Implemented error handling that throws exception when zero working URLs found
-- Created comprehensive test suite proving system rejects broken URLs without fallbacks
-
-**User Impact:**
-- Zero broken URLs in intelligence brief reference sections guaranteed
-- Only verified working source links displayed to users
-- System fails completely rather than using fallbacks when insufficient working URLs found
-- Works across all three sectors (Defense, Pharmaceutical, Energy) with consistent strict filtering
-- Authentic URL-only approach maintains platform credibility and user trust
-
-### June 27, 2025 - Previous: AUTOMATION COMPLETE: All Manual Brief Quality Fixes Now Applied Automatically to Every Generated Brief
+### June 27, 2025 - AUTOMATION COMPLETE: All Manual Brief Quality Fixes Now Applied Automatically to Every Generated Brief
 
 **Comprehensive Automation Implementation:**
 - **Automated ellipsis removal** - All "..." fragments automatically replaced with complete statements in every new brief generation

@@ -5,10 +5,9 @@
  * 1. Identify exactly 20 news sources (15 sector + 5 general)
  * 2. Extract ALL articles published today/yesterday from these sources
  * 3. Use ONLY extracted articles to write 4 sections
- * 4. Validate and fix URLs before storing intelligence brief
+ * 4. Include direct article URLs without modification
  * 
  * NO fallback mechanisms, NO synthetic content generation
- * Real-time URL validation ensures all reference links work
  */
 
 interface ExtractedArticle {
@@ -138,15 +137,9 @@ export class FourStepIntelligenceService {
     
     // No fallback - only use authentic source-generated key developments
     
-    // STEP 4: Filter out broken URLs - only keep working ones
-    console.log(`🔗 STEP 4: Filtering ${extractedArticles.length} URLs to keep only working sources`);
-    const initialUrls = extractedArticles.map(article => article.url);
-    
-    // Import URL validation service
-    const { urlValidationService } = await import('./url-validation-service');
-    
-    // Filter to only working URLs - reject all broken ones
-    const workingUrls = await urlValidationService.validateAndFilterWorkingUrls(initialUrls);
+    // STEP 4: Include direct URLs
+    console.log(`🔗 STEP 4: Including ${extractedArticles.length} direct article URLs from discovered sources`);
+    const sourceUrls = extractedArticles.map(article => article.url);
     
     return {
       executiveSummary: sections.executiveSummary,
@@ -154,7 +147,7 @@ export class FourStepIntelligenceService {
       marketImpactAnalysis: sections.marketImpactAnalysis,
       geopoliticalAnalysis: sections.geopoliticalAnalysis,
       extractedArticles,
-      sourceUrls: workingUrls, // Use only working URLs
+      sourceUrls,
       methodologyUsed: 'four-step-authentic-extraction',
       generatedAt: new Date().toISOString()
     };
