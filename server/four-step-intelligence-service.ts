@@ -681,6 +681,7 @@ Include a References section at the end with all source URLs listed one per line
       const geopoliticalAnalysis = this.generateGeopoliticalAnalysisFromArticles(articles, sector);
 
       console.log(`📝 Generated sections - Executive: ${executiveSummary.length} chars, Market: ${marketImpactAnalysis.length} chars, Geopolitical: ${geopoliticalAnalysis.length} chars, Developments: ${keyDevelopments.length} items`);
+      console.log(`🔧 Automatic fixes applied to all content sections`);
 
       return {
         executiveSummary,
@@ -696,16 +697,21 @@ Include a References section at the end with all source URLs listed one per line
 
   private generateExecutiveSummaryFromArticles(articles: ExtractedArticle[], sector: string): string {
     const mainEvents = articles.slice(0, 5).map(article => 
-      `${article.title.replace(/['"]/g, '')} - ${article.content.substring(0, 100)}...`
+      `${article.title.replace(/['"]/g, '')} - ${article.content.substring(0, 200).replace(/\.\.\.+$/, '')}`
     );
     
-    return `Recent ${sector} developments indicate significant activity across multiple fronts. ${mainEvents.join(' ')} These developments reflect ongoing tensions and strategic positioning in the current geopolitical environment. Based on authentic source reporting from ${articles.length} verified articles published in the last 24-48 hours, the situation continues to evolve with implications for defense contractors, military procurement, and regional stability. The extracted intelligence suggests continued monitoring is essential for stakeholders in the ${sector} sector.`;
+    const summary = `Recent ${sector} developments indicate significant activity across multiple fronts. ${mainEvents.join(' ')} These developments reflect ongoing tensions and strategic positioning in the current geopolitical environment. Based on authentic source reporting from ${articles.length} verified articles published in the last 24-48 hours, the situation continues to evolve with implications for defense contractors, military procurement, and regional stability. The extracted intelligence suggests continued monitoring is essential for stakeholders in the ${sector} sector.`;
+    
+    return this.applyAutomaticFixes(summary);
   }
 
   private extractKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
-    return articles.slice(0, 6).map((article, index) => 
-      `${article.title.replace(/['"]/g, '')} - ${article.source} reports ${article.content.substring(0, 80)}...`
-    );
+    return articles.slice(0, 6).map((article, index) => {
+      const cleanTitle = article.title.replace(/['"]/g, '');
+      const cleanContent = article.content.substring(0, 120).replace(/\.\.\.+$/, '');
+      const development = `${cleanTitle} ${cleanContent}`;
+      return this.applyAutomaticFixes(development);
+    });
   }
 
   private generateMarketAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
@@ -717,11 +723,14 @@ Include a References section at the end with all source URLs listed one per line
       article.content.toLowerCase().includes('billion')
     );
 
+    let analysis: string;
     if (marketRelatedArticles.length > 0) {
-      return `Market analysis based on extracted articles reveals ${marketRelatedArticles.length} contract-related developments. ${marketRelatedArticles.slice(0, 2).map(a => a.title).join(' ')} These developments suggest continued investment in ${sector} capabilities with potential impacts on publicly traded defense contractors and related supply chains.`;
+      analysis = `Market analysis based on extracted articles reveals ${marketRelatedArticles.length} contract-related developments. ${marketRelatedArticles.slice(0, 2).map(a => a.title).join(' ')} These developments suggest continued investment in ${sector} capabilities with potential impacts on publicly traded defense contractors and related supply chains.`;
+    } else {
+      analysis = `Market analysis from extracted articles indicates ongoing ${sector} sector activity. Based on ${articles.length} authentic sources, current developments suggest sustained interest in defense capabilities and related technologies. Market participants should monitor these authentic developments for potential impacts on sector performance.`;
     }
 
-    return `Market analysis from extracted articles indicates ongoing ${sector} sector activity. Based on ${articles.length} authentic sources, current developments suggest sustained interest in defense capabilities and related technologies. Market participants should monitor these authentic developments for potential impacts on sector performance.`;
+    return this.applyAutomaticFixes(analysis);
   }
 
   private generateGeopoliticalAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
@@ -733,11 +742,48 @@ Include a References section at the end with all source URLs listed one per line
       )
     );
 
+    let analysis: string;
     if (relevantArticles.length > 0) {
-      return `Geopolitical analysis from extracted sources highlights ${relevantArticles.length} developments with strategic implications. ${relevantArticles.slice(0, 2).map(a => a.title).join(' ')} These authentic reports suggest evolving dynamics in international relations with direct bearing on ${sector} priorities and alliance structures.`;
+      analysis = `Geopolitical analysis from extracted sources highlights ${relevantArticles.length} developments with strategic implications. ${relevantArticles.slice(0, 2).map(a => a.title).join(' ')} These authentic reports suggest evolving dynamics in international relations with direct bearing on ${sector} priorities and alliance structures.`;
+    } else {
+      analysis = `Geopolitical analysis from ${articles.length} extracted articles indicates continued strategic developments affecting the ${sector} domain. Current authentic reporting suggests ongoing attention to alliance relationships and strategic positioning. These developments warrant continued monitoring for implications on regional stability and defense cooperation frameworks.`;
     }
 
-    return `Geopolitical analysis from ${articles.length} extracted articles indicates continued strategic developments affecting the ${sector} domain. Current authentic reporting suggests ongoing attention to alliance relationships and strategic positioning. These developments warrant continued monitoring for implications on regional stability and defense cooperation frameworks.`;
+    return this.applyAutomaticFixes(analysis);
+  }
+
+  /**
+   * Applies all the manual fixes that were applied to today's briefs automatically
+   * This ensures consistent quality and formatting across all generated briefs
+   */
+  private applyAutomaticFixes(content: string): string {
+    if (!content) return content;
+
+    // Fix 1: Remove all ellipses and replace with complete statements
+    let fixed = content.replace(/\.\.\.+/g, '');
+    
+    // Fix 2: Remove inline source references and URLs from key developments
+    fixed = fixed.replace(/\s+-\s+[a-zA-Z0-9.-]+\.(com|org|gov|net)\s+/g, ' ');
+    fixed = fixed.replace(/\s+reports?\s+/g, ' ');
+    
+    // Fix 3: Clean up multiple spaces and formatting
+    fixed = fixed.replace(/\s+/g, ' ');
+    fixed = fixed.replace(/\s*-\s*$/, ''); // Remove trailing dashes
+    
+    // Fix 4: Ensure proper sentence structure
+    fixed = fixed.replace(/([a-z])\s+([A-Z])/g, '$1. $2'); // Add periods between sentences
+    fixed = fixed.replace(/\.\s*\./g, '.'); // Remove double periods
+    
+    // Fix 5: Capitalize first letter and ensure proper ending
+    fixed = fixed.trim();
+    if (fixed.length > 0) {
+      fixed = fixed.charAt(0).toUpperCase() + fixed.slice(1);
+      if (!/[.!?]$/.test(fixed)) {
+        fixed += '.';
+      }
+    }
+    
+    return fixed;
   }
 
   private cleanAndFormatText(text: string): string {
@@ -762,6 +808,8 @@ Include a References section at the end with all source URLs listed one per line
       // Ensure proper sentence ending
       .replace(/[^.!?]$/, match => match + '.');
   }
+
+
 
   private parseFourStepSections(content: string): {executiveSummary: string, keyDevelopments: string[], marketImpactAnalysis: string, geopoliticalAnalysis: string} {
     console.log(`📝 Generated sections content (${content.length} characters)`);
