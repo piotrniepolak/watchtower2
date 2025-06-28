@@ -24,6 +24,7 @@ import { energyService } from './energy-service.js';
 import { quizStorage } from "./quiz-storage";
 import { realTimeAIAnalysis } from './real-time-ai-analysis';
 import { dailyBriefScheduler } from "./daily-brief-scheduler";
+import { dailySectorBriefGenerator } from "./daily-sector-brief-generator";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -3216,6 +3217,49 @@ Keep responses helpful, concise, and professional. If asked about sensitive geop
     } catch (error) {
       console.error("Error fetching user badges:", error);
       res.status(500).json({ message: "Failed to fetch badges" });
+    }
+  });
+
+  // Daily Sector Brief Generator Routes
+  app.get('/api/daily-briefs/:sector', async (req, res) => {
+    try {
+      const sector = req.params.sector as 'defense' | 'pharmaceutical' | 'energy';
+      
+      if (!['defense', 'pharmaceutical', 'energy'].includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector. Must be defense, pharmaceutical, or energy.' });
+      }
+
+      console.log(`📰 Generating daily ${sector} brief...`);
+      const brief = await dailySectorBriefGenerator.generateDailyBrief(sector);
+      
+      res.json(brief);
+    } catch (error: any) {
+      console.error(`❌ Failed to generate daily ${req.params.sector} brief:`, error);
+      res.status(500).json({ 
+        message: `Failed to generate daily ${req.params.sector} brief`,
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/daily-briefs/:sector/regenerate', async (req, res) => {
+    try {
+      const sector = req.params.sector as 'defense' | 'pharmaceutical' | 'energy';
+      
+      if (!['defense', 'pharmaceutical', 'energy'].includes(sector)) {
+        return res.status(400).json({ message: 'Invalid sector. Must be defense, pharmaceutical, or energy.' });
+      }
+
+      console.log(`🔄 Regenerating daily ${sector} brief...`);
+      const brief = await dailySectorBriefGenerator.generateDailyBrief(sector);
+      
+      res.json(brief);
+    } catch (error: any) {
+      console.error(`❌ Failed to regenerate daily ${req.params.sector} brief:`, error);
+      res.status(500).json({ 
+        message: `Failed to regenerate daily ${req.params.sector} brief`,
+        error: error.message 
+      });
     }
   });
   
