@@ -881,9 +881,9 @@ Include a References section at the end with all source URLs listed one per line
     // ✂ EXCESSIVE FULL STOPS - Collapse choppy fragments into coherent sentences
     // Pattern: "Army. Unveils. Plans to..." becomes "Army Unveils Plans to..."
     // Pattern: "$33. 6 billion" becomes "$33.6 billion" - CRITICAL FIX
-    fixed = fixed.replace(/\$(\d+)\.\s*(\d+)\s*(billion|million|trillion)/gi, '$$$1.$2 $3');
-    fixed = fixed.replace(/(\d+)\.\s*(\d+)\s*(billion|million|trillion)/gi, '$1.$2 $3');
-    fixed = fixed.replace(/(\d+)\.\s*(\d+)/g, '$1.$2'); // Fix all numbers like "33. 6" to "33.6"
+    fixed = fixed.replace(/\$(\d+)\. (\d+) (billion|million|trillion)/gi, '$$$1.$2 $3');
+    fixed = fixed.replace(/(\d+)\. (\d+) (billion|million|trillion)/gi, '$1.$2 $3');
+    fixed = fixed.replace(/(\d+)\. (\d+)/g, '$1.$2'); // Fix all numbers like "33. 6" to "33.6"
     fixed = fixed.replace(/([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\./g, '$1 $2 $3.');
     fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*([A-Za-z]+)\s/g, '$1 $2 $3 ');
     fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2. ');
