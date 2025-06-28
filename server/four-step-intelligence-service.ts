@@ -877,13 +877,25 @@ Include a References section at the end with all source URLs listed one per line
     if (!content) return content;
 
     let fixed = content;
+    const originalContent = content;
 
     // ✂ EXCESSIVE FULL STOPS - Collapse choppy fragments into coherent sentences
     // Pattern: "Army. Unveils. Plans to..." becomes "Army Unveils Plans to..."
     // Pattern: "$33. 6 billion" becomes "$33.6 billion" - CRITICAL FIX
+    
+    // Debug: Log if we find problematic patterns
+    if (fixed.includes('. ')) {
+      console.log('🔧 FIXING: Found period-space patterns:', fixed.match(/\$?\d+\. \d+/g) || 'none');
+    }
+    
     fixed = fixed.replace(/\$(\d+)\. (\d+) (billion|million|trillion)/gi, '$$$1.$2 $3');
     fixed = fixed.replace(/(\d+)\. (\d+) (billion|million|trillion)/gi, '$1.$2 $3');
     fixed = fixed.replace(/(\d+)\. (\d+)/g, '$1.$2'); // Fix all numbers like "33. 6" to "33.6"
+    
+    // Debug: Log successful fixes
+    if (originalContent !== fixed) {
+      console.log('✅ FORMATTING APPLIED: Fixed period-space issues');
+    }
     fixed = fixed.replace(/([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\./g, '$1 $2 $3.');
     fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*([A-Za-z]+)\s/g, '$1 $2 $3 ');
     fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2. ');
@@ -1323,16 +1335,18 @@ Include a References section at the end with all source URLs listed one per line
     const financialData: string[] = [];
     const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
     
-    // Extract monetary values
+    // Extract monetary values - INCLUDES MALFORMED NUMBERS
     const moneyPatterns = [
-      /\$[\d,]+(?:\.\d+)?\s*(?:million|billion|trillion)/gi,
-      /€[\d,]+(?:\.\d+)?\s*(?:million|billion|trillion)/gi,
-      /[\d,]+(?:\.\d+)?\s*(?:million|billion|trillion)\s*(?:dollars|euros)/gi
+      /\$[\d,]+(?:\.\s*\d+)?\s*(?:million|billion|trillion)/gi,  // Updated to catch "$33. 6 billion"
+      /€[\d,]+(?:\.\s*\d+)?\s*(?:million|billion|trillion)/gi,   // Updated to catch "€33. 6 billion"
+      /[\d,]+(?:\.\s*\d+)?\s*(?:million|billion|trillion)\s*(?:dollars|euros)/gi  // Updated pattern
     ];
     
     moneyPatterns.forEach(pattern => {
       const matches = combinedText.match(pattern) || [];
-      financialData.push(...matches.slice(0, 3));
+      // CRITICAL FIX: Apply automatic fixes to each extracted financial value
+      const fixedMatches = matches.map(match => this.applyAutomaticFixes(match));
+      financialData.push(...fixedMatches.slice(0, 3));
     });
     
     // Extract percentage changes
