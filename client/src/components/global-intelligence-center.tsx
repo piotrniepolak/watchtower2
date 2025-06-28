@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, Pill, Zap, Globe } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Shield, Pill, Zap, Globe, Calendar, FileText } from "lucide-react";
 import { FourStepIntelligenceBrief } from "./four-step-intelligence-brief";
+import { DailySectorBrief } from "./daily-sector-brief";
 
 const sectorConfig = {
   defense: {
@@ -48,7 +50,7 @@ export function GlobalIntelligenceCenter() {
           
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-slate-700">Sector:</span>
-            <Select value={selectedSector} onValueChange={setSelectedSector}>
+            <Select value={selectedSector} onValueChange={(value: string) => setSelectedSector(value as keyof typeof sectorConfig)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue>
                   <div className="flex items-center space-x-2">
@@ -83,7 +85,26 @@ export function GlobalIntelligenceCenter() {
       </CardHeader>
       
       <CardContent className={`${config.bgColor} rounded-lg`}>
-        <FourStepIntelligenceBrief sector={selectedSector} />
+        <Tabs defaultValue="four-step" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="four-step" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              4-Step Intelligence
+            </TabsTrigger>
+            <TabsTrigger value="daily-brief" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Daily Sector Brief
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="four-step" className="mt-0">
+            <FourStepIntelligenceBrief sector={selectedSector} />
+          </TabsContent>
+          
+          <TabsContent value="daily-brief" className="mt-0">
+            <DailySectorBrief sector={selectedSector} />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
