@@ -137,9 +137,14 @@ export class FourStepIntelligenceService {
     
     // No fallback - only use authentic source-generated key developments
     
-    // STEP 4: Include direct URLs
-    console.log(`🔗 STEP 4: Including ${extractedArticles.length} direct article URLs from discovered sources`);
-    const sourceUrls = extractedArticles.map(article => article.url);
+    // STEP 4: Include validated reference URLs with integrity checking
+    console.log(`🔗 STEP 4: Validating ${extractedArticles.length} article URLs from discovered sources`);
+    const cleanReferences = this.generateCleanReferences(extractedArticles);
+    const sourceUrls = extractedArticles
+      .map(article => article.url)
+      .filter(url => url && !this.isInvalidReferenceUrl(url));
+    
+    console.log(`🔗 Reference validation complete: ${sourceUrls.length} validated URLs from ${extractedArticles.length} articles`);
     
     return {
       executiveSummary: sections.executiveSummary,
@@ -888,7 +893,9 @@ Include a References section at the end with all source URLs listed one per line
       console.log('🔧 FIXING: Found period-space patterns:', fixed.match(/\$?\d+\. \d+/g) || 'none');
     }
     
+    // Fix financial numbers first (highest priority)
     fixed = fixed.replace(/\$(\d+)\. (\d+) (billion|million|trillion)/gi, '$$$1.$2 $3');
+    fixed = fixed.replace(/€(\d+)\. (\d+) (billion|million|trillion)/gi, '€$1.$2 $3');
     fixed = fixed.replace(/(\d+)\. (\d+) (billion|million|trillion)/gi, '$1.$2 $3');
     fixed = fixed.replace(/(\d+)\. (\d+)/g, '$1.$2'); // Fix all numbers like "33. 6" to "33.6"
     
@@ -896,31 +903,39 @@ Include a References section at the end with all source URLs listed one per line
     if (originalContent !== fixed) {
       console.log('✅ FORMATTING APPLIED: Fixed period-space issues');
     }
-    fixed = fixed.replace(/([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\./g, '$1 $2 $3.');
-    fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*([A-Za-z]+)\s/g, '$1 $2 $3 ');
-    fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2. ');
     
-    // ❌ ELLIPSIS BAN - No sentence may contain "..."
+    // ✂ CHOPPY FRAGMENTS - Fix excessive periods in word sequences
+    // "Army. Unveils. Plans to acquire" → "Army Unveils Plans to acquire"
+    fixed = fixed.replace(/([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*/g, '$1 $2 $3 ');
+    fixed = fixed.replace(/([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*/g, '$1 $2. ');
+    
+    // Fix word-level choppy fragments more aggressively
+    fixed = fixed.replace(/\b([A-Z][a-z]+)\.\s+([A-Z][a-z]+)\.\s+([A-Z][a-z]+)\b/g, '$1 $2 $3');
+    fixed = fixed.replace(/\b([A-Z][a-z]+)\.\s+([A-Z][a-z]+)\b(?!\s*\.|$)/g, '$1 $2');
+    
+    // ❌ ELLIPSIS BAN - Complete elimination of ellipses
     fixed = fixed.replace(/\.\.\.+/g, '');
     fixed = fixed.replace(/…/g, '');
     fixed = fixed.replace(/\s*\.{2,}\s*/g, '. ');
     
     // ⚙ BULLET HYGIENE - Remove interior URLs and source names from bullets
-    fixed = fixed.replace(/\s+-\s+[a-zA-Z0-9.-]+\.(com|org|gov|net)\s*/g, ' ');
-    fixed = fixed.replace(/\([^)]*\.(com|org|gov|net)[^)]*\)/g, '');
+    fixed = fixed.replace(/\s+-\s+[a-zA-Z0-9.-]+\.(com|org|gov|net|mil)\s*/g, ' ');
+    fixed = fixed.replace(/\([^)]*\.(com|org|gov|net|mil)[^)]*\)/g, '');
     fixed = fixed.replace(/\[[^\]]*\]/g, ''); // Remove [citation] markers
     fixed = fixed.replace(/\s+reports?\s+/g, ' ');
+    fixed = fixed.replace(/\s+-\s+Source:\s*\w+/gi, '');
     
-    // 🔗 REFERENCE INTEGRITY - Clean up inline citations
+    // 🔗 REFERENCE INTEGRITY - Clean up inline citations and source names
     fixed = fixed.replace(/\([^)]*source[^)]*\)/gi, '');
     fixed = fixed.replace(/\([^)]*citation[^)]*\)/gi, '');
+    fixed = fixed.replace(/\s+-\s+[A-Z][a-zA-Z\s]+(?:News|Times|Post|Daily|Weekly)\s*/g, ' ');
     
-    // Fix excessive periods while preserving abbreviations like "U.S."
-    fixed = fixed.replace(/(?<!U|S|A|E|N)\.{2,}/g, '.'); // Multiple periods to single (preserve abbreviations)
-    fixed = fixed.replace(/(\w)\.(\w)/g, '$1. $2'); // Ensure space after periods
+    // 📈 DEPTH REQUIREMENTS - Ensure single period endings for bullets
+    // Remove multiple periods while preserving abbreviations like "U.S."
+    fixed = fixed.replace(/(?<!U|S|A|E|N|Dr|Mr|Ms)\.{2,}/g, '.');
     fixed = fixed.replace(/\.\s*\./g, '.'); // Remove double periods
     
-    // Clean up formatting and spacing
+    // Clean up spacing and formatting
     fixed = fixed.replace(/\s+/g, ' '); // Multiple spaces to single
     fixed = fixed.replace(/\s*-\s*$/, ''); // Remove trailing dashes
     fixed = fixed.replace(/^\s*-\s*/, ''); // Remove leading dashes
@@ -930,6 +945,11 @@ Include a References section at the end with all source URLs listed one per line
     
     // Ensure proper sentence structure
     fixed = fixed.replace(/([a-z])\s+([A-Z])/g, '$1. $2'); // Add periods between sentences
+    fixed = fixed.replace(/(\w)\.(\w)/g, '$1. $2'); // Ensure space after periods (except abbreviations)
+    
+    // Fix common spacing issues
+    fixed = fixed.replace(/\s+\./g, '.'); // Remove space before periods
+    fixed = fixed.replace(/\.\s{2,}/g, '. '); // Single space after periods
     
     // Capitalize first letter and ensure proper ending
     fixed = fixed.trim();
@@ -964,52 +984,6 @@ Include a References section at the end with all source URLs listed one per line
       .replace(/^./, char => char.toUpperCase())
       // Ensure proper sentence ending
       .replace(/[^.!?]$/, match => match + '.');
-  }
-
-  /**
-   * 🔗 REFERENCE INTEGRITY - Generate clean references block according to single-pass formatting requirements
-   * Every URL must load the cited article (not a homepage or 404)
-   * List each on its own line, no numbering
-   */
-  private generateCleanReferences(articles: ExtractedArticle[]): string {
-    // Filter articles with valid URLs and meaningful titles - strict validation
-    const validArticles = articles.filter(article => 
-      article.url && 
-      article.url.startsWith('http') && 
-      article.title && 
-      article.title.length > 15 &&
-      !article.title.includes('Article from') &&
-      !article.title.includes('Source from') &&
-      !article.url.match(/^https:\/\/[^\/]+\/?$/) && // Exclude homepage URLs
-      !article.url.includes('/404') && // Exclude 404 URLs
-      article.url.includes('/') // Must have actual path
-    );
-
-    if (validArticles.length === 0) {
-      return '';
-    }
-
-    // Remove duplicates based on URL
-    const uniqueArticles = validArticles.filter((article, index, self) => 
-      index === self.findIndex(a => a.url === article.url)
-    );
-
-    // Create clean references block - no numbering, one per line
-    let referencesBlock = '\n\n**References:**\n\n';
-    
-    uniqueArticles.forEach((article, index) => {
-      const cleanTitle = article.title
-        .replace(/\s+/g, ' ')
-        .replace(/\.\.\.+/g, '') // ❌ ELLIPSIS BAN
-        .replace(/…/g, '') // ❌ ELLIPSIS BAN
-        .replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2 ') // ✂ EXCESSIVE FULL STOPS
-        .replace(/^[-•*]\s*/, '') // Remove any bullet points
-        .trim();
-      
-      referencesBlock += `${index + 1}. [${cleanTitle}](${article.url})\n`;
-    });
-
-    return referencesBlock;
   }
 
 
@@ -1540,6 +1514,129 @@ Include a References section at the end with all source URLs listed one per line
     });
     
     return allianceData.slice(0, 3);
+  }
+
+  /**
+   * 🔗 REFERENCE INTEGRITY - Generate clean references with validated URLs
+   * Every URL must load the cited article (not a homepage or 404)
+   * List each on its own line, no numbering
+   */
+  public generateCleanReferences(articles: ExtractedArticle[]): string {
+    if (!articles || articles.length === 0) {
+      return '';
+    }
+    
+    const validatedUrls: string[] = [];
+    
+    for (const article of articles) {
+      if (!article.url || article.url.length === 0) continue;
+      
+      const url = article.url.trim();
+      
+      // Skip obviously invalid URLs
+      if (this.isInvalidReferenceUrl(url)) {
+        console.log(`🔗 Skipping invalid URL: ${url}`);
+        continue;
+      }
+      
+      // Only include URLs that point to actual articles
+      if (this.isValidArticleUrl(url, article.title)) {
+        validatedUrls.push(url);
+        console.log(`🔗 Validated reference: ${url}`);
+      } else {
+        console.log(`🔗 Rejected homepage/generic URL: ${url}`);
+      }
+    }
+    
+    // List each URL on its own line, no numbering
+    return validatedUrls.length > 0 ? validatedUrls.join('\n') : '';
+  }
+  
+  private isInvalidReferenceUrl(url: string): boolean {
+    const invalidPatterns = [
+      'homepage',
+      'fallback',
+      '.com/',  // Just domain root
+      '.org/',  // Just domain root
+      '.gov/',  // Just domain root
+      'example.com',
+      'placeholder',
+      'generic',
+      '.com$',  // Ends with just .com
+      '.org$',  // Ends with just .org
+      '.gov$'   // Ends with just .gov
+    ];
+    
+    const lowerUrl = url.toLowerCase();
+    return invalidPatterns.some(pattern => {
+      if (pattern.includes('$')) {
+        return new RegExp(pattern).test(lowerUrl);
+      }
+      return lowerUrl.includes(pattern);
+    });
+  }
+  
+  private isValidArticleUrl(url: string, title: string): boolean {
+    // URL should point to actual article content, not homepage
+    const validPatterns = [
+      '/article/',
+      '/news/',
+      '/story/',
+      '/post/',
+      '/content/',
+      '/reports/',
+      '/analysis/',
+      '/briefing/',
+      '/intelligence/',
+      '/daily/',
+      '/weekly/',
+      '/press-release/',
+      '/announcement/',
+      '/update/',
+      '/defense/',
+      '/pharma/',
+      '/energy/',
+      '/contracts/',
+      '/awards/',
+      '/procurement/',
+      '/policy/',
+      '/technology/',
+      '/industry/',
+      '/market/',
+      '/financial/',
+      '/military/',
+      '/security/',
+      '/strategic/',
+      '/operations/',
+      '/insider/',
+      '/exclusive/',
+      '/breaking/',
+      '/latest/',
+      '/today/',
+      '/2024/',
+      '/2025/',
+      '/video/',
+      '/podcast/',
+      '/live-updates/',
+      '/authors/',
+      '/category/',
+      '/tag/',
+      '/section/'
+    ];
+    
+    // Check if URL contains article-specific path elements
+    const hasValidPath = validPatterns.some(pattern => 
+      url.toLowerCase().includes(pattern)
+    );
+    
+    // Also check if URL appears to be article-specific (not just domain root)
+    const pathAfterDomain = url.split('/').slice(3).join('/');
+    const hasSubstantialPath = pathAfterDomain.length > 10;
+    
+    // Additional check: ensure URL doesn't end with just domain
+    const endsWithJustDomain = /\.(com|org|gov|net|mil)$/i.test(url);
+    
+    return (hasValidPath || hasSubstantialPath) && !endsWithJustDomain;
   }
 
 }
