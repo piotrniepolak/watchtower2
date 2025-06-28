@@ -13,15 +13,22 @@ Watchtower is an advanced multi-domain intelligence platform delivering comprehe
 
 ## Recent Changes
 
-### June 28, 2025 - SINGLE-PASS FORMATTING COMPLETE: Intelligence Briefs Now Generated with Perfect Formatting in One Pass
+### June 28, 2025 - CRITICAL FIX COMPLETE: Number Formatting Issue Resolved in Financial Data Extraction
 
-**GOAL ACHIEVED: Production-Ready Intelligence Briefs Generated in Single Pass**
-- **Implemented comprehensive single-pass formatting system** ensuring all intelligence briefs are generated already fully formatted and ready for publication with no post-processing required
-- **Applied exact formatting requirements** from user specifications including excessive full stops collapse, ellipsis ban, bullet hygiene, and reference integrity validation
-- **Enhanced automatic fixes system** with specific rules for choppy fragment consolidation ("Army. Unveils. Plans to..." becomes "Army Unveils Plans to...")
-- **Strengthened bullet formatting** with single period enforcement, URL removal, and source name cleaning during generation
-- **Implemented strict reference validation** ensuring only working URLs that load actual articles (no homepages or 404s) with proper one-per-line formatting
-- **Integrated depth requirements** with 150-250 word executive summaries and 200+ word analysis sections containing minimum 3 concrete data points each
+**ROOT CAUSE IDENTIFIED AND FIXED: Order of Operations in Financial Data Processing**
+- **Identified core issue:** Financial data extraction method was capturing malformed numbers like "$33. 6 billion" from articles before automatic formatting fixes were applied
+- **Fixed extraction order:** Updated `extractFinancialDataFromArticles()` to apply `applyAutomaticFixes()` to each extracted financial value before joining into summaries
+- **Enhanced regex patterns:** Modified patterns to capture both correct and malformed number spacing (e.g., `[\d,]+(?:\.\s*\d+)?` to catch "$33. 6 billion")
+- **Verified with real data:** Successfully tested with insidedefense.com article containing "$33.6 billion" - system now properly formats as "$33.6 billion" instead of "$33. 6 billion"
+- **Production validation:** Cache cleared and latest brief pushed to frontend with confirmed proper formatting across all financial figures
+
+**Technical Implementation:**
+- Applied automatic fixes at data extraction level rather than only at final summary level
+- Ensured formatting corrections happen before text assembly operations
+- Maintained all existing single-pass formatting capabilities while fixing the underlying data extraction issue
+- Added debug logging to track when formatting fixes are successfully applied during the extraction process
+
+### June 28, 2025 - Previous: SINGLE-PASS FORMATTING COMPLETE: Intelligence Briefs Now Generated with Perfect Formatting in One Pass
 
 **Technical Implementation:**
 - Enhanced `applyAutomaticFixes()` method with comprehensive single-pass formatting rules including excessive period collapse, ellipsis removal, and proper spacing
