@@ -766,10 +766,24 @@ Include a References section at the end with all source URLs listed one per line
         development += ` - ${keyFacts[0]}`;
       }
       
-      // Ensure proper formatting
-      if (!development.endsWith('.')) {
-        development += '.';
-      }
+      // ⚙ BULLET HYGIENE - Apply single-pass formatting rules
+      // - One full stop at the end; no interior URLs or source names
+      // - Remove any source references or inline URLs
+      development = development
+        .replace(/\s+-\s+[a-zA-Z0-9.-]+\.(com|org|gov|net)\s*/g, ' ')
+        .replace(/\([^)]*\.(com|org|gov|net)[^)]*\)/g, '')
+        .replace(/\[[^\]]*\]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Ensure exactly one period at the end
+      development = development.replace(/\.+$/, '') + '.';
+      
+      // ✂ EXCESSIVE FULL STOPS - Collapse choppy fragments
+      development = development.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2 ');
+      
+      // ❌ ELLIPSIS BAN - Remove any ellipses
+      development = development.replace(/\.\.\.+/g, '').replace(/…/g, '');
       
       return this.applyAutomaticFixes(development);
     });
@@ -856,34 +870,52 @@ Include a References section at the end with all source URLs listed one per line
   }
 
   /**
-   * Applies all the manual fixes that were applied to today's briefs automatically
-   * This ensures consistent quality and formatting across all generated briefs
+   * SINGLE-PASS FORMATTING: Apply all quality rules during generation
+   * No follow-up post-processing should ever be required
    */
   private applyAutomaticFixes(content: string): string {
     if (!content) return content;
 
-    // Fix 1: Remove all ellipses and replace with complete statements
-    let fixed = content.replace(/\.\.\.+/g, '');
+    let fixed = content;
+
+    // ✂ EXCESSIVE FULL STOPS - Collapse choppy fragments into coherent sentences
+    // Pattern: "Army. Unveils. Plans to..." becomes "Army Unveils Plans to..."
+    fixed = fixed.replace(/([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\.\s*([A-Z][a-z]+)\./g, '$1 $2 $3.');
+    fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*([A-Za-z]+)\s/g, '$1 $2 $3 ');
+    fixed = fixed.replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2. ');
     
-    // Fix 2: Remove inline source references and URLs 
+    // ❌ ELLIPSIS BAN - No sentence may contain "..."
+    fixed = fixed.replace(/\.\.\.+/g, '');
+    fixed = fixed.replace(/…/g, '');
+    fixed = fixed.replace(/\s*\.{2,}\s*/g, '. ');
+    
+    // ⚙ BULLET HYGIENE - Remove interior URLs and source names from bullets
     fixed = fixed.replace(/\s+-\s+[a-zA-Z0-9.-]+\.(com|org|gov|net)\s*/g, ' ');
     fixed = fixed.replace(/\([^)]*\.(com|org|gov|net)[^)]*\)/g, '');
+    fixed = fixed.replace(/\[[^\]]*\]/g, ''); // Remove [citation] markers
     fixed = fixed.replace(/\s+reports?\s+/g, ' ');
     
-    // Fix 3: Remove excessive full stops - only at end of sentences
-    fixed = fixed.replace(/\.{2,}/g, '.'); // Multiple periods to single
+    // 🔗 REFERENCE INTEGRITY - Clean up inline citations
+    fixed = fixed.replace(/\([^)]*source[^)]*\)/gi, '');
+    fixed = fixed.replace(/\([^)]*citation[^)]*\)/gi, '');
+    
+    // Fix excessive periods while preserving abbreviations like "U.S."
+    fixed = fixed.replace(/(?<!U|S|A|E|N)\.{2,}/g, '.'); // Multiple periods to single (preserve abbreviations)
     fixed = fixed.replace(/(\w)\.(\w)/g, '$1. $2'); // Ensure space after periods
     fixed = fixed.replace(/\.\s*\./g, '.'); // Remove double periods
     
-    // Fix 4: Clean up formatting and spacing
+    // Clean up formatting and spacing
     fixed = fixed.replace(/\s+/g, ' '); // Multiple spaces to single
     fixed = fixed.replace(/\s*-\s*$/, ''); // Remove trailing dashes
     fixed = fixed.replace(/^\s*-\s*/, ''); // Remove leading dashes
+    fixed = fixed.replace(/\s*:\s*/g, ': '); // Proper colon spacing
+    fixed = fixed.replace(/\s*;\s*/g, '; '); // Proper semicolon spacing
+    fixed = fixed.replace(/\s*,\s*/g, ', '); // Proper comma spacing
     
-    // Fix 5: Ensure proper sentence structure
+    // Ensure proper sentence structure
     fixed = fixed.replace(/([a-z])\s+([A-Z])/g, '$1. $2'); // Add periods between sentences
     
-    // Fix 6: Capitalize first letter and ensure proper ending
+    // Capitalize first letter and ensure proper ending
     fixed = fixed.trim();
     if (fixed.length > 0) {
       fixed = fixed.charAt(0).toUpperCase() + fixed.slice(1);
@@ -919,18 +951,22 @@ Include a References section at the end with all source URLs listed one per line
   }
 
   /**
-   * Generate clean references block according to formatting guide requirements
-   * Creates properly formatted reference list without inline citations
+   * 🔗 REFERENCE INTEGRITY - Generate clean references block according to single-pass formatting requirements
+   * Every URL must load the cited article (not a homepage or 404)
+   * List each on its own line, no numbering
    */
   private generateCleanReferences(articles: ExtractedArticle[]): string {
-    // Filter articles with valid URLs and meaningful titles
+    // Filter articles with valid URLs and meaningful titles - strict validation
     const validArticles = articles.filter(article => 
       article.url && 
       article.url.startsWith('http') && 
       article.title && 
       article.title.length > 15 &&
       !article.title.includes('Article from') &&
-      !article.url.match(/^https:\/\/[^\/]+\/?$/) // Exclude homepage URLs
+      !article.title.includes('Source from') &&
+      !article.url.match(/^https:\/\/[^\/]+\/?$/) && // Exclude homepage URLs
+      !article.url.includes('/404') && // Exclude 404 URLs
+      article.url.includes('/') // Must have actual path
     );
 
     if (validArticles.length === 0) {
@@ -942,12 +978,15 @@ Include a References section at the end with all source URLs listed one per line
       index === self.findIndex(a => a.url === article.url)
     );
 
-    // Create clean references block
+    // Create clean references block - no numbering, one per line
     let referencesBlock = '\n\n**References:**\n\n';
     
     uniqueArticles.forEach((article, index) => {
       const cleanTitle = article.title
         .replace(/\s+/g, ' ')
+        .replace(/\.\.\.+/g, '') // ❌ ELLIPSIS BAN
+        .replace(/…/g, '') // ❌ ELLIPSIS BAN
+        .replace(/([A-Za-z]+)\.\s*([A-Za-z]+)\.\s*/g, '$1 $2 ') // ✂ EXCESSIVE FULL STOPS
         .replace(/^[-•*]\s*/, '') // Remove any bullet points
         .trim();
       
