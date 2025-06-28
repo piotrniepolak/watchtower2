@@ -48,13 +48,13 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      
+
       if (response.status === 202) {
         // Regeneration in progress
         const data = await response.json();
         return data;
       }
-      
+
       if (!response.ok) {
         throw new Error('Failed to regenerate intelligence');
       }
@@ -136,7 +136,7 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
     const errorMessage = (error as any)?.message || '';
     const isNoArticlesFound = errorMessage.includes('No articles found') || 
                              errorMessage.includes('STEP 2 FAILED');
-    
+
     if (isNoArticlesFound) {
       return (
         <Card className="w-full">
@@ -154,7 +154,7 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
                 were published in the last 24-48 hours. This demonstrates the authentic source verification process.
               </AlertDescription>
             </Alert>
-            
+
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
@@ -173,14 +173,14 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
                 <span className="text-sm font-medium">Step 4: No synthetic content generated</span>
               </div>
             </div>
-            
+
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
                 <strong>Dynamic Source Discovery:</strong> The system searches for 20 sources that actually published 
                 defense sector articles in the last 48 hours. No fallback content is generated when no recent articles exist.
               </p>
             </div>
-            
+
             <Button 
               onClick={handleRegenerate}
               disabled={isRegenerating}
@@ -203,7 +203,7 @@ export function FourStepIntelligenceBrief({ sector }: FourStepIntelligenceBriefP
         </Card>
       );
     }
-    
+
     // Handle actual errors
     return (
       <Card className="w-full">

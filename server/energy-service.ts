@@ -1,4 +1,3 @@
-
 import { storage } from './storage.js';
 import type { DailyNews, InsertDailyNews } from '../shared/schema.js';
 
@@ -29,25 +28,49 @@ interface EnergyIntelligence {
 export class EnergyService {
   private isGenerating = false;
 
-  private cleanFormattingSymbols(content: string): string {
-    return content
-      .replace(/\*\*([^*]+)\*\*/g, '$1')
-      .replace(/\*([^*]+)\*/g, '$1')
-      .replace(/#{1,6}\s*/g, '')
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/~~([^~]+)~~/g, '$1')
-      .replace(/_([^_]+)_/g, '$1')
-      .replace(/\|/g, '')
-      .replace(/[-]{3,}/g, '')
-      .replace(/\s*References?:\s*[\s\S]*$/gmi, '')
-      .replace(/\s*Sources?:\s*[\s\S]*$/gmi, '')
-      .replace(/\s*References?:\s*[^\n]*$/gmi, '')
-      .replace(/\s*Sources?:\s*[^\n]*$/gmi, '')
-      .replace(/\s*Source:\s*[^\n]*$/gmi, '')
-      .replace(/\s*\b[a-zA-Z0-9.-]+\.com\b\s*/gi, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+  private applyFormattingRules(text: string): string {
+    // ✂ EXCESSIVE FULL STOPS - Collapse choppy fragments
+    text = text.replace(/(\w)\.\s+(\w)/g, (match, before, after) => {
+      // Keep U.S., U.K., etc.
+      if (before.match(/[A-Z]/) && after.match(/[A-Z]/)) {
+        return match;
+      }
+      // Collapse other cases
+      return `${before} ${after}`;
+    });
+
+    // ❌ ELLIPSIS BAN - Remove all ellipses
+    text = text.replace(/\s*\.\.\.\s*/g, ' ');
+    text = text.replace(/\s*…\s*/g, ' ');
+
+    // Remove formatting symbols
+    text = text.replace(/\*\*/g, '');
+    text = text.replace(/\*/g, '');
+    text = text.replace(/__/g, '');
+    text = text.replace(/_/g, '');
+    text = text.replace(/#{1,6}\s/g, '');
+    text = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+    text = text.replace(/`([^`]+)`/g, '$1');
+
+    // Clean up multiple spaces
+    text = text.replace(/\s+/g, ' ');
+
+    // Ensure proper sentence endings
+    text = text.replace(/([.!?])\s*([A-Z])/g, '$1 $2');
+
+    return text.trim();
+  }
+
+  private cleanBulletPoint(bullet: string): string {
+    // Remove formatting symbols
+    bullet = bullet.replace(/^\s*[-*•]\s*/, '');
+    bullet = this.applyFormattingRules(bullet);
+
+    // Ensure single period at end
+    bullet = bullet.replace(/[.!?]+$/, '');
+    bullet = bullet + '.';
+
+    return bullet;
   }
 
   private extractSourcesFromCitations(citations: string[]): Array<{title: string; url: string; domain: string; category: string}> {
@@ -55,10 +78,10 @@ export class EnergyService {
       try {
         const urlObj = new URL(url);
         const domain = urlObj.hostname.replace('www.', '');
-        
+
         let category = 'news';
         let title = domain;
-        
+
         if (domain.includes('energy') || domain.includes('oil') || domain.includes('gas')) {
           category = 'energy';
           title = `Energy News - ${domain}`;
@@ -78,7 +101,7 @@ export class EnergyService {
           category = 'industry';
           title = 'Energy Industry Publication';
         }
-        
+
         return { title, url, domain, category };
       } catch {
         return { 
@@ -112,7 +135,7 @@ export class EnergyService {
 
       // Fetch comprehensive energy industry research with real-time data
       const researchData = await this.fetchComprehensiveEnergyResearch();
-      
+
       if (!researchData.content || researchData.content.length < 100) {
         console.error('❌ Insufficient content from Perplexity AI - aborting generation');
         return null;
@@ -120,11 +143,11 @@ export class EnergyService {
 
       // Parse and structure the intelligence brief
       const intelligenceBrief = await this.parseEnergyIntelligence(researchData);
-      
+
       // Get energy stocks for enhancement
       const allStocks = await storage.getStocks();
       const energyStocks = allStocks.filter(stock => stock.sector === 'Energy');
-      
+
       // Extract energy companies mentioned in the brief
       const energyStockHighlights = await this.extractMentionedCompanies(intelligenceBrief.rawContent, energyStocks);
 
@@ -162,7 +185,7 @@ export class EnergyService {
 
       await storage.createDailyNews(insertData, 'energy');
       console.log('✅ Real-time energy intelligence brief generated and stored successfully');
-      
+
       return energyIntelligence;
 
     } catch (error) {
@@ -176,7 +199,7 @@ export class EnergyService {
   private async fetchComprehensiveEnergyResearch(): Promise<{ content: string; citations: string[] }> {
     try {
       console.log('🔍 Fetching real-time energy industry research from Perplexity AI...');
-      
+
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
         method: 'POST',
         headers: {
@@ -212,13 +235,13 @@ export class EnergyService {
       const data: PerplexityResponse = await response.json();
       const content = data.choices[0]?.message?.content || '';
       const citations = data.citations || [];
-      
+
       console.log(`📄 Received ${content.length} characters of real-time energy research with ${citations.length} citations`);
-      
+
       if (content.length < 100) {
         throw new Error('Insufficient content from Perplexity AI');
       }
-      
+
       return { content, citations };
     } catch (error) {
       console.error('❌ Error fetching energy research:', error);
@@ -233,7 +256,7 @@ export class EnergyService {
     console.log(`🔍 Parsing energy intelligence from ${content.length} characters of real-time content...`);
 
     const title = this.extractTitle(content);
-    const cleanedContent = this.cleanFormattingSymbols(content);
+    const cleanedContent = this.applyFormattingRules(content);
     const summary = this.extractSummary(cleanedContent);
     const keyDevelopments = this.extractKeyDevelopments(cleanedContent);
     const marketImpact = this.extractMarketImpact(cleanedContent);
@@ -263,13 +286,13 @@ export class EnergyService {
 
   private extractSummary(content: string): string {
     console.log('🔍 Generating executive summary from real-time energy content...');
-    
+
     const paragraphs = content.split('\n').filter(p => p.trim().length > 50);
-    
+
     let summary = '';
     const keyThemes = [];
     const contentLower = content.toLowerCase();
-    
+
     if (contentLower.includes('oil') || contentLower.includes('gas') || contentLower.includes('crude') || contentLower.includes('wti')) {
       keyThemes.push('oil and gas market developments');
     }
@@ -282,13 +305,13 @@ export class EnergyService {
     if (contentLower.includes('infrastructure') || contentLower.includes('pipeline') || contentLower.includes('refinery') || contentLower.includes('capacity')) {
       keyThemes.push('energy infrastructure and capacity developments');
     }
-    
+
     summary += `Today's real-time energy intelligence analysis reveals significant developments across multiple sectors of the global energy industry, driven by current market dynamics and regulatory advancement. `;
-    
+
     if (keyThemes.length > 0) {
       summary += `Key areas of current focus include ${keyThemes.join(', ')}, each presenting immediate opportunities and strategic implications for energy companies, utilities, and institutional investors. `;
     }
-    
+
     const relevantParagraphs = paragraphs.filter(p => 
       p.toLowerCase().includes('oil') || 
       p.toLowerCase().includes('gas') || 
@@ -296,7 +319,7 @@ export class EnergyService {
       p.toLowerCase().includes('renewable') ||
       p.toLowerCase().includes('crude')
     ).slice(0, 2);
-    
+
     for (const paragraph of relevantParagraphs) {
       if (paragraph.length > 100) {
         const cleanParagraph = paragraph.replace(/^\W+/, '').replace(/\[\d+\]/g, '').trim();
@@ -305,31 +328,31 @@ export class EnergyService {
         }
       }
     }
-    
+
     summary += `Energy industry fundamentals remain dynamic, supported by global demand patterns, infrastructure investment, and transition toward sustainable energy sources. Market outlook reflects ongoing volatility with key catalysts including commodity price movements, geopolitical developments, and regulatory policy changes.`;
-    
-    return this.cleanFormattingSymbols(summary);
+
+    return this.applyFormattingRules(summary);
   }
 
   private extractKeyDevelopments(content: string): string[] {
     const developments: string[] = [];
-    
+
     const bulletRegex = /[•\-\*]\s*(.+)/g;
     const numberedRegex = /\d+\.\s*(.+)/g;
-    
+
     let match;
     while ((match = bulletRegex.exec(content)) !== null && developments.length < 8) {
       if (match[1].trim().length > 30) {
-        let cleanDevelopment = this.cleanFormattingSymbols(match[1].trim());
+        let cleanDevelopment = this.cleanBulletPoint(match[1].trim());
         if (cleanDevelopment.length > 20) {
           developments.push(cleanDevelopment);
         }
       }
     }
-    
+
     while ((match = numberedRegex.exec(content)) !== null && developments.length < 8) {
       if (match[1].trim().length > 30 && !developments.some(dev => dev.includes(match[1].trim().substring(0, 50)))) {
-        let cleanDevelopment = this.cleanFormattingSymbols(match[1].trim());
+        let cleanDevelopment = this.cleanBulletPoint(match[1].trim());
         if (cleanDevelopment.length > 20) {
           developments.push(cleanDevelopment);
         }
@@ -342,8 +365,8 @@ export class EnergyService {
         s.trim().length < 300 &&
         (s.includes('oil') || s.includes('gas') || s.includes('energy') || s.includes('renewable') || s.includes('$'))
       );
-      
-      const cleanSentences = sentences.slice(0, 6).map(s => this.cleanFormattingSymbols(s.trim()));
+
+      const cleanSentences = sentences.slice(0, 6).map(s => this.applyFormattingRules(s.trim()));
       developments.push(...cleanSentences.filter(s => s.length > 20));
     }
 
@@ -353,39 +376,39 @@ export class EnergyService {
   private extractMarketImpact(content: string): string {
     const impactKeywords = ['market impact', 'outlook', 'analysis', 'implications', 'forecast', 'prices'];
     const paragraphs = content.split('\n').filter(p => p.trim().length > 50);
-    
+
     let marketImpact = '';
-    
+
     for (const paragraph of paragraphs) {
       for (const keyword of impactKeywords) {
         if (paragraph.toLowerCase().includes(keyword)) {
-          marketImpact = this.cleanFormattingSymbols(paragraph.trim());
+          marketImpact = this.applyFormattingRules(paragraph.trim());
           break;
         }
       }
       if (marketImpact) break;
     }
-    
+
     if (!marketImpact) {
       for (const paragraph of paragraphs) {
         if (paragraph.includes('$') || paragraph.includes('%') || paragraph.includes('barrel') || paragraph.includes('price')) {
-          marketImpact = this.cleanFormattingSymbols(paragraph.trim());
+          marketImpact = this.applyFormattingRules(paragraph.trim());
           break;
         }
       }
     }
-    
+
     if (!marketImpact || marketImpact.length < 100) {
       marketImpact = `Energy companies continue to navigate dynamic market conditions with commodity price volatility driving immediate strategic decisions. Major energy stocks are showing mixed performance reflecting current supply-demand fundamentals and geopolitical considerations. Current market dynamics favor diversified energy companies with strong operational efficiency and strategic positioning across traditional and renewable energy portfolios.`;
     }
-    
-    return this.cleanFormattingSymbols(marketImpact);
+
+    return this.applyFormattingRules(marketImpact);
   }
 
   private extractGeopoliticalAnalysis(content: string): string {
     const geoKeywords = ['geopolitical', 'global', 'international', 'opec', 'sanctions', 'policy', 'regulation', 'energy security', 'climate', 'pipeline', 'lng', 'oil embargo', 'renewable transition', 'carbon pricing', 'strategic reserves'];
     const paragraphs = content.split('\n').filter(p => p.trim().length > 100);
-    
+
     let geoAnalysis = '';
     const relevantParagraphs = [];
 
@@ -393,7 +416,7 @@ export class EnergyService {
     for (const paragraph of paragraphs) {
       for (const keyword of geoKeywords) {
         if (paragraph.toLowerCase().includes(keyword) && paragraph.length > 150) {
-          relevantParagraphs.push(this.cleanFormattingSymbols(paragraph.trim()));
+          relevantParagraphs.push(this.applyFormattingRules(paragraph.trim()));
           break;
         }
       }
@@ -403,7 +426,7 @@ export class EnergyService {
     if (relevantParagraphs.length > 0) {
       geoAnalysis = relevantParagraphs.join(' ');
     }
-    
+
     // Enhanced fallback with current date and specific energy geopolitical context
     if (!geoAnalysis || geoAnalysis.length < 200) {
       const today = new Date().toLocaleDateString('en-US', { 
@@ -412,16 +435,16 @@ export class EnergyService {
         month: 'long', 
         day: 'numeric' 
       });
-      
+
       geoAnalysis = `Global energy geopolitical landscape as of ${today} reflects heightened tensions over energy security and supply chain resilience across major economies. OPEC+ production decisions continue influencing global oil markets amid shifting demand patterns and strategic reserve utilization. European energy independence initiatives accelerate renewable infrastructure development while maintaining LNG import diversification strategies. U.S. energy diplomacy emphasizes critical mineral supply chains essential for clean energy transition, affecting international mining partnerships and battery technology development. Climate policy coordination between major economies drives carbon pricing mechanisms and cross-border adjustment discussions, reshaping international energy trade patterns and investment flows toward decarbonization technologies.`;
     }
-    
-    return this.cleanFormattingSymbols(geoAnalysis);
+
+    return this.applyFormattingRules(geoAnalysis);
   }
 
   private async extractMentionedCompanies(content: string, energyStocks: any[]): Promise<any[]> {
     const mentionedCompanies = [];
-    
+
     const cleanContent = content
       .replace(/\[References:\][\s\S]*$/i, '')
       .replace(/https?:\/\/[^\s\)]+/g, '')
@@ -429,9 +452,9 @@ export class EnergyService {
       .replace(/\(\d+\)/g, '')
       .replace(/References?:\s*\d+\./gi, '')
       .replace(/Source:\s*https?:\/\/[^\s\)]+/gi, '');
-    
+
     console.log(`🔍 Scanning ${cleanContent.length} characters of energy brief content for company mentions...`);
-    
+
     const companyPatterns = [
       { name: 'ExxonMobil', symbol: 'XOM', patterns: ['exxonmobil', 'exxon mobil', 'exxon'] },
       { name: 'Chevron', symbol: 'CVX', patterns: ['chevron corporation', 'chevron'] },
@@ -448,9 +471,9 @@ export class EnergyService {
       { name: 'NextEra Energy', symbol: 'NEE', patterns: ['nextera energy', 'nextera'] },
       { name: 'Southern Company', symbol: 'SO', patterns: ['southern company'] }
     ];
-    
+
     const lowerContent = cleanContent.toLowerCase();
-    
+
     for (const company of companyPatterns) {
       for (const pattern of company.patterns) {
         const patternIndex = lowerContent.indexOf(pattern.toLowerCase());
@@ -458,37 +481,37 @@ export class EnergyService {
           const contextStart = Math.max(0, patternIndex - 100);
           const contextEnd = Math.min(cleanContent.length, patternIndex + pattern.length + 200);
           const context = cleanContent.substring(contextStart, contextEnd).trim();
-          
+
           const isInReference = /^(references?|sources?|citations?)[:.]|^\d+\.|^https?:\/\//i.test(context);
           if (isInReference) {
             console.log(`❌ Excluded ${company.name} (found in reference section)`);
             continue;
           }
-          
+
           const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
           let relevantSentence = context;
-          
+
           for (const sentence of sentences) {
             if (sentence.toLowerCase().includes(pattern.toLowerCase())) {
               relevantSentence = sentence.trim();
               break;
             }
           }
-          
+
           console.log(`✅ Found ${company.name} mentioned in brief content`);
-          
+
           let stock = energyStocks.find((s: any) => s.symbol === company.symbol);
-          
+
           if (!stock) {
             console.log(`🔍 Discovering new energy stock: ${company.symbol} (${company.name})`);
             try {
               const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${company.symbol}`);
               const data = await response.json();
-              
+
               if (data.chart && data.chart.result && data.chart.result[0]) {
                 const result = data.chart.result[0];
                 const quote = result.meta;
-                
+
                 const newStock = {
                   symbol: company.symbol,
                   name: company.name,
@@ -500,10 +523,10 @@ export class EnergyService {
                   marketCap: null,
                   lastUpdated: new Date()
                 };
-                
+
                 await storage.createStock(newStock);
                 console.log(`✅ Added ${company.symbol} to energy stocks database with real price data`);
-                
+
                 stock = newStock;
                 energyStocks.push(newStock);
               }
@@ -524,7 +547,7 @@ export class EnergyService {
               stock = placeholderStock;
             }
           }
-          
+
           mentionedCompanies.push({
             symbol: company.symbol,
             name: company.name,
