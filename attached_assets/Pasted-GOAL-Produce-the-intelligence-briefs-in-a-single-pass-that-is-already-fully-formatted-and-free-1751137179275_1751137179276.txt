@@ -1,0 +1,49 @@
+GOAL
+Produce the intelligence briefs in a **single pass** that is already
+fully formatted and free of the recurring problems we have identified.  
+No follow-up post-processing should ever be required.
+
+────────────────────────────────────────────
+STRUCTURE (unchanged)
+1. Executive Summary
+2. Key Developments  (4–10 bullets)
+3. Geopolitical Analysis
+4. Market Impact Analysis
+5. References – {{sector}}
+
+────────────────────────────────────────────
+BUILT-IN FORMATTING & QUALITY RULES
+These rules apply to **every paragraph and bullet in every section**:
+
+• ✂ **Excessive full stops** – Collapse choppy fragments such as  
+  “Army. Unveils. Plans to …” into a single, coherent sentence.  
+  Keep one period at the end (abbreviations like “U.S.” are fine).
+
+• ❌ **Ellipsis ban** – No sentence may contain “ … ”.  
+  If source text is truncated, rewrite it into a complete fact-based statement.
+
+• ⚙ **Bullet hygiene** –  
+  – One full stop at the end; no interior URLs or source names.  
+  – Maintain original order.
+
+• 🔗 **Reference integrity** –  
+  Every URL must load the cited article (not a homepage or 404).  
+  List each on its own line, no numbering.
+
+• 📈 **Depth requirements** –  
+  – Executive Summary: 150–250 words of cohesive narrative.  
+  – Geopolitical & Market sections: 2–4 paragraphs each, ≥3 concrete data points
+    (prices, contract values, quotes, dates).  
+  Use only full-text sources ≤24 h old (gov’t, multilateral, Tier-1 media, reputable
+  industry reports; never video, podcast, or social posts).
+
+────────────────────────────────────────────
+HARD CONSTRAINTS
+■ Follow the section order above; do not add or remove sections.  
+■ No placeholder or speculative text—every claim must trace to a listed URL.  
+■ Preserve correct spelling, grammar, spacing, and heading style throughout.  
+
+OUTPUT
+Return the fully-formed defense, pharma, and energy brief that already conforms to
+**all** rules above—ready for publication with no further cleanup. Make sure this exact process is applied automatically to all briefs in the future and not just a one-time post processing fix.
+.
