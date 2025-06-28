@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Pill, Zap, Globe, Calendar, FileText } from "lucide-react";
+import { Shield, Pill, Zap, Globe } from "lucide-react";
 import { FourStepIntelligenceBrief } from "./four-step-intelligence-brief";
-import { DailySectorBrief } from "./daily-sector-brief";
 
 const sectorConfig = {
   defense: {
@@ -85,26 +83,7 @@ export function GlobalIntelligenceCenter() {
       </CardHeader>
       
       <CardContent className={`${config.bgColor} rounded-lg`}>
-        <Tabs defaultValue="four-step" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="four-step" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              4-Step Intelligence
-            </TabsTrigger>
-            <TabsTrigger value="daily-brief" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Daily Sector Brief
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="four-step" className="mt-0">
-            <FourStepIntelligenceBrief sector={selectedSector} />
-          </TabsContent>
-          
-          <TabsContent value="daily-brief" className="mt-0">
-            <DailySectorBrief sector={selectedSector} />
-          </TabsContent>
-        </Tabs>
+        <FourStepIntelligenceBrief sector={selectedSector} />
       </CardContent>
     </Card>
   );
