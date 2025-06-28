@@ -628,16 +628,39 @@ Find 2-4 recent articles from ${source} if available. Only return articles that 
     // Use the exact prompt structure provided by the user
     const sectorName = sector === 'defense' ? 'Conflicts' : sector === 'pharmaceutical' ? 'Pharma' : 'Energy';
     
-    const prompt = `CRITICAL REQUIREMENT: You must ONLY use information from the following extracted articles. Do NOT generate any contextual information or synthesize content from general knowledge.
+    const prompt = `MISSION ─ GENERATE & POLISH THE DAILY ${sector.toUpperCase()} BRIEF
+Build TODAY'S complete ${sector} brief from scratch and deliver it already polished—no separate post-processing required.
+
+CRITICAL REQUIREMENT: You must ONLY use information from the following extracted articles. Do NOT generate any contextual information or synthesize content from general knowledge.
 
 Extracted Articles:
 ${articlesText}
 
 If the extracted articles do not contain sufficient information for a complete intelligence brief, respond with: "INSUFFICIENT AUTHENTIC ARTICLES - Cannot generate brief without complete article sources"
 
+TASK 1 — WRITE ROBUST ANALYTICS
+Create the four standard sections in this order:
+
+1. Executive Summary
+2. Key Developments (4-10 bullets)
+3. Geopolitical Analysis
+4. Market Impact Analysis
+
+Requirements for Geopolitical and Market sections:
+• 2–4 cohesive paragraphs each (minimum ~200 words per subsection)
+• Embed at least three concrete data points (prices, contract values, official quotes, dates) per subsection
+• Use only full-text sources published in the past 24 hours
+
+TASK 2 — FORMAT KEY DEVELOPMENTS CORRECTLY
+While writing the Key Developments list:
+• Begin each item with ONE bullet or dash, then a space
+• Do NOT sprinkle extra full stops—place exactly one full stop at the end of each bullet and nowhere else
+• Exclude inline source names/links; citations live only in the References block
+• Preserve logical order of importance; do not insert trailing ellipses
+
 Only if sufficient authentic article content exists, write exactly 4 sections:
 
-### Executive Summary (300-500 words)
+**Executive Summary**
 [Analysis using ONLY information from the extracted articles above]
 
 ### Key Developments (4-10 bullet points)
@@ -696,59 +719,120 @@ Include a References section at the end with all source URLs listed one per line
   }
 
   private generateExecutiveSummaryFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const mainEvents = articles.slice(0, 5).map(article => 
-      `${article.title.replace(/['"]/g, '')} - ${article.content.substring(0, 200).replace(/\.\.\.+$/, '')}`
-    );
+    // Extract concrete data points and key themes
+    const financialData = this.extractFinancialDataFromArticles(articles);
+    const dates = this.extractDatesFromArticles(articles);
+    const keyThemes = this.extractKeyThemesFromArticles(articles, sector);
     
-    const summary = `Recent ${sector} developments indicate significant activity across multiple fronts. ${mainEvents.join(' ')} These developments reflect ongoing tensions and strategic positioning in the current geopolitical environment. Based on authentic source reporting from ${articles.length} verified articles published in the last 24-48 hours, the situation continues to evolve with implications for defense contractors, military procurement, and regional stability. The extracted intelligence suggests continued monitoring is essential for stakeholders in the ${sector} sector.`;
+    let summary = `Current ${sector} sector developments reveal significant strategic activities across multiple domains. `;
+    
+    // Incorporate concrete data points
+    if (financialData.length > 0) {
+      summary += `Financial indicators include ${financialData.slice(0, 3).join(', ')}, signaling substantial investment flows. `;
+    }
+    
+    // Add thematic analysis
+    if (keyThemes.length > 0) {
+      summary += `Primary focus areas encompass ${keyThemes.slice(0, 3).join(', ')}, indicating prioritized strategic initiatives. `;
+    }
+    
+    // Include temporal context
+    if (dates.length > 0) {
+      summary += `Recent timeline markers show activity concentrated around ${dates.slice(0, 2).join(' and ')}, suggesting coordinated implementation phases. `;
+    }
+    
+    // Add sector-specific implications
+    summary += this.generateSectorSpecificImplications(articles, sector);
+    
+    summary += ` Based on ${articles.length} verified sources published within the past 24-48 hours, these developments indicate sustained momentum requiring ongoing stakeholder attention and strategic planning adjustments.`;
     
     return this.applyAutomaticFixes(summary);
   }
 
   private extractKeyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
-    return articles.slice(0, 6).map((article, index) => {
-      const cleanTitle = article.title.replace(/['"]/g, '');
-      const cleanContent = article.content.substring(0, 120).replace(/\.\.\.+$/, '');
-      const development = `${cleanTitle} ${cleanContent}`;
+    return articles.slice(0, 8).map((article) => {
+      const cleanTitle = article.title.replace(/['"]/g, '').trim();
+      
+      // Extract concrete data points from content
+      const dataPoints = this.extractDataPointsFromText(article.content);
+      const keyFacts = this.extractKeyFactsFromText(article.content);
+      
+      let development = cleanTitle;
+      
+      // Add the most relevant data point or key fact
+      if (dataPoints.length > 0) {
+        development += ` (${dataPoints[0]})`;
+      } else if (keyFacts.length > 0) {
+        development += ` - ${keyFacts[0]}`;
+      }
+      
+      // Ensure proper formatting
+      if (!development.endsWith('.')) {
+        development += '.';
+      }
+      
       return this.applyAutomaticFixes(development);
     });
   }
 
   private generateMarketAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const marketRelatedArticles = articles.filter(article => 
-      article.title.toLowerCase().includes('contract') || 
-      article.title.toLowerCase().includes('award') ||
-      article.title.toLowerCase().includes('budget') ||
-      article.content.toLowerCase().includes('million') ||
-      article.content.toLowerCase().includes('billion')
-    );
-
-    let analysis: string;
-    if (marketRelatedArticles.length > 0) {
-      analysis = `Market analysis based on extracted articles reveals ${marketRelatedArticles.length} contract-related developments. ${marketRelatedArticles.slice(0, 2).map(a => a.title).join(' ')} These developments suggest continued investment in ${sector} capabilities with potential impacts on publicly traded defense contractors and related supply chains.`;
-    } else {
-      analysis = `Market analysis from extracted articles indicates ongoing ${sector} sector activity. Based on ${articles.length} authentic sources, current developments suggest sustained interest in defense capabilities and related technologies. Market participants should monitor these authentic developments for potential impacts on sector performance.`;
+    const financialData = this.extractFinancialDataFromArticles(articles);
+    const contractData = this.extractContractDataFromArticles(articles);
+    const companyMentions = this.extractCompanyMentionsFromArticles(articles);
+    
+    let analysis = `Market impact analysis reveals significant financial indicators across the ${sector} sector. `;
+    
+    // First paragraph - Financial metrics
+    if (financialData.length > 0) {
+      analysis += `Key financial metrics include ${financialData.slice(0, 3).join(', ')}, indicating substantial capital allocation trends. `;
     }
-
+    
+    // Second paragraph - Contract activity
+    if (contractData.length > 0) {
+      analysis += `Contract activity demonstrates ${contractData.slice(0, 2).join(' and ')}, signaling sustained procurement momentum. `;
+    }
+    
+    // Third paragraph - Company implications
+    if (companyMentions.length > 0) {
+      analysis += `Industry participants including ${companyMentions.slice(0, 3).join(', ')} are positioned to benefit from these developments. `;
+    }
+    
+    // Fourth paragraph - Sector outlook
+    analysis += `Based on ${articles.length} verified market sources, these indicators suggest continued investment flows with implications for publicly traded entities in the ${sector} supply chain. Market participants should monitor these developments for potential earnings impacts and strategic positioning opportunities.`;
+    
     return this.applyAutomaticFixes(analysis);
   }
 
   private generateGeopoliticalAnalysisFromArticles(articles: ExtractedArticle[], sector: string): string {
-    const geopoliticalTerms = ['tension', 'conflict', 'alliance', 'treaty', 'sanctions', 'diplomatic'];
-    const relevantArticles = articles.filter(article => 
-      geopoliticalTerms.some(term => 
-        article.title.toLowerCase().includes(term) || 
-        article.content.toLowerCase().includes(term)
-      )
-    );
-
-    let analysis: string;
-    if (relevantArticles.length > 0) {
-      analysis = `Geopolitical analysis from extracted sources highlights ${relevantArticles.length} developments with strategic implications. ${relevantArticles.slice(0, 2).map(a => a.title).join(' ')} These authentic reports suggest evolving dynamics in international relations with direct bearing on ${sector} priorities and alliance structures.`;
-    } else {
-      analysis = `Geopolitical analysis from ${articles.length} extracted articles indicates continued strategic developments affecting the ${sector} domain. Current authentic reporting suggests ongoing attention to alliance relationships and strategic positioning. These developments warrant continued monitoring for implications on regional stability and defense cooperation frameworks.`;
+    const strategicData = this.extractStrategicDataFromArticles(articles);
+    const policyDevelopments = this.extractPolicyDevelopmentsFromArticles(articles);
+    const allianceActivity = this.extractAllianceActivityFromArticles(articles);
+    const dates = this.extractDatesFromArticles(articles);
+    
+    let analysis = `Geopolitical analysis reveals significant strategic developments affecting ${sector} sector dynamics. `;
+    
+    // First paragraph - Strategic implications
+    if (strategicData.length > 0) {
+      analysis += `Key strategic indicators include ${strategicData.slice(0, 2).join(' and ')}, signaling shifting power balances and deterrence calculations. `;
     }
-
+    
+    // Second paragraph - Policy frameworks
+    if (policyDevelopments.length > 0) {
+      analysis += `Policy framework developments encompass ${policyDevelopments.slice(0, 2).join(' alongside ')}, indicating coordinated institutional responses. `;
+    }
+    
+    // Third paragraph - Alliance dynamics
+    if (allianceActivity.length > 0) {
+      analysis += `Alliance coordination demonstrates ${allianceActivity.slice(0, 2).join(' and ')}, reflecting enhanced multilateral cooperation mechanisms. `;
+    }
+    
+    // Fourth paragraph - Timeline and implications
+    if (dates.length > 0) {
+      analysis += `Timeline analysis shows concentrated activity around ${dates.slice(0, 2).join(' and ')}, suggesting coordinated strategic implementation. `;
+    }
+    
+    analysis += `These developments indicate sustained attention to regional stability frameworks with implications for ${sector} procurement priorities and international cooperation structures.`;
+    
     return this.applyAutomaticFixes(analysis);
   }
 
@@ -1109,6 +1193,216 @@ Include a References section at the end with all source URLs listed one per line
     formatted = formatted.replace(/^(The article states that|According to|It was reported that|The report indicates that)\s+/i, '');
     
     return formatted;
+  }
+
+  // Helper methods for robust analytics data extraction
+  private extractFinancialDataFromArticles(articles: ExtractedArticle[]): string[] {
+    const financialData: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    // Extract monetary values
+    const moneyPatterns = [
+      /\$[\d,]+(?:\.\d+)?\s*(?:million|billion|trillion)/gi,
+      /€[\d,]+(?:\.\d+)?\s*(?:million|billion|trillion)/gi,
+      /[\d,]+(?:\.\d+)?\s*(?:million|billion|trillion)\s*(?:dollars|euros)/gi
+    ];
+    
+    moneyPatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      financialData.push(...matches.slice(0, 3));
+    });
+    
+    // Extract percentage changes
+    const percentagePattern = /(?:increased|decreased|rose|fell|up|down)\s+(?:by\s+)?[\d.]+%/gi;
+    const percentageMatches = combinedText.match(percentagePattern) || [];
+    financialData.push(...percentageMatches.slice(0, 2));
+    
+    return financialData.slice(0, 5);
+  }
+
+  private extractContractDataFromArticles(articles: ExtractedArticle[]): string[] {
+    const contractData: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    const contractPatterns = [
+      /(?:contract|award|deal)\s+(?:worth|valued|totaling)\s+\$[\d,]+(?:\.\d+)?\s*(?:million|billion)/gi,
+      /\$[\d,]+(?:\.\d+)?\s*(?:million|billion)\s+(?:contract|deal|award)/gi,
+      /(?:signed|awarded|secured)\s+.*?\$[\d,]+(?:\.\d+)?\s*(?:million|billion)/gi
+    ];
+    
+    contractPatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      contractData.push(...matches.slice(0, 2));
+    });
+    
+    return contractData.slice(0, 3);
+  }
+
+  private extractCompanyMentionsFromArticles(articles: ExtractedArticle[]): string[] {
+    const companies: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    // Common company suffixes and patterns
+    const companyPatterns = [
+      /[A-Z][a-zA-Z]+\s+(?:Inc|Corp|Corporation|Company|Ltd|Limited|AG|SE|Group)/g,
+      /[A-Z]{2,5}(?:\s+[A-Z][a-z]+)?(?=\s+(?:announced|reported|signed|completed))/g
+    ];
+    
+    companyPatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      companies.push(...matches.slice(0, 3));
+    });
+    
+    return [...new Set(companies)].slice(0, 5);
+  }
+
+  private extractDatesFromArticles(articles: ExtractedArticle[]): string[] {
+    const dates: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    const datePatterns = [
+      /(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2}/g,
+      /\d{1,2}\/\d{1,2}\/20\d{2}/g,
+      /20\d{2}-\d{2}-\d{2}/g
+    ];
+    
+    datePatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      dates.push(...matches.slice(0, 2));
+    });
+    
+    return [...new Set(dates)].slice(0, 3);
+  }
+
+  private extractKeyThemesFromArticles(articles: ExtractedArticle[], sector: string): string[] {
+    const themes: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ').toLowerCase();
+    
+    let sectorThemes: string[] = [];
+    switch (sector.toLowerCase()) {
+      case 'defense':
+        sectorThemes = ['missile defense', 'cybersecurity', 'naval operations', 'aerospace technology', 'military procurement', 'defense contracts', 'weapons systems'];
+        break;
+      case 'pharmaceutical':
+        sectorThemes = ['drug approval', 'clinical trials', 'FDA regulation', 'biotech innovation', 'vaccine development', 'pharmaceutical research', 'medical devices'];
+        break;
+      case 'energy':
+        sectorThemes = ['renewable energy', 'oil production', 'natural gas', 'energy transition', 'grid modernization', 'carbon capture', 'energy storage'];
+        break;
+      default:
+        sectorThemes = ['market analysis', 'business development', 'regulatory changes', 'industry trends'];
+    }
+    
+    sectorThemes.forEach(theme => {
+      if (combinedText.includes(theme)) {
+        themes.push(theme);
+      }
+    });
+    
+    return themes.slice(0, 4);
+  }
+
+  private generateSectorSpecificImplications(articles: ExtractedArticle[], sector: string): string {
+    const companies = this.extractCompanyMentionsFromArticles(articles);
+    const financialData = this.extractFinancialDataFromArticles(articles);
+    
+    let implications = '';
+    
+    if (companies.length > 0 && financialData.length > 0) {
+      implications = `Key industry participants including ${companies.slice(0, 2).join(' and ')} are positioned to benefit from developments involving ${financialData[0]}. `;
+    } else if (companies.length > 0) {
+      implications = `Industry leaders including ${companies.slice(0, 2).join(' and ')} are actively engaged in these strategic developments. `;
+    } else if (financialData.length > 0) {
+      implications = `Financial indicators suggest significant investment activity with ${financialData[0]} representing major capital allocation. `;
+    }
+    
+    return implications;
+  }
+
+  private extractDataPointsFromText(text: string): string[] {
+    const dataPoints: string[] = [];
+    
+    // Extract numerical data
+    const numericalPatterns = [
+      /\$[\d,]+(?:\.\d+)?\s*(?:million|billion)/gi,
+      /[\d.]+%/g,
+      /\d+\s*(?:million|billion)\s*(?:barrels|tons|units)/gi
+    ];
+    
+    numericalPatterns.forEach(pattern => {
+      const matches = text.match(pattern) || [];
+      dataPoints.push(...matches.slice(0, 2));
+    });
+    
+    return dataPoints.slice(0, 3);
+  }
+
+  private extractKeyFactsFromText(text: string): string[] {
+    const facts: string[] = [];
+    
+    // Extract sentences with key action words
+    const sentences = text.split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 20 && s.length < 150)
+      .filter(s => /\b(?:announced|signed|completed|approved|launched|acquired)\b/i.test(s));
+    
+    facts.push(...sentences.slice(0, 3));
+    
+    return facts;
+  }
+
+  private extractStrategicDataFromArticles(articles: ExtractedArticle[]): string[] {
+    const strategicData: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    const strategicPatterns = [
+      /(?:alliance|treaty|agreement|accord|partnership)\s+(?:signed|established|announced)/gi,
+      /(?:sanctions|embargo|restrictions)\s+(?:imposed|lifted|extended)/gi,
+      /(?:military|defense|security)\s+(?:exercise|operation|deployment)/gi
+    ];
+    
+    strategicPatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      strategicData.push(...matches.slice(0, 2));
+    });
+    
+    return strategicData.slice(0, 3);
+  }
+
+  private extractPolicyDevelopmentsFromArticles(articles: ExtractedArticle[]): string[] {
+    const policyData: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    const policyPatterns = [
+      /(?:policy|regulation|legislation|law)\s+(?:passed|enacted|proposed|amended)/gi,
+      /(?:budget|funding|appropriation)\s+(?:approved|allocated|increased|decreased)/gi,
+      /(?:directive|mandate|order)\s+(?:issued|signed|implemented)/gi
+    ];
+    
+    policyPatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      policyData.push(...matches.slice(0, 2));
+    });
+    
+    return policyData.slice(0, 3);
+  }
+
+  private extractAllianceActivityFromArticles(articles: ExtractedArticle[]): string[] {
+    const allianceData: string[] = [];
+    const combinedText = articles.map(a => `${a.title} ${a.content}`).join(' ');
+    
+    const alliancePatterns = [
+      /(?:NATO|EU|UN|AUKUS|Quad)\s+(?:meeting|summit|exercise|agreement)/gi,
+      /(?:bilateral|multilateral|joint)\s+(?:cooperation|agreement|exercise)/gi,
+      /(?:coalition|alliance|partnership)\s+(?:formed|strengthened|expanded)/gi
+    ];
+    
+    alliancePatterns.forEach(pattern => {
+      const matches = combinedText.match(pattern) || [];
+      allianceData.push(...matches.slice(0, 2));
+    });
+    
+    return allianceData.slice(0, 3);
   }
 
 }
