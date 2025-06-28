@@ -1992,32 +1992,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Four-Step Intelligence Routes (Authentic Article Extraction)
+  // Defense Intelligence Route
   app.get("/api/intelligence/defense/four-step", async (req, res) => {
-    // Redirect to working endpoint
-    console.log('🔄 Redirecting to working four-step intelligence endpoint');
     try {
-      const response = await fetch(`http://localhost:5000/api/four-step-intelligence/defense`);
-      const data = await response.text();
+      const today = new Date().toISOString().split('T')[0];
       
-      // Check if response is JSON or HTML
-      if (data.startsWith('<!DOCTYPE html') || data.startsWith('<html')) {
-        // HTML response means endpoint is not working, return error
-        console.log('❌ Four-step endpoint returned HTML instead of JSON');
-        return res.status(500).json({ error: "Intelligence generation service unavailable" });
+      // First, try to get cached brief from daily scheduler
+      const cachedBrief = await dailyBriefScheduler.getCachedBrief('defense');
+      if (cachedBrief) {
+        console.log('✅ Serving cached defense intelligence brief');
+        return res.json(cachedBrief);
       }
       
-      // Try to parse as JSON and return
-      try {
-        const jsonData = JSON.parse(data);
-        return res.json(jsonData);
-      } catch (parseError) {
-        console.log('❌ Failed to parse response as JSON');
-        return res.status(500).json({ error: "Invalid response format" });
+      // Check if 4-step intelligence already exists in storage
+      let intelligence = await storage.getFourStepIntelligence(today, 'defense');
+      
+      // If no existing data, generate fresh brief if missing
+      if (!intelligence) {
+        console.log('🛡️ Generating fresh defense intelligence brief...');
+        intelligence = await dailyBriefScheduler.generateBriefIfMissing('defense');
       }
+      
+      // Legacy fallback for immediate generation if needed
+      if (!intelligence) {
+        const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
+        const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
+        
+        const insertData = {
+          date: today,
+          sector: 'defense',
+          title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
+          executiveSummary: fourStepBrief.executiveSummary,
+          keyDevelopments: fourStepBrief.keyDevelopments,
+          marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+          geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+          extractedArticles: fourStepBrief.extractedArticles,
+          sourceUrls: fourStepBrief.sourceUrls,
+          methodologyUsed: fourStepBrief.methodologyUsed,
+          articleCount: fourStepBrief.extractedArticles.length,
+          sourcesVerified: true
+        };
+        
+        try {
+          intelligence = await storage.createFourStepIntelligence(insertData);
+          console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+        } catch (error: any) {
+          if (error.code === '23505') {
+            // Duplicate key, fetch existing
+            intelligence = await storage.getFourStepIntelligence(today, 'defense');
+          } else {
+            throw error;
+          }
+        }
+      }
+      
+      res.json(intelligence);
     } catch (error) {
-      console.error("❌ Error redirecting to four-step intelligence:", error);
-      res.status(500).json({ error: "Failed to access intelligence service" });
+      console.error("❌ Error generating 4-step defense intelligence:", error);
+      res.status(500).json({ error: "Failed to load 4-step intelligence analysis. Please ensure PERPLEXITY_API_KEY is configured." });
     }
   });
 
