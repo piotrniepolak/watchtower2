@@ -1994,54 +1994,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Four-Step Intelligence Routes (Authentic Article Extraction)
   app.get("/api/intelligence/defense/four-step", async (req, res) => {
+    // Redirect to working endpoint
+    console.log('🔄 Redirecting to working four-step intelligence endpoint');
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch(`http://localhost:5000/api/four-step-intelligence/defense`);
+      const data = await response.text();
       
-      // Get existing intelligence from storage first
-      let intelligence = await storage.getFourStepIntelligence(today, 'defense');
-      
-      // If exists, serve it immediately
-      if (intelligence) {
-        console.log('✅ Serving existing defense intelligence brief');
-        return res.json(intelligence);
+      // Check if response is JSON or HTML
+      if (data.startsWith('<!DOCTYPE html') || data.startsWith('<html')) {
+        // HTML response means endpoint is not working, return error
+        console.log('❌ Four-step endpoint returned HTML instead of JSON');
+        return res.status(500).json({ error: "Intelligence generation service unavailable" });
       }
       
-      // If no existing data, generate fresh brief
-      console.log('🔬 Generating fresh defense intelligence brief...');
-      const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
-      const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
-      
-      const insertData = {
-        date: today,
-        sector: 'defense',
-        title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
-        executiveSummary: fourStepBrief.executiveSummary,
-        keyDevelopments: fourStepBrief.keyDevelopments,
-        marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
-        geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
-        extractedArticles: fourStepBrief.extractedArticles,
-        sourceUrls: fourStepBrief.sourceUrls,
-        methodologyUsed: fourStepBrief.methodologyUsed,
-        articleCount: fourStepBrief.extractedArticles.length,
-        sourcesVerified: true
-      };
-      
+      // Try to parse as JSON and return
       try {
-        intelligence = await storage.createFourStepIntelligence(insertData);
-        console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
-      } catch (error: any) {
-        if (error.code === '23505') {
-          // Duplicate key, fetch existing
-          intelligence = await storage.getFourStepIntelligence(today, 'defense');
-        } else {
-          throw error;
-        }
+        const jsonData = JSON.parse(data);
+        return res.json(jsonData);
+      } catch (parseError) {
+        console.log('❌ Failed to parse response as JSON');
+        return res.status(500).json({ error: "Invalid response format" });
       }
-      
-      res.json(intelligence);
     } catch (error) {
-      console.error("❌ Error generating 4-step defense intelligence:", error);
-      res.status(500).json({ error: "Failed to generate 4-step defense intelligence" });
+      console.error("❌ Error redirecting to four-step intelligence:", error);
+      res.status(500).json({ error: "Failed to access intelligence service" });
     }
   });
 
