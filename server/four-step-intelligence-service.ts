@@ -425,3 +425,4 @@ Include specific prices per barrel, production volumes, investment amounts, and 
 }
 
 export const fourStepIntelligenceService = new FourStepIntelligenceService();
+export { FourStepIntelligenceService };
