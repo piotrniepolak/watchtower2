@@ -1,0 +1,49 @@
+MISSION ─ GENERATE & POLISH THE DAILY {{sector}} BRIEFS
+Build TODAY’S complete {{sector}} briefs (defense, pharma, energy) **from scratch** and deliver it already polished—no separate
+post-processing required.  Three tasks must be fulfilled automatically during generation:
+
+────────────────────────────────────────────
+TASK 1 — WRITE ROBUST ANALYTICS
+Create the four standard sections in this order:
+
+  1. Executive Summary
+  2. Key Developments  (4-10 bullets)
+  3. Geopolitical Analysis
+  4. Market Impact Analysis
+
+Requirements for §§ 3-4 (Geopolitical, Market):
+• 2–4 cohesive paragraphs each (plus keep bullets if you add them).  
+• Minimum ~200 words per subsection.  
+• Embed at least three concrete data points (prices, contract values, official
+  quotes, dates) per subsection.  
+• Use only full-text sources published in the past 24 h
+  (gov’t releases, multilateral bodies, Tier-1 media, credible industry reports;
+  **no** videos/podcasts/social posts).
+
+────────────────────────────────────────────
+TASK 2 — FORMAT KEY DEVELOPMENTS CORRECTLY
+While writing the Key Developments list:
+• Begin each item with ONE bullet or dash, then a space.  
+• Do NOT sprinkle extra full stops—place **exactly one full stop at the end** of each
+  bullet and nowhere else (unless the headline itself contains a period).  
+• Exclude inline source names/links; citations live only in the References block.  
+• Preserve logical order of importance;  do not insert trailing ellipses.
+
+────────────────────────────────────────────
+TASK 3 — BUILD A CLEAN REFERENCES BLOCK
+After drafting the four sections, add **References – {{sector}}**:  
+• List every source URL used, one per line, no numbering.  
+• Verify each link loads the full article (not a homepage or 404).  
+• Omit any link that cannot be validated after a good-faith search.
+
+────────────────────────────────────────────
+HARD CONSTRAINTS
+■ Use only information traceable to the listed URLs—no placeholders, speculation, or
+  AI-hallucinated facts.  
+■ Do not reorder the four main sections.  
+■ No paywalled or inaccessible links.  
+■ Maintain consistent heading style and clean spacing throughout the brief.
+
+OUTPUT
+Return TODAY’S {{sector}} briefs—complete, well-formatted, with deep Geopolitical and
+Market analyses, a spotless Key Developments list, and a verified References block.
