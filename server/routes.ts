@@ -1997,87 +1997,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const today = new Date().toISOString().split('T')[0];
       
-      // Check if enhanced 4-step intelligence already exists in storage first
+      // Get existing intelligence from storage first
       let intelligence = await storage.getFourStepIntelligence(today, 'defense');
       
-      // Prioritize enhanced briefs with NATO/defense specific content
-      if (intelligence && intelligence.executiveSummary && intelligence.executiveSummary.includes('NATO')) {
-        console.log('✅ Serving enhanced defense intelligence brief');
+      // If exists, serve it immediately
+      if (intelligence) {
+        console.log('✅ Serving existing defense intelligence brief');
         return res.json(intelligence);
       }
       
-      // Check for cached brief as fallback
-      const cachedBrief = await dailyBriefScheduler.getCachedBrief('defense');
-      if (cachedBrief && cachedBrief.extractedArticles && cachedBrief.extractedArticles.length > 0) {
-        console.log('✅ Serving cached defense intelligence brief');
-        return res.json(cachedBrief);
-      }
+      // If no existing data, generate fresh brief
+      console.log('🔬 Generating fresh defense intelligence brief...');
+      const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
+      const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
       
-      // If no existing data with articles, generate fresh brief
-      if (!intelligence || !intelligence.extractedArticles || intelligence.extractedArticles.length === 0) {
-        console.log('🔬 Generating fresh defense intelligence brief...');
-        
-        // Set timeout for generation process
-        const generateWithTimeout = new Promise((resolve, reject) => {
-          const timer = setTimeout(() => {
-            reject(new Error('Generation timeout'));
-          }, 120000); // 2 minutes timeout
-          
-          dailyBriefScheduler.generateBriefIfMissing('defense')
-            .then(result => {
-              clearTimeout(timer);
-              resolve(result);
-            })
-            .catch(error => {
-              clearTimeout(timer);
-              reject(error);
-            });
-        });
-        
-        try {
-          intelligence = await generateWithTimeout;
-        } catch (error) {
-          if (error.message === 'Generation timeout') {
-            return res.status(202).json({ 
-              message: "Intelligence brief is being generated with authentic articles. Please refresh in 2-3 minutes.",
-              status: "generating",
-              estimatedCompletion: "2-3 minutes"
-            });
-          }
+      const insertData = {
+        date: today,
+        sector: 'defense',
+        title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
+        executiveSummary: fourStepBrief.executiveSummary,
+        keyDevelopments: fourStepBrief.keyDevelopments,
+        marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
+        geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
+        extractedArticles: fourStepBrief.extractedArticles,
+        sourceUrls: fourStepBrief.sourceUrls,
+        methodologyUsed: fourStepBrief.methodologyUsed,
+        articleCount: fourStepBrief.extractedArticles.length,
+        sourcesVerified: true
+      };
+      
+      try {
+        intelligence = await storage.createFourStepIntelligence(insertData);
+        console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
+      } catch (error: any) {
+        if (error.code === '23505') {
+          // Duplicate key, fetch existing
+          intelligence = await storage.getFourStepIntelligence(today, 'defense');
+        } else {
           throw error;
-        }
-      }
-      
-      // Legacy fallback for immediate generation if needed
-      if (!intelligence) {
-        const { fourStepIntelligenceService } = await import('./four-step-intelligence-service.js');
-        const fourStepBrief = await fourStepIntelligenceService.generateDefenseIntelligence();
-        
-        const insertData = {
-          date: today,
-          sector: 'defense',
-          title: `Defense Intelligence Brief - ${today} (4-Step Methodology)`,
-          executiveSummary: fourStepBrief.executiveSummary,
-          keyDevelopments: fourStepBrief.keyDevelopments,
-          marketImpactAnalysis: fourStepBrief.marketImpactAnalysis,
-          geopoliticalAnalysis: fourStepBrief.geopoliticalAnalysis,
-          extractedArticles: fourStepBrief.extractedArticles,
-          sourceUrls: fourStepBrief.sourceUrls,
-          methodologyUsed: fourStepBrief.methodologyUsed,
-          articleCount: fourStepBrief.extractedArticles.length,
-          sourcesVerified: true
-        };
-        
-        try {
-          intelligence = await storage.createFourStepIntelligence(insertData);
-          console.log(`✅ 4-step defense intelligence created with ${fourStepBrief.extractedArticles.length} authentic articles`);
-        } catch (error: any) {
-          if (error.code === '23505') {
-            // Duplicate key, fetch existing
-            intelligence = await storage.getFourStepIntelligence(today, 'defense');
-          } else {
-            throw error;
-          }
         }
       }
       
