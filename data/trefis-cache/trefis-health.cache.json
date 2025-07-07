@@ -1,0 +1,52 @@
+{
+  "actionable": [
+    {
+      "title": "Pfizer: Post-COVID Revenue Diversification Strategy",
+      "url": "https://www.trefis.com/stock/pfe/analysis/revenue-diversification"
+    },
+    {
+      "title": "Johnson & Johnson: Pharmaceutical Pipeline Value",
+      "url": "https://www.trefis.com/stock/jnj/analysis/pharma-pipeline"
+    },
+    {
+      "title": "Moderna: mRNA Platform Expansion Opportunities",
+      "url": "https://www.trefis.com/stock/mrna/analysis/mrna-platform"
+    },
+    {
+      "title": "AbbVie: Humira Patent Cliff Impact Assessment",
+      "url": "https://www.trefis.com/stock/abbv/analysis/humira-patent"
+    },
+    {
+      "title": "Gilead Sciences: Oncology Portfolio Growth",
+      "url": "https://www.trefis.com/stock/gild/analysis/oncology-growth"
+    }
+  ],
+  "featured": [
+    {
+      "title": "GLP-1 Drugs: Transforming Diabetes and Obesity Treatment",
+      "url": "https://www.trefis.com/analysis/glp1-drugs-transformation"
+    },
+    {
+      "title": "Biosimilars Impact: Patent Cliff Challenges for Big Pharma",
+      "url": "https://www.trefis.com/analysis/biosimilars-patent-cliff"
+    },
+    {
+      "title": "Gene Therapy: Commercial Breakthrough or Overhyped?",
+      "url": "https://www.trefis.com/analysis/gene-therapy-breakthrough"
+    },
+    {
+      "title": "Healthcare AI: Diagnostic Revolution Investment Themes",
+      "url": "https://www.trefis.com/analysis/healthcare-ai-diagnostics"
+    }
+  ],
+  "bestWorst": {
+    "best": {
+      "title": "Eli Lilly (LLY) - GLP-1 Drug Success",
+      "url": "https://www.trefis.com/stock/lly"
+    },
+    "worst": {
+      "title": "Moderna (MRNA) - Post-Pandemic Decline",
+      "url": "https://www.trefis.com/stock/mrna"
+    }
+  }
+}

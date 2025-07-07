@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { TrefisOverview } from "@/components/trefis/trefis-overview";
 import { 
   TrendingUp, 
   Shield, 
@@ -201,6 +202,21 @@ export default function Landing() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Trefis Market Analysis Overview */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Market Intelligence Overview
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Get instant insights into top-performing and underperforming companies across defense, healthcare, and energy sectors
+            </p>
+          </div>
+          <TrefisOverview />
         </div>
       </section>
 

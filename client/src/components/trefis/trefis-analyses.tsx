@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Loader2, ExternalLink, TrendingUp, BarChart3 } from 'lucide-react';
 
 /**
@@ -21,8 +19,6 @@ interface TrefisAnalysesProps {
 }
 
 export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
-  const [selectedAnalysis, setSelectedAnalysis] = useState<TrefisAnalysis | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch actionable analyses for the sector
   const { data: actionableAnalyses, isLoading: loadingActionable } = useQuery({
@@ -52,16 +48,9 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 
-  // Handle analysis selection and modal opening
+  // Handle analysis selection - open in new tab instead of modal
   const handleAnalysisClick = (analysis: TrefisAnalysis) => {
-    setSelectedAnalysis(analysis);
-    setIsModalOpen(true);
-  };
-
-  // Close modal and reset selected analysis
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedAnalysis(null);
+    window.open(analysis.url, '_blank', 'noopener,noreferrer');
   };
 
   // Get sector display name
@@ -150,27 +139,7 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
         </CardContent>
       </Card>
 
-      {/* Analysis Modal with Iframe */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-6xl w-[90vw] h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              {selectedAnalysis?.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 mt-4">
-            {selectedAnalysis && (
-              <iframe
-                src={selectedAnalysis.url}
-                className="w-full h-full border rounded-lg"
-                title={selectedAnalysis.title}
-                sandbox="allow-scripts allow-same-origin allow-forms"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
