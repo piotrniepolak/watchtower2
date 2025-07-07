@@ -19,6 +19,7 @@ import WorldHealthMapSimple from "@/components/world-health-map-simple";
 import TopOpportunityList from "@/components/top-opportunity-list";
 import InteractiveCO2Map from "@/components/interactive-co2-map";
 import CO2TrendlineProjections from "@/components/co2-trendline-projections";
+import { TrefisAnalyses } from "@/components/trefis/trefis-analyses";
 
 interface EnhancedMultiSectorDashboardProps {
   defaultSector?: string;
@@ -95,9 +96,10 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         <ConflictSeverityMap />
       </div>
 
-      {/* Bottom Full Width Widgets */}
-      <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
+      {/* Analysis and Intelligence Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <ConflictTimeline />
+        <TrefisAnalyses sector="defense" />
       </div>
     </div>
   );
@@ -212,6 +214,11 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
         </Card>
 
         <TopOpportunityList />
+      </div>
+
+      {/* Healthcare Analysis and Intelligence */}
+      <div className="grid grid-cols-1 gap-6">
+        <TrefisAnalyses sector="health" />
       </div>
     </div>
   );
@@ -364,6 +371,11 @@ export default function EnhancedMultiSectorDashboard({ defaultSector = "defense"
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Energy Analysis and Intelligence */}
+      <div className="grid grid-cols-1 gap-6">
+        <TrefisAnalyses sector="energy" />
       </div>
     </div>
   );

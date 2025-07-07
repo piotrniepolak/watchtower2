@@ -1,0 +1,58 @@
+Your goal is to embed Trefis’s “Actionable Analyses” and “Featured Analyses” sections into each sector dashboard, and add a compact best-/worst-performer overview on the homepage. Follow these precise specs:
+
+1. Sector Dashboards
+
+   * Files:
+
+     * ConflictWatch → `/pages/defense/dashboard.js`
+     * PharmaWatch → `/pages/health/dashboard.js`
+     * EnergyWatch → `/pages/energy/dashboard.js`
+   * Component: Create a `<TrefisAnalyses sector="defense" />` (and likewise for “health” and “energy”).
+
+     * On mount, call your new API route `/api/trefis?sector=defense&type=actionable` and `/api/trefis?sector=defense&type=featured`.
+     * Parse the JSON arrays (each item: `{ title, url }`) returned by `/api/trefis`.
+     * Render two sections, “Actionable Analyses” and “Featured Analyses,” each as a vertical list of links showing only the analysis title (no percentages).
+     * Wrap each title in a `<Button variant="ghost">`; clicking it opens a `<Modal>` containing an `<iframe>` pointed at `url` (the original Trefis analysis page) so the user sees the full interactive content with live values.
+
+2. Homepage Overview
+
+   * File: `/pages/index.js`
+   * Component `<TrefisOverview />`:
+
+     * Fetch `/api/trefis?sector=defense&type=bestworst`, and likewise for `health` and `energy`.
+     * That endpoint returns `{ best: { title, url }, worst: { title, url } }` for each sector.
+     * Display a 3×2 grid of `<Card>`s (two per sector), showing only `title`.
+     * Clicking a card opens the same modal + iframe pattern to the `url`.
+
+3. API Route & Caching
+
+   * Create `/pages/api/trefis.js`:
+
+     * Accepts `?sector=<defense|health|energy>&type=<actionable|featured|bestworst>`.
+     * On first request each day, fetch `https://www.trefis.com/data/home?sector=<sector>` via `node-fetch`.
+     * Use `cheerio` to extract:
+
+       * If `type=actionable` or `featured`, return `[{ title, url }, …]` from the corresponding section’s `<a>` tags.
+       * If `type=bestworst`, parse the company list under each section to compute which company has the highest and lowest Trefis value, then return their `{ title: name, url: companyPage }`.
+     * Cache the raw HTML or parsed JSON in `/data/trefis-<sector>.cache.json` every midnight UTC.
+
+4. Daily Refresh
+
+   * In `package.json` or in a new script, add a `node-cron` job:
+
+   ```js
+   cron.schedule('0 0 * * *', async () => {
+     await fetch('http://localhost:3000/api/trefis?sector=defense&type=actionable');
+     // repeat for each sector & type
+   });
+   ```
+
+   * Ensure the cron script runs on your Replit deployment (add to `replit.nix` or `.replit`).
+
+5. Styling & UX
+
+   * Use `@/components/ui/Card`, `@/components/ui/Modal`, and `@/components/ui/Button` from shadcn/ui.
+   * Ensure lists scroll if overflow; modals size to 80% width/height.
+   * Add comments in every new file explaining purpose, imports, and data flow.
+
+Generate all necessary diffs: new components in `/components/trefis/`, updates to the three dashboards, `/pages/index.js` changes, `/pages/api/trefis.js`, the cron setup, and any layout or `_app.js` tweaks. Include inline comments on each logical block.\`\`\`

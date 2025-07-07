@@ -25,6 +25,7 @@ import { quizStorage } from "./quiz-storage";
 import { realTimeAIAnalysis } from './real-time-ai-analysis';
 import { dailyBriefScheduler } from "./daily-brief-scheduler";
 import { dailySectorBriefGenerator } from "./daily-sector-brief-generator";
+import { getTrefisData } from "./trefis-service";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -2347,6 +2348,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.status(500).json({ error: "Failed to regenerate pharmaceutical intelligence" });
+    }
+  });
+
+  // Trefis Analysis API Route
+  app.get("/api/trefis", async (req, res) => {
+    try {
+      const { sector, type } = req.query;
+      
+      // Validate required parameters
+      if (!sector || !type) {
+        return res.status(400).json({ 
+          error: "Missing required parameters: sector and type" 
+        });
+      }
+      
+      // Validate sector parameter
+      const validSectors = ['defense', 'health', 'energy'];
+      if (!validSectors.includes(sector as string)) {
+        return res.status(400).json({ 
+          error: "Invalid sector. Must be one of: defense, health, energy" 
+        });
+      }
+      
+      // Validate type parameter
+      const validTypes = ['actionable', 'featured', 'bestWorst'];
+      if (!validTypes.includes(type as string)) {
+        return res.status(400).json({ 
+          error: "Invalid type. Must be one of: actionable, featured, bestWorst" 
+        });
+      }
+      
+      console.log(`🔍 Fetching Trefis ${type} data for ${sector} sector`);
+      
+      // Get Trefis data using the service
+      const data = await getTrefisData(sector as string, type as any);
+      
+      console.log(`✅ Successfully retrieved Trefis ${type} data for ${sector}`);
+      res.json(data);
+      
+    } catch (error) {
+      console.error("❌ Error fetching Trefis data:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch Trefis analysis data",
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
