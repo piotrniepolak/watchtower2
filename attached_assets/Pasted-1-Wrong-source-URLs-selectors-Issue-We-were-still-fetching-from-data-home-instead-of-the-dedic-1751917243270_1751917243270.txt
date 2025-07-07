@@ -1,0 +1,44 @@
+1. Wrong source URLs & selectors
+
+Issue: We were still fetching from /data/home instead of the dedicated topic pages (/data/topic/actionable-analyses and /data/topic/featured).
+Fix: Change your API route to hit exactly those two URLs. Then, update your Cheerio selectors to match the real markup on those topic pages (e.g. look for the container that wraps each <a> whose href contains /data/companies/…/no-login-required/).
+2. Static fetch can’t see JS-rendered content
+
+Issue: Trefis topic pages load much of their list via JavaScript, so a plain fetch() + Cheerio sees only an empty shell.
+Fix Options:
+Headless browser scraping (e.g. Puppeteer) to let the page fully render, then grab the post-load DOM.
+Reverse-engineer their internal API calls (watch your browser’s Network tab when loading the topic pages) and call that JSON endpoint directly.
+3. Popup URLs weren’t built out correctly
+
+Issue: The popup iframe was pointed at the base topic page or a relative link, yielding a blank page.
+Fix: Extract the full Trefis link from each <a href>—it always looks like
+/data/companies/<TICKER>/no-login-required/<SLUG>/<Title-Slug>
+Prepend https://www.trefis.com and use that as your iframe src.
+
+4. Sector filtering too restrictive (and missing)
+
+Issue: Our “health” or “defense” filters didn’t match any items because the topic pages aren’t pre-filtered by sector.
+Fix: Pull all analyses from the topic pages, then client- or server-side filter by the sector tags Trefis attaches (e.g. look for a CSS class or data-attribute that denotes “health” vs. “energy”). Alternatively, fetch the master list and in your UI only render the items whose company tickers match your sector.
+5. Homepage overview never wired up
+
+Issue: We wrote the <TrefisOverview> component but forgot to import or render it in /pages/index.js.
+Fix: In your homepage file:
+import TrefisOverview from '@/components/trefis/TrefisOverview';
+
+export default function Home() {
+  return (
+    <>
+      {/* existing content */}
+      <section>
+        <h2>Best & Worst Sector Picks</h2>
+        <TrefisOverview />
+      </section>
+    </>
+  );
+}
+Next steps
+Switch your /api/trefis handler to the two /data/topic/… URLs.
+Choose headless-browser scraping or hit the real JSON API.
+Update the iframe-popup logic to use the exact href → full https://www.trefis.com… URL.
+Wire your overview component into the homepage.
+Test end-to-end (fetch logs → parsed items → clickable popups → UI).
