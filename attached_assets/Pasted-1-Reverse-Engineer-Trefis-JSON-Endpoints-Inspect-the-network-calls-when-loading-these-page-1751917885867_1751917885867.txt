@@ -1,0 +1,37 @@
+1. **Reverse-Engineer Trefis JSON Endpoints**
+   - Inspect the network calls when loading these pages in a browser:
+     - `https://www.trefis.com/data/topic/actionable-analyses`
+     - `https://www.trefis.com/data/topic/featured`
+   - Identify the JSON endpoints (e.g. `/api/topic/analysis?actionable&sector=health` or similar) that return the raw list of analyses.
+
+2. **Update `/pages/api/trefis.js`**
+   - Remove all Cheerio and Puppeteer code.
+   - For `?type=actionable` and `?type=featured`, call the corresponding JSON endpoint with `fetch()` (including any required headers or query params).
+   - Parse and return an array of `{ title, url }` objects, where `url` = full `https://www.trefis.com/data/companies/.../no-login-required/...` link.
+   - For `?type=bestworst`, hit both JSON endpoints, merge their company lists (each item should include a numeric `value` field), sort by `value`, and return `{ best, worst }` with same `{ title, url }` shape.
+   - Cache the JSON responses to `/data/trefis-<sector>.cache.json` once per day using your existing cron setup.
+   - Ensure clear error handling: return HTTP 500 with `{ error: '…' }` if the JSON fetch fails or no data.
+
+3. **Frontend Components**
+   - **`components/trefis/TrefisAnalyses.js`**
+     - No change to JSX structure, but ensure fetch URLs match the new `/api/trefis?sector=health&type=actionable` format.
+     - Render `“No actionable analyses available”` if the array is empty.
+   - **`components/trefis/TrefisOverview.js`**
+     - Ensure the component is imported and rendered in `/pages/index.js`.
+     - Use the new `bestworst` endpoint to display six cards.
+
+4. **Homepage Wiring**
+   - Open `/pages/index.js` (or `pages/landing.tsx` if applicable).
+   - Import and render `<TrefisOverview />` under a section titled “Market Intelligence Overview.”
+
+5. **Cron Job**
+   - Verify your `node-cron` entry still runs at midnight UTC to prime the cache by hitting each `/api/trefis?sector=…&type=…` endpoint.
+
+Please generate:
+- The complete diff for `pages/api/trefis.js`
+- Any changes to `package.json` to remove Puppeteer
+- Updates to `components/trefis/*`
+- Changes in `/pages/index.js`
+- Cron job snippet (no need to re-specify existing imports)
+
+Include inline comments explaining each major block.

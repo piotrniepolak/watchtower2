@@ -1,17 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ExternalLink, TrendingUp, BarChart3 } from 'lucide-react';
+import { Loader2, ExternalLink, TrendingUp, BarChart3, AlertCircle } from 'lucide-react';
 
 /**
- * TrefisAnalyses Component
- * Displays actionable and featured analyses for a specific sector
- * Each analysis opens in a modal with iframe to show full Trefis content
+ * TrefisAnalyses Component - JSON Endpoint Integration
+ * Displays actionable and featured analyses from reverse-engineered Trefis JSON APIs
+ * Each analysis opens in new tab with no-login-required URLs for direct access
  */
 
 interface TrefisAnalysis {
   title: string;
   url: string;
+  value?: number; // Performance metric from JSON API
 }
 
 interface TrefisAnalysesProps {
@@ -20,36 +21,44 @@ interface TrefisAnalysesProps {
 
 export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
 
-  // Fetch actionable analyses for the sector
-  const { data: actionableAnalyses, isLoading: loadingActionable } = useQuery({
+  // Fetch actionable analyses from JSON endpoints
+  const { data: actionableAnalyses, isLoading: loadingActionable, error: actionableError } = useQuery({
     queryKey: ['trefis', sector, 'actionable'],
     queryFn: async () => {
       const response = await fetch(`/api/trefis?sector=${sector}&type=actionable`);
       if (!response.ok) {
-        throw new Error('Failed to fetch actionable analyses');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch actionable analyses from JSON endpoints');
       }
       return response.json();
     },
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour - matches cache duration
+    retry: false, // Don't retry on failure - respect no-fallback policy
   });
 
-  // Fetch featured analyses for the sector
-  const { data: featuredAnalyses, isLoading: loadingFeatured } = useQuery({
+  // Fetch featured analyses from JSON endpoints
+  const { data: featuredAnalyses, isLoading: loadingFeatured, error: featuredError } = useQuery({
     queryKey: ['trefis', sector, 'featured'],
     queryFn: async () => {
       const response = await fetch(`/api/trefis?sector=${sector}&type=featured`);
       if (!response.ok) {
-        throw new Error('Failed to fetch featured analyses');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch featured analyses from JSON endpoints');
       }
       return response.json();
     },
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour - matches cache duration
+    retry: false, // Don't retry on failure - respect no-fallback policy
   });
 
-  // Handle analysis selection - open in new tab instead of modal
+  // Handle analysis selection - open in new tab with proper no-login-required URLs
   const handleAnalysisClick = (analysis: TrefisAnalysis) => {
+    // Log click for analytics
+    console.log(`Opening Trefis analysis: ${analysis.title.substring(0, 50)}...`);
+    
+    // Open in new tab with security attributes
     window.open(analysis.url, '_blank', 'noopener,noreferrer');
   };
 
@@ -63,14 +72,47 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
     }
   };
 
-  // Show loading state while data is being fetched
-  if (loadingActionable || loadingFeatured) {
+  // Handle loading and error states
+  const isLoading = loadingActionable || loadingFeatured;
+  const hasError = actionableError || featuredError;
+  
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center p-8">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-lg">Loading Trefis analyses...</span>
+          <span className="ml-2 text-lg">Loading Trefis data from JSON endpoints...</span>
         </div>
+      </div>
+    );
+  }
+
+  if (hasError) {
+    const errorMessage = actionableError?.message || featuredError?.message || 'Unknown error';
+    
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-600">
+              <AlertCircle className="w-5 h-5" />
+              Trefis Analysis Unavailable
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {errorMessage.includes('Network inspection required') 
+                  ? 'Trefis JSON endpoints need to be reverse-engineered through browser network inspection.'
+                  : 'Unable to load authentic Trefis analysis data from discovered endpoints.'
+                }
+              </p>
+              <p className="text-xs text-red-600">
+                Error: {errorMessage}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -90,14 +132,21 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
             {actionableAnalyses && actionableAnalyses.length > 0 ? (
               actionableAnalyses.map((analysis: TrefisAnalysis, index: number) => (
                 <Button
-                  key={index}
+                  key={`actionable-${index}`}
                   variant="ghost"
                   className="w-full justify-start text-left h-auto p-3 hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleAnalysisClick(analysis)}
                 >
                   <div className="flex items-start gap-2 w-full">
                     <ExternalLink className="w-4 h-4 mt-1 text-blue-600 flex-shrink-0" />
-                    <span className="text-sm leading-relaxed">{analysis.title}</span>
+                    <div className="flex-1">
+                      <span className="text-sm leading-relaxed">{analysis.title}</span>
+                      {analysis.value && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Performance Score: {analysis.value}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Button>
               ))
@@ -121,14 +170,21 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
             {featuredAnalyses && featuredAnalyses.length > 0 ? (
               featuredAnalyses.map((analysis: TrefisAnalysis, index: number) => (
                 <Button
-                  key={index}
+                  key={`featured-${index}`}
                   variant="ghost"
                   className="w-full justify-start text-left h-auto p-3 hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => handleAnalysisClick(analysis)}
                 >
                   <div className="flex items-start gap-2 w-full">
                     <ExternalLink className="w-4 h-4 mt-1 text-purple-600 flex-shrink-0" />
-                    <span className="text-sm leading-relaxed">{analysis.title}</span>
+                    <div className="flex-1">
+                      <span className="text-sm leading-relaxed">{analysis.title}</span>
+                      {analysis.value && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Performance Score: {analysis.value}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Button>
               ))

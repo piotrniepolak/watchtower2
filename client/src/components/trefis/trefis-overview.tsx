@@ -1,77 +1,86 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, BarChart3, AlertCircle } from 'lucide-react';
 
 /**
- * TrefisOverview Component
- * Displays best and worst performing companies across all three sectors
- * Used on the homepage for quick sector performance overview
+ * TrefisOverview Component - JSON Endpoint Integration
+ * Displays best and worst performing companies from reverse-engineered Trefis JSON APIs
+ * Used on the homepage for quick sector performance overview across all three sectors
  */
 
 interface TrefisAnalysis {
   title: string;
   url: string;
+  value?: number;
 }
 
 interface TrefisBestWorst {
-  best: TrefisAnalysis;
-  worst: TrefisAnalysis;
+  best: TrefisAnalysis | null;
+  worst: TrefisAnalysis | null;
 }
 
 export function TrefisOverview() {
-  const [selectedAnalysis, setSelectedAnalysis] = useState<TrefisAnalysis | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fetch best/worst data for all three sectors
-  const { data: defenseData, isLoading: loadingDefense } = useQuery({
+  // Fetch best/worst performers from JSON endpoints for all three sectors
+  const { data: defenseData, isLoading: loadingDefense, error: defenseError } = useQuery({
     queryKey: ['trefis', 'defense', 'bestWorst'],
     queryFn: async () => {
       const response = await fetch('/api/trefis?sector=defense&type=bestWorst');
-      if (!response.ok) throw new Error('Failed to fetch defense data');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch defense data from JSON endpoints');
+      }
       return response.json() as TrefisBestWorst;
     },
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour - matches cache duration
+    retry: false, // Don't retry on failure - respect no-fallback policy
   });
 
-  const { data: healthData, isLoading: loadingHealth } = useQuery({
+  const { data: healthData, isLoading: loadingHealth, error: healthError } = useQuery({
     queryKey: ['trefis', 'health', 'bestWorst'],
     queryFn: async () => {
       const response = await fetch('/api/trefis?sector=health&type=bestWorst');
-      if (!response.ok) throw new Error('Failed to fetch health data');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch health data from JSON endpoints');
+      }
       return response.json() as TrefisBestWorst;
     },
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour - matches cache duration
+    retry: false, // Don't retry on failure - respect no-fallback policy
   });
 
-  const { data: energyData, isLoading: loadingEnergy } = useQuery({
+  const { data: energyData, isLoading: loadingEnergy, error: energyError } = useQuery({
     queryKey: ['trefis', 'energy', 'bestWorst'],
     queryFn: async () => {
       const response = await fetch('/api/trefis?sector=energy&type=bestWorst');
-      if (!response.ok) throw new Error('Failed to fetch energy data');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch energy data from JSON endpoints');
+      }
       return response.json() as TrefisBestWorst;
     },
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60, // 1 hour - matches cache duration
+    retry: false, // Don't retry on failure - respect no-fallback policy
   });
 
-  // Handle analysis selection and modal opening
+  // Handle analysis selection - open in new tab with no-login-required URLs
   const handleAnalysisClick = (analysis: TrefisAnalysis) => {
-    setSelectedAnalysis(analysis);
-    setIsModalOpen(true);
+    // Log click for analytics
+    console.log(`Opening Trefis analysis: ${analysis.title.substring(0, 50)}...`);
+    
+    // Open in new tab with security attributes
+    window.open(analysis.url, '_blank', 'noopener,noreferrer');
   };
 
-  // Close modal and reset selected analysis
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedAnalysis(null);
-  };
-
-  // Show loading state while data is being fetched
-  if (loadingDefense || loadingHealth || loadingEnergy) {
+  // Handle loading and error states
+  const isLoading = loadingDefense || loadingHealth || loadingEnergy;
+  const hasError = defenseError || healthError || energyError;
+  
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -83,7 +92,35 @@ export function TrefisOverview() {
         <CardContent>
           <div className="flex items-center justify-center p-8">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            <span className="ml-2">Loading market performance data...</span>
+            <span className="ml-2">Loading Trefis data from JSON endpoints...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (hasError) {
+    const errorMessage = defenseError?.message || healthError?.message || energyError?.message || 'Unknown error';
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-amber-600">
+            <AlertCircle className="w-5 h-5" />
+            Trefis Market Data Unavailable
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {errorMessage.includes('Network inspection required') 
+                ? 'Trefis JSON endpoints need to be reverse-engineered through browser network inspection.'
+                : 'Unable to load authentic Trefis best/worst performer data from discovered endpoints.'
+              }
+            </p>
+            <p className="text-xs text-red-600">
+              Error: {errorMessage}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -232,28 +269,6 @@ export function TrefisOverview() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Analysis Modal with Iframe */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-6xl w-[90vw] h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              {selectedAnalysis?.title}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 mt-4">
-            {selectedAnalysis && (
-              <iframe
-                src={selectedAnalysis.url}
-                className="w-full h-full border rounded-lg"
-                title={selectedAnalysis.title}
-                sandbox="allow-scripts allow-same-origin allow-forms"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

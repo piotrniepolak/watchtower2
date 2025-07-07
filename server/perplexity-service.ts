@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import * as cheerio from 'cheerio';
 import { storage } from './storage';
 
 interface PerplexityResponse {
