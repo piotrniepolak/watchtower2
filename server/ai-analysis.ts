@@ -14,7 +14,7 @@ async function searchCurrentEvents(query: string): Promise<string> {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-small-128k-online",
+        model: "sonar-pro",
         messages: [
           {
             role: "system",
@@ -27,7 +27,7 @@ async function searchCurrentEvents(query: string): Promise<string> {
         ],
         max_tokens: 1000,
         temperature: 0.2,
-        search_recency_filter: "month",
+        search_after_date_filter: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US'),
         return_related_questions: false,
         stream: false
       })

@@ -42,6 +42,19 @@ class FourStepIntelligenceService {
     }
   }
 
+  private getDateFilter(): string {
+    // Get date from 24 hours ago
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    // Format as MM/DD/YYYY for Perplexity API
+    const month = yesterday.getMonth() + 1;
+    const day = yesterday.getDate();
+    const year = yesterday.getFullYear();
+    
+    return `${month}/${day}/${year}`;
+  }
+
   private applyFormattingRules(text: string): string {
     // ✂ EXCESSIVE FULL STOPS - Only collapse truly choppy fragments (single words with periods)
     text = text.replace(/\b(\w{1,4})\.\s+(\w{1,4})\.\s+(\w{1,4})\./g, '$1 $2 $3');
@@ -137,7 +150,7 @@ CRITICAL FORMATTING STANDARDS:
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama-3.1-sonar-large-128k-online',
+          model: 'sonar-pro',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: `${prompt}\n\nGenerate comprehensive analysis for ${today}. Must include:\n- Detailed executive summary (400-600 words minimum)\n- 6-10 comprehensive bullet points with specific data\n- Extensive geopolitical and market analysis (300-500 words each)\n- NO choppy fragments or ellipses\n- Complete sentences with proper flow\n- Specific financial figures, dates, and company names throughout` }
@@ -146,12 +159,14 @@ CRITICAL FORMATTING STANDARDS:
           temperature: 0.1,
           top_p: 0.8,
           return_citations: true,
-          search_recency_filter: "day"
+          search_after_date_filter: this.getDateFilter()
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Perplexity API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`❌ Perplexity API error ${response.status}:`, errorText);
+        throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json() as PerplexityResponse;
