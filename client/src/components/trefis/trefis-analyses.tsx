@@ -89,6 +89,7 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
 
   if (hasError) {
     const errorMessage = actionableError?.message || featuredError?.message || 'Unknown error';
+    const isNetworkInspectionRequired = errorMessage.includes('Network inspection required');
     
     return (
       <div className="space-y-6">
@@ -96,20 +97,41 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-600">
               <AlertCircle className="w-5 h-5" />
-              Trefis Analysis Unavailable
+              Trefis Analysis Setup Required
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                {errorMessage.includes('Network inspection required') 
-                  ? 'Trefis JSON endpoints need to be reverse-engineered through browser network inspection.'
-                  : 'Unable to load authentic Trefis analysis data from discovered endpoints.'
-                }
-              </p>
-              <p className="text-xs text-red-600">
-                Error: {errorMessage}
-              </p>
+            <div className="space-y-4">
+              {isNetworkInspectionRequired ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Real Trefis JSON endpoints need to be discovered through browser network inspection.
+                  </p>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-semibold text-sm text-blue-800 dark:text-blue-200 mb-2">
+                      Setup Instructions:
+                    </h4>
+                    <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
+                      <li>Open browser DevTools (F12)</li>
+                      <li>Go to https://www.trefis.com/data/topic/actionable-analyses</li>
+                      <li>Filter Network tab for XHR/Fetch requests</li>
+                      <li>Find JSON requests returning analysis data</li>
+                      <li>Copy exact URLs and headers</li>
+                      <li>Update server/trefis-service.ts with real endpoints</li>
+                    </ol>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Unable to load authentic Trefis analysis data from configured endpoints.
+                </p>
+              )}
+              <details className="text-xs">
+                <summary className="cursor-pointer text-muted-foreground">Technical Details</summary>
+                <p className="mt-2 text-red-600 font-mono">
+                  {errorMessage}
+                </p>
+              </details>
             </div>
           </CardContent>
         </Card>

@@ -101,26 +101,43 @@ export function TrefisOverview() {
 
   if (hasError) {
     const errorMessage = defenseError?.message || healthError?.message || energyError?.message || 'Unknown error';
+    const isNetworkInspectionRequired = errorMessage.includes('Network inspection required');
     
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-600">
             <AlertCircle className="w-5 h-5" />
-            Trefis Market Data Unavailable
+            Trefis Market Data Setup Required
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              {errorMessage.includes('Network inspection required') 
-                ? 'Trefis JSON endpoints need to be reverse-engineered through browser network inspection.'
-                : 'Unable to load authentic Trefis best/worst performer data from discovered endpoints.'
-              }
-            </p>
-            <p className="text-xs text-red-600">
-              Error: {errorMessage}
-            </p>
+          <div className="space-y-4">
+            {isNetworkInspectionRequired ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Real Trefis JSON endpoints must be discovered via browser network inspection.
+                </p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="font-semibold text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    Setup Required:
+                  </h4>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    Use browser DevTools to discover working Trefis API endpoints, then update the service configuration.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Unable to load authentic Trefis market performance data from configured endpoints.
+              </p>
+            )}
+            <details className="text-xs">
+              <summary className="cursor-pointer text-muted-foreground">Technical Details</summary>
+              <p className="mt-2 text-red-600 font-mono">
+                {errorMessage}
+              </p>
+            </details>
           </div>
         </CardContent>
       </Card>

@@ -70,129 +70,136 @@ async function saveToCache(sector: string, data: TrefisSectorData): Promise<void
 }
 
 /**
- * Fetch authentic Trefis analysis data from reverse-engineered JSON endpoints
- * These endpoints were discovered by inspecting network calls on Trefis topic pages
+ * Fetch authentic Trefis analysis data from real JSON endpoints
+ * 
+ * SETUP REQUIRED - FOLLOW THESE STEPS:
+ * 
+ * Step 1: Network Inspection to Discover Real Endpoints
+ *   1. Open browser DevTools
+ *   2. Go to https://www.trefis.com/data/topic/actionable-analyses
+ *   3. Open Network tab, filter for XHR/Fetch requests
+ *   4. Look for JSON requests that return analysis data
+ *   5. Copy the exact URL, headers, and parameters
+ *   6. Repeat for https://www.trefis.com/data/topic/featured
+ * 
+ * Step 2: Update the REAL_ENDPOINTS configuration below
+ *   - Replace placeholder URLs with discovered endpoints
+ *   - Add any required authentication headers
+ *   - Update query parameters as needed
+ * 
  * @param sector - Target sector (health, defense, energy)
- * @returns Promise<TrefisSectorData> - Structured analysis data from Trefis JSON APIs
+ * @returns Promise<TrefisSectorData> - Structured analysis data from real Trefis APIs
  */
 export async function fetchAuthenticTrefisData(sector: string): Promise<TrefisSectorData> {
   try {
-    // Check cache first - return cached data if valid
+    // Check cache first (24-hour expiration)
     const cachedData = await getCachedData(sector);
     if (cachedData) {
+      console.log(`✅ Using cached Trefis data for ${sector} sector`);
       return cachedData;
     }
 
-    console.log(`🔍 Fetching authentic Trefis data from JSON endpoints for sector: ${sector}`);
-    
-    // Reverse-engineered JSON endpoints from network inspection
-    // TODO: These endpoints need to be discovered by inspecting network calls on:
-    // https://www.trefis.com/data/topic/actionable-analyses
-    // https://www.trefis.com/data/topic/featured
-    
-    const baseUrl = 'https://www.trefis.com';
-    
-    // Standard headers to mimic browser requests
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Accept': 'application/json, text/plain, */*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-      'Pragma': 'no-cache',
-      'Referer': 'https://www.trefis.com/data/topic/actionable-analyses'
+    console.log(`🔍 Attempting to fetch from REAL Trefis JSON endpoints for ${sector}...`);
+
+    // STEP 2: REPLACE THESE WITH REAL ENDPOINTS DISCOVERED VIA NETWORK INSPECTION
+    // Current endpoints are placeholders - they will fail until updated with real URLs
+    const REAL_ENDPOINTS = {
+      actionable: `https://www.trefis.com/api/PLACEHOLDER_NEEDS_DISCOVERY/actionable?sector=${sector}`,
+      featured: `https://www.trefis.com/api/PLACEHOLDER_NEEDS_DISCOVERY/featured?sector=${sector}`
     };
 
-    // Attempt to discover JSON endpoints - these URLs need to be reverse-engineered
-    // Common patterns for API endpoints based on typical SPA architectures:
-    const possibleEndpoints = [
-      // Pattern 1: Direct API with query parameters
-      `${baseUrl}/api/topic/analysis?actionable=true&sector=${sector}`,
-      `${baseUrl}/api/topic/analysis?featured=true&sector=${sector}`,
+    // STEP 2: ADD REAL HEADERS DISCOVERED VIA NETWORK INSPECTION
+    // These headers need to be updated based on what Trefis actually requires
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'application/json, text/javascript, */*; q=0.01',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://www.trefis.com/data/topic/actionable-analyses',
+      'X-Requested-With': 'XMLHttpRequest',
+      // UNCOMMENT AND UPDATE THESE WHEN DISCOVERED:
+      // 'Authorization': 'Bearer REAL_TOKEN_FROM_NETWORK_INSPECTION',
+      // 'Cookie': 'session_id=REAL_SESSION_FROM_NETWORK_INSPECTION',
+      // 'X-Trefis-Token': 'REAL_TREFIS_TOKEN_FROM_NETWORK_INSPECTION',
+      // 'X-API-Key': 'REAL_API_KEY_FROM_NETWORK_INSPECTION'
+    };
+
+    // Fetch actionable analyses from real endpoint
+    let actionableAnalyses: TrefisAnalysis[] = [];
+    try {
+      console.log(`📡 Calling REAL actionable endpoint: ${REAL_ENDPOINTS.actionable}`);
       
-      // Pattern 2: RESTful API structure  
-      `${baseUrl}/api/topics/actionable-analyses/${sector}`,
-      `${baseUrl}/api/topics/featured/${sector}`,
-      
-      // Pattern 3: GraphQL or specialized endpoints
-      `${baseUrl}/data/api/actionable?sector=${sector}`,
-      `${baseUrl}/data/api/featured?sector=${sector}`,
-      
-      // Pattern 4: Static JSON files
-      `${baseUrl}/data/topic/actionable-analyses.json?sector=${sector}`,
-      `${baseUrl}/data/topic/featured.json?sector=${sector}`
-    ];
-    
-    console.log(`🔍 Attempting to discover JSON endpoints for ${sector}...`);
-    
-    let actionableData: any[] = [];
-    let featuredData: any[] = [];
-    
-    // Try to fetch actionable analyses
-    for (const endpoint of possibleEndpoints.filter(url => url.includes('actionable'))) {
-      try {
-        console.log(`📡 Trying actionable endpoint: ${endpoint}`);
-        const response = await fetch(endpoint, { headers });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data) && data.length > 0) {
-            actionableData = data;
-            console.log(`✅ Found actionable data at ${endpoint}: ${data.length} items`);
-            break;
-          }
-        }
-      } catch (error) {
-        console.log(`❌ Failed to fetch from ${endpoint}: ${error}`);
+      const actionableResponse = await fetch(REAL_ENDPOINTS.actionable, {
+        headers,
+        timeout: 15000
+      });
+
+      if (actionableResponse.ok) {
+        const actionableJson = await actionableResponse.json();
+        actionableAnalyses = parseAnalysesFromJson(actionableJson, sector);
+        console.log(`✅ Retrieved ${actionableAnalyses.length} actionable analyses from real endpoint`);
+      } else {
+        console.log(`❌ Real actionable endpoint failed: ${actionableResponse.status} ${actionableResponse.statusText}`);
+        console.log(`📋 Response headers:`, actionableResponse.headers);
       }
+    } catch (error) {
+      console.log(`❌ Real actionable endpoint error: ${error.message}`);
     }
-    
-    // Try to fetch featured analyses
-    for (const endpoint of possibleEndpoints.filter(url => url.includes('featured'))) {
-      try {
-        console.log(`📡 Trying featured endpoint: ${endpoint}`);
-        const response = await fetch(endpoint, { headers });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (Array.isArray(data) && data.length > 0) {
-            featuredData = data;
-            console.log(`✅ Found featured data at ${endpoint}: ${data.length} items`);
-            break;
-          }
-        }
-      } catch (error) {
-        console.log(`❌ Failed to fetch from ${endpoint}: ${error}`);
+
+    // Fetch featured analyses from real endpoint
+    let featuredAnalyses: TrefisAnalysis[] = [];
+    try {
+      console.log(`📡 Calling REAL featured endpoint: ${REAL_ENDPOINTS.featured}`);
+      
+      const featuredResponse = await fetch(REAL_ENDPOINTS.featured, {
+        headers,
+        timeout: 15000
+      });
+
+      if (featuredResponse.ok) {
+        const featuredJson = await featuredResponse.json();
+        featuredAnalyses = parseAnalysesFromJson(featuredJson, sector);
+        console.log(`✅ Retrieved ${featuredAnalyses.length} featured analyses from real endpoint`);
+      } else {
+        console.log(`❌ Real featured endpoint failed: ${featuredResponse.status} ${featuredResponse.statusText}`);
+        console.log(`📋 Response headers:`, featuredResponse.headers);
       }
+    } catch (error) {
+      console.log(`❌ Real featured endpoint error: ${error.message}`);
     }
-    
-    console.log(`📊 Discovered data - Actionable: ${actionableData.length}, Featured: ${featuredData.length}`);
-    
-    // Parse and structure the response data
-    const actionable = parseAnalysesFromJson(actionableData, sector);
-    const featured = parseAnalysesFromJson(featuredData, sector);
-    
-    // Calculate best/worst performers from combined data
-    const allAnalyses = [...actionable, ...featured];
+
+    // Calculate best/worst performers from retrieved data
+    const allAnalyses = [...actionableAnalyses, ...featuredAnalyses];
     const bestWorst = calculateBestWorst(allAnalyses);
-    
+
     const data: TrefisSectorData = {
-      actionable,
-      featured,
+      actionable: actionableAnalyses,
+      featured: featuredAnalyses,
       bestWorst
     };
     
-    // If no data was extracted, fail without fallback (per user requirements)
+    // Strict no-fallback policy: fail if no real data retrieved
     if (!data.actionable.length && !data.featured.length) {
-      throw new Error('No authentic Trefis data could be extracted from discovered JSON endpoints. Network inspection required to identify correct API endpoints.');
+      throw new Error(`Network inspection required: Real Trefis JSON endpoints must be discovered via browser DevTools.
+
+INSTRUCTIONS:
+1. Open DevTools on https://www.trefis.com/data/topic/actionable-analyses
+2. Go to Network tab, filter for XHR/Fetch requests  
+3. Look for JSON requests returning analysis data
+4. Copy the exact URL and headers
+5. Update REAL_ENDPOINTS in server/trefis-service.ts
+6. Add any required authorization headers
+
+Current placeholder endpoints failed: ${REAL_ENDPOINTS.actionable}, ${REAL_ENDPOINTS.featured}`);
     }
     
     // Cache the authentic data for 24 hours
     await saveToCache(sector, data);
+    console.log(`💾 Cached authentic Trefis data for ${sector} sector`);
     
     return data;
     
   } catch (error) {
-    console.error('Error fetching authentic Trefis data from JSON endpoints:', error);
+    console.error(`❌ Error fetching from real Trefis JSON endpoints:`, error);
     throw error;
   }
 }

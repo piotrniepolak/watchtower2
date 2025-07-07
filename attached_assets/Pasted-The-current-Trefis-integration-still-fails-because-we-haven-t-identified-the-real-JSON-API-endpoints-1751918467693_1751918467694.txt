@@ -1,0 +1,27 @@
+The current Trefis integration still fails because we haven’t identified the real JSON API endpoints—our guessed URL patterns return no data.
+
+**Step 1: Identify the Real Endpoints**  
+– In browser DevTools, load https://www.trefis.com/data/topic/actionable-analyses and https://www.trefis.com/data/topic/featured.  
+– In the Network tab, filter for XHR/Fetch calls.  
+– Find the request URL (including full path, query parameters, and any required headers or auth tokens) that returns the raw JSON list of analyses.  
+
+**Step 2: Update pages/api/trefis.js**  
+1. Remove all placeholder URL-pattern logic.  
+2. For `?type=actionable` and `?type=featured`, fetch **the exact JSON endpoint** you discovered.  
+3. Pass through any necessary headers (e.g. `Authorization`, `Cookie`, or custom `X-Trefis-Token`).  
+4. Parse and return an array of `{ title, url }`, where `url` is the full Trefis link (`https://www.trefis.com/data/companies/.../no-login-required/...`).  
+5. For `?type=bestworst`, call both endpoints, merge returned objects (which include a numeric `value`), sort by `value`, and return `{ best, worst }`.  
+6. Cache each sector’s JSON in `/data/trefis-<sector>.cache.json` once per day at midnight UTC.
+
+**Step 3: Frontend Components**  
+– **TrefisAnalyses**: ensure it calls `/api/trefis?sector=health&type=actionable` etc., renders “No analyses available” if empty, and opens a modal with the `url`.  
+– **TrefisOverview**: import and render in `/pages/index.js`, call `?type=bestworst`, display six cards, each opening its `url`.
+
+**Step 4: Generate Code Diff**  
+– pages/api/trefis.js (full rewrite to fetch real JSON)  
+– Remove Puppeteer, Cheerio, and any unused dependencies in package.json  
+– components/trefis/TrefisAnalyses.js & TrefisOverview.js (update fetch URLs & error messages)  
+– pages/index.js (ensure `<TrefisOverview />` is rendered)  
+– Cron snippet (verify midnight UTC cache priming)
+
+Include inline comments on each logical block so we can review exactly how you wire in the real Trefis API call.
