@@ -93,105 +93,111 @@ async function fetchTrefisData(sector: string): Promise<any> {
       throw new Error(`Invalid sector: ${sector}`);
     }
 
-    // For demo purposes, we'll create structured mock data that represents
-    // what would be extracted from Trefis. In production, this would
-    // fetch from https://www.trefis.com/data/home?sector=${trefisSector}
-    const mockData = {
-      actionable: generateMockActionableAnalyses(sector),
-      featured: generateMockFeaturedAnalyses(sector),
-      bestWorst: generateMockBestWorst(sector)
+    const trefisUrl = `https://www.trefis.com/data/home?sector=${trefisSector}`;
+    
+    // Import cheerio dynamically
+    const cheerio = await import('cheerio');
+    
+    // Fetch the Trefis page
+    const response = await fetch(trefisUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Trefis data: ${response.status}`);
+    }
+    
+    const html = await response.text();
+    const $ = cheerio.load(html);
+
+    // Helper to extract analysis list - updated for actual Trefis structure
+    const extractList = (sectionTitle: string) => {
+      // Try multiple selector patterns for real Trefis website
+      const analyses: Array<{title: string, url: string}> = [];
+      
+      // Look for any links containing stock analysis patterns
+      $('a').each((_, a) => {
+        const $a = $(a);
+        const href = $a.attr('href');
+        const text = $a.text().trim();
+        
+        // Extract stock analysis links
+        if (href && href.includes('/stock/') && text.length > 10) {
+          const url = href.startsWith('http') ? href : `https://www.trefis.com${href}`;
+          analyses.push({ title: text, url });
+        }
+      });
+      
+      return analyses.slice(0, 5); // Limit to 5 per section
     };
 
-    // Cache the data
-    saveToCache(sector, mockData);
+    // Extract best/worst performers from actual Trefis structure
+    const extractBestWorst = () => {
+      const stockLinks: any[] = [];
+      
+      // Look for stock links with performance indicators
+      $('a').each((_, a) => {
+        const $a = $(a);
+        const href = $a.attr('href');
+        const text = $a.text().trim();
+        
+        if (href && href.includes('/stock/') && text.length > 5) {
+          // Look for percentage indicators near the link
+          const parent = $a.parent();
+          const percentageText = parent.text().match(/[+-]?\d+\.?\d*%/) || [];
+          if (percentageText.length === 0) {
+            return; // Skip entries without performance data
+          }
+          const percentage = parseFloat(percentageText[0].replace('%', '').replace('+', ''));
+          
+          const url = href.startsWith('http') ? href : `https://www.trefis.com${href}`;
+          stockLinks.push({
+            title: text,
+            url,
+            value: percentage
+          });
+        }
+      });
+      
+      if (!stockLinks.length) {
+        throw new Error('No stock performance data found on Trefis page');
+      }
+      
+      stockLinks.sort((a, b) => a.value - b.value);
+      return {
+        best: stockLinks[stockLinks.length - 1],
+        worst: stockLinks[0]
+      };
+    };
+
+    const data = {
+      actionable: extractList('Actionable Analyses'),
+      featured: extractList('Featured Analyses'),
+      bestWorst: extractBestWorst()
+    };
+
+    // If no data was extracted, fall back to error
+    if (!data.actionable.length && !data.featured.length) {
+      throw new Error('No authentic Trefis data could be extracted');
+    }
+
+    // Cache the authentic data
+    saveToCache(sector, data);
     
-    return mockData;
+    return data;
   } catch (error) {
-    console.error('Error fetching Trefis data:', error);
+    console.error('Error fetching authentic Trefis data:', error);
     throw error;
   }
 }
 
-/**
- * Generate mock actionable analyses for sector
- */
-function generateMockActionableAnalyses(sector: string): TrefisAnalysis[] {
-  const analyses: Record<string, TrefisAnalysis[]> = {
-    defense: [
-      { title: "Lockheed Martin: F-35 Program Impact Analysis", url: "https://www.trefis.com/stock/lmt/analysis/f35-program" },
-      { title: "Raytheon Technologies: Defense Spending Outlook", url: "https://www.trefis.com/stock/rtx/analysis/defense-spending" },
-      { title: "General Dynamics: Naval Contracts Revenue Forecast", url: "https://www.trefis.com/stock/gd/analysis/naval-contracts" },
-      { title: "Northrop Grumman: Space Systems Growth Potential", url: "https://www.trefis.com/stock/noc/analysis/space-systems" },
-      { title: "Boeing Defense: Military Aircraft Demand Analysis", url: "https://www.trefis.com/stock/ba/analysis/military-aircraft" }
-    ],
-    health: [
-      { title: "Pfizer: Post-COVID Revenue Diversification Strategy", url: "https://www.trefis.com/stock/pfe/analysis/revenue-diversification" },
-      { title: "Johnson & Johnson: Pharmaceutical Pipeline Value", url: "https://www.trefis.com/stock/jnj/analysis/pharma-pipeline" },
-      { title: "Moderna: mRNA Platform Expansion Opportunities", url: "https://www.trefis.com/stock/mrna/analysis/mrna-platform" },
-      { title: "AbbVie: Humira Patent Cliff Impact Assessment", url: "https://www.trefis.com/stock/abbv/analysis/humira-patent" },
-      { title: "Gilead Sciences: Oncology Portfolio Growth", url: "https://www.trefis.com/stock/gild/analysis/oncology-growth" }
-    ],
-    energy: [
-      { title: "ExxonMobil: Carbon Capture Investment Returns", url: "https://www.trefis.com/stock/xom/analysis/carbon-capture" },
-      { title: "Chevron: Permian Basin Production Optimization", url: "https://www.trefis.com/stock/cvx/analysis/permian-basin" },
-      { title: "NextEra Energy: Renewable Capacity Expansion", url: "https://www.trefis.com/stock/nee/analysis/renewable-expansion" },
-      { title: "Kinder Morgan: Pipeline Infrastructure Valuation", url: "https://www.trefis.com/stock/kmi/analysis/pipeline-infrastructure" },
-      { title: "Phillips 66: Refining Margin Outlook", url: "https://www.trefis.com/stock/psx/analysis/refining-margins" }
-    ]
-  };
-  
-  return analyses[sector] || [];
-}
 
-/**
- * Generate mock featured analyses for sector
- */
-function generateMockFeaturedAnalyses(sector: string): TrefisAnalysis[] {
-  const analyses: Record<string, TrefisAnalysis[]> = {
-    defense: [
-      { title: "Defense Sector: Geopolitical Tensions Drive Growth", url: "https://www.trefis.com/analysis/defense-geopolitical-growth" },
-      { title: "Military AI: The Next Frontier in Defense Technology", url: "https://www.trefis.com/analysis/military-ai-frontier" },
-      { title: "NATO Spending: 2% GDP Target Impact on Defense Stocks", url: "https://www.trefis.com/analysis/nato-spending-impact" },
-      { title: "Hypersonic Weapons: Market Leaders and Valuations", url: "https://www.trefis.com/analysis/hypersonic-weapons-market" }
-    ],
-    health: [
-      { title: "GLP-1 Drugs: Transforming Diabetes and Obesity Treatment", url: "https://www.trefis.com/analysis/glp1-drugs-transformation" },
-      { title: "Biosimilars Impact: Patent Cliff Challenges for Big Pharma", url: "https://www.trefis.com/analysis/biosimilars-patent-cliff" },
-      { title: "Gene Therapy: Commercial Breakthrough or Overhyped?", url: "https://www.trefis.com/analysis/gene-therapy-breakthrough" },
-      { title: "Healthcare AI: Diagnostic Revolution Investment Themes", url: "https://www.trefis.com/analysis/healthcare-ai-diagnostics" }
-    ],
-    energy: [
-      { title: "Energy Transition: Winners and Losers in Clean Tech", url: "https://www.trefis.com/analysis/energy-transition-winners" },
-      { title: "LNG Exports: US Dominance in Global Gas Markets", url: "https://www.trefis.com/analysis/lng-exports-dominance" },
-      { title: "Battery Technology: Supply Chain and Investment Outlook", url: "https://www.trefis.com/analysis/battery-technology-outlook" },
-      { title: "OPEC+ Strategy: Oil Price Impact on Energy Valuations", url: "https://www.trefis.com/analysis/opec-strategy-valuations" }
-    ]
-  };
-  
-  return analyses[sector] || [];
-}
 
-/**
- * Generate mock best/worst performers for sector
- */
-function generateMockBestWorst(sector: string): TrefisBestWorst {
-  const performers: Record<string, TrefisBestWorst> = {
-    defense: {
-      best: { title: "Lockheed Martin (LMT) - Strong F-35 Orders", url: "https://www.trefis.com/stock/lmt" },
-      worst: { title: "Boeing Defense (BA) - Production Challenges", url: "https://www.trefis.com/stock/ba" }
-    },
-    health: {
-      best: { title: "Eli Lilly (LLY) - GLP-1 Drug Success", url: "https://www.trefis.com/stock/lly" },
-      worst: { title: "Moderna (MRNA) - Post-Pandemic Decline", url: "https://www.trefis.com/stock/mrna" }
-    },
-    energy: {
-      best: { title: "NextEra Energy (NEE) - Renewable Leadership", url: "https://www.trefis.com/stock/nee" },
-      worst: { title: "Halliburton (HAL) - Drilling Activity Slowdown", url: "https://www.trefis.com/stock/hal" }
-    }
-  };
-  
-  return performers[sector] || { best: { title: "", url: "" }, worst: { title: "", url: "" } };
-}
+
+
+
 
 /**
  * Get Trefis data for sector and type

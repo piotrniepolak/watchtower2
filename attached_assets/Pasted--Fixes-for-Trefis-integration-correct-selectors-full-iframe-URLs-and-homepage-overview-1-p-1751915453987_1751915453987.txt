@@ -1,0 +1,215 @@
+// Fixes for Trefis integration: correct selectors, full iframe URLs, and homepage overview
+
+// 1. pages/api/trefis.js
+// Replace existing code with updated parsing logic
+
+// File: pages/api/trefis.js
+import fetch from 'node-fetch';
+import cheerio from 'cheerio';
+import fs from 'fs';
+import path from 'path';
+
+const CACHE_DIR = path.resolve('./data');
+if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR);
+
+export default async function handler(req, res) {
+  const { sector, type } = req.query;
+  const cacheFile = path.join(CACHE_DIR, `trefis-${sector}.cache.html`);
+
+  let html;
+  // Load cache if fresh, else fetch
+  const now = Date.now();
+  if (fs.existsSync(cacheFile) && now - fs.statSync(cacheFile).mtimeMs < 24 * 60 * 60 * 1000) {
+    html = fs.readFileSync(cacheFile, 'utf8');
+  } else {
+    const trefisUrl = `https://www.trefis.com/data/home?sector=${sector}`;
+    const response = await fetch(trefisUrl);
+    html = await response.text();
+    fs.writeFileSync(cacheFile, html);
+  }
+
+  const $ = cheerio.load(html);
+
+  // Helper to extract analysis list
+  const extractList = (sectionTitle) => {
+    // Trefis markup: <h2>Actionable Analyses</h2> followed by <ul class="analysis-list">
+    const header = $(`h2:contains("${sectionTitle}")`).first();
+    const list = header.next('ul.analysis-list');
+    return list.find('li a').map((_, a) => {
+      const $a = $(a);
+      const title = $a.text().trim();
+      const relUrl = $a.attr('href');
+      const url = relUrl.startsWith('http') ? relUrl : `https://www.trefis.com${relUrl}`;
+      return { title, url };
+    }).get();
+  };
+
+  if (type === 'actionable' || type === 'featured') {
+    const items = extractList(type === 'actionable' ? 'Actionable Analyses' : 'Featured Analyses');
+    return res.status(200).json(items);
+  }
+
+  if (type === 'bestworst') {
+    // Extract companies from both lists and sort by parsed value
+    const parseValue = (el) => {
+      // within <li>, a <span class="value">+12%</span>
+      const txt = $(el).find('span.value').text().replace('%','').replace('+','');
+      return parseFloat(txt) || 0;
+    };
+    const all = [];
+    ['Actionable Analyses', 'Featured Analyses'].forEach((section) => {
+      const header = $(`h2:contains("${section}")`).first();
+      header.next('ul.analysis-list').find('li').each((_, li) => {
+        const $li = $(li);
+        const a = $li.find('a');
+        const rel = a.attr('href');
+        const url = rel.startsWith('http') ? rel : `https://www.trefis.com${rel}`;
+        all.push({
+          title: a.text().trim(),
+          url,
+          value: parseValue(li)
+        });
+      });
+    });
+    if (!all.length) return res.status(500).json({ error: 'No data' });
+    all.sort((a,b) => a.value - b.value);
+    const best = all[all.length - 1];
+    const worst = all[0];
+    return res.status(200).json({ best, worst });
+  }
+
+  res.status(400).json({ error: 'Invalid type' });
+}
+
+
+// 2. components/trefis/TrefisAnalyses.js
+// Update component to display titles and correct iframe src
+
+// File: components/trefis/TrefisAnalyses.js
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
+
+export default function TrefisAnalyses({ sector }) {
+  const [actionable, setActionable] = useState([]);
+  const [featured, setFeatured] = useState([]);
+  const [openUrl, setOpenUrl] = useState(null);
+
+  useEffect(() => {
+    fetch(`/api/trefis?sector=${sector}&type=actionable`)
+      .then(r => r.json()).then(setActionable);
+    fetch(`/api/trefis?sector=${sector}&type=featured`)
+      .then(r => r.json()).then(setFeatured);
+  }, [sector]);
+
+  return (
+    <div>
+      <section>
+        <h3>Actionable Analyses</h3>
+        <ul className="space-y-2">
+          {actionable.map(item => (
+            <li key={item.url}>
+              <Button variant="link" onClick={() => setOpenUrl(item.url)}>
+                {item.title}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-6">
+        <h3>Featured Analyses</h3>
+        <ul className="space-y-2">
+          {featured.map(item => (
+            <li key={item.url}>
+              <Button variant="link" onClick={() => setOpenUrl(item.url)}>
+                {item.title}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <Modal isOpen={!!openUrl} onClose={() => setOpenUrl(null)}>
+        <iframe
+          src={openUrl}
+          className="w-full h-[80vh]"
+          frameBorder="0"
+        />
+      </Modal>
+    </div>
+  );
+}
+
+
+// 3. components/trefis/TrefisOverview.js
+// New component for homepage best/worst grid
+
+// File: components/trefis/TrefisOverview.js
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Modal } from '@/components/ui/modal';
+
+export default function TrefisOverview() {
+  const sectors = ['defense', 'health', 'energy'];
+  const [data, setData] = useState({});
+  const [openUrl, setOpenUrl] = useState(null);
+
+  useEffect(() => {
+    Promise.all(sectors.map(sec =>
+      fetch(`/api/trefis?sector=${sec}&type=bestworst`).then(r => r.json())
+        .then(d => ({ [sec]: d }))
+    )).then(arr => {
+      const merged = Object.assign({}, ...arr);
+      setData(merged);
+    });
+  }, []);
+
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-4">
+        {sectors.flatMap(sec => {
+          const secData = data[sec];
+          if (!secData) return [];
+          return [
+            { ...secData.best, sector: sec, label: 'Best' },
+            { ...secData.worst, sector: sec, label: 'Worst' }
+          ];
+        }).map(item => (
+          <Card key={item.url} onClick={() => setOpenUrl(item.url)} className="cursor-pointer">
+            <CardContent>
+              <p className="text-sm font-semibold">{item.label} ({item.title})</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Modal isOpen={!!openUrl} onClose={() => setOpenUrl(null)}>
+        <iframe
+          src={openUrl}
+          className="w-full h-[80vh]"
+          frameBorder="0"
+        />
+      </Modal>
+    </>
+  );
+}
+
+
+// 4. pages/index.js
+// Import and render the overview
+
+// File: pages/index.js
+import TrefisOverview from '@/components/trefis/TrefisOverview';
+
+export default function Home() {
+  return (
+    <main>
+      {/* ... existing homepage content ... */}
+      <section className="mt-10">
+        <h2 className="text-xl font-bold mb-4">Sector Performance Overview</h2>
+        <TrefisOverview />
+      </section>
+    </main>
+  );
+}
