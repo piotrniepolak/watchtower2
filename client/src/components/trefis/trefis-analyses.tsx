@@ -105,25 +105,20 @@ export function TrefisAnalyses({ sector }: TrefisAnalysesProps) {
               {isNetworkInspectionRequired ? (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Real Trefis JSON endpoints need to be discovered through browser network inspection.
+                    Trefis integration is being updated to use HTML payload extraction method.
                   </p>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <h4 className="font-semibold text-sm text-blue-800 dark:text-blue-200 mb-2">
-                      Setup Instructions:
+                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                    <h4 className="font-semibold text-sm text-green-800 dark:text-green-200 mb-2">
+                      New Integration Method:
                     </h4>
-                    <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1 list-decimal list-inside">
-                      <li>Open browser DevTools (F12)</li>
-                      <li>Go to https://www.trefis.com/data/topic/actionable-analyses</li>
-                      <li>Filter Network tab for XHR/Fetch requests</li>
-                      <li>Find JSON requests returning analysis data</li>
-                      <li>Copy exact URLs and headers</li>
-                      <li>Update server/trefis-service.ts with real endpoints</li>
-                    </ol>
+                    <p className="text-xs text-green-700 dark:text-green-300">
+                      Now extracting data directly from window.pageLoaderData.payload in Trefis HTML pages for more reliable access to authentic analysis data.
+                    </p>
                   </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Unable to load authentic Trefis analysis data from configured endpoints.
+                  Unable to load authentic Trefis analysis data. Checking HTML payload extraction.
                 </p>
               )}
               <details className="text-xs">

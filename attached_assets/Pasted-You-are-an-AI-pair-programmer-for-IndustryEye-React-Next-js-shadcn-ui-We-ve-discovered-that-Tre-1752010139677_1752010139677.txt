@@ -1,0 +1,45 @@
+You are an AI pair-programmer for IndustryEye (React/Next.js + shadcn/ui). We’ve discovered that Trefis embeds its topic data in the HTML via `window.pageLoaderData.payload`. Please update our Trefis API and frontend to use this:
+
+1. pages/api/trefis.js  
+   • Remove Cheerio, Puppeteer, placeholder code and dependencies.  
+   • For actionable & featured:  
+     - fetch the full HTML from  
+         https://www.trefis.com/data/topic/actionable-analyses  
+       or  
+         https://www.trefis.com/data/topic/featured  
+     - extract the JSON blob with:  
+       ```js
+       const match = html.match(/window\.pageLoaderData\.payload\s*=\s*({[\s\S]*?});/);
+       const payload = JSON.parse(match[1]);
+       const items = payload.contents.map(i => ({
+         title: i.title.trim(),
+         url: i.link
+       }));
+       ```  
+     - return `items` as JSON.  
+   • For bestworst:  
+     - call both endpoints, pull their `payload.contents` arrays (which include `value`), merge, sort by `value`, and return `{ best, worst }` as `{ title, url }`.  
+   • Cache each sector’s JSON in `/data/trefis-<sector>.cache.json` at midnight UTC via your existing cron job.  
+   • On any error or missing match, return HTTP 500 with `{ error: 'Failed to extract Trefis payload' }`.
+
+2. Frontend  
+   • TrefisAnalyses (in `/components/trefis/TrefisAnalyses.js`): no JSX changes; just ensure it calls  
+     ```js
+     fetch(`/api/trefis?sector=${sector}&type=actionable`)
+     ```  
+     maps the array of `{ title, url }`, shows “No actionable analyses available” if empty, and opens `url` in a modal iframe.  
+   • TrefisOverview (in `/components/trefis/TrefisOverview.js`): call `?type=bestworst`, display six cards, clicking each opens a modal iframe.  
+   • Ensure `<TrefisOverview />` is imported & rendered in `/pages/index.js`.
+
+3. Dependencies  
+   • Remove Puppeteer, Cheerio, any unused libraries.  
+   • Add no new heavy dependencies—just use built-in `fetch` and `JSON.parse`.
+
+Please generate the full code diff for:  
+- `pages/api/trefis.js`  
+- `components/trefis/TrefisAnalyses.js` & `TrefisOverview.js` (if needed)  
+- `/pages/index.js` import/render changes  
+- `package.json` cleanup  
+- Cron snippet (unchanged, just verify it hits all three `?type=actionable|featured|bestworst` endpoints at midnight UTC)
+
+Include inline comments explaining each block, especially the RegExp extraction.  

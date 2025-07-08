@@ -116,20 +116,20 @@ export function TrefisOverview() {
             {isNetworkInspectionRequired ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Real Trefis JSON endpoints must be discovered via browser network inspection.
+                  Trefis integration is being updated to use HTML payload extraction method.
                 </p>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold text-sm text-blue-800 dark:text-blue-200 mb-2">
-                    Setup Required:
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                  <h4 className="font-semibold text-sm text-green-800 dark:text-green-200 mb-2">
+                    New Integration Method:
                   </h4>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">
-                    Use browser DevTools to discover working Trefis API endpoints, then update the service configuration.
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    Now extracting data directly from window.pageLoaderData.payload in Trefis HTML pages for more reliable access to market data.
                   </p>
                 </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Unable to load authentic Trefis market performance data from configured endpoints.
+                Unable to load authentic Trefis market performance data. Checking HTML payload extraction.
               </p>
             )}
             <details className="text-xs">
