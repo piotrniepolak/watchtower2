@@ -1,0 +1,72 @@
+You’re at the point where no amount of blind “guessing” in code will work—you *must* grab the exact JSON API calls that Trefis itself is firing in your browser. Here’s exactly what to do next:
+
+---
+
+## 1. Manually Discover the Real Endpoints
+
+1. **Open your browser’s DevTools**
+
+   * Chrome/Edge: F12 or Cmd+Option+I
+   * Firefox: Ctrl+Shift+I / Cmd+Option+I
+
+2. **Load the topic page**
+
+   * For actionable:
+     `https://www.trefis.com/data/topic/actionable-analyses`
+   * For featured:
+     `https://www.trefis.com/data/topic/featured`
+
+3. **Switch to the Network tab and filter for “XHR” or “Fetch”**
+
+   * Clear existing logs, then reload the page.
+
+4. **Locate the JSON request**
+
+   * Look for a request whose response payload is a JSON array of analyses.
+   * Copy the full request URL (including path and query-string).
+   * Copy any special request headers you see (e.g. `Authorization`, `X-Trefis-Token`, or cookies).
+
+5. **Verify in your console**
+
+   * In DevTools Console, you can try:
+
+     ```js
+     fetch('PASTE_THE_FULL_URL_HERE', {
+       headers: { /* PASTE_THE_HEADERS_OBJECT */ }
+     })
+     .then(r=>r.json())
+     .then(console.log)
+     ```
+   * You should see an array of objects like `{ title: "...", url: "...", value: 12.3 }`.
+
+---
+
+## 2. Share the Discovered Endpoint Details
+
+Post back here with:
+
+* The exact URL(s) you found for both actionable and featured analyses.
+* Any non-standard headers required.
+
+Once I have those, I’ll:
+
+1. Remove our discovery stubs and placeholder code.
+2. Wire the real URL + headers into `/pages/api/trefis.js`.
+3. Ensure the front end lists show the proper titles and open the exact `url` in the popup modal.
+4. Verify the best/worst logic using the returned `value` fields.
+
+---
+
+## 3. After You’ve Gotten the Endpoint…
+
+Reply with something like:
+
+> **Actionable endpoint:**
+> `https://www.trefis.com/api/topic/…?sector=health&limit=50`
+> **Required headers:**
+> `{ "X-Trefis-Token": "abc123", "Cookie": "…" }`
+>
+> **Featured endpoint:**
+> `...`
+
+Then I’ll deliver the exact code diff to hook it up.

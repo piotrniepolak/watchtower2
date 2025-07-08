@@ -103,6 +103,13 @@ export async function fetchAuthenticTrefisData(sector: string): Promise<TrefisSe
 
     // STEP 2: REPLACE THESE WITH REAL ENDPOINTS DISCOVERED VIA NETWORK INSPECTION
     // Current endpoints are placeholders - they will fail until updated with real URLs
+    // 
+    // DISCOVERY INSTRUCTIONS:
+    // 1. Open DevTools on https://www.trefis.com/data/topic/actionable-analyses
+    // 2. Network tab → Filter XHR/Fetch → Reload page
+    // 3. Find JSON request returning analysis array
+    // 4. Copy exact URL and headers
+    // 5. Replace placeholders below
     const REAL_ENDPOINTS = {
       actionable: `https://www.trefis.com/api/PLACEHOLDER_NEEDS_DISCOVERY/actionable?sector=${sector}`,
       featured: `https://www.trefis.com/api/PLACEHOLDER_NEEDS_DISCOVERY/featured?sector=${sector}`
@@ -110,6 +117,8 @@ export async function fetchAuthenticTrefisData(sector: string): Promise<TrefisSe
 
     // STEP 2: ADD REAL HEADERS DISCOVERED VIA NETWORK INSPECTION
     // These headers need to be updated based on what Trefis actually requires
+    // 
+    // READY FOR REAL HEADERS - UPDATE WHEN DISCOVERED:
     const headers = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       'Accept': 'application/json, text/javascript, */*; q=0.01',
