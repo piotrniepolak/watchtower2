@@ -87,5 +87,29 @@ app.use((req, res, next) => {
     // Initialize daily brief scheduler
     const { dailyBriefScheduler } = await import('./daily-brief-scheduler.js');
     console.log('Daily intelligence brief scheduler started');
+    
+    const cron = await import('node-cron');
+    cron.schedule('0 0 * * *', async () => {
+      console.log('🕛 Starting midnight Trefis cache priming...');
+      try {
+        const sectors = ['defense', 'health', 'energy'];
+        const types = ['actionable', 'featured'];
+        
+        for (const sector of sectors) {
+          for (const type of types) {
+            const url = `http://localhost:5000/api/trefis?sector=${sector}&type=${type}`;
+            console.log(`📡 Priming cache: ${url}`);
+            await fetch(url);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+        console.log('✅ Trefis cache priming completed');
+      } catch (error) {
+        console.error('❌ Error during Trefis cache priming:', error);
+      }
+    }, {
+      timezone: 'UTC'
+    });
+    console.log('🕛 Trefis cache priming cron job scheduled for midnight UTC');
   });
 })();
