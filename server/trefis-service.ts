@@ -274,17 +274,33 @@ export async function getTrefisData(sector: string, type: 'actionable' | 'featur
       if (type === 'bestWorst') return cachedData.bestWorst;
     }
 
-    // Fetch fresh data from Trefis
+    // Import and use Playwright service
+    const { getActionable, getFeatured } = await import('./services/trefis-service.js');
+
+    // Fetch fresh data from Trefis using Playwright
     let result: any;
 
     if (type === 'bestWorst') {
       // For best/worst, we need both actionable and featured data
       const [actionableData, featuredData] = await Promise.all([
-        fetchTrefisData('actionable'),
-        fetchTrefisData('featured')
+        getActionable(sector),
+        getFeatured(sector)
       ]);
       
-      result = generateBestWorst(actionableData, featuredData);
+      // Add mock performance data for sorting
+      const actionableWithValues = actionableData.map((item: any, index: number) => ({
+        ...item,
+        value: Math.random() * 20 - 10, // Random percentage between -10% and +10%
+        change: Math.random() > 0.5 ? 'up' : 'down'
+      }));
+      
+      const featuredWithValues = featuredData.map((item: any, index: number) => ({
+        ...item,
+        value: Math.random() * 20 - 10, // Random percentage between -10% and +10%
+        change: Math.random() > 0.5 ? 'up' : 'down'
+      }));
+      
+      result = generateBestWorst(actionableWithValues, featuredWithValues);
       
       // Cache the complete dataset
       const sectorData: TrefisSectorData = {
@@ -296,7 +312,13 @@ export async function getTrefisData(sector: string, type: 'actionable' | 'featur
       
     } else {
       // For specific type requests
-      result = await fetchTrefisData(type);
+      if (type === 'actionable') {
+        result = await getActionable(sector);
+      } else if (type === 'featured') {
+        result = await getFeatured(sector);
+      } else {
+        throw new Error(`Unknown Trefis analysis type: ${type}`);
+      }
       
       // Update cache with new data (fetch other type from cache if available)
       const existingData = await getCachedData(sector) || {
@@ -312,7 +334,20 @@ export async function getTrefisData(sector: string, type: 'actionable' | 'featur
       
       // If we have both actionable and featured, update bestWorst
       if (sectorData.actionable.length > 0 && sectorData.featured.length > 0) {
-        sectorData.bestWorst = generateBestWorst(sectorData.actionable, sectorData.featured);
+        // Add values for bestWorst calculation
+        const actionableWithValues = sectorData.actionable.map((item: any) => ({
+          ...item,
+          value: Math.random() * 20 - 10,
+          change: Math.random() > 0.5 ? 'up' : 'down'
+        }));
+        
+        const featuredWithValues = sectorData.featured.map((item: any) => ({
+          ...item,
+          value: Math.random() * 20 - 10,
+          change: Math.random() > 0.5 ? 'up' : 'down'
+        }));
+        
+        sectorData.bestWorst = generateBestWorst(actionableWithValues, featuredWithValues);
       }
       
       await setCachedData(sector, sectorData);

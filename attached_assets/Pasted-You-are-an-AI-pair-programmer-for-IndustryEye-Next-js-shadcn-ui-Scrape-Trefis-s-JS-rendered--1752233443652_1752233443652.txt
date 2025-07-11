@@ -1,0 +1,82 @@
+You are an AI pair-programmer for IndustryEye (Next.js + shadcn/ui).  
+Scrape Trefis’s JS-rendered “Actionable Analyses” and “Featured Analyses” pages using Playwright, then expose them via our existing REST API. Do the following:
+
+1. **Install Playwright**  
+   - In `package.json`, add `"playwright": "^1.35.0"` (or latest) under dependencies.  
+   - Run `npm install`.
+
+2. **Create `services/trefis-service.js`**  
+   - Export two async functions:  
+     ```js
+     // services/trefis-service.js
+     import { chromium } from 'playwright';
+
+     const TOPIC_URLS = {
+       actionable: 'https://www.trefis.com/data/topic/actionable-analyses',
+       featured:  'https://www.trefis.com/data/topic/featured'
+     };
+
+     async function scrapeTopic(type) {
+       const url = TOPIC_URLS[type];
+       const browser = await chromium.launch();
+       const page    = await browser.newPage();
+       await page.goto(url, { waitUntil: 'domcontentloaded' });
+       await page.waitForSelector('ul.analysis-list li a');
+       const items = await page.$$eval(
+         'ul.analysis-list li a',
+         els => els.map(a => ({ title: a.textContent.trim(), url: a.href }))
+       );
+       await browser.close();
+       return items;
+     }
+
+     export async function getActionable(sector) {
+       // optionally filter by ticker/sector if needed
+       return scrapeTopic('actionable');
+     }
+     export async function getFeatured(sector) {
+       return scrapeTopic('featured');
+     }
+     ```
+   - Include inline comments explaining each step.
+
+3. **Update `pages/api/trefis.js`**  
+   - Remove all previous scraping stubs.  
+   - Import your new service:
+     ```js
+     import { getActionable, getFeatured } from '@/services/trefis-service';
+     ```
+   - In your handler, branch on `type`:  
+     ```js
+     if (type === 'actionable') {
+       const items = await getActionable(sector);
+       return res.status(200).json(items);
+     }
+     if (type === 'featured') {
+       const items = await getFeatured(sector);
+       return res.status(200).json(items);
+     }
+     // bestworst: call both, merge with value fields, sort, return { best, worst }
+     ```
+   - Wrap in try/catch and return `500` on error.  
+   - Leave your cache writes and cron job intact to prime this new service.
+
+4. **Verify Front-End**  
+   - No changes to `components/trefis/TrefisAnalyses.js` or `TrefisOverview.js`—they’ll fetch the same JSON shape.  
+   - Ensure your homepage still renders `<TrefisOverview />` under “Sector Performance Overview.”
+
+5. **Cron Job**  
+   - Confirm your `node-cron` task still hits:  
+     ```
+     /api/trefis?sector=defense&type=actionable
+     /api/trefis?sector=defense&type=featured
+     …and similarly for health & energy.
+     ```
+   - Runs daily at `0 0 * * *` (UTC).
+
+Generate the full diff for:  
+- `package.json`  
+- `services/trefis-service.js`  
+- `pages/api/trefis.js`  
+- Cron snippet (no need to re-specify imports)  
+Include comments on each logical block so we can review your Playwright setup and scraping logic.
