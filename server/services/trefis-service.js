@@ -3,6 +3,8 @@
 // Uses external cloud browser service to handle dynamic content rendering
 import fetch from 'node-fetch';
 import { load } from 'cheerio';
+import fs from 'fs';
+import path from 'path';
 
 // Hard-code the token temporarily since env vars aren't loading properly
 const BROWSERLESS_TOKEN = "2SezILpKdgVB8oS1eda4f7dc755e4030931925fcd8ebcd6d8";
@@ -10,6 +12,60 @@ const TOPIC_URLS = {
   actionable: 'https://www.trefis.com/data/topic/actionable-analyses',
   featured: 'https://www.trefis.com/data/topic/featured'
 };
+
+/**
+ * Check if cache file exists and is younger than 24 hours
+ * @param {string} cachePath - Path to cache file
+ * @returns {boolean} True if cache is valid
+ */
+function isCacheValid(cachePath) {
+  try {
+    if (!fs.existsSync(cachePath)) {
+      return false;
+    }
+    const stats = fs.statSync(cachePath);
+    const ageInHours = (Date.now() - stats.mtime.getTime()) / (1000 * 60 * 60);
+    return ageInHours < 24;
+  } catch (error) {
+    console.warn(`Error checking cache validity: ${error.message}`);
+    return false;
+  }
+}
+
+/**
+ * Read cache file and return parsed JSON
+ * @param {string} cachePath - Path to cache file
+ * @returns {Array|null} Cached items or null if error
+ */
+function readCache(cachePath) {
+  try {
+    if (fs.existsSync(cachePath)) {
+      const cacheData = fs.readFileSync(cachePath, 'utf8');
+      return JSON.parse(cacheData);
+    }
+  } catch (error) {
+    console.warn(`Error reading cache: ${error.message}`);
+  }
+  return null;
+}
+
+/**
+ * Write items to cache file
+ * @param {string} cachePath - Path to cache file
+ * @param {Array} items - Items to cache
+ */
+function writeCache(cachePath, items) {
+  try {
+    const dataDir = path.dirname(cachePath);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(cachePath, JSON.stringify(items), 'utf8');
+    console.log(`✅ Cache written to ${cachePath} with ${items.length} items`);
+  } catch (error) {
+    console.error(`Error writing cache: ${error.message}`);
+  }
+}
 
 /**
  * Fetch fully rendered HTML from Browserless.io cloud service
@@ -41,7 +97,11 @@ async function fetchRenderedHTML(url) {
   });
   
   if (!resp.ok) {
-    throw new Error(`Browserless fetch failed: ${resp.status} ${resp.statusText}`);
+    const errorMessage = `Browserless fetch failed: ${resp.status} ${resp.statusText}`;
+    if (resp.status === 429) {
+      throw new Error(`429 ${errorMessage}`);
+    }
+    throw new Error(errorMessage);
   }
   
   const html = await resp.text();
@@ -51,12 +111,22 @@ async function fetchRenderedHTML(url) {
 }
 
 /**
- * Get actionable analyses using improved scraping logic
+ * Get actionable analyses using improved scraping logic with caching
  * @param {string} sector - Optional sector filter (defense, health, energy)
  * @returns {Array} Array of actionable analysis items
  */
 export async function getActionable(sector) {
   console.log(`🎯 Fetching actionable analyses for sector: ${sector || 'all'}`);
+  
+  const cachePath = path.join(process.cwd(), 'data', `trefis-${sector || 'all'}-actionable.json`);
+  
+  if (isCacheValid(cachePath)) {
+    const cachedItems = readCache(cachePath);
+    if (cachedItems) {
+      console.log(`📋 Using cached actionable data for ${sector || 'all'} (${cachedItems.length} items)`);
+      return cachedItems;
+    }
+  }
   
   try {
     // Fetch fully rendered HTML from Browserless.io
@@ -115,26 +185,45 @@ export async function getActionable(sector) {
       if (allowedTickers.length > 0) {
         const filtered = items.filter(item => allowedTickers.includes(item.ticker));
         console.log(`🔍 Filtered ${items.length} → ${filtered.length} items for ${sector} sector`);
-        return filtered;
+        items = filtered;
       }
     }
+    
+    writeCache(cachePath, items);
     
     console.log(`📊 Successfully extracted ${items.length} actionable analyses`);
     return items;
     
   } catch (error) {
     console.error(`❌ Error fetching actionable analyses:`, error.message);
+    
+    const staleCache = readCache(cachePath);
+    if (staleCache && (error.message.includes('429') || error.message.includes('rate limit'))) {
+      console.warn(`⚠️ Using stale cache due to rate limiting (${staleCache.length} items)`);
+      return staleCache;
+    }
+    
     throw new Error(`Failed to fetch actionable analyses: ${error.message}`);
   }
 }
 
 /**
- * Get featured analyses using improved scraping logic
+ * Get featured analyses using improved scraping logic with caching
  * @param {string} sector - Optional sector filter (defense, health, energy)
  * @returns {Array} Array of featured analysis items
  */
 export async function getFeatured(sector) {
   console.log(`⭐ Fetching featured analyses for sector: ${sector || 'all'}`);
+  
+  const cachePath = path.join(process.cwd(), 'data', `trefis-${sector || 'all'}-featured.json`);
+  
+  if (isCacheValid(cachePath)) {
+    const cachedItems = readCache(cachePath);
+    if (cachedItems) {
+      console.log(`📋 Using cached featured data for ${sector || 'all'} (${cachedItems.length} items)`);
+      return cachedItems;
+    }
+  }
   
   try {
     // Fetch fully rendered HTML from Browserless.io
@@ -193,15 +282,24 @@ export async function getFeatured(sector) {
       if (allowedTickers.length > 0) {
         const filtered = items.filter(item => allowedTickers.includes(item.ticker));
         console.log(`🔍 Filtered ${items.length} → ${filtered.length} items for ${sector} sector`);
-        return filtered;
+        items = filtered;
       }
     }
+    
+    writeCache(cachePath, items);
     
     console.log(`📊 Successfully extracted ${items.length} featured analyses`);
     return items;
     
   } catch (error) {
     console.error(`❌ Error fetching featured analyses:`, error.message);
+    
+    const staleCache = readCache(cachePath);
+    if (staleCache && (error.message.includes('429') || error.message.includes('rate limit'))) {
+      console.warn(`⚠️ Using stale cache due to rate limiting (${staleCache.length} items)`);
+      return staleCache;
+    }
+    
     throw new Error(`Failed to fetch featured analyses: ${error.message}`);
   }
 }
