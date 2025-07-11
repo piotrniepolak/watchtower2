@@ -51,7 +51,7 @@ async function fetchRenderedHTML(url) {
 }
 
 /**
- * Get actionable analyses using Browserless.io and Cheerio parsing
+ * Get actionable analyses using improved scraping logic
  * @param {string} sector - Optional sector filter (defense, health, energy)
  * @returns {Array} Array of actionable analysis items
  */
@@ -65,92 +65,55 @@ export async function getActionable(sector) {
     // Parse HTML with Cheerio
     const $ = load(html);
     
-    console.log(`🔍 Parsing analysis items from rendered HTML...`);
+    console.log(`🔍 Parsing analysis items using refined pattern matching...`);
     
-    // Extract analysis items by looking for the specific pattern in Trefis content
+    // Extract analysis items using the specific pattern: TICKER "[MM/DD/YYYY] Title"
     let items = [];
     
-    // First try to parse using text content structure since links may not be standard
-    const bodyText = $.text();
-    const lines = bodyText.split('\n').map(line => line.trim()).filter(Boolean);
+    // Look for all text nodes matching the pattern: TICKER "[date]" followed by analysis title
+    const allTextNodes = $('p, div').map((_, el) => $(el).text().trim()).get();
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Look for stock ticker patterns (1-5 capital letters)
-      const tickerMatch = line.match(/^([A-Z]{1,5})$/);
-      if (tickerMatch && i + 1 < lines.length) {
-        const ticker = tickerMatch[1];
-        const nextLine = lines[i + 1];
+    for (const text of allTextNodes) {
+      // Match pattern: 2-5 capital letters + space + "[date]" + title
+      const tickerMatch = text.match(/^([A-Z]{2,5})\s+"\[(\d{1,2}\/\d{1,2}\/\d{4})\]\s*(.+)"/);
+      if (tickerMatch) {
+        const [, ticker, date, title] = tickerMatch;
         
-        // Check if next line contains analysis content
-        if (nextLine && nextLine.length > 20 && 
-            (nextLine.includes('Better Bet') || 
-             nextLine.includes('Stock:') || 
-             nextLine.includes('Analysis') ||
-             nextLine.includes('Pay Less') ||
-             nextLine.includes('Get More'))) {
-          
-          // Create a synthetic URL for the analysis
-          const analysisUrl = `https://www.trefis.com/stock/${ticker.toLowerCase()}/analysis`;
-          items.push({
-            title: `${ticker}: ${nextLine.replace(/^\[[\d\/]+\]\s*/, '')}`, // Remove date prefix
-            url: analysisUrl
-          });
-        }
+        // Create clean title by removing any extra formatting
+        const cleanTitle = title.trim();
+        
+        // Generate Trefis URL with slugified title for direct access
+        const slugifiedTitle = cleanTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        
+        const analysisUrl = `https://www.trefis.com/data/companies/${ticker}/no-login-required/${slugifiedTitle}`;
+        
+        items.push({
+          ticker,
+          title: cleanTitle,
+          url: analysisUrl,
+          date
+        });
       }
     }
     
-    // Fallback: also check for traditional link extraction
-    $('a').each((_, element) => {
-      const $el = $(element);
-      const title = $el.text().trim();
-      const url = $el.attr('href') || element.attribs?.href;
-      
-      // Filter for meaningful analysis links
-      if (!url || !title) return;
-      if (title.length < 20) return; // Longer threshold for links
-      
-      // Look for stock/company analysis indicators
-      const isAnalysisLink = (
-        url.includes('/stock/') ||
-        url.includes('/company/') ||
-        title.includes('Better Bet') ||
-        title.includes('Stock:') ||
-        title.match(/\b[A-Z]{1,5}\b.*Stock/i) // Ticker + "Stock" pattern
-      );
-      
-      if (isAnalysisLink) {
-        // Ensure full URL
-        const fullUrl = url.startsWith('http') ? url : `https://www.trefis.com${url}`;
-        items.push({ title, url: fullUrl });
-      }
-    });
+    console.log(`📊 Found ${items.length} analysis items before sector filtering`);
     
-    // Remove duplicates and limit
-    items = items.filter((item, index, self) => 
-      index === self.findIndex(t => t.url === item.url)
-    ).slice(0, 20);
-    
-    console.log(`📊 Found ${items.length} potential analysis items before sector filtering`);
-    
-    // Optional: filter by sector keywords
+    // Sector-specific filtering based on ticker lists
     if (sector && sector !== 'all') {
-      const sectorKeywords = {
-        defense: ['defense', 'military', 'aerospace', 'lockheed', 'boeing', 'raytheon', 'northrop', 'lmt', 'ba', 'rtx', 'noc', 'gd'],
-        health: ['pharma', 'biotech', 'healthcare', 'medical', 'drug', 'pfizer', 'johnson', 'jnj', 'pfe', 'mrk', 'abbv'],
-        energy: ['energy', 'oil', 'gas', 'renewable', 'solar', 'exxon', 'chevron', 'xom', 'cvx', 'cop', 'hal']
+      const sectorTickers = {
+        defense: ['LMT', 'NOC', 'RTX', 'GD', 'BA', 'KTOS', 'AVAV', 'LDOS', 'TXT', 'CW'],
+        health: ['JNJ', 'MRK', 'PFE', 'ABBV', 'LLY', 'BMY', 'AMRX', 'BHC', 'GILD', 'BIIB'],
+        energy: ['XOM', 'CVX', 'BP', 'COP', 'EOG', 'PSX', 'VLO', 'MPC', 'HAL', 'SLB']
       };
       
-      const keywords = sectorKeywords[sector.toLowerCase()] || [];
-      if (keywords.length > 0) {
-        const filtered = items.filter(item => 
-          keywords.some(keyword => 
-            item.title.toLowerCase().includes(keyword) || 
-            item.url.toLowerCase().includes(keyword)
-          )
-        );
-        
+      const allowedTickers = sectorTickers[sector.toLowerCase()] || [];
+      if (allowedTickers.length > 0) {
+        const filtered = items.filter(item => allowedTickers.includes(item.ticker));
         console.log(`🔍 Filtered ${items.length} → ${filtered.length} items for ${sector} sector`);
         return filtered;
       }
@@ -166,7 +129,7 @@ export async function getActionable(sector) {
 }
 
 /**
- * Get featured analyses using Browserless.io and Cheerio parsing  
+ * Get featured analyses using improved scraping logic
  * @param {string} sector - Optional sector filter (defense, health, energy)
  * @returns {Array} Array of featured analysis items
  */
@@ -180,92 +143,55 @@ export async function getFeatured(sector) {
     // Parse HTML with Cheerio
     const $ = load(html);
     
-    console.log(`🔍 Parsing analysis items from rendered HTML...`);
+    console.log(`🔍 Parsing analysis items using refined pattern matching...`);
     
-    // Extract analysis items by looking for the specific pattern in Trefis content
+    // Extract analysis items using the specific pattern: TICKER "[MM/DD/YYYY] Title"
     let items = [];
     
-    // First try to parse using text content structure since links may not be standard
-    const bodyText = $.text();
-    const lines = bodyText.split('\n').map(line => line.trim()).filter(Boolean);
+    // Look for all text nodes matching the pattern: TICKER "[date]" followed by analysis title
+    const allTextNodes = $('p, div').map((_, el) => $(el).text().trim()).get();
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Look for stock ticker patterns (1-5 capital letters)
-      const tickerMatch = line.match(/^([A-Z]{1,5})$/);
-      if (tickerMatch && i + 1 < lines.length) {
-        const ticker = tickerMatch[1];
-        const nextLine = lines[i + 1];
+    for (const text of allTextNodes) {
+      // Match pattern: 2-5 capital letters + space + "[date]" + title
+      const tickerMatch = text.match(/^([A-Z]{2,5})\s+"\[(\d{1,2}\/\d{1,2}\/\d{4})\]\s*(.+)"/);
+      if (tickerMatch) {
+        const [, ticker, date, title] = tickerMatch;
         
-        // Check if next line contains analysis content
-        if (nextLine && nextLine.length > 20 && 
-            (nextLine.includes('Better Bet') || 
-             nextLine.includes('Stock:') || 
-             nextLine.includes('Analysis') ||
-             nextLine.includes('Pay Less') ||
-             nextLine.includes('Get More'))) {
-          
-          // Create a synthetic URL for the analysis
-          const analysisUrl = `https://www.trefis.com/stock/${ticker.toLowerCase()}/analysis`;
-          items.push({
-            title: `${ticker}: ${nextLine.replace(/^\[[\d\/]+\]\s*/, '')}`, // Remove date prefix
-            url: analysisUrl
-          });
-        }
+        // Create clean title by removing any extra formatting
+        const cleanTitle = title.trim();
+        
+        // Generate Trefis URL with slugified title for direct access
+        const slugifiedTitle = cleanTitle
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-+|-+$/g, '');
+        
+        const analysisUrl = `https://www.trefis.com/data/companies/${ticker}/no-login-required/${slugifiedTitle}`;
+        
+        items.push({
+          ticker,
+          title: cleanTitle,
+          url: analysisUrl,
+          date
+        });
       }
     }
     
-    // Fallback: also check for traditional link extraction
-    $('a').each((_, element) => {
-      const $el = $(element);
-      const title = $el.text().trim();
-      const url = $el.attr('href') || element.attribs?.href;
-      
-      // Filter for meaningful analysis links
-      if (!url || !title) return;
-      if (title.length < 20) return; // Longer threshold for links
-      
-      // Look for stock/company analysis indicators
-      const isAnalysisLink = (
-        url.includes('/stock/') ||
-        url.includes('/company/') ||
-        title.includes('Better Bet') ||
-        title.includes('Stock:') ||
-        title.match(/\b[A-Z]{1,5}\b.*Stock/i) // Ticker + "Stock" pattern
-      );
-      
-      if (isAnalysisLink) {
-        // Ensure full URL
-        const fullUrl = url.startsWith('http') ? url : `https://www.trefis.com${url}`;
-        items.push({ title, url: fullUrl });
-      }
-    });
+    console.log(`📊 Found ${items.length} analysis items before sector filtering`);
     
-    // Remove duplicates and limit
-    items = items.filter((item, index, self) => 
-      index === self.findIndex(t => t.url === item.url)
-    ).slice(0, 20);
-    
-    console.log(`📊 Found ${items.length} potential analysis items before sector filtering`);
-    
-    // Optional: filter by sector keywords
+    // Sector-specific filtering based on ticker lists
     if (sector && sector !== 'all') {
-      const sectorKeywords = {
-        defense: ['defense', 'military', 'aerospace', 'lockheed', 'boeing', 'raytheon', 'northrop', 'lmt', 'ba', 'rtx', 'noc', 'gd'],
-        health: ['pharma', 'biotech', 'healthcare', 'medical', 'drug', 'pfizer', 'johnson', 'jnj', 'pfe', 'mrk', 'abbv'],
-        energy: ['energy', 'oil', 'gas', 'renewable', 'solar', 'exxon', 'chevron', 'xom', 'cvx', 'cop', 'hal']
+      const sectorTickers = {
+        defense: ['LMT', 'NOC', 'RTX', 'GD', 'BA', 'KTOS', 'AVAV', 'LDOS', 'TXT', 'CW'],
+        health: ['JNJ', 'MRK', 'PFE', 'ABBV', 'LLY', 'BMY', 'AMRX', 'BHC', 'GILD', 'BIIB'],
+        energy: ['XOM', 'CVX', 'BP', 'COP', 'EOG', 'PSX', 'VLO', 'MPC', 'HAL', 'SLB']
       };
       
-      const keywords = sectorKeywords[sector.toLowerCase()] || [];
-      if (keywords.length > 0) {
-        const filtered = items.filter(item => 
-          keywords.some(keyword => 
-            item.title.toLowerCase().includes(keyword) || 
-            item.url.toLowerCase().includes(keyword)
-          )
-        );
-        
+      const allowedTickers = sectorTickers[sector.toLowerCase()] || [];
+      if (allowedTickers.length > 0) {
+        const filtered = items.filter(item => allowedTickers.includes(item.ticker));
         console.log(`🔍 Filtered ${items.length} → ${filtered.length} items for ${sector} sector`);
         return filtered;
       }
@@ -296,21 +222,26 @@ export async function getBestWorst(sector) {
       getFeatured(sector)
     ]);
     
-    // Combine and merge on value attribute if available
+    // Combine analyses and remove duplicates based on ticker
     const allItems = [...actionable, ...featured];
+    const uniqueItems = allItems.filter((item, index, self) => 
+      index === self.findIndex(t => t.ticker === item.ticker)
+    );
     
-    // Sort by value if available (placeholder logic - would need actual value extraction)
-    const sortedItems = allItems.sort((a, b) => {
-      // For now, sort alphabetically by title as placeholder
-      // In real implementation, would extract and sort by actual performance values
-      return a.title.localeCompare(b.title);
-    });
+    // Add mock performance values for sorting (in real implementation would extract from content)
+    const itemsWithValues = uniqueItems.map(item => ({
+      ...item,
+      value: Math.random() * 100 // Mock value for sorting - replace with actual extraction
+    }));
+    
+    // Sort by value for best/worst determination
+    const sortedItems = itemsWithValues.sort((a, b) => b.value - a.value);
     
     const mid = Math.floor(sortedItems.length / 2);
     
     return {
       best: sortedItems.slice(0, mid),
-      worst: sortedItems.slice(mid)
+      worst: sortedItems.slice(mid).reverse() // Reverse worst to show lowest first
     };
     
   } catch (error) {

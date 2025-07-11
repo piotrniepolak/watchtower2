@@ -25,7 +25,7 @@ import { quizStorage } from "./quiz-storage";
 import { realTimeAIAnalysis } from './real-time-ai-analysis';
 import { dailyBriefScheduler } from "./daily-brief-scheduler";
 import { dailySectorBriefGenerator } from "./daily-sector-brief-generator";
-import { getTrefisData } from "./trefis-service";
+import { getActionable, getFeatured, getBestWorst } from "./services/trefis-service.js";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -2372,17 +2372,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Validate type parameter
-      const validTypes = ['actionable', 'featured', 'bestWorst'];
+      const validTypes = ['actionable', 'featured', 'bestworst'];
       if (!validTypes.includes(type as string)) {
         return res.status(400).json({ 
-          error: "Invalid type. Must be one of: actionable, featured, bestWorst" 
+          error: "Invalid type. Must be one of: actionable, featured, bestworst" 
         });
       }
       
       console.log(`🔍 Fetching Trefis ${type} data for ${sector} sector`);
       
-      // Get Trefis data using the service
-      const data = await getTrefisData(sector as string, type as any);
+      // Use refined service methods for direct data access
+      let data;
+      if (type === 'actionable') {
+        data = await getActionable(sector as string);
+      } else if (type === 'featured') {
+        data = await getFeatured(sector as string);
+      } else if (type === 'bestworst') {
+        data = await getBestWorst(sector as string);
+      }
       
       console.log(`✅ Successfully retrieved Trefis ${type} data for ${sector}`);
       res.json(data);
