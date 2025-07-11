@@ -1,0 +1,62 @@
+You’re an AI pair-programmer for IndustryEye (Next.js + shadcn/ui). The Trefis integration still isn’t working because our scraping and filtering logic doesn’t match Trefis’s actual content. Please update end-to-end as follows:
+
+1. **Refine Scraping in `services/trefis-service.js`**  
+   - After fetching rendered HTML via Browserless, don’t look for `<ul>` lists. Instead:  
+     a. Use `page.evaluate` (Playwright/Puppeteer) or Cheerio to grab all text nodes matching the pattern:  
+        ```js
+        const lines = Array.from(document.body.querySelectorAll('p, div')) // or $('body *')
+          .map(el => el.textContent.trim())
+          .filter(t => /^[A-Z]{2,5}\s+"\[\d{1,2}\/\d{1,2}\/\d{4}\]/.test(t));
+        ```  
+     b. For each line, split at the first space or colon to extract `{ ticker, rest }`. Then from `rest`, extract the title text between the closing bracket and end of string.  
+     c. Build each item as:  
+        ```js
+        {
+          ticker,  
+          title: rest.replace(/^\[.*?\]\s*/, '').trim(),  
+          url: `https://www.trefis.com/data/companies/${ticker}/no-login-required/${slugified-title}`  
+        }
+        ```  
+   - **Sector-specific filtering:**  
+     - For `sector=defense`, only keep items whose `ticker` is in your defense list (e.g. LMT, NOC, RTX).  
+     - For `sector=health`, only keep items in your PharmaWatch list (e.g. JNJ, MRK, AMRX, BHC).  
+     - For `sector=energy`, keep the oil & gas tickers (XOM, CVX, BP).  
+
+2. **Update `pages/api/trefis.js`**  
+   - Replace the current payload-extraction stub with calls to your refined service methods (`getActionable`, `getFeatured`).  
+   - For `type=actionable` & `type=featured`, return the filtered arrays of `{ ticker, title, url }`.  
+   - Wrap everything in `try/catch` and return `500` with `{ error: '...' }` if anything breaks.
+
+3. **Enhance Front-End Components**  
+   - **`components/trefis/TrefisAnalyses.js`:**  
+     - Fetch `/api/trefis?sector=health&type=actionable` (etc.).  
+     - Map over items and render each as:  
+       ```jsx
+       <Button variant="link" key={url} onClick={() => setOpenUrl(url)}>
+         {ticker}: {title}
+       </Button>
+       ```  
+     - Clicking opens a `<Modal>` with  
+       ```jsx
+       <iframe src={openUrl} className="w-full h-[80vh]" frameBorder="0" />
+       ```  
+   - **`components/trefis/TrefisOverview.js`:**  
+     - Call `?type=bestworst`, which now merges both actionable & featured arrays by `value` and returns `{ best, worst }`.  
+     - Render six `<Card>`s (“Best Defense”, “Worst Defense”, etc.) showing `ticker: title`.  
+     - Wrap each card in an `onClick` that opens the same modal iframe.
+
+4. **Verify Homepage**  
+   - Ensure `/pages/index.js` imports and renders `<TrefisOverview />` under a “Sector Performance Overview” header.
+
+5. **Testing**  
+   - After implementing, navigate to each dashboard:  
+     - **Pharma:** you should see “JNJ: Better Bet Than JNJ Stock…”  
+     - **Defense:** you should see your defense tickers.  
+     - Click any analysis → a popup loads the exact Trefis article.
+
+Generate the full code diff for:
+- `services/trefis-service.js` (new parsing & filtering logic)  
+- `pages/api/trefis.js` (wiring the service)  
+- `components/trefis/TrefisAnalyses.js` & `TrefisOverview.js` (clickable popups)  
+- `/pages/index.js` (overview import/render)  
+Include inline comments for each logical section.  
